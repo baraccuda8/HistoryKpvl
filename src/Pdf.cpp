@@ -819,7 +819,7 @@ void PrintPdf(TSheet& Sheet)
 	try
 	{
 //#ifdef TESTPFD
-		PdfClass pdf (Sheet);
+		PdfClass* pdf  = new PdfClass(Sheet);
 //#endif
 	}
 	CATCH(AllLogger, std::string("PrintPdf: "));
