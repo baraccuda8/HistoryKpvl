@@ -1,0 +1,1035 @@
+#include "pch.h"
+#include "win.h"
+#include "main.h"
+#include "hard.h"
+#include "term.h"
+#include "GdiPlusInit.h"
+#include <gdiplusimagecodec.h>
+
+#include "Graff.h"
+
+const int64_t SecCount1 = 60 * 60 * 12; //12 часов
+const int64_t SecCount2 = 60 * 60; //1 час
+
+HRESULT GetGdiplusEncoderClsid(const std::wstring& format, GUID* pGuid)
+{
+	HRESULT hr = S_OK;
+	UINT  nEncoders = 0;          // number of image encoders
+	UINT  nSize = 0;              // size of the image encoder array in bytes
+	std::vector<BYTE> spData;
+	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
+	Gdiplus::Status status;
+	bool found = false;
+
+	if(format.empty() || !pGuid)
+	{
+		hr = E_INVALIDARG;
+	}
+
+	if(SUCCEEDED(hr))
+	{
+		*pGuid = GUID_NULL;
+		status = Gdiplus::GetImageEncodersSize(&nEncoders, &nSize);
+
+		if((status != Gdiplus::Ok) || (nSize == 0))
+		{
+			hr = E_FAIL;
+		}
+	}
+
+	if(SUCCEEDED(hr))
+	{
+
+		spData.resize(nSize);
+		pImageCodecInfo = (Gdiplus::ImageCodecInfo*)&spData.front();
+		status = Gdiplus::GetImageEncoders(nEncoders, nSize, pImageCodecInfo);
+
+		if(status != Gdiplus::Ok)
+		{
+			hr = E_FAIL;
+		}
+	}
+
+	if(SUCCEEDED(hr))
+	{
+		for(UINT j = 0; j < nEncoders && !found; j++)
+		{
+			if(pImageCodecInfo[j].MimeType == format)
+			{
+				*pGuid = pImageCodecInfo[j].Clsid;
+				found = true;
+			}
+		}
+
+		hr = found ? S_OK : E_FAIL;
+	}
+
+	return hr;
+}
+
+//HWND Graf1 = NULL;
+//HWND Graf2 = NULL;
+//HWND Graf3 = NULL;
+
+const int CountPoint = 86400; //Количеество секунд в сутках
+
+std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2})";
+
+GUID guidBmp ={};
+GUID guidJpeg ={};
+GUID guidGif ={};
+GUID guidTiff ={};
+GUID guidPng ={};
+
+extern CGdiPlusInit init;
+
+double coolall = 0.0;// 105
+#define cooltab 23
+
+const int Xsize = 350;
+const int Ysize1 = 137;
+const int Ysize2 = 107;
+
+typedef struct _TimeGraf
+{
+	int Second;
+	int Minute;
+	int Hour;
+};
+
+typedef struct Table2
+{
+	int Day;
+	int Month;
+	int Yar;
+	int Hour;
+	int Minute;
+	int Second;
+	BOOL False;
+	_TimeGraf TimeGraf;
+	float data[17];
+};
+
+typedef struct _Pasport
+{
+	_Pasport()
+	{
+		Clear();
+	};
+	void Clear1()
+	{
+		Valok.erase(Valok.begin(), Valok.end());
+		head.clear();
+	}
+	void Clear()
+	{
+		Valok.erase(Valok.begin(), Valok.end());
+
+		head.clear();
+		sProfil.clear();
+
+		Profil = 0;
+		sValok.clear();
+		//sStart = NULL;
+		//Start = NULL;
+		StartDay = 0;
+		StartMonth = 1;
+		StartYar = 1900;
+		StartHour = 0;
+		StartMinute = 0;
+		StartSecond = 0;
+		sStart.clear();
+		sStop.clear();
+		//sStop = NULL;
+		//Stop = NULL;
+		StopDay = 0;
+		StopMonth = 1;
+		StopYar = 1900;
+		StopHour = 0;
+		StopMinute = 0;
+		StopSecond = 0;
+
+		sRashodGas.clear();
+		sRashodGasMask.clear();
+		RashodGas = 0;
+		sSummRashodGas.clear();
+		sSummRashodGasMask.clear();
+		SummRashodGas = 0;
+	};
+	std::string head;
+	std::vector <std::string>Valok;
+	std::string sValok;
+
+	std::string sProfil;
+	int Profil;
+	std::string sStart;
+	//char* Start = NULL;
+	int StartDay;
+	int StartMonth;
+	int StartYar;
+	int StartHour;
+	int StartMinute;
+	int StartSecond;
+	std::string sStop;
+	//char* Stop = NULL;
+	int StopDay;
+	int StopMonth;
+	int StopYar;
+	int StopHour;
+	int StopMinute;
+	int StopSecond;
+
+	std::string sRashodGas;
+	int RashodGas;
+	std::string sRashodGasMask;
+
+	std::string sSummRashodGas;
+	int SummRashodGas;
+	std::string sSummRashodGasMask;
+};
+
+std::vector <Table2*> All;
+
+_Pasport Pasport;
+
+//int AllMinute = 0;
+//int AllHour = 0;
+//float maxhtab = 0.0f;
+//float minhtab = 0.0f;
+//int Pos = 0;
+//BOOL pos = TRUE;
+//BOOL ButtonGraf[9] ={TRUE,TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE};
+//#define SetStep 5.0f
+//int Start = 0;
+//int Stop = 0;
+//int Count = 0;
+//int Grafik = 1;
+//int KoefPercent = 50;
+
+typedef struct MY_RGB
+{
+	int r;
+	int g;
+	int b;
+};
+
+MY_RGB rgb[9]{
+	{75, 112, 182},
+	{229, 124, 59},
+	{163, 163, 163},
+	{236, 195, 43},
+	{106, 154, 194},
+	{114, 166, 84},
+	{45, 66, 111},
+	{143, 73, 21},
+	{101, 101, 101},
+};
+Gdiplus::Font font1(L"Tahoma", 10, Gdiplus::FontStyleBold);
+Gdiplus::Font font2(L"Tahoma", 10, Gdiplus::FontStyleRegular);
+
+//time_t tStart, tStop, tAlarm, tSecond;
+//struct tm stStart;
+//struct tm stStop;
+
+
+
+
+PGConnection connKPVL;
+PGConnection connFurn1;
+PGConnection connFurn2;
+PGConnection connFurn;
+
+
+Graff GraffKPVL("KPV");
+Graff GraffFurn1("Furn1");
+Graff GraffFurn2("Furn2");
+Graff GraffFurn("Furn");
+
+const float Mashtab = 1.5;
+
+//BOOL DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6)
+//{
+//	d1 = 0; d2 = 0; d3 = 0; d4 = 0; d5 = 0; d6 = 0;
+//	std::string::const_iterator start = str.begin();
+//	std::string::const_iterator end = str.end();
+//	boost::regex xRegEx(format);
+//	boost::match_results<std::string::const_iterator> what;
+//
+//	if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
+//	{
+//		size_t size = what.size();
+//		if(size >= 1)d1 = atoi(what[1].str().c_str());
+//		if(size >= 2)d2 = atoi(what[2].str().c_str());
+//		if(size >= 3)d3 = atoi(what[3].str().c_str());
+//		if(size >= 4)d4 = atoi(what[4].str().c_str());
+//		if(size >= 5)d5 = atoi(what[5].str().c_str());
+//		if(size >= 6)d6 = atoi(what[6].str().c_str());
+//		return TRUE;
+//	}
+//	return FALSE;
+//}
+//
+
+void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt)
+{
+	Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
+	Gdiplus::Pen Gdi_L2(clor, 1);
+	auto b = st.begin();
+	auto e = st.end();
+	e--;
+	double coffW = (double)(Rect.Width) / double(maxd);
+	double coffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
+
+
+	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
+	Gdiplus::StringFormat stringFormat;
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+
+		   
+	float mY = Rect.Y + float((maxt - maxt) * coffH);
+	Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
+	Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
+	temp.DrawLine(&Gdi_L1, pt1, pt2);
+	Gdiplus::RectF Rect2 ={0, mY - 8, 50, 20};
+
+	std::wstringstream sdw;
+	sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << maxt;
+
+	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
+
+	float iY = Rect.Y + float((maxt - mint) * coffH);
+	pt1 ={Rect.X - 5,				iY};
+	pt2 ={Rect.X + Rect.Width + 5,	iY};
+	temp.DrawLine(&Gdi_L1, pt1, pt2);
+
+
+	Rect2 ={0, iY - 8, 50, 20};
+
+	sdw.str(std::wstring());
+	sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << mint;
+	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
+
+	Gdiplus::PointF p1 ={0, 0};
+	Gdiplus::PointF p2;;
+	p1.X = Rect.X;
+	p1.Y = Rect.Y + float((maxt - b->second.second) * coffH);
+
+	for(auto& a : st)
+	{
+		p2.X =  Rect.X + float((a.second.first - mind) * coffW);
+		p2.Y =  Rect.Y + float((maxt - a.second.second) * coffH);
+		temp.DrawLine(&Gdi_L2, p1, p2);
+
+		p1.X = p2.X;
+		p1.Y = p2.Y;
+	}
+}
+
+void Graff::DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat)
+{
+	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
+
+	std::wstring::const_iterator start = str.begin();
+	std::wstring::const_iterator end = str.end();
+	boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
+	boost::match_results<std::wstring::const_iterator> what;
+
+	if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 1)
+		temp.DrawString(what[1].str().c_str(), -1, &font1, Rect, &stringFormat, &Gdi_brush);
+}
+
+void Graff::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
+{
+	Gdiplus::Pen Gdi_L1(Gdiplus::Color(255, 0, 0), 2); //Красный
+	Gdiplus::Pen Gdi_L2(Gdiplus::Color(0, 0, 255), 2); //Синий
+
+	Gdiplus::PointF pt1 = {Rect.X +  0, Rect.Y + 0};
+	Gdiplus::PointF pt2 = {Rect.X + 20, Rect.Y + 0};
+
+	temp.DrawLine(&Gdi_L1, pt1, pt2);
+
+	pt1 ={Rect.X + 100, Rect.Y + 0};
+	pt2 ={Rect.X + 120, Rect.Y + 0};
+
+	temp.DrawLine(&Gdi_L2, pt1, pt2);
+
+
+	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
+	Gdiplus::StringFormat stringFormat;
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+
+	Gdiplus::RectF Rect2 = Rect;
+	Rect2.X += 25;
+	Rect2.Y -= 5;
+	Rect2.Height = 20;
+	temp.DrawString(L"Задание", -1, &font2, Rect2, &stringFormat, &Gdi_brush);
+
+	Rect2 = Rect;
+	Rect2.X += 125;
+	Rect2.Y -= 5;
+	Rect2.Height = 20;
+	temp.DrawString(L"Факт", -1, &font2, Rect2, &stringFormat, &Gdi_brush);
+
+}
+
+void Graff::Paint(HWND hWnd)
+{
+	if(!init.Good() || !full)return;
+	if(!TempRef.size() || !TempAct.size())return;
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hWnd, &ps);
+
+	RECT rcBounds;
+	GetWindowRect(hWnd, &rcBounds);
+
+	Gdiplus::REAL Width = Gdiplus::REAL(abs(rcBounds.right - rcBounds.left));
+	Gdiplus::REAL Height = Gdiplus::REAL(abs(rcBounds.bottom - rcBounds.top));
+
+	Gdiplus::Graphics g(hdc);
+	Gdiplus::Bitmap backBuffer (INT(Width * Mashtab), INT(Height * Mashtab), &g);
+	Gdiplus::Graphics temp(&backBuffer);
+	Gdiplus::RectF RectG(0, 0, Width * Mashtab, Height * Mashtab);
+	
+
+	Gdiplus::RectF RectBottom(0, 0, Width, Height);
+	temp.Clear(Gdiplus::Color(255, 255, 255));
+
+	Gdiplus::Pen Gdi_Bar(Gdiplus::Color(0, 0, 0), 1);
+
+	double maxt = 0;
+	double mint = 2000;
+	int64_t mind = (std::min)(TempAct.begin()->second.first,	TempRef.begin()->second.first);
+
+	auto b = TempAct.begin();
+	auto e = TempAct.end();
+	e--;
+	int64_t maxd = (std::max)(MaxSecCount, e->second.first - b->second.first);
+	//int64_t maxd = 0;// e->second.first - b->second.first;
+
+	b = TempRef.begin();
+	e = TempRef.end();
+	e--;
+	maxd = (std::max)(maxd, e->second.first - b->second.first);
+
+
+	for(auto a : TempRef)
+	{
+		maxt = std::fmaxl(maxt, a.second.second);
+		mint = std::fminl(mint, a.second.second);
+	}
+	for(auto a : TempAct)
+	{
+		maxt = std::fmaxl(maxt, a.second.second);
+		mint = std::fminl(mint, a.second.second);
+	}
+
+	Gdiplus::Color Blue(0, 0, 255);
+	Gdiplus::Color Red(255, 0, 0);
+
+	Gdiplus::RectF RectG2(RectG);
+	RectG2.Y += 5;
+	RectG2.Height -= 25;
+	RectG2.X += 35;
+	RectG2.Width -= 40;
+
+	DrawBottom(temp, RectG2, Red,  TempRef, mind, maxd, mint, maxt);	//Красный; Заданное значение температуры
+	DrawBottom(temp, RectG2, Blue, TempAct, mind, maxd, mint, maxt);	//Синий; Фактическое значение температуры
+
+	Gdiplus::RectF RectG3(RectG);
+	RectG3.X = 100;
+	RectG3.Y = RectG.Height - 15;
+	DrawInfo(temp, RectG3);
+
+	b = TempAct.begin();
+	e = TempAct.end();
+	e--;
+	std::wstring sDataBeg(b->first.begin(), b->first.end());
+	std::wstring sDataEnd(e->first.begin(), e->first.end());
+
+	Gdiplus::RectF RectText(RectG);
+	Gdiplus::StringFormat stringFormat;
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+	DrawTime(temp, RectText, sDataBeg, stringFormat);
+
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
+	DrawTime(temp, RectText, sDataEnd, stringFormat);
+
+
+	std::wstring SaveFile(Name.begin(), Name.end());
+	SaveFile += L".jpg";
+
+	backBuffer.Save(SaveFile.c_str(), &guidJpeg, NULL);
+
+	//backBuffer.
+	g.DrawImage(&backBuffer, RectBottom);
+
+	EndPaint(hWnd, &ps);
+}
+
+void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount)
+{
+	st.erase(st.begin(), st.end());
+
+	std::tm TM_End ={0};
+	std::tm TM_Beg ={0};
+	std::tm TM_Temp ={0};
+	std::string TecTime;
+	time_t tStop1 = time(NULL);
+	localtime_s(&TM_End, &tStop1);
+	time_t tStop = _mkgmtime(&TM_End);
+	time_t tStart = (time_t)difftime(tStop, SecCount);
+	gmtime_s(&TM_Beg, &tStart);
+
+	
+	
+	std::stringstream sdw;
+	sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
+	sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
+	sdw << boost::format("%|02| ") % TM_End.tm_mday;
+	sdw << boost::format("%|02|:") % TM_End.tm_hour;
+	sdw << boost::format("%|02|:") % TM_End.tm_min;
+	sdw << boost::format("%|02|") % TM_End.tm_sec;
+	sdw << "+05";
+	std::string sEndTime = sdw.str();
+
+
+	sdw.str(std::string());
+	sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
+	sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
+	sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
+	sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
+	sdw << boost::format("%|02|:") % TM_Beg.tm_min;
+	sdw << boost::format("%|02|") % TM_Beg.tm_sec;
+	sdw << "+05";
+	std::string sBegTime = sdw.str();
+
+	std::stringstream sde;
+	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+	sde << " AND create_at <= '";
+	sde << sBegTime;
+	sde << "';";
+	std::string sBegTime2 = sBegTime;
+	std::string command = sde.str();
+	PGresult* res = conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		if(PQntuples(res))
+			sBegTime2 = conn->PGgetvalue(res, 0, 0);
+	}
+	else
+	{
+		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	}
+	PQclear(res);
+
+
+	std::stringstream sdt;
+	sdt << "SELECT create_at, content FROM todos WHERE id_name = " << val->ID;
+	if(sBegTime2.length())	sdt << " AND create_at >= '" << sBegTime2 << "'";
+	if(sEndTime.length())	sdt << " AND create_at <= '" << sEndTime << "'";
+
+	sdt << " ORDER BY create_at ASC ;";
+
+	command = sdt.str();
+	res = conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		int line = PQntuples(res);
+		if(line)
+		{
+			int i = 0;
+			int64_t t = 0;
+
+			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
+			DataTimeOfString(sBegTime, FORMATTIME, TM_Temp);
+			TM_Temp.tm_year -= 1900;
+			TM_Temp.tm_mon -= 1;
+
+
+			st[sBegTime] = std::pair(mktime(&TM_Temp), f);
+
+
+			for(int l = 0; l < line; l++)
+			{
+				std::string sData = conn->PGgetvalue(res, l, 0);
+
+				if(sBegTime <= sData)
+				{
+					std::string sTemp = conn->PGgetvalue(res, l, 1);
+					DataTimeOfString(sData, FORMATTIME, TM_Temp);
+					TM_Temp.tm_year -= 1900;
+					TM_Temp.tm_mon -= 1;
+
+					f = static_cast<float>(atof(sTemp.c_str()));
+					if(f != 0)
+						st[sData] = std::pair(mktime(&TM_Temp), f);
+				}
+			}
+			st[sEndTime] = std::pair(tStop1, f);
+		}
+	}
+	PQclear(res);
+}
+
+void GetGrTempFURN(Graff& gr, T_ForBase_RelFurn& app)
+{
+	SqlTempFURN(gr.conn, gr.TempAct, app.TempAct, gr.MaxSecCount);
+	SqlTempFURN(gr.conn, gr.TempRef, app.TempRef, gr.MaxSecCount);
+	InvalidateRect(gr.gHwnd, NULL, false);
+	gr.full = true;
+}
+
+
+std::string SqlTempKPVL2(std::string sBegTime)
+{
+	std::stringstream sde;
+	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqFromHmi.TempSet1->ID;
+	sde << " AND create_at <= '";
+	sde << sBegTime;
+	sde << "';";
+	std::string sBegTime2 = sBegTime;
+	std::string command = sde.str();
+	PGresult* res = GraffKPVL.conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		if(PQntuples(res))
+			sBegTime2 = conn_kpvl.PGgetvalue(res, 0, 0);
+	}
+	else
+	{
+		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	}
+	PQclear(res);
+
+	return sBegTime2;
+}
+
+void GetGrTempKPVLTempAct()
+{
+	SqlTempFURN(GraffKPVL.conn, GraffKPVL.TempRef, GenSeqFromHmi.TempSet1, GraffKPVL.MaxSecCount);
+	int t = 0;
+
+	GraffKPVL.TempAct.erase(GraffKPVL.TempAct.begin(), GraffKPVL.TempAct.end()); //Синий; Фактическое значение температуры
+	
+	std::tm TM_End ={0};
+	std::tm TM_Beg ={0};
+	std::tm TM_Temp ={0};
+	std::string TecTime;
+	time_t tStop1 = time(NULL);
+	localtime_s(&TM_End, &tStop1);
+	time_t tStop = _mkgmtime(&TM_End);
+	time_t tStart = (time_t)difftime(tStop, GraffKPVL.MaxSecCount);
+	gmtime_s(&TM_Beg, &tStart);
+	
+	std::stringstream sdw;
+	sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
+	sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
+	sdw << boost::format("%|02| ") % TM_End.tm_mday;
+	sdw << boost::format("%|02|:") % TM_End.tm_hour;
+	sdw << boost::format("%|02|:") % TM_End.tm_min;
+	sdw << boost::format("%|02|") % TM_End.tm_sec;
+	//sdw << "+05";
+	std::string sEndTime = sdw.str();
+	
+	sdw.str(std::string());
+	sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
+	sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
+	sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
+	sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
+	sdw << boost::format("%|02|:") % TM_Beg.tm_min;
+	sdw << boost::format("%|02|") % TM_Beg.tm_sec;
+	//sdw << "+05";
+	std::string sBegTime = sdw.str();
+	
+	//std::string sBegTime2 = SqlTempKPVL(sBegTime);
+	
+	std::stringstream sdt;
+	sdt << "SELECT create_at, content FROM todos WHERE (";
+
+	sdt << "id_name = " << Hmi210_1.Htr_1->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr_2->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr_3->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr_4->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr2_4->ID << " ) ";
+
+	sdt << " AND create_at >= '";
+	sdt << sBegTime;
+	sdt << "' AND create_at <= '";
+	sdt << sEndTime;
+	sdt << "' ORDER BY create_at ASC ;";
+	
+	std::string command = sdt.str();
+	PGresult* res = GraffKPVL.conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		int line = PQntuples(res);
+		if(line)
+		{
+			for(int l = 0; l < line; l++)
+			{
+				std::string sData = GraffKPVL.conn->PGgetvalue(res, l, 0);
+				if(sBegTime <= sData)
+				{
+					auto a = GraffKPVL.TempAct.find(sData);
+					std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
+					float f =  atoi_t(float, atof, sTemp); //static_cast<float>(atof(sTemp.c_str()));
+
+					if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
+					{
+						a->second.second = (f + a->second.second) / 2.0f;
+					}
+					else
+					{
+						if(f != 0)
+						{
+							DataTimeOfString(sData, FORMATTIME, TM_Temp);
+							TM_Temp.tm_year -= 1900;
+							TM_Temp.tm_mon -= 1;
+							GraffKPVL.TempAct[sData] = std::pair(mktime(&TM_Temp), f);
+						}
+					}
+				}
+			}
+		}
+	}
+	PQclear(res);
+
+
+	GraffKPVL.full = true;
+	InvalidateRect(GraffKPVL.gHwnd, NULL, false);
+}
+
+namespace GRAGG{
+	LRESULT Paint(HWND hWnd)
+	{
+		Graff* graff = (Graff*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		if(graff)
+			graff->Paint(hWnd);
+		return 0;
+	}
+
+	LRESULT CALLBACK GrafProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		if(message == WM_PAINT) return Paint(hWnd);
+		return DefWindowProc(hWnd, message, wParam, lParam);;
+	}
+
+	void RegisterClassGraf()
+	{
+		WNDCLASS  wc ={0};
+		wc.style = 0;
+		wc.lpfnWndProc = (WNDPROC)GrafProc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.hInstance = hInstance;
+		wc.hIcon = NULL;
+		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wc.hbrBackground = CreateSolidBrush(RGB(255, 255, 255));
+		wc.lpszMenuName = NULL;
+		wc.lpszClassName = "GrafClass";
+		RegisterClass(&wc);
+	}
+
+};
+
+HANDLE hKPVLGRAGG = NULL;
+HANDLE hFURN1GRAGG = NULL;
+HANDLE hFURN2GRAGG = NULL;
+
+
+void Open_GRAFF_FURN1()
+{
+	if(!GraffFurn1.conn->connection()) 
+		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffFurn1")));
+	GraffFurn1.MaxSecCount = SecCount1;
+	while(isRun)
+	{
+		GetGrTempFURN(GraffFurn1, AppFurn1);
+		int f = 10;
+		while(isRun && f--)
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+}
+
+void Open_GRAFF_FURN2()
+{
+	if(!GraffFurn2.conn->connection()) 
+		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffFurn2")));
+	GraffFurn2.MaxSecCount = SecCount1;
+
+	while(isRun)
+	{
+		GetGrTempFURN(GraffFurn2, AppFurn2);
+		int f = 10;
+		while(isRun && f--)
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+}
+
+
+void Open_GRAFF_KPVL()
+{
+	try
+	{
+		if(!GraffKPVL.conn->connection()) 
+			throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffKPVL")));
+		GraffKPVL.MaxSecCount = SecCount2;
+
+		while(isRun)
+		{
+			GetGrTempKPVLTempAct();
+			int f = 10;
+			while(isRun && f--)
+				std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
+	CATCH(SQLLogger, std::string(""));
+}
+
+
+void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFurn& app, TCassette& TC)
+{
+	st.erase(st.begin(), st.end());
+
+	//std::tm TM_End ={0};
+	//std::tm TM_Beg ={0};
+	std::tm TM_Temp ={0};
+	//std::string TecTime;
+	//time_t tStop1 = time(NULL);
+	//localtime_s(&TM_End, &tStop1);
+	std::string sBegTime = TC.Run_at;
+	if(!sBegTime.length())
+	{
+		return;
+	}
+
+	std::string sTempTime = "";
+	//if(!sTempTime.length())sTempTime = TC.Error_at;
+	//if(!sTempTime.length())
+	{
+		//Поиск конца процесса
+		std::stringstream sdd;
+		sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << " OR id_name = " << app.ProcFault->ID << ") AND content = 'true';";
+		std::string comand = sdd.str();
+		PGresult* res = conn->PGexec(comand);
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			if(PQntuples(res))
+				sTempTime = conn->PGgetvalue(res, 0, 0);
+		}
+		else
+		{
+			LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+			LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+		}
+		PQclear(res);
+		if(!sTempTime.length())
+			return;
+
+		//sdd = std::stringstream("");
+		//sdd << "UPDATE cassette SET "
+	}
+
+	DataTimeOfString(sTempTime, FORMATTIME, TM_Temp);
+	TM_Temp.tm_year -= 1900;
+	TM_Temp.tm_mon -= 1;
+
+	time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
+	//time_t tStop1 = mktime(&TM_Temp) + (60 * 30); //30 сминут
+	localtime_s(&TM_Temp, &tStop1);
+	
+
+	//time_t tStop = _mkgmtime(&TM_End);
+	//time_t tStart = (time_t)difftime(tStop, SecCount);
+	//gmtime_s(&TM_Beg, &tStart);
+	std::stringstream sdw;
+	sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
+	sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
+	sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
+	sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
+	sdw << boost::format("%|02|:") % TM_Temp.tm_min;
+	sdw << boost::format("%|02|") % TM_Temp.tm_sec;
+	std::string sEndTime = sdw.str();
+	//sdw << "+05";
+	//std::string sEndTime = sdw.str();
+	//
+	//
+	//sdw.str(std::string());
+	//sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
+	//sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
+	//sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
+	//sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
+	//sdw << boost::format("%|02|:") % TM_Beg.tm_min;
+	//sdw << boost::format("%|02|") % TM_Beg.tm_sec;
+	//sdw << "+05";
+	//std::string sBegTime = sdw.str();
+
+	std::stringstream sde;
+	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+	sde << " AND create_at <= '";
+	sde << sBegTime;
+	sde << "';";
+	std::string sBegTime2 = sBegTime;
+	std::string command = sde.str();
+	PGresult* res = conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		if(PQntuples(res))
+			sBegTime2 = conn->PGgetvalue(res, 0, 0);
+	}
+	else
+	{
+		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	}
+	PQclear(res);
+
+
+	std::stringstream sdt;
+	sdt << "SELECT create_at, content FROM todos WHERE id_name = " << val->ID;
+	if(sBegTime2.length())	sdt << " AND create_at >= '" << sBegTime2 << "'";
+	if(sEndTime.length())	sdt << " AND create_at <= '" << sEndTime << "'";
+
+	sdt << " ORDER BY create_at ASC ;";
+
+	command = sdt.str();
+	res = conn->PGexec(command);
+	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	{
+		int line = PQntuples(res);
+		if(line)
+		{
+			int i = 0;
+			int64_t t = 0;
+
+			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
+			DataTimeOfString(sBegTime, FORMATTIME, TM_Temp);
+			TM_Temp.tm_year -= 1900;
+			TM_Temp.tm_mon -= 1;
+
+
+			st[sBegTime] = std::pair(mktime(&TM_Temp), f);
+
+
+			for(int l = 0; l < line; l++)
+			{
+				std::string sData = conn->PGgetvalue(res, l, 0);
+
+				if(sBegTime <= sData)
+				{
+					std::string sTemp = conn->PGgetvalue(res, l, 1);
+					DataTimeOfString(sData, FORMATTIME, TM_Temp);
+					TM_Temp.tm_year -= 1900;
+					TM_Temp.tm_mon -= 1;
+
+					f = static_cast<float>(atof(sTemp.c_str()));
+					if(f != 0)
+						st[sData] = std::pair(mktime(&TM_Temp), f);
+				}
+			}
+			st[sEndTime] = std::pair(tStop1, f);
+		}
+	}
+	PQclear(res);
+}
+
+void GetGrTempFURN0(Graff& gr, T_ForBase_RelFurn& app, TCassette& TC)
+{
+	SqlTempFURN0(gr.conn, gr.TempAct, app.TempAct, app,  TC);
+	SqlTempFURN0(gr.conn, gr.TempRef, app.TempRef, app, TC);
+	InvalidateRect(gr.gHwnd, NULL, false);
+	gr.full = true;
+}
+
+std::thread GGraff1;
+std::thread GGraff2;
+std::thread GGraff3;
+
+void Open_GRAFF_FURN(TCassette& TC)
+{
+	if(!GraffFurn.conn->connection())
+		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffFurn")));
+
+	GraffFurn.MaxSecCount = 0;// SecCount1;
+
+	if(atoi(TC.Peth.c_str()) == 1)
+	{
+		GetGrTempFURN0(GraffFurn, AppFurn1, TC);
+	}
+	if(atoi(TC.Peth.c_str()) == 2)
+	{
+		GetGrTempFURN0(GraffFurn, AppFurn2, TC);
+	}
+
+
+	GraffFurn.conn->PGDisConnection();
+}
+
+
+
+void InitGrafWindow(HWND hWnd)
+{
+
+	GetGdiplusEncoderClsid(L"image/bmp", &guidBmp);
+	GetGdiplusEncoderClsid(L"image/jpeg", &guidJpeg);
+	GetGdiplusEncoderClsid(L"image/gif", &guidGif);
+	GetGdiplusEncoderClsid(L"image/tiff", &guidTiff);
+	GetGdiplusEncoderClsid(L"image/png", &guidPng);
+
+	GRAGG::RegisterClassGraf();
+
+	GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
+	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
+	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
+
+	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1330, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
+
+	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
+	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);
+	SetWindowLongPtr(GraffFurn2.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn2);
+	SetWindowLongPtr(GraffFurn.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn);
+
+	GraffKPVL.conn = &connKPVL;
+	GraffFurn1.conn = &connFurn1;
+	GraffFurn2.conn = &connFurn2;
+	GraffFurn.conn = &connFurn;
+
+
+	UpdateWindow(GraffKPVL.gHwnd);
+	UpdateWindow(GraffFurn1.gHwnd);
+	UpdateWindow(GraffFurn2.gHwnd);
+
+	UpdateWindow(GraffFurn.gHwnd);
+	//Open_GRAFF_FURN();
+
+	GGraff1 = std::thread(Open_GRAFF_KPVL);
+	GGraff2 = std::thread(Open_GRAFF_FURN1);
+	GGraff3 = std::thread(Open_GRAFF_FURN2);
+
+	int t = 0;
+}
+
+void StopGraff()
+{
+	if(GGraff1.joinable())
+		GGraff1.join();
+	if(GGraff2.joinable())
+		GGraff2.join();
+	if(GGraff3.joinable())
+		GGraff3.join();
+}

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{586eec6a-d77a-43b8-86ad-403b4753e502}</ProjectGuid>
+    <RootNamespace>HistoryKpvl</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)Build\</OutDir>
+    <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)Build\</OutDir>
+    <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)</TargetName>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WIN64;%(PreprocessorDefinitions);WIN32_WINDOWS;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <AdditionalIncludeDirectories>../OPCUA;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BuildStlModules>true</BuildStlModules>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;../Compressor/lib/$(PlatformArchitecture)/$(Configuration);D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>2097152</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <PreBuildEvent>
+      <Command>date /T &gt;rc\date.txt
+time /T &gt;&gt;rc\date.txt</Command>
+    </PreBuildEvent>
+    <ResourceCompile>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>_WIN64;%(PreprocessorDefinitions);WIN32_WINDOWS;NDEBUG;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <AdditionalIncludeDirectories>../OPCUA;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>
+      </OptimizeReferences>
+      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;../Compressor/lib/$(PlatformArchitecture)/$(Configuration);D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <StackReserveSize>2097152</StackReserveSize>
+      <IgnoreSpecificDefaultLibraries>MSVCRTD.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>date /T &gt;rc\date.txt
+time /T &gt;&gt;rc\date.txt</Command>
+    </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ClCodeSys.cpp" />
+    <ClCompile Include="src\desktop.cpp" />
+    <ClCompile Include="src\Event.cpp" />
+    <ClCompile Include="src\exel.cpp" />
+    <ClCompile Include="src\file.cpp" />
+    <ClCompile Include="src\Furn.cpp" />
+    <ClCompile Include="src\GdiPlusInit.cpp" />
+    <ClCompile Include="src\Graff.cpp" />
+    <ClCompile Include="src\hard.cpp" />
+    <ClCompile Include="src\KPVL.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Pdf.cpp" />
+    <ClCompile Include="src\process.cpp" />
+    <ClCompile Include="src\Service.cpp" />
+    <ClCompile Include="src\SQL.cpp" />
+    <ClCompile Include="src\Subscript.cpp" />
+    <ClCompile Include="src\term.cpp" />
+    <ClCompile Include="src\ValueTag.cpp" />
+    <ClCompile Include="src\win.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ClCodeSys.h" />
+    <ClInclude Include="include\Event.h" />
+    <ClInclude Include="include\exel.h" />
+    <ClInclude Include="include\file.h" />
+    <ClInclude Include="include\framework.h" />
+    <ClInclude Include="include\Furn.h" />
+    <ClInclude Include="include\GdiPlusInit.h" />
+    <ClInclude Include="include\Graff.h" />
+    <ClInclude Include="include\hard.h" />
+    <ClInclude Include="include\KPVL.h" />
+    <ClInclude Include="include\main.h" />
+    <ClInclude Include="include\pch.h" />
+    <ClInclude Include="include\Pdf.h" />
+    <ClInclude Include="include\Service.h" />
+    <ClInclude Include="include\SQL.h" />
+    <ClInclude Include="include\Subscript.h" />
+    <ClInclude Include="include\term.h" />
+    <ClInclude Include="include\ValueTag.h" />
+    <ClInclude Include="include\win.h" />
+    <ClInclude Include="rc\resource.h" />
+    <ClInclude Include="rc\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="rc\HistoryKpvl.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\DataCollection\rc\date.txt" />
+    <Text Include="rc\date.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="rc\Ico\IDI_COLOR3.ICO" />
+    <Image Include="rc\Ico\IDI_EXIT.ICO" />
+    <Image Include="rc\Ico\IDI_EXIT_1.ICO" />
+    <Image Include="rc\Ico\IDI_ICON1.ICO" />
+    <Image Include="rc\Ico\IDI_MAXI.ICO" />
+    <Image Include="rc\Ico\IDI_MINI.ICO" />
+    <Image Include="rc\Ico\IDI_NEWDATA1.ICO" />
+    <Image Include="rc\Ico\IDI_NEWDATA2.ICO" />
+    <Image Include="rc\Ico\IDI_NEWDATA3.ICO" />
+    <Image Include="rc\Ico\IDI_PLC.ICO" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
