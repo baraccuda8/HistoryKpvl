@@ -552,4 +552,5 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _I
 
 
     //return Run();
+    return -1;
 }

@@ -190,20 +190,17 @@ void PdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 
 	std::stringstream sdt;
 	sdt << "SELECT create_at, content FROM todos WHERE (";
-	
-	sdt << "id_name = " << Hmi210_1.Htr_1->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_2->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_3->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_4->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_4->ID << " ) ";
 	
-	sdt << " AND create_at >= '";
-	sdt << Start;
-	sdt << "' AND create_at <= '";
-	sdt << Stop;
+	sdt << " AND create_at >= '" << Start;
+	sdt << "' AND create_at <= '" << Stop;
 	sdt << "' ORDER BY create_at ASC ;";
 
 
@@ -359,8 +356,8 @@ void PdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus
 	auto b = st.begin();
 	auto e = st.end();
 	e--;
-	double coffW = (double)(Rect.Width) / double(maxd);
-	double coffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
+	double coeffW = (double)(Rect.Width) / double(maxd);
+	double coeffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
 
 
 	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
@@ -369,7 +366,7 @@ void PdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus
 	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
 
 
-	float mY = Rect.Y + float((maxt - maxt) * coffH);
+	float mY = Rect.Y + float((maxt - maxt) * coeffH);
 	Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
 	Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
 	temp.DrawLine(&Gdi_L1, pt1, pt2);
@@ -380,7 +377,7 @@ void PdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus
 
 	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
 
-	float iY = Rect.Y + float((maxt - mint) * coffH);
+	float iY = Rect.Y + float((maxt - mint) * coeffH);
 	pt1 ={Rect.X - 5,				iY};
 	pt2 ={Rect.X + Rect.Width + 5,	iY};
 	temp.DrawLine(&Gdi_L1, pt1, pt2);
@@ -395,12 +392,12 @@ void PdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus
 	Gdiplus::PointF p1 ={0, 0};
 	Gdiplus::PointF p2;;
 	p1.X = Rect.X;
-	p1.Y = Rect.Y + float((maxt - b->second.second) * coffH);
+	p1.Y = Rect.Y + float((maxt - b->second.second) * coeffH);
 
 	for(auto& a : st)
 	{
-		p2.X =  Rect.X + float((a.second.first - mind) * coffW);
-		p2.Y =  Rect.Y + float((maxt - a.second.second) * coffH);
+		p2.X =  Rect.X + float((a.second.first - mind) * coeffW);
+		p2.Y =  Rect.Y + float((maxt - a.second.second) * coeffH);
 		temp.DrawLine(&Gdi_L2, p1, p2);
 
 		p1.X = p2.X;
@@ -809,7 +806,7 @@ PdfClass::PdfClass(TSheet& sheet)
 #pragma endregion
 
 
-	if(!std::system((lpLogPdf + fname).c_str()))
+	if(!std::system(("start " +lpLogPdf + fname).c_str()))
 		throw std::exception(__FUN(std::string("std::system: fname") + lpLogPdf + "\\" + fname));
 };
 

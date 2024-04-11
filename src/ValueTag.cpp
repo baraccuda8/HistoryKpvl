@@ -16,13 +16,13 @@ void Value::InsertVal()
     char comand[1024];
 //    comand += "'" + Patch + "', " + std::to_string((int)GetType()) + ", " + (Arhive ? "true" : "false") + ", now(), ";
     if(GetType() == OpcUa::VariantType::BOOLEAN)
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, cof, gist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coff, gist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist);
         //comand += Val.ToString() + ");";
     else if(GetType() == OpcUa::VariantType::STRING)
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, cof, gist) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coff, gist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
         //comand += "'" + GetString() + "');";
     else
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, cof, gist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coff, gist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
 
         //comand += GetString() + ");";
 
@@ -168,11 +168,11 @@ void Value::SaveSQL()
     bool ifval = OldVal.IsNul();
     if(GetType() == OpcUa::VariantType::FLOAT)
     {
-        float f1 = Val.As<float>() * coff;
-        float f2 = float(ifval ? 0 : (OldVal.As<float>() * coff));
+        float f1 = Val.As<float>() * coeff;
+        float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
 
         float f3 = std::abs(f1 - f2);
-        if(f3 > gist || ifval)
+        if(f3 > hist || ifval)
         {
             if(!ID)
                 TestValSQL();
@@ -201,19 +201,19 @@ void Value::SaveSQL()
         }
         else
         {
-            float f1 = Val.As<float>() * coff;
-            float f2 = float(ifval ? 0 : (OldVal.As<float>() * coff));
+            float f1 = Val.As<float>() * coeff;
+            float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
             //LOG_INFO(SQLLogger, "{:90}| f1: {}, f2: {}, Patch: {}", FUNCTION_LINE_NAME, f1, f2, Patch);
         }
     }
     else if(GetType() == OpcUa::VariantType::DOUBLE)
     {
-        double f1 = Val.As<double>() * coff;
-        //double f2 = OldVal.As<double>() * coff;
-        double f2 = double(ifval ? 0 : (OldVal.As<double>() * coff));
+        double f1 = Val.As<double>() * coeff;
+        //double f2 = OldVal.As<double>() * coeff;
+        double f2 = double(ifval ? 0 : (OldVal.As<double>() * coeff));
 
         double f3 = std::abs(f1 - f2);
-        if(f3 > gist || ifval)
+        if(f3 > hist || ifval)
         {
             if(!ID)
                 TestValSQL();
@@ -466,16 +466,16 @@ std::string Value::GetString(std::string patch)
             //HMISheetData.Sheet.WDG
 
             if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
-            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coff);
-            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coff);
-            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coff);
-            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coff);
-            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coff);
-            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coff);
-            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coff);
-            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coff);
-            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coff);
-            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coff);
+            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
+            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
+            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
+            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
+            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
+            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
+            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
+            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
+            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
+            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
             else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
 
             strVal = ss;
@@ -506,16 +506,16 @@ std::string Value::GetString()
             //HMISheetData.Sheet.WDG
 
             if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
-            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coff);
-            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coff);
-            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coff);
-            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coff);
-            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coff);
-            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coff);
-            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coff);
-            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coff);
-            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coff);
-            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coff);
+            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
+            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
+            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
+            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
+            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
+            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
+            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
+            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
+            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
+            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
             else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
 
             strVal = ss;
@@ -580,10 +580,7 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
 {
     if(isRun)
     {
-    //if(handle == h)
-    //{
         Val = v;
-        SaveSQL();
         if(FunctionCallbak)
         {
             GetString(Patch);
@@ -593,7 +590,7 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
         {
             SetVariant(Patch);
         }
-    //}
+        SaveSQL();
     }
     return true;
 }

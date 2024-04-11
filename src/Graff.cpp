@@ -192,20 +192,6 @@ std::vector <Table2*> All;
 
 _Pasport Pasport;
 
-//int AllMinute = 0;
-//int AllHour = 0;
-//float maxhtab = 0.0f;
-//float minhtab = 0.0f;
-//int Pos = 0;
-//BOOL pos = TRUE;
-//BOOL ButtonGraf[9] ={TRUE,TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE};
-//#define SetStep 5.0f
-//int Start = 0;
-//int Stop = 0;
-//int Count = 0;
-//int Grafik = 1;
-//int KoefPercent = 50;
-
 typedef struct MY_RGB
 {
 	int r;
@@ -277,8 +263,8 @@ void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::C
 	auto b = st.begin();
 	auto e = st.end();
 	e--;
-	double coffW = (double)(Rect.Width) / double(maxd);
-	double coffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
+	double coeffW = (double)(Rect.Width) / double(maxd);
+	double coeffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
 
 
 	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
@@ -287,7 +273,7 @@ void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::C
 	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
 
 		   
-	float mY = Rect.Y + float((maxt - maxt) * coffH);
+	float mY = Rect.Y + float((maxt - maxt) * coeffH);
 	Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
 	Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
 	temp.DrawLine(&Gdi_L1, pt1, pt2);
@@ -298,7 +284,7 @@ void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::C
 
 	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
 
-	float iY = Rect.Y + float((maxt - mint) * coffH);
+	float iY = Rect.Y + float((maxt - mint) * coeffH);
 	pt1 ={Rect.X - 5,				iY};
 	pt2 ={Rect.X + Rect.Width + 5,	iY};
 	temp.DrawLine(&Gdi_L1, pt1, pt2);
@@ -313,12 +299,12 @@ void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::C
 	Gdiplus::PointF p1 ={0, 0};
 	Gdiplus::PointF p2;;
 	p1.X = Rect.X;
-	p1.Y = Rect.Y + float((maxt - b->second.second) * coffH);
+	p1.Y = Rect.Y + float((maxt - b->second.second) * coeffH);
 
 	for(auto& a : st)
 	{
-		p2.X =  Rect.X + float((a.second.first - mind) * coffW);
-		p2.Y =  Rect.Y + float((maxt - a.second.second) * coffH);
+		p2.X =  Rect.X + float((a.second.first - mind) * coeffW);
+		p2.Y =  Rect.Y + float((maxt - a.second.second) * coeffH);
 		temp.DrawLine(&Gdi_L2, p1, p2);
 
 		p1.X = p2.X;
@@ -655,15 +641,14 @@ void GetGrTempKPVLTempAct()
 	std::stringstream sdt;
 	sdt << "SELECT create_at, content FROM todos WHERE (";
 
-	sdt << "id_name = " << Hmi210_1.Htr_1->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_2->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_3->ID << " OR ";
-	sdt << "id_name = " << Hmi210_1.Htr_4->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
+	sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
 	sdt << "id_name = " << Hmi210_1.Htr2_4->ID << " ) ";
-
 	sdt << " AND create_at >= '";
 	sdt << sBegTime;
 	sdt << "' AND create_at <= '";
@@ -816,53 +801,65 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 		return;
 	}
 
-	std::string sTempTime = "";
-	//if(!sTempTime.length())sTempTime = TC.Error_at;
-	//if(!sTempTime.length())
+	time_t tStop1 = 0;
+	std::string sEndTime = TC.Finish_at;
+	if(!sEndTime.length())
 	{
-		//Поиск конца процесса
-		std::stringstream sdd;
-		sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << " OR id_name = " << app.ProcFault->ID << ") AND content = 'true';";
-		std::string comand = sdd.str();
-		PGresult* res = conn->PGexec(comand);
-		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		{
-			if(PQntuples(res))
-				sTempTime = conn->PGgetvalue(res, 0, 0);
-		}
-		else
-		{
-			LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-			LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-		}
-		PQclear(res);
-		if(!sTempTime.length())
-			return;
+		std::string sTempTime = TC.End_at;
 
-		//sdd = std::stringstream("");
-		//sdd << "UPDATE cassette SET "
+		//if(!sTempTime.length())sTempTime = TC.Error_at;
+		//if(!sTempTime.length())
+		{
+			//Поиск конца процесса
+			std::stringstream sdd;
+			sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << ") AND content = 'true';"; // OR id_name = " << app.ProcFault->ID << "
+			std::string comand = sdd.str();
+			PGresult* res = conn->PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(PQntuples(res))
+					sTempTime = conn->PGgetvalue(res, 0, 0);
+			}
+			else
+			{
+				LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+				LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			}
+			PQclear(res);
+			if(!sTempTime.length())
+				return;
+
+			//sdd = std::stringstream("");
+			//sdd << "UPDATE cassette SET "
+		}
+
+		DataTimeOfString(sTempTime, FORMATTIME, TM_Temp);
+		TM_Temp.tm_year -= 1900;
+		TM_Temp.tm_mon -= 1;
+
+		tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
+		localtime_s(&TM_Temp, &tStop1); 
+
+		std::stringstream sdw;
+		sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
+		sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
+		sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
+		sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
+		sdw << boost::format("%|02|:") % TM_Temp.tm_min;
+		sdw << boost::format("%|02|") % TM_Temp.tm_sec;
+		std::string sEndTime = sdw.str();
+
+	}
+	else
+	{
+		DataTimeOfString(sEndTime, FORMATTIME, TM_Temp);
+		TM_Temp.tm_year -= 1900;
+		TM_Temp.tm_mon -= 1;
+
+		tStop1 = mktime(&TM_Temp);
 	}
 
-	DataTimeOfString(sTempTime, FORMATTIME, TM_Temp);
-	TM_Temp.tm_year -= 1900;
-	TM_Temp.tm_mon -= 1;
 
-	time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
-	//time_t tStop1 = mktime(&TM_Temp) + (60 * 30); //30 сминут
-	localtime_s(&TM_Temp, &tStop1);
-	
-
-	//time_t tStop = _mkgmtime(&TM_End);
-	//time_t tStart = (time_t)difftime(tStop, SecCount);
-	//gmtime_s(&TM_Beg, &tStart);
-	std::stringstream sdw;
-	sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
-	sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
-	sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
-	sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
-	sdw << boost::format("%|02|:") % TM_Temp.tm_min;
-	sdw << boost::format("%|02|") % TM_Temp.tm_sec;
-	std::string sEndTime = sdw.str();
 	//sdw << "+05";
 	//std::string sEndTime = sdw.str();
 	//

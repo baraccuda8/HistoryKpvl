@@ -756,10 +756,10 @@ std::deque<Value*> AllTagKpvl = {
 
 //Температуры печи
 #pragma region Температуры печи
-    {Hmi210_1.Htr_1  = new Value(PathKpvl + "Hmi210_1.Htr_1.ToHmi.TAct",   HWNDCLIENT::hEditTemp11TAct, 0, &conn_kpvl)},       //Температура в зоне 1.1
-    {Hmi210_1.Htr_2  = new Value(PathKpvl + "Hmi210_1.Htr_2.ToHmi.TAct",   HWNDCLIENT::hEditTemp12TAct, 0, &conn_kpvl)},       //Температура в зоне 1.2
-    {Hmi210_1.Htr_3  = new Value(PathKpvl + "Hmi210_1.Htr_3.ToHmi.TAct",   HWNDCLIENT::hEditTemp13TAct, 0, &conn_kpvl)},       //Температура в зоне 1.3
-    {Hmi210_1.Htr_4  = new Value(PathKpvl + "Hmi210_1.Htr_4.ToHmi.TAct",   HWNDCLIENT::hEditTemp14TAct, 0, &conn_kpvl)},       //Температура в зоне 1.4
+    {Hmi210_1.Htr1_1  = new Value(PathKpvl + "Hmi210_1.Htr_1.ToHmi.TAct",   HWNDCLIENT::hEditTemp11TAct, 0, &conn_kpvl)},       //Температура в зоне 1.1
+    {Hmi210_1.Htr1_2  = new Value(PathKpvl + "Hmi210_1.Htr_2.ToHmi.TAct",   HWNDCLIENT::hEditTemp12TAct, 0, &conn_kpvl)},       //Температура в зоне 1.2
+    {Hmi210_1.Htr1_3  = new Value(PathKpvl + "Hmi210_1.Htr_3.ToHmi.TAct",   HWNDCLIENT::hEditTemp13TAct, 0, &conn_kpvl)},       //Температура в зоне 1.3
+    {Hmi210_1.Htr1_4  = new Value(PathKpvl + "Hmi210_1.Htr_4.ToHmi.TAct",   HWNDCLIENT::hEditTemp14TAct, 0, &conn_kpvl)},       //Температура в зоне 1.4
     {Hmi210_1.Htr2_1 = new Value(PathKpvl + "Hmi210_1.Htr2_1.ToHmi.TAct",  HWNDCLIENT::hEditTemp21TAct, 0, &conn_kpvl)},       //Температура в зоне 2.1
     {Hmi210_1.Htr2_2 = new Value(PathKpvl + "Hmi210_1.Htr2_2.ToHmi.TAct",  HWNDCLIENT::hEditTemp22TAct, 0, &conn_kpvl)},       //Температура в зоне 2.2
     {Hmi210_1.Htr2_3 = new Value(PathKpvl + "Hmi210_1.Htr2_3.ToHmi.TAct",  HWNDCLIENT::hEditTemp23TAct, 0, &conn_kpvl)},       //Температура в зоне 2.3
@@ -857,7 +857,7 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
             catch(...)
             {
                 SetWindowText(winmap(hEditMode1), "Unknown error");
-                LOG_ERROR(HardLogger, std::string(("Unknown error {}, {}" + node.ToString() + " ")) + "Unknown error");
+                LOG_ERROR(HardLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
             };
         }
     }
@@ -885,7 +885,7 @@ void PLC_KPVL::InitNodeId()
     }
 
 #ifndef TESTTEMPER
-    Par_Gen.UnloadSpeed->coff = 1000;
+    Par_Gen.UnloadSpeed->coeff = 1000;
 #endif
 }
 
@@ -1296,123 +1296,6 @@ void GetEndData(TSheet& sheet)
 
 extern std::string  FORMATTIME;
 
-void SepState_2()
-{
-    std::string comand = "SELECT id, create_at, start_at, pos, datatime_end, datatime_all FROM sheet  WHERE datatime_all = 0 AND pos > 2 AND pos < 10 ORDER BY id DESC";
-    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-    PGresult* res = conn_spis.PGexec(comand);
-
-    std::deque<TSheet> SearthSheet;
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        int line = PQntuples(res);
-        for(int l = 0; l < line; l++)
-        {
-            TSheet sheet;
-            sheet.id = conn_spis.PGgetvalue(res, l, Col_Sheet_id);
-            sheet.DataTime = GetStringData(conn_spis.PGgetvalue(res, l, Col_Sheet_create_at));
-            sheet.Pos = conn_spis.PGgetvalue(res, l, Col_Sheet_pos);
-            sheet.Start_at = GetStringData(conn_spis.PGgetvalue(res, l, Col_Sheet_start_at));
-            sheet.DataTime_End = GetStringData(conn_spis.PGgetvalue(res, l, Col_Sheet_datatime_end));
-            sheet.DataTime_All = conn_spis.PGgetvalue(res, l, Col_Sheet_datatime_all);
-            SearthSheet.push_back(sheet);
-        }
-    }
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
-    PQclear(res);
-
-    for(auto& a : SearthSheet)
-    {
-        if(!a.Start_at.length())
-        {
-            std::stringstream ss;
-            ss << "SELECT min(create_at) FROM todos WHERE create_at >= '" << a.DataTime << "' AND ";
-            ss << "(content = '3' OR content = '4' OR content = '5' OR content = '6') AND id_name = " << GenSeqToHmi.Seq_1_StateNo->ID;
-            PGresult* res = conn_spis.PGexec(ss.str());
-            if(PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                int line = PQntuples(res);
-                if(line)
-                    a.Start_at = GetStringData(conn_spis.PGgetvalue(res, 0, 0));
-            }
-            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
-            }
-            PQclear(res);
-        }
-
-        if(a.Start_at.length())
-        {
-            //std::string comand = "SELECT min(create_at) FROM sheet  WHERE pos > 2 AND id = " + a.id;
-            std::stringstream ss;
-            ss << "SELECT min(create_at) FROM todos WHERE create_at >= '" << a.Start_at << "' AND ";
-            //content = '5' OR
-            ss << "( content = '6' OR content = '7') AND id_name = " << GenSeqToHmi.Seq_2_StateNo->ID;
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
-            PGresult* res = conn_spis.PGexec(ss.str());
-            if(PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                int line = PQntuples(res);
-                if(line)
-                    a.DataTime_End = GetStringData(conn_spis.PGgetvalue(res, 0, 0));
-            }
-            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
-            }
-            PQclear(res);
-        }
-
-        double sec = 0.0;
-        //double sec2 = 0.0;
-        //time_t s1;
-        //time_t s2;
-        std::tm TM_Start ={0};
-        std::tm TM_Stop ={0};
-        if(a.Start_at.length() && a.DataTime_End.length())
-        {
-            //Считаем время
-            DataTimeOfString(a.Start_at, FORMATTIME, TM_Start);
-            DataTimeOfString(a.DataTime_End, FORMATTIME, TM_Stop);
-            TM_Start.tm_year -= 1900;
-            TM_Start.tm_mon -= 1;
-            TM_Stop.tm_year -= 1900;
-            TM_Stop.tm_mon -= 1;
-            //s1 = mktime(&TM_Stop);
-            //s2 = mktime(&TM_Start);
-            //sec2 = s1 - s2;
-            sec = difftime(mktime(&TM_Stop), mktime(&TM_Start)) / 60;
-        }
-
-#pragma region UPDATE
-        std::stringstream ss;
-        ss << "UPDATE sheet SET";
-        ss << " start_at = '" << a.Start_at << "'";
-        ss << ", datatime_end = '" << a.DataTime_End << "'";
-        ss << ", datatime_all = " << sec;
-        ss << " WHERE id = " + a.id;
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
-        PGresult* res2 = conn_spis.PGexec(ss.str());
-        if(PQresultStatus(res2) == PGRES_FATAL_ERROR)
-        {
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res2)));
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
-        }
-        PQclear(res2);
-#pragma endregion
-
-    }
-
-}
-
 void UpdateSheetPos()
 {
     std::string comand = "DELETE FROM sheet WHERE pos = 10 OR pos = 20 OR pos = 30";
@@ -1434,6 +1317,11 @@ void UpdateSheetPos()
     PQclear(res);
 }
 
+void GetDataTime_All(TSheet& TS)
+{
+
+}
+
 void Open_KPVL_SQL()
 {
     size_t old_count = 0;
@@ -1447,7 +1335,13 @@ void Open_KPVL_SQL()
         UpdateSheetPos();
 
         KPVL::SQL::KPVL_SQL();
-
+        for(auto& TS : AllSheet)
+        {
+            if(atof(TS.DataTime_All.c_str()) == 0)
+            {
+                GetDataTime_All(TS);
+            }
+        }
         size_t count = AllSheet.size();
         if(old_count != count)
         {

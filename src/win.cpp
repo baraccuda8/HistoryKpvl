@@ -203,6 +203,8 @@ std::map<evCassete::EV, const char*> NameEventCassette ={
 
 
 std::vector <ListTitle> Cassette_Collumn ={
+    { "№", 30 },
+    {"ID", 50 },
     { "Событие", XL_CX1 },
     { "Новая кассета", XL_CX2 },
     { "Год", XL_CX3 },
@@ -1454,12 +1456,16 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case LVN_GETDISPINFO:
         {
             LV_DISPINFO* plvdi = (LV_DISPINFO*)lParam;
-            if(plvdi->item.iItem >= 0 && plvdi->item.iItem < AllCassette.size())
+            int item = plvdi->item.iItem;
+            if(item >= 0 && item < AllCassette.size())
             {
                 if(plvdi->item.mask & LVIF_TEXT)
                 {
-                    TCassette p = AllCassette[plvdi->item.iItem];
+                    TCassette p = AllCassette[item];
                     {
+                        if(plvdi->item.iSubItem == Cassete::NN)                lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
+                        if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
+                        if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, NameEventCassette[(evCassete::EV)atoi(p.Event.c_str())]);
                         if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, NameEventCassette[(evCassete::EV)atoi(p.Event.c_str())]);
                         if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, p.Create_at.c_str());
                         if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());

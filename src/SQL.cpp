@@ -96,35 +96,62 @@ DLLRESULT CALLBACK bagSave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
     if(type == OpcUa::VariantType::BOOLEAN)        val->Val = atoi_t(bool, atoi, value);
-    else if(type == OpcUa::VariantType::SBYTE)     val->Val = atoi_t(int8_t, atoi, value) / (int8_t)val->coff;
-    else if(type == OpcUa::VariantType::BYTE)      val->Val = atoi_t(uint8_t, atoi, value) / (uint8_t)val->coff;
-    else if(type == OpcUa::VariantType::INT16)     val->Val = atoi_t(int16_t, atoi, value) / (int16_t)val->coff;
-    else if(type == OpcUa::VariantType::UINT16)    val->Val = atoi_t(uint16_t, atoi, value) / (uint16_t)val->coff;
-    else if(type == OpcUa::VariantType::INT32)     val->Val = atoi_t(int32_t, atol, value) / (int32_t)val->coff;
-    else if(type == OpcUa::VariantType::UINT32)    val->Val = atoi_t(uint32_t, atol, value) / (uint32_t)val->coff;
-    else if(type == OpcUa::VariantType::INT64)     val->Val = atoi_t(int64_t, atoll, value) / (int64_t)val->coff;
-    else if(type == OpcUa::VariantType::UINT64)    val->Val = atoi_t(uint64_t, atoll, value) / (uint64_t)val->coff;
-    else if(type == OpcUa::VariantType::FLOAT)     val->Val = atoi_t(float, atof, value) / (float)val->coff;
-    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = atoi_t(double, atof, value) / (double)val->coff;
+    else if(type == OpcUa::VariantType::SBYTE)     val->Val = atoi_t(int8_t, atoi, value) / (int8_t)val->coeff;
+    else if(type == OpcUa::VariantType::BYTE)      val->Val = atoi_t(uint8_t, atoi, value) / (uint8_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT16)     val->Val = atoi_t(int16_t, atoi, value) / (int16_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT16)    val->Val = atoi_t(uint16_t, atoi, value) / (uint16_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT32)     val->Val = atoi_t(int32_t, atol, value) / (int32_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT32)    val->Val = atoi_t(uint32_t, atol, value) / (uint32_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT64)     val->Val = atoi_t(int64_t, atoll, value) / (int64_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT64)    val->Val = atoi_t(uint64_t, atoll, value) / (uint64_t)val->coeff;
+    else if(type == OpcUa::VariantType::FLOAT)     val->Val = atoi_t(float, atof, value) / (float)val->coeff;
+    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = atoi_t(double, atof, value) / (double)val->coeff;
     else if(type == OpcUa::VariantType::STRING)    val->Val =  cp1251_to_utf8(value);
     val->OldVal = val->Val;
 }
 
 
+int ColId = 0;
+int ColContent = 1;
+int ColName = 2;
+int ColArhive = 3;
+int ColType = 4;
+int ColCoeff = 5;
+int ColHist = 6;
+int ColFormat = 7;
+int ColIdSec = 8;
+
+
+void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int l)
+{
+    for(auto& val : All)
+    {
+        if(val->Patch == Patch)
+        {
+
+            val->ID = atol(conn_spis.PGgetvalue(res, l, ColId).c_str());
+            std::string value = conn_spis.PGgetvalue(res, l, ColContent);
+            val->Arhive = conn_spis.PGgetvalue(res, l, ColArhive) == "t";
+            val->coeff = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, ColCoeff).c_str()));
+            val->hist = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, ColHist).c_str()));
+            val->format = conn_spis.PGgetvalue(res, l, ColFormat);
+            if(!val->Sec) val->Sec = static_cast<MSSEC>(atoi(conn_spis.PGgetvalue(res, l, ColIdSec).c_str()));
+            if(!val->Sec) val->Sec = MSSEC::sec01000;
+
+            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(atoi(conn_spis.PGgetvalue(res, l, ColType).c_str()));
+            SetValue(type, val, value);
+            LOG_INFO(SQLLogger, "{:90}| ID = {}, coeff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coeff, val->GetString(), val->Patch);
+            break;
+        }
+    }
+}
+
+
 void InitCurentTag()
 {
-    int ColId = 0;
-    int ColContent = 1;
-    int ColName = 2;
-    int ColArhive = 3;
-    int ColType = 4;
-    int ColCoff = 5;
-    int ColGist = 6;
-    int ColFormat = 7;
-    int ColIdSec = 8;
 
 #pragma region tag
-    std::string comand = "SELECT id, content, name, arhive, type, cof, gist, format, idsec FROM tag ORDER BY id;"; ///* WHERE name = '" + val->Patch + "'*/;";
+    std::string comand = "SELECT id, content, name, arhive, type, coeff, hist, format, idsec FROM tag ORDER BY id;"; ///* WHERE name = '" + val->Patch + "'*/;";
 
     PGresult* res = conn_spis.PGexec(comand);
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -136,51 +163,11 @@ void InitCurentTag()
             std::string Patch = conn_spis.PGgetvalue(res, l, ColName);
             if(Patch.find("PLC210 OPC-UA") != SIZE_MAX)
             {
-                for(auto& val : AllTagKpvl)
-                {
-                    if(val->Patch == Patch)
-                    {
-                        val->ID = atol(conn_spis.PGgetvalue(res, l, ColId).c_str());
-                        std::string value = conn_spis.PGgetvalue(res, l, ColContent);
-                        val->Arhive = conn_spis.PGgetvalue(res, l, ColArhive) == "t";
-                        val->coff = (float)atof(conn_spis.PGgetvalue(res, l, ColCoff).c_str());
-                        val->gist = (float)atof(conn_spis.PGgetvalue(res, l, ColGist).c_str());
-                        val->format = conn_spis.PGgetvalue(res, l, ColFormat);
-                        if(!val->Sec)
-                            val->Sec = (MSSEC)atoi(conn_spis.PGgetvalue(res, l, ColIdSec).c_str());
-                        if(!val->Sec)
-                            val->Sec = MSSEC::sec01000;
-
-                        OpcUa::VariantType type = (OpcUa::VariantType)atoi(conn_spis.PGgetvalue(res, l, ColType).c_str());
-                        SetValue(type, val, value);
-                        LOG_INFO(SQLLogger, "{:90}| ID = {}, coff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coff, val->GetString(), val->Patch);
-                        break;
-                    }
-                }
+                GetTagTable(AllTagKpvl, Patch, res, l);
             }
             else if(Patch.find("SPK107 (M01)") != SIZE_MAX)
             {
-                for(auto& val : AllTagPeth)
-                {
-                    if(val->Patch == Patch)
-                    {
-                        val->ID = atol(conn_spis.PGgetvalue(res, l, ColId).c_str());
-                        std::string value = conn_spis.PGgetvalue(res, l, ColContent);
-                        val->Arhive = conn_spis.PGgetvalue(res, l, ColArhive) == "t";
-                        val->coff = (float)atof(conn_spis.PGgetvalue(res, l, ColCoff).c_str());
-                        val->gist = (float)atof(conn_spis.PGgetvalue(res, l, ColGist).c_str());
-                        val->format = conn_spis.PGgetvalue(res, l, ColFormat);
-                        if(!val->Sec)
-                            val->Sec = (MSSEC)atoi(conn_spis.PGgetvalue(res, l, ColIdSec).c_str());
-                        if(!val->Sec)
-                            val->Sec = MSSEC::sec01000;
-
-                        OpcUa::VariantType type = (OpcUa::VariantType)atoi(conn_spis.PGgetvalue(res, l, ColType).c_str());
-                        SetValue(type, val, value);
-                        LOG_INFO(SQLLogger, "{:90}| ID = {}, coff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coff, val->GetString(), val->Patch);
-                        break;
-                    }
-                }
+                GetTagTable(AllTagPeth, Patch, res, l);
             }
         }
     }

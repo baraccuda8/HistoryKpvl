@@ -50,8 +50,8 @@ public:
     OpcUa::Node Node = OpcUa::Node();
     OpcUa::NodeId NodeId = OpcUa::NodeId();
     MSSEC Sec =  sec00000;
-    float coff = 1.0;
-    float gist = 1.0;
+    float coeff = 1.0;
+    float hist = 1.0;
 
     void InsertVal();
 

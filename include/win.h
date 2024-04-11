@@ -1241,6 +1241,8 @@ typedef struct _TSheet{
 }TSheet;
 
 enum Cassete{
+    NN,
+    Id,
     Event,
     Create_at,
     Year,

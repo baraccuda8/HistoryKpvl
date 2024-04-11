@@ -204,7 +204,7 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
         catch(...)
         {
             SetWindowText(winmap(hEditMode1), "Unknown error");
-            LOG_ERROR(PethLogger, std::string(("Unknown error {}, {}" + node.ToString() + " ")) + "Unknown error");
+            LOG_ERROR(PethLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
         };
 
     }
@@ -598,6 +598,14 @@ void Open_FURN_RUN()
 
 void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 {
+
+    if(/*TC.CassetteNo == "3" &&*/ TC.Day == "11" && TC.Month == "4")
+    {
+        int tt = 0;
+    }
+
+    int ev = atoi(TC.Event.c_str());
+    if(ev == evCassete::Nul || ev == evCassete::Rel || ev == evCassete::Fill) return;
     if(!TC.Run_at.length())
         return;
 
@@ -613,7 +621,6 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 
     std::stringstream sddEnd;
     sddEnd << "SELECT min(create_at) FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcEnd->ID << " AND content = 'true';";
-
     comand = sddEnd.str();
     res = conn_spic.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -647,6 +654,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 
     if(!TC.End_at.length() && end_at.length())
     {
+        TC.End_at = end_at;
         std::stringstream sde;
         sde << "UPDATE cassette SET end_at = '" << end_at << "' WHERE ";
         sde << "end_at IS NULL AND ";
@@ -667,6 +675,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 
     if(!TC.Error_at.length() && err_at.length())
     {
+        TC.Error_at = err_at;
         std::stringstream sde;
         sde << "UPDATE cassette SET err_at = '" << err_at << "' WHERE ";
         sde << "err_at IS NULL AND ";
@@ -688,6 +697,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     tmp_at = end_at;
     if(!tmp_at.length())tmp_at = err_at;
 
+
     if(tmp_at.length())
     {
         std::tm TM_Temp ={0};
@@ -707,23 +717,23 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         sdw << boost::format("%|02|") % TM_Temp.tm_sec;
         std::string finish_at = sdw.str();
 
-        if(!finish_at.length())
-            return;
-
-        std::stringstream sdf;
-        sdf << "UPDATE cassette SET finish_at = '" << finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
-        sdf << "day = " << TC.Day << " AND ";
-        sdf << "month = " << TC.Month << " AND ";
-        sdf << "year = " << TC.Year << " AND ";
-        sdf << "cassetteno = " << TC.CassetteNo << ";";
-        comand = sdf.str();
-        res = conn_spic.PGexec(comand);
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+        if(finish_at <= GetDataTimeString())
         {
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            std::stringstream sdf;
+            sdf << "UPDATE cassette SET finish_at = '" << finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
+            sdf << "day = " << TC.Day << " AND ";
+            sdf << "month = " << TC.Month << " AND ";
+            sdf << "year = " << TC.Year << " AND ";
+            sdf << "cassetteno = " << TC.CassetteNo << ";";
+            comand = sdf.str();
+            res = conn_spic.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            {
+                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            }
+            PQclear(res);
         }
-        PQclear(res);
     }
 
 }

@@ -94,7 +94,7 @@ namespace KPVL {
     void UpdateSheetPos0(T_PlateData& PD);
     void UpdateSheet0();
         //void InsertPos(int pos, std::string name);
-    void OutTime(T_PlateData& PD, HWNDCLIENT chwnd, int pos);
+    void OutTime(T_PlateData& PD, HWNDCLIENT chwnd);
     DWORD DataPosBool(Value* value);
 
     //«она 0 на входе в печь

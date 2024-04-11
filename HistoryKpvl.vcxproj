@@ -75,7 +75,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;../Compressor/lib/$(PlatformArchitecture)/$(Configuration);D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
@@ -115,7 +115,7 @@ time /T &gt;&gt;rc\date.txt</Command>
       </EnableCOMDATFolding>
       <OptimizeReferences>
       </OptimizeReferences>
-      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;../Compressor/lib/$(PlatformArchitecture)/$(Configuration);D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
