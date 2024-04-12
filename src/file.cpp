@@ -52,7 +52,7 @@ std::string utf8_to_cp1251(std::string str)
         return "";
 
     str.resize(convertResult);
-    if(WideCharToMultiByte(CP_ACP, 0, res.c_str(), (int)res.length(), &str[0], (int)str.size(), NULL, NULL) <= 0)
+    if(WideCharToMultiByte(CP_ACP, 0, res.c_str(), (int)res.length(), &str[0], (int)res.length(), NULL, NULL) <= 0)
         return "";
 
     return str;

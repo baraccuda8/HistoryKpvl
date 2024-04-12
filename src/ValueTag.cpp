@@ -349,35 +349,29 @@ OpcUa::Variant Value::GetValue()
 
         try
         {
-            if(isNode < 6)
+            if(Codesys)
             {
-                if(Codesys)
+                if(!Node.IsValid())
                 {
-                    if(isNode)
-                        Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
+                    Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
 
-                    if(!Node.IsValid()) isNode++;
-                    else isNode = 0;
-
-                    if(isNode > 5)
+                    if(!Node.IsValid())
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
-
-                    Val = Node.GetValue();
-                    if(Val.IsNul())
-                        throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Type Variant is NULL; Patch = ") + Patch).c_str());
-
-                    GetString();
                 }
+
+                Val = Node.GetValue();
+                if(Val.IsNul())
+                    throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Type Variant is NULL; Patch = ") + Patch).c_str());
+
+                GetString();
             }
         }
         catch(std::runtime_error& exc)
         {
-            isNode++;
             LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
         }
         catch(...)
         {
-            isNode++;
             LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
         }
     }
@@ -390,28 +384,28 @@ void Value::Set_Value(OpcUa::Variant var)
     {
         try
         {
-            isNode = Node.IsValid();
-            if(!isNode)
+            if(Codesys)
             {
-                if(Codesys)
+                if(!Node.IsValid())
+                {
                     Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
-                isNode = Node.IsValid();
-            }
 
-            if(isNode)
-            {
+                    if(!Node.IsValid())
+                        throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
+                }
+
                 Val = var;
                 Node.SetValue(Val);
             }
         }
         catch(std::runtime_error& exc)
         {
-            isNode++;
+            //isNode++;
             LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
         }
         catch(...)
         {
-            isNode++;
+            //isNode++;
             LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
         }
     }
@@ -421,31 +415,25 @@ void Value::Set_Value(){
     {
         try
         {
-            if(isNode < 6)
+            if(Codesys)
             {
-                if(Codesys)
+                if(!Node.IsValid())
                 {
-                    if(isNode != 0)
-                        Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
+                    Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
 
-                    if(!Node.IsValid()) isNode++;
-                    else isNode = 0;
-
-                    if(isNode > 5)
+                    if(!Node.IsValid())
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
-
-                    Node.SetValue(Val);
                 }
+
+                Node.SetValue(Val);
             }
         }
         catch(std::runtime_error& exc)
         {
-            isNode++;
             LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
         }
         catch(...)
         {
-            isNode++;
             LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
         }
     }
@@ -612,10 +600,8 @@ bool Value::TestNode(Client* cds)
 
             Node = cds->client->GetNode(OpcUa::NodeId(Patch, cds->NamespaceIndex));
 
-            if(!Node.IsValid()) isNode++;
-            else isNode = 0;
-
-            if(isNode)return false;
+            if(!Node.IsValid()) 
+                return false;
 
                 //throw std::exception(std::string(FUNCTION_LINE_NAME, std::string("; Error Patch = ") + Patch).c_str());
             return true;

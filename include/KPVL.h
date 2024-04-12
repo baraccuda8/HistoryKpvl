@@ -100,48 +100,49 @@ namespace KPVL {
     //Зона 0 на входе в печь
         namespace  Z0{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
+
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         }
 
         //Зона 1 зона печи
         namespace  Z1{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         };
 
         //Зона 2 зона печи
         namespace Z2{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         }
 
         //Зона 3 закалка
         namespace Z3{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         }
 
         //Зона 4 Охлаждение
         namespace Z4{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         }
 
         //Зона 5 Выход
         namespace Z5{
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
         }
 
         //Зона 6 (кантовка)
@@ -149,9 +150,9 @@ namespace KPVL {
             DWORD DataTime(Value* value);
 
             DWORD DataAlloyThikn(Value* value);
-            //DWORD DataThikn(Value* value);
 
             DWORD Data(Value* value);
+            DWORD DataSlab(Value* value);
 
             //Вывод Номер кассеты за день
             DWORD CassetteNo(Value* value);

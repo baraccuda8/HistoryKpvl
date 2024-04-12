@@ -633,11 +633,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[0].AlloyCodeText  = new Value(AppGenSeqFromHmi1 + "AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ0_AlloyCode,   KPVL::Z0::DataAlloyThikn, &conn_kpvl)}, //Марка стали
     {PlateData[0].ThiknessText   = new Value(AppGenSeqFromHmi1 + "ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ0_Thikness,    KPVL::Z0::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[0].Melt           = new Value(AppGenSeqFromHmi1 + "Melt",                HWNDCLIENT::hEditPlate_DataZ0_Melt,        KPVL::Z0::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Z0::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[0].PartNo         = new Value(AppGenSeqFromHmi1 + "PartNo",              HWNDCLIENT::hEditPlate_DataZ0_PartNo,      KPVL::Z0::Data, &conn_kpvl)},    //Номер партии
     {PlateData[0].Pack           = new Value(AppGenSeqFromHmi1 + "Pack",                HWNDCLIENT::hEditPlate_DataZ0_Pack,        KPVL::Z0::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[0].Sheet          = new Value(AppGenSeqFromHmi1 + "Sheet",               HWNDCLIENT::hEditPlate_DataZ0_Sheet,       KPVL::Z0::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    KPVL::Z0::Data, &conn_kpvl)},    //Номер подлиста
+
+    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Z0::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 //Зона 1 занята листом (печь, вход)
@@ -645,11 +646,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[1].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z1.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ1_AlloyCode,  KPVL::Z1::DataAlloyThikn, &conn_kpvl)}, //Марка стали
     {PlateData[1].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z1.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ1_Thikness,   KPVL::Z1::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[1].Melt          = new Value(AppGenSeqToHmi1 + "Z1.Melt",                HWNDCLIENT::hEditPlate_DataZ1_Melt,       KPVL::Z1::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Z1::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[1].PartNo        = new Value(AppGenSeqToHmi1 + "Z1.PartNo",              HWNDCLIENT::hEditPlate_DataZ1_PartNo,     KPVL::Z1::Data, &conn_kpvl)},    //Номер партии
     {PlateData[1].Pack          = new Value(AppGenSeqToHmi1 + "Z1.Pack",                HWNDCLIENT::hEditPlate_DataZ1_Pack,       KPVL::Z1::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[1].Sheet         = new Value(AppGenSeqToHmi1 + "Z1.Sheet",               HWNDCLIENT::hEditPlate_DataZ1_Sheet,      KPVL::Z1::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[1].SubSheet      = new Value(AppGenSeqToHmi1 + "Z1.SubSheet",            HWNDCLIENT::hEditPlate_DataZ1_SubSheet,   KPVL::Z1::Data, &conn_kpvl)},    //Номер подлиста
+
+    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Z1::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[1].SubSheet      = new Value(AppGenSeqToHmi1 + "Z1.SubSheet",            HWNDCLIENT::hEditPlate_DataZ1_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 //Зона 2 занята листом (закалка)
@@ -657,11 +659,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[2].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z2.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ2_AlloyCode,  KPVL::Z2::DataAlloyThikn, &conn_kpvl)}, //Марка стали
     {PlateData[2].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z2.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ2_Thikness,   KPVL::Z2::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[2].Melt          = new Value(AppGenSeqToHmi1 + "Z2.Melt",                HWNDCLIENT::hEditPlate_DataZ2_Melt,       KPVL::Z2::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Z2::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[2].PartNo        = new Value(AppGenSeqToHmi1 + "Z2.PartNo",              HWNDCLIENT::hEditPlate_DataZ2_PartNo,     KPVL::Z2::Data, &conn_kpvl)},    //Номер партии
     {PlateData[2].Pack          = new Value(AppGenSeqToHmi1 + "Z2.Pack",                HWNDCLIENT::hEditPlate_DataZ2_Pack,       KPVL::Z2::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[2].Sheet         = new Value(AppGenSeqToHmi1 + "Z2.Sheet",               HWNDCLIENT::hEditPlate_DataZ2_Sheet,      KPVL::Z2::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[2].SubSheet      = new Value(AppGenSeqToHmi1 + "Z2.SubSheet",            HWNDCLIENT::hEditPlate_DataZ2_SubSheet,   KPVL::Z2::Data, &conn_kpvl)}, //Номер подлиста
+
+    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Z2::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[2].SubSheet      = new Value(AppGenSeqToHmi1 + "Z2.SubSheet",            HWNDCLIENT::hEditPlate_DataZ2_SubSheet,   0, &conn_kpvl)}, //Номер подлиста
 #pragma endregion
 
 //Зона 3 занята листом (Ламинарка)
@@ -669,11 +672,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[3].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z3.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ3_AlloyCode,  KPVL::Z3::DataAlloyThikn, &conn_kpvl)}, //Код марки
     {PlateData[3].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z3.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ3_Thikness,   KPVL::Z3::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[3].Melt          = new Value(AppGenSeqToHmi1 + "Z3.Melt",                HWNDCLIENT::hEditPlate_DataZ3_Melt,       KPVL::Z3::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Z3::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[3].PartNo        = new Value(AppGenSeqToHmi1 + "Z3.PartNo",              HWNDCLIENT::hEditPlate_DataZ3_PartNo,     KPVL::Z3::Data, &conn_kpvl)},    //Номер партии
     {PlateData[3].Pack          = new Value(AppGenSeqToHmi1 + "Z3.Pack",                HWNDCLIENT::hEditPlate_DataZ3_Pack,       KPVL::Z3::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[3].Sheet         = new Value(AppGenSeqToHmi1 + "Z3.Sheet",               HWNDCLIENT::hEditPlate_DataZ3_Sheet,      KPVL::Z3::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[3].SubSheet      = new Value(AppGenSeqToHmi1 + "Z3.SubSheet",            HWNDCLIENT::hEditPlate_DataZ3_SubSheet,   KPVL::Z3::Data, &conn_kpvl)},    //Номер подлиста
+
+    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Z3::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[3].SubSheet      = new Value(AppGenSeqToHmi1 + "Z3.SubSheet",            HWNDCLIENT::hEditPlate_DataZ3_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 //Зона 4 занята листом (Охлаждение)
@@ -681,11 +685,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[4].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z4.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ4_AlloyCode,  KPVL::Z4::DataAlloyThikn, &conn_kpvl)}, //Марка стали
     {PlateData[4].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z4.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ4_Thikness,   KPVL::Z4::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[4].Melt          = new Value(AppGenSeqToHmi1 + "Z4.Melt",                HWNDCLIENT::hEditPlate_DataZ4_Melt,       KPVL::Z4::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Z4::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[4].PartNo        = new Value(AppGenSeqToHmi1 + "Z4.PartNo",              HWNDCLIENT::hEditPlate_DataZ4_PartNo,     KPVL::Z4::Data, &conn_kpvl)},    //Номер партии
     {PlateData[4].Pack          = new Value(AppGenSeqToHmi1 + "Z4.Pack",                HWNDCLIENT::hEditPlate_DataZ4_Pack,       KPVL::Z4::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[4].Sheet         = new Value(AppGenSeqToHmi1 + "Z4.Sheet",               HWNDCLIENT::hEditPlate_DataZ4_Sheet,      KPVL::Z4::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[4].SubSheet      = new Value(AppGenSeqToHmi1 + "Z4.SubSheet",            HWNDCLIENT::hEditPlate_DataZ4_SubSheet,   KPVL::Z4::Data, &conn_kpvl)},    //Номер подлиста
+
+    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Z4::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[4].SubSheet      = new Value(AppGenSeqToHmi1 + "Z4.SubSheet",            HWNDCLIENT::hEditPlate_DataZ4_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 
@@ -694,11 +699,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[5].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z5.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ5_AlloyCode,  KPVL::Z5::DataAlloyThikn, &conn_kpvl)}, //Марка стали
     {PlateData[5].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z5.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ5_Thikness,   KPVL::Z5::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
     {PlateData[5].Melt          = new Value(AppGenSeqToHmi1 + "Z5.Melt",                HWNDCLIENT::hEditPlate_DataZ5_Melt,       KPVL::Z5::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Z5::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[5].PartNo        = new Value(AppGenSeqToHmi1 + "Z5.PartNo",              HWNDCLIENT::hEditPlate_DataZ5_PartNo,     KPVL::Z5::Data, &conn_kpvl)},    //Номер партии
     {PlateData[5].Pack          = new Value(AppGenSeqToHmi1 + "Z5.Pack",                HWNDCLIENT::hEditPlate_DataZ5_Pack,       KPVL::Z5::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[5].Sheet         = new Value(AppGenSeqToHmi1 + "Z5.Sheet",               HWNDCLIENT::hEditPlate_DataZ5_Sheet,      KPVL::Z5::Data, &conn_kpvl)},    //Номер листа
-    {PlateData[5].SubSheet      = new Value(AppGenSeqToHmi1 + "Z5.SubSheet",            HWNDCLIENT::hEditPlate_DataZ5_SubSheet,   KPVL::Z5::Data, &conn_kpvl)},    //Номер подлиста
+
+    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Z5::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[5].SubSheet      = new Value(AppGenSeqToHmi1 + "Z5.SubSheet",            HWNDCLIENT::hEditPlate_DataZ5_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 
@@ -707,11 +713,12 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[6].AlloyCodeText = new Value(AppHMISheetData1 + "AlloyCodeText.sText", HWNDCLIENT::hEdit_Sheet_AlloyCode,    KPVL::Z6::DataAlloyThikn, &conn_kpvl)},   //Марка стали
     {PlateData[6].ThiknessText  = new Value(AppHMISheetData1 + "ThiknessText.sText",  HWNDCLIENT::hEdit_Sheet_Thikness,     KPVL::Z6::DataAlloyThikn, &conn_kpvl)},   //Толщина листа
     {PlateData[6].Melt          = new Value(AppHMISheetData1 + "Melt",                HWNDCLIENT::hEdit_Sheet_Melt,         KPVL::Z6::Data, &conn_kpvl)},      //Номер плавки
-    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Z6::Data, &conn_kpvl)},      //Номер сляба
     {PlateData[6].PartNo        = new Value(AppHMISheetData1 + "PartNo",              HWNDCLIENT::hEdit_Sheet_PartNo,       KPVL::Z6::Data, &conn_kpvl)},      //Номер партии
     {PlateData[6].Pack          = new Value(AppHMISheetData1 + "Pack",                HWNDCLIENT::hEdit_Sheet_Pack,         KPVL::Z6::Data, &conn_kpvl)},      //Номер пачки
     {PlateData[6].Sheet         = new Value(AppHMISheetData1 + "Sheet",               HWNDCLIENT::hEdit_Sheet_Sheet,        KPVL::Z6::Data, &conn_kpvl)},      //Номер листа
-    {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     KPVL::Z6::Data, &conn_kpvl)},      //Номер подлиста
+
+    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Z6::DataSlab, &conn_kpvl)},      //Номер сляба
+    {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},      //Номер подлиста
 
     {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNew,      KPVL::Z6::CassetteNo, &conn_kpvl)},       //Номер кассеты за день
     {HMISheetData.Cassette.Day              = new Value(AppHMISheetData2 + "Day",                 HWNDCLIENT::hEdit_Sheet_Cassette_Day,     KPVL::Z6::InitCassette, &conn_kpvl)},     //День ID листа

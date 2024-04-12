@@ -46,7 +46,7 @@ public:
     myfun FunctionCallbak = NULL;
 
     Client* Codesys = NULL;
-    int isNode = 0;
+    //int isNode = 0;
     OpcUa::Node Node = OpcUa::Node();
     OpcUa::NodeId NodeId = OpcUa::NodeId();
     MSSEC Sec =  sec00000;
