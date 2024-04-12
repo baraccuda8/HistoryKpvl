@@ -47,11 +47,11 @@ std::string utf8_to_cp1251(std::string str)
     if(MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), &res[0], (int)res.size()) <= 0)
         return "";
 
-    convertResult = WideCharToMultiByte(CP_ACP, 0, res.c_str(), (int)res.length(), NULL, 0, NULL, NULL);
-    if(convertResult <= 0)
-        return "";
+    //convertResult = WideCharToMultiByte(CP_ACP, 0, res.c_str(), (int)res.length(), NULL, 0, NULL, NULL);
+    //if(convertResult <= 0)
+    //    return "";
 
-    str.resize(convertResult);
+    str.resize(res.length());
     if(WideCharToMultiByte(CP_ACP, 0, res.c_str(), (int)res.length(), &str[0], (int)res.length(), NULL, NULL) <= 0)
         return "";
 
