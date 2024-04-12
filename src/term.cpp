@@ -295,32 +295,6 @@ void PLC_S107::InitTag()
     }
 }
 
-//void PLC_S107::Connect()
-//{
-//    while(isRun)
-//    {
-//        try
-//        {
-//            countconnect2++;
-//            S107_LOGGER(std::string("Опрос PLC_KPVL::Run") + " countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//            SetWindowText(winmap(hEditTime_3), (std::to_string(countconnect1) + "." + std::to_string(countconnect2)).c_str());
-//
-//            //client->DefaultTimeout = 59000;
-//            client->Connect(Uri);
-//            return;
-//        }
-//        catch(std::runtime_error& exc)
-//        {
-//            S107_LOGGER2(std::string("Run: Error Connect: ") + exc.what() + " countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//        }
-//        catch(...)
-//        {
-//            S107_LOGGER2(std::string("Run: Error Connect: ") + "Unknown error countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//        };
-//        Sleep(2000);
-//    }
-//}
-
 void PLC_S107::Run(int count)
 {
     countconnect1 = count;

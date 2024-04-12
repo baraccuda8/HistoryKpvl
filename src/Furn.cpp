@@ -62,7 +62,7 @@ namespace S107
             ss << boost::format("%|02|:") % TM_Beg.tm_hour;
             ss << boost::format("%|02|:") % TM_Beg.tm_min;
             ss << boost::format("%|02|'") % TM_Beg.tm_sec;
-            ss << " ORDER BY  event ASC, create_at DESC;"; //DESC
+            ss << " ORDER BY event ASC, create_at DESC;"; //DESC
             std::string comand = ss.str();
             PGresult* res = conn_spic.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
@@ -163,28 +163,29 @@ namespace S107
         if(IsCassete1(Furn.Cassette))
         {
             //CloseAllCassette(CD);
+            std::stringstream sd;
+            sd << "UPDATE cassette SET ";
+            sd << "peth = " << Peth;
+            sd << ", run_at = now()";
 
-            std::string comand = "UPDATE cassette SET ";
-            comand += "peth = " + std::to_string(Peth);
-            comand += ", run_at = now()";
+            sd << ", event = 3";
+            sd << ", tempref = " << Furn.TempRef->Val.As<float>(); //GetString();
+            sd << ", pointtime_1 = " << Furn.PointTime_1->Val.As<float>(); //GetString();
+            sd << ", pointref_1 = " << Furn.PointRef_1->Val.As<float>(); //GetString();
+            sd << ", timeprocset = " << Furn.TimeProcSet->Val.As<float>(); //GetString();
+            sd << ", pointdtime_2 = " << Furn.PointDTime_2->Val.As<float>(); //GetString();
 
-            comand += ", event = 3";
-            comand += ", tempref = " + Furn.TempRef->GetString();
-            comand += ", pointtime_1 = " + Furn.PointTime_1->GetString();
-            comand += ", pointref_1 = " + Furn.PointRef_1->GetString();
-            comand += ", timeprocset = " + Furn.TimeProcSet->GetString();
-            comand += ", pointdtime_2 = " + Furn.PointDTime_2->GetString();
+            sd << " WHERE";
+            sd << " run_at IS NULL";
+            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
+            sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
+            sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
+            sd << ";";
 
-            comand += " WHERE";
-            comand += " run_at IS NULL";
-            comand += " AND day = " + Furn.Cassette.Day->GetString();
-            comand += " AND month = " + Furn.Cassette.Month->GetString();
-            comand += " AND year = " + Furn.Cassette.Year->GetString();
-            comand += " AND cassetteno = " + Furn.Cassette.CassetteNo->GetString();
-            comand += ";";
-
+            std::string comand = sd.str();
             PGresult* res = conn_temp.PGexec(comand);
-            LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
+            //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             {
                 LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
@@ -192,17 +193,22 @@ namespace S107
             }
             PQclear(res);
 
-            comand = "UPDATE cassette SET ";
-            comand += "error_at = DEFAULT, ";
-            comand += "end_at = DEFAULT";
-            comand += " WHERE";
-            comand += " day = " + Furn.Cassette.Day->GetString();
-            comand += " AND month = " + Furn.Cassette.Month->GetString();
-            comand += " AND year = " + Furn.Cassette.Year->GetString();
-            comand += " AND cassetteno = " + Furn.Cassette.CassetteNo->GetString();
+            //std::stringstream ss;
+            
+            sd = std::stringstream("");
+            sd << "UPDATE cassette SET ";
+            sd << "error_at = DEFAULT, ";
+            sd << "end_at = DEFAULT";
+            sd << " WHERE";
+            sd << " day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
+            sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
+            sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
+            sd << ";";
 
+            comand = sd.str();
             res = conn_temp.PGexec(comand);
-            LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
+            //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             {
                 LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
@@ -216,19 +222,21 @@ namespace S107
     {
         if(IsCassete1(Furn.Cassette))
         {
-            std::string comand = "UPDATE cassette SET ";
-            comand += "end_at = now()";
-            comand += ", event = 5";
-            comand += " WHERE end_at IS NULL";
-            comand += " AND peth = " + std::to_string(Peth);
-            comand += " AND day = " + Furn.Cassette.Day->GetString();
-            comand += " AND month = " + Furn.Cassette.Month->GetString();
-            comand += " AND year = " + Furn.Cassette.Year->GetString();
-            comand += " AND cassetteno = " + Furn.Cassette.CassetteNo->GetString();
-            comand += ";";
+            std::stringstream sd;
+            sd << "UPDATE cassette SET ";
+            sd << "end_at = now()";
+            sd << ", event = 5";
+            sd << " WHERE end_at IS NULL";
+            sd << " AND peth = " << Peth;
+            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
+            sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
+            sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
+            sd << ";";
 
+            std::string comand = sd.str();
             PGresult* res = conn_temp.PGexec(comand);
-            LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
+            //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             {
                 LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
@@ -241,20 +249,22 @@ namespace S107
     {
         if(IsCassete1(Furn.Cassette))
         {
-            std::string comand = "UPDATE cassette SET ";
-            comand += "run_at = DEFAULT";
-            comand += "error_at = now()";
-            comand += ", event = 4";
-            comand += " WHERE error_at IS NULL";
-            comand += " AND peth = " + std::to_string(Peth);
-            comand += " AND day = " + Furn.Cassette.Day->GetString();
-            comand += " AND month = " + Furn.Cassette.Month->GetString();
-            comand += " AND year = " + Furn.Cassette.Year->GetString();
-            comand += " AND cassetteno = " + Furn.Cassette.CassetteNo->GetString();
-            comand += ";";
+            std::stringstream sd;
+            sd << "UPDATE cassette SET ";
+            sd << "run_at = DEFAULT";
+            sd << "error_at = now()";
+            sd << ", event = 4";
+            sd << " WHERE error_at IS NULL";
+            sd << " AND peth = " << Peth;
+            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
+            sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
+            sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
+            sd << ";";
 
+            std::string comand = sd.str();
             PGresult* res = conn_temp.PGexec(comand);
-            LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
+            //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             {
                 LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
@@ -295,21 +305,23 @@ namespace S107
     {
         if(IsCassete2(CD))
         {
-            std::string comand = "UPDATE cassette SET ";
-            comand += " event = 5,";
-            comand += " end_at = now()";
-            comand += " WHERE end_at IS NULL";
-            comand += " AND event = 3";
-            comand += " AND peth = " + std::to_string(Peth);
+            std::stringstream sd;
+            sd << "UPDATE cassette SET ";
+            sd << " event = 5,";
+            sd << " end_at = now()";
+            sd << " WHERE end_at IS NULL";
+            sd << " AND event = 3";
+            sd << " AND peth = " << Peth;
             if(IsCassete1(CD))
             {
-                comand += " AND day <> " + CD.Day->GetString();
-                comand += " AND month <> " + CD.Month->GetString();
-                comand += " AND year <> " + CD.Year->GetString();
-                comand += " AND cassetteno <> " + CD.CassetteNo->GetString();
+                sd << " AND day <> " << CD.Day->Val.As<int32_t>(); //GetString();
+                sd << " AND month <> " << CD.Month->Val.As<int32_t>(); //GetString();
+                sd << " AND year <> " << CD.Year->Val.As<int32_t>(); //GetString();
+                sd << " AND cassetteno <> " << CD.CassetteNo->Val.As<int32_t>(); //GetString();
             }
-            comand += ";";
+            sd << ";";
 
+            std::string comand = sd.str();
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME,  comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -328,7 +340,7 @@ namespace S107
         const int Peth = 1;
         DWORD Data_WDG_toBase(Value* value)
         {
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 AppFurn1.Furn_old_dt = time(NULL);
                 try
@@ -363,7 +375,7 @@ namespace S107
         DWORD ProcRun(Value* value)
         {
             std::string out = "Простой";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcRun(AppFurn1, Peth);
@@ -376,7 +388,7 @@ namespace S107
         DWORD ProcEnd(Value* value)
         {
             std::string out = "";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcEnd(AppFurn1, Peth);
@@ -389,7 +401,7 @@ namespace S107
         DWORD ProcError(Value* value)
         {
             std::string out = "";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcError(AppFurn1, Peth);
@@ -533,7 +545,7 @@ namespace S107
         const int Peth = 2;
         DWORD Data_WDG_toBase(Value* value)
         {
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 AppFurn2.Furn_old_dt = time(NULL);
                 try
@@ -567,7 +579,7 @@ namespace S107
         DWORD ProcRun(Value* value)
         {
             std::string out = "Простой";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcRun(AppFurn2, Peth);
@@ -580,7 +592,7 @@ namespace S107
         DWORD ProcEnd(Value* value)
         {
             std::string out = "";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcEnd(AppFurn2, Peth);
@@ -593,7 +605,7 @@ namespace S107
         DWORD ProcError(Value* value)
         {
             std::string out = "";
-            if(value->Val)
+            if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
                 UpdateCassetteProcError(AppFurn2, Peth);

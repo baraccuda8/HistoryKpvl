@@ -637,8 +637,8 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[0].Pack           = new Value(AppGenSeqFromHmi1 + "Pack",                HWNDCLIENT::hEditPlate_DataZ0_Pack,        KPVL::Z0::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[0].Sheet          = new Value(AppGenSeqFromHmi1 + "Sheet",               HWNDCLIENT::hEditPlate_DataZ0_Sheet,       KPVL::Z0::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Z0::DataSlab, &conn_kpvl)},    //Номер сляба
-    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    0, &conn_kpvl)},    //Номер подлиста
+    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Z0::Data, &conn_kpvl)},    //Номер сляба
+    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    KPVL::Z0::Data, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 //Зона 1 занята листом (печь, вход)

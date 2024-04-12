@@ -81,18 +81,18 @@ namespace KPVL {
     //Обновлякем в базе данные по листу
     void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
     bool SetUpdateSheet(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
-    bool SetUpdateSheet2(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
-    bool SetUpdateSheet3(PGConnection* con, T_PlateData* PD, std::string update, std::string where);
+    //bool SetUpdateSheet2(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
+    //bool SetUpdateSheet3(PGConnection* con, T_PlateData* PD, std::string update, std::string where);
     void SheetPos(T_PlateData& PD, int pos);
     void InsertCassette(T_CassetteData& CD);
     void UpdateCassette(T_CassetteData& CD, std::string id);
     void CassettePos(T_CassetteData& CD);
-    bool TestIDSheet(T_PlateData& PD, int& Melt, int& Pack, int& PartNo, int& Sheet);
+    //bool TestIDSheet(T_PlateData& PD, int& Melt, int& Pack, int& PartNo, int& Sheet);
     DWORD WINAPI ThreadState2(LPVOID);
         //Собираем данные по 2 секции через 5 секунд после State_2 = 5
-    void InsertSheetPos0(T_PlateData& PD);
-    void UpdateSheetPos0(T_PlateData& PD);
-    void UpdateSheet0();
+    //void InsertSheetPos0(T_PlateData& PD);
+    //void UpdateSheetPos0(T_PlateData& PD);
+    //void UpdateSheet0();
         //void InsertPos(int pos, std::string name);
     void OutTime(T_PlateData& PD, HWNDCLIENT chwnd);
     DWORD DataPosBool(Value* value);
@@ -102,7 +102,7 @@ namespace KPVL {
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 1 зона печи
