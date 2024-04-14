@@ -428,7 +428,7 @@ void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 
 void Graff::Paint(HWND hWnd)
 {
-	if(!init.Good() || !full)return;
+	if(!init.Good())return;
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hWnd, &ps);
 
@@ -446,7 +446,7 @@ void Graff::Paint(HWND hWnd)
 
 	Gdiplus::RectF RectBottom(0, 0, Width, Height);
 	temp.Clear(Gdiplus::Color(255, 255, 255));
-	if(TempRef.size() && TempAct.size())
+	if(TempRef.size() && TempAct.size() && full)
 	{
 		DrawTemp(temp, RectG);
 
@@ -454,7 +454,7 @@ void Graff::Paint(HWND hWnd)
 		SaveFile += L".jpg";
 		backBuffer.Save(SaveFile.c_str(), &guidJpeg, NULL);
 	}
-	//backBuffer.
+
 	g.DrawImage(&backBuffer, RectBottom);
 
 	EndPaint(hWnd, &ps);

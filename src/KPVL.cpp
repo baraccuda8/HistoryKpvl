@@ -453,6 +453,33 @@ namespace KPVL {
             return id;
         }
 
+                //Получаем ID листа
+        std::string GetIdSheet(int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
+        {
+            std::string id = "0";
+
+            if(Melt && Pack && PartNo && Sheet /*&& SubSheet && Slab*/)
+            {
+                std::stringstream co;
+                co << "SELECT id FROM sheet WHERE";
+                co << " melt = " << Melt;
+                co << " AND pack = " << Pack;
+                co << " AND partno = " << PartNo;
+                co << " AND sheet = " << Sheet;
+                co << " AND subsheet = " << SubSheet;
+                co << " AND slab = " << Slab;
+                co << ";";
+                std::string comand = co.str();
+                PGresult* res = conn_kpvl.PGexec(comand);
+                if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+                    id = conn_kpvl.PGgetvalue(res, 0, 0);
+                else
+                    LOG_ERR_SQL(SQLLogger, res, comand);
+                PQclear(res);
+            }
+            return id;
+        }
+
         //Добовление листа в базу
         void InsertSheet(T_PlateData& PD, int Pos)
         {
@@ -1117,8 +1144,8 @@ namespace KPVL {
                     SetSaveDone();
                     ss = WaitResv;
                 }
-                else
-                    LOG_INFO(SQLLogger, "{:90}| NewData = false", FUNCTION_LINE_NAME);
+                //else
+                //    LOG_INFO(SQLLogger, "{:90}| NewData = false", FUNCTION_LINE_NAME);
                 MySetWindowText(winmap(value->winId), ss);
                 return 0;
             }
@@ -1396,7 +1423,6 @@ namespace KPVL {
 #pragma region Вспомогательные функции
     //Операции в зонах
     namespace ZState{
-        //bool bThreadState = false;
         DWORD WINAPI ThreadState2(LPVOID)
         {
             //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, 1);
@@ -1410,12 +1436,12 @@ namespace KPVL {
                 int32_t SubSheet = 0;
                 int32_t Slab = 0;
 
-                if(PalletSheet[2].Melt.length())Melt = atoi(PalletSheet[2].Melt.c_str());
-                if(PalletSheet[2].Pack.length())Pack = atoi(PalletSheet[2].Pack.c_str());
-                if(PalletSheet[2].PartNo.length())PartNo = atoi(PalletSheet[2].PartNo.c_str());
-                if(PalletSheet[2].Sheet.length())Sheet = atoi(PalletSheet[2].Sheet.c_str());
-                if(PalletSheet[2].SubSheet.length())SubSheet = atoi(PalletSheet[2].SubSheet.c_str());
-                if(PalletSheet[2].Slab.length())Slab = atoi(PalletSheet[2].Slab.c_str());
+                if(PalletSheet[2].Melt.length())        Melt     = std::stoi(PalletSheet[2].Melt);
+                if(PalletSheet[2].Pack.length())        Pack     = std::stoi(PalletSheet[2].Pack);
+                if(PalletSheet[2].PartNo.length())      PartNo   = std::stoi(PalletSheet[2].PartNo);
+                if(PalletSheet[2].Sheet.length())       Sheet    = std::stoi(PalletSheet[2].Sheet);
+                if(PalletSheet[2].SubSheet.length())    SubSheet = std::stoi(PalletSheet[2].SubSheet);
+                if(PalletSheet[2].Slab.length())        Slab     = std::stoi(PalletSheet[2].Slab);
 
 
                 float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetVal<float>();
@@ -1431,22 +1457,24 @@ namespace KPVL {
 
                 if(Melt && Pack && PartNo && Sheet)
                 {
-                    LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
+                    //LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
+                    int Id = std::stoi(Sheet::GetIdSheet(Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+
                     std::stringstream ss1;
                     ss1 << "UPDATE sheet SET ";
                     ss1 << "datatime_end = now()";
                     if(Time_Z2)
                         ss1 << ", datatime_all = " << Time_Z2;
 
-                    ss1 << " WHERE";
-                    ss1 << " datatime_end IS NULL";
-                    ss1 << " AND melt = " << Melt;
-                    ss1 << " AND pack = " << Pack;
-                    ss1 << " AND partno = " << PartNo;
-                    ss1 << " AND sheet = " << Sheet;
-                    //ss << " AND subsheet = " << SubSheet;
-                    //ss <<  " AND slab = " << Slab;
-                    ss1 << ";";
+                    ss1 << " WHERE datatime_end IS NULL AND";
+                    ss1 << " id = " << Id;
+                    //ss1 << " AND melt = " << Melt;
+                    //ss1 << " AND pack = " << Pack;
+                    //ss1 << " AND partno = " << PartNo;
+                    //ss1 << " AND sheet = " << Sheet;
+                    //ss1 << " AND subsheet = " << SubSheet;
+                    //ss1 <<  " AND slab = " << Slab;
+                    //ss1 << ";";
 
                     res = conn_dops.PGexec(ss1.str());
                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss1.str());
@@ -1459,13 +1487,14 @@ namespace KPVL {
                     ss2 << "lampresstop = " + AI_Hmi_210.LaminPressTop->GetString() + ", ";
                     ss2 << "lampressbot = " + AI_Hmi_210.LaminPressBot->GetString() + " ";
                     ss2 << "WHERE";
-                    ss2 << " melt = " << Melt;
-                    ss2 << " AND pack = " << Pack;
-                    ss2 << " AND partno = " << PartNo;
-                    ss2 << " AND sheet = " << Sheet;
-                    //ss << " AND subsheet = " << SubSheet;
-                    //ss <<  " AND slab = " << Slab;
-                    ss2 << ";";
+                    ss2 << " id = " << Id;
+                    //ss2 << " melt = " << Melt;
+                    //ss2 << " AND pack = " << Pack;
+                    //ss2 << " AND partno = " << PartNo;
+                    //ss2 << " AND sheet = " << Sheet;
+                    //ss2 << " AND subsheet = " << SubSheet;
+                    //ss2 <<  " AND slab = " << Slab;
+                    //ss2 << ";";
 
 
                     res = conn_dops.PGexec(ss2.str());
@@ -1485,24 +1514,22 @@ namespace KPVL {
                     std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
                     std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
 
-                    //Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetVal<float>();
-                    //StateNo = GenSeqToHmi.Seq_2_StateNo->GetVal<int16_t>();
-
-                    LOG_INFO(SQLLogger, "{:90}| lam_te1={}, za_te3={}, za_pt3={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, lam_te1, za_te3, za_pt3, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
+                    //LOG_INFO(SQLLogger, "{:90}| lam_te1={}, za_te3={}, za_pt3={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, lam_te1, za_te3, za_pt3, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
 
                     std::stringstream ss4;
                     ss4 << "UPDATE sheet SET ";
                     ss4 << "lam_te1 = " << lam_te1 << ", ";
                     ss4 << "za_te3 = " << za_te3 << ", ";
                     ss4 << "za_pt3 = " << za_pt3 << " ";
-                    ss4 << "WHERE ";
-                    ss4 << "melt = " << Melt;
-                    ss4 << " AND pack = " << Pack;
-                    ss4 << " AND partno = " << PartNo;
-                    ss4 << " AND sheet = " << Sheet;
+                    ss4 << "WHERE";
+                    ss4 << " id = " << Id;
+                    //ss4 << " melt = " << Melt;
+                    //ss4 << " AND pack = " << Pack;
+                    //ss4 << " AND partno = " << PartNo;
+                    //ss4 << " AND sheet = " << Sheet;
                     //ss4 << " AND subsheet = " << SubSheet;
                     //ss4 << " AND slab = " << Slab; 
-                    ss4 << ";";
+                    //ss4 << ";";
 
 
                     res = conn_dops.PGexec(ss4.str());
@@ -1512,14 +1539,14 @@ namespace KPVL {
                         LOG_ERR_SQL(SQLLogger, res, ss4.str());
                     PQclear(res);
                 }
-                else
-                    LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
+                //else
+                //    LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
 
-                hThreadState2 = NULL;
             }
             catch(...)
-                LOG_ERROR(SQLLogger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
+                LOG_ERROR(SQLLogger, "{:89}| Unknown error", FUNCTION_LINE_NAME);
 
+            hThreadState2 = NULL;
             return 0;
         }
 

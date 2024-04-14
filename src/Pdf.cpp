@@ -800,13 +800,13 @@ PdfClass::PdfClass(TSheet& sheet)
 
 
 	/* save the document to a file */
-	HPDF_SaveToFile (pdf, (lpLogPdf+fname).c_str());
+	HPDF_SaveToFile (pdf, (lpLogPdf + "/" + fname).c_str());
 	/* clean up */
 	HPDF_Free (pdf);
 #pragma endregion
 
 
-	if(!std::system(("start " +lpLogPdf + fname).c_str()))
+	if(!std::system(("start " +lpLogPdf + "/" + fname).c_str()))
 		throw std::exception(__FUN(std::string("std::system: fname") + lpLogPdf + "\\" + fname));
 };
 
