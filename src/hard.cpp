@@ -1246,7 +1246,7 @@ void Open_KPVL_SQL()
         KPVL::SQL::KPVL_SQL();
         for(auto& TS : AllSheet)
         {
-            if(std::stof(TS.DataTime_All) == 0)
+            if(std::stof(TS.DataTime_All) == 0 || !TS.DataTime_End.length() )
             {
                 KPVL::SQL::GetDataTime_All(TS);
             }

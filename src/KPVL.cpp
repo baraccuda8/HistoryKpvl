@@ -1421,7 +1421,7 @@ namespace KPVL {
                 float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetVal<float>();
                 int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetVal<int16_t>();
 
-                if(Time_Z2 = 0)
+                if(Time_Z2 == 0)
                 {
                     time_t st;
                     std::string datatimeend_at = GetDataTimeString(st);

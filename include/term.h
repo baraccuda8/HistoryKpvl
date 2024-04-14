@@ -56,32 +56,68 @@ public:
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
 typedef struct T_cassette{
-    Value* Day;                 //DINT;//День
-    Value* Month;               //DINT;//Месяц
-    Value* Year;                //DINT;//Год
-    Value* CassetteNo;          //DINT;//Номер кассеты за день
+    //DINT День
+    Value* Day;
+
+    //DINT Месяц
+    Value* Month;
+
+    //DINT Год
+    Value* Year;
+
+    //DINT Номер кассеты за день
+    Value* CassetteNo;
+
     std::string f_temper = "0";
 };
 
 typedef struct T_ForBase_RelFurn{
     time_t Furn_old_dt;
-    Value* WDG_toBase;      //BOOL
-    Value* WDG_fromBase;    //BOOL
 
-    Value* PointTime_1;     //REAL;//Время разгона
-    Value* PointRef_1;      //REAL;//Уставка температуры
-    Value* PointDTime_2;    //REAL;//Время выдержки
+    //BOOL
+    Value* WDG_toBase;
 
-    Value* ProcRun;         //BOOL;//Работа
-    Value* ProcEnd;         //BOOL;//Окончание процесса
-    Value* ProcFault;       //BOOL;//Авария процесса
-    Value* TimeProcSet;     //REAL;//Полное время процесса (уставка), мин
-    Value* ProcTimeMin;     //REAL;//Время процесса, час (0..XX)
-    Value* TimeToProcEnd;   //REAL;//Время до окончания процесса, мин
-    Value* TempRef;         //REAL;//Заданное значение температуры
-    Value* TempAct;         //REAL;//Фактическое значение температуры
-    Value* T1;              //REAL; // термопара 1
-    Value* T2;              //REAL; // термопара 2
+    //BOOL
+    Value* WDG_fromBase;
+
+    //REAL Время разгона
+    Value* PointTime_1;
+
+    //REAL Уставка температуры
+    Value* PointRef_1;
+
+    //REAL Время выдержки
+    Value* PointDTime_2;
+
+    //BOOL Работа
+    Value* ProcRun;
+
+    //BOOL Окончание процесса
+    Value* ProcEnd;
+
+    //BOOL Авария процесса
+    Value* ProcFault;
+
+    //REAL Полное время процесса (уставка), мин
+    Value* TimeProcSet;
+
+    //REAL Время процесса, час (0..XX)
+    Value* ProcTimeMin;
+
+    //REAL Время до окончания процесса, мин
+    Value* TimeToProcEnd;
+
+    //REAL Заданное значение температуры
+    Value* TempRef;
+
+    //REAL Фактическое значение температуры
+    Value* TempAct;
+
+    //REAL Термопара 1
+    Value* T1;
+
+    //REAL Термопара 2
+    Value* T2;
 
     T_cassette Cassette;
 };
