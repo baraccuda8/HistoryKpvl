@@ -40,6 +40,7 @@ public:
 
 //namespace {
     typedef struct T_PlateData{
+        bool news = false;
         Value* AlloyCodeText;       //Char Код марки
         Value* ThiknessText;        //Char код толщины. Зависит от марки стали.
         Value* Melt;                //DINT номер плавки
@@ -54,22 +55,32 @@ public:
         Value* Bot;                  //REAL
     };
     typedef struct T_Side{
-        Value* h1;               //REAL высота листа в точке1
-        Value* h2;               //REAL высота листа в точке2
-        Value* h3;               //REAL высота листа в точке3
-        Value* h4;               //REAL высота листа в точке4
-        Value* h5;               //REAL высота листа в точке5
-        Value* h6;               //REAL высота листа в точке6
-        Value* h7;               //REAL высота листа в точке7
-        Value* h8;               //REAL высота листа в точке8
+        Value* h1; //REAL высота листа в точке1
+        Value* h2; //REAL высота листа в точке2
+        Value* h3; //REAL высота листа в точке3
+        Value* h4; //REAL высота листа в точке4
+        Value* h5; //REAL высота листа в точке5
+        Value* h6; //REAL высота листа в точке6
+        Value* h7; //REAL высота листа в точке7
+        Value* h8; //REAL высота листа в точке8
     };
     typedef struct T_CassetteData{
-        Value* CassetteNo;      //DINT Номер кассеты за день
-        Value* Day;             //DINT День ID листа
-        Value* Month;           //DINT Месяц ID листа
-        Value* Year;            //DINT Год ID листа
+        Value* Year; //DINT Год ID листа
+        Value* Month; //DINT Месяц ID листа
+        Value* Day; //DINT День ID листа
+        Value* CassetteNo; //DINT Номер кассеты за день
         Value* SheetInCassette; //INT Номер листа в касете
     };
+
+    typedef struct O_CassetteData{
+        int32_t Id = 0; //DINT Номер кассеты за день
+        int32_t Year = 0; //DINT Год ID листа
+        int32_t Month = 0; //DINT Месяц ID листа
+        int32_t Day = 0; //DINT День ID листа
+        int32_t CassetteNo = 0; //DINT Номер кассеты за день
+        int16_t SheetInCassette = 0; //INT Номер листа в касете
+    };
+
 
     typedef struct T_Par_Gen{
         Value* UnloadSpeed;          //REAL Скорость выгрузки
@@ -92,7 +103,8 @@ public:
         Value* NewData;                   //BOOL Новые лист в касету
         Value* SaveDone;                  //BOOL Ответ Новые лист в касету
         Value* CasseteIsFill;             //BOOL кассета наполяентся
-        Value* StartNewCassette;          //BOOL начать новую кассету
+        //Value* StartNewCassette;          //BOOL начать новую кассету
+        //Value* CassetteIsComplete;        //кассета готова
         Value* Valve_1x;              //WORD Кларана верх
         Value* Valve_2x;              //WORD Клапна низ
         T_TopBot SpeedSection;                  //Скоростная секция
@@ -109,15 +121,6 @@ public:
     };
 
     typedef struct T_GenSeqToHmi{
-        //Value* Pos_1_Occup;          //Зона 1 занята листом (печь, вход)
-        //Value* Pos_2_Occup;          //Зона 2 занята листом (печь, выход)
-        //Value* Pos_3_Occup;          //Зона 3 занята листом (закалка)
-        //Value* Pos_4_Occup;          //Зона 4 занята листом (Ламинарка)
-        //T_PlateData PlateData_Z1;       //данные листа в 1-й части печи
-        //T_PlateData PlateData_Z2;       //данные листа во 2-й части печи
-        //T_PlateData PlateData_Z3;       //данные листа в закалке
-        //T_PlateData PlateData_Z4;       //данные листа в ламинарке
-        //T_PlateData PlateData_Z5;       //данные листа на выдаче
         Value* Seq_1_StateNo;           //INT Номер шага последовательности загрузки в печь
         Value* Seq_2_StateNo;           //INT Номер шага последовательности выгрузки в печи
         Value* Seq_3_StateNo;           //INT Номер шага последовательности обработки в ламинарке

@@ -14,26 +14,17 @@ extern std::shared_ptr<spdlog::logger> SQLLogger;
 void Value::InsertVal()
 {
     char comand[1024];
-//    comand += "'" + Patch + "', " + std::to_string((int)GetType()) + ", " + (Arhive ? "true" : "false") + ", now(), ";
     if(GetType() == OpcUa::VariantType::BOOLEAN)
         sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist);
-        //comand += Val.ToString() + ");";
     else if(GetType() == OpcUa::VariantType::STRING)
         sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
-        //comand += "'" + GetString() + "');";
     else
         sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
-
-        //comand += GetString() + ");";
 
     PGresult* res = Conn->PGexec(comand);
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        //char* s = PQresultErrorMessage(res);
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 
     GetIdValSQL();
@@ -42,16 +33,29 @@ void Value::InsertVal()
 void Value::UpdateVal()
 {
     if(Update)return;
+
+    std::stringstream st;
+    st << "INSERT INTO tag (content, name, comment, arhive, type, coeff, hist, format, idsec) VALUES (";
+    st << "'" << GetString() << "', ";
+    st << "'" << Patch << "', ";
+    st << "'" << Comment << "', ";
+    st << Arhive << ", ";
+    st << GetType() << ", ";
+    st << coeff << ", ";
+    st << hist << ", ";
+    st << "'" << format << "', ";
+    st << Sec << ");";
+    ////Временная функция для обновления таблици tag
     //char comand[1024];
     //sprintf_s(comand, 1023, "UPDATE tag SET comment = '%s' WHERE id = %u;", Comment.c_str(), ID);
-    //PGresult* res = Conn->PGexec(comand);
-    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    //{
-    //    LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-    //    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    //}
-    //PQclear(res);
+    PGresult* res = Conn->PGexec(st.str());
+    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, st.str());
+    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+    {
+        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, st.str());
+    }
+    PQclear(res);
 
     Update = true;
 }
@@ -68,30 +72,19 @@ void Value::InsertValue()
     }
 
     sprintf_s(comand, 1023, "INSERT INTO todos (id_name, content) VALUES( %u, '%s');", ID, GetString().c_str());
-
-    //std::string comand = "INSERT INTO todos (id_name, content) VALUES( (SELECT id FROM tag WHERE tag.name = '" + Patch + "')";
-    ////comand += std::to_string(handle);
-    //comand += ", '";
-    //comand += GetString();
-    //comand += "');";
     PGresult* res = Conn->PGexec(comand);
-    //PGresult* res = PQexec(Conn.m_connection, comand);
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 }
 
 void Value::GetIdValSQL()
 {
-        //sprintf_s(Test, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
-    char Test[1024];
-    sprintf_s(Test, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
-    PGresult* res = Conn->PGexec(Test);
-    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, Test);
+    char comand[1024];
+    sprintf_s(comand, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
+    PGresult* res = Conn->PGexec(comand);
+    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
@@ -99,24 +92,22 @@ void Value::GetIdValSQL()
             ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
         else
         {
-            LOG_ERROR(SQLLogger, "{:90}| {}, PQntuples = {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)), line);
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, Test);
+            LOG_ERROR(SQLLogger, "{:90}| PQntuples = {}", FUNCTION_LINE_NAME, line);
+            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         }
     }
     else
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, Test);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
+
     PQclear(res);
 }
 
 void Value::TestValSQL()
 {
-    char Test[1024];
-    sprintf_s(Test, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
-    PGresult* res = Conn->PGexec(Test);
-    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, Test);
+    char comand[1024];
+    sprintf_s(comand, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
+    PGresult* res = Conn->PGexec(comand);
+    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
@@ -129,13 +120,11 @@ void Value::TestValSQL()
         {
             ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
             PQclear(res);
-            //UpdateVal();
         }
     }
     else
     {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, Test);
+        LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
         InsertVal();
     }
@@ -158,79 +147,57 @@ void Value::SetGraff()
 
 void Value::SaveSQL()
 {
-    //char ss[1024];
-    //LOG_INFO(SQLLogger, "{:90}| {} {}", FUNCTION_LINE_NAME, Arhive, Patch);
     if(!Arhive) return;
 
-    //std::string update ="UPDATE tag SET content_at = now(), content = ";
-
-    //std::string comand = "INSERT INTO todos (id_name, content) VALUES(";
     bool ifval = OldVal.IsNul();
     if(GetType() == OpcUa::VariantType::FLOAT)
     {
         float f1 = Val.As<float>() * coeff;
         float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
-
         float f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
             if(!ID)
                 TestValSQL();
-            //comand += ", '";
-            //update += GetString();
-            //comand += "');";
-            //update += "'" + std::to_string(f1) + "'";
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = now(), content = ";
             sd << GetString();
             sd << " WHERE name = '" << Patch.c_str() << "';";
-
-            //sprintf_s(ss, 1023, " WHERE name = '%s';", Patch.c_str());
-            //update += sd.str();
-            PGresult* res = Conn->PGexec(sd.str());
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, update);
+            std::string comand = sd.str();
+            PGresult* res = Conn->PGexec(comand);
+            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
+
             PQclear(res);
             InsertValue();
             OldVal = Val;
-            //SetGraff();
         }
         else
         {
             float f1 = Val.As<float>() * coeff;
             float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
-            //LOG_INFO(SQLLogger, "{:90}| f1: {}, f2: {}, Patch: {}", FUNCTION_LINE_NAME, f1, f2, Patch);
         }
     }
     else if(GetType() == OpcUa::VariantType::DOUBLE)
     {
         double f1 = Val.As<double>() * coeff;
-        //double f2 = OldVal.As<double>() * coeff;
         double f2 = double(ifval ? 0 : (OldVal.As<double>() * coeff));
-
         double f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
             if(!ID)
                 TestValSQL();
 
-            //comand += std::to_string(handle);
-            //comand += ", '";
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = now(), content = ";
             sd << GetString();
             sd << " WHERE name = '" << Patch.c_str() << "';";
-            PGresult* res = Conn->PGexec(sd.str());
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, update);
+            std::string comand = sd.str();
+            PGresult* res = Conn->PGexec(comand);
+            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
             InsertValue();
             OldVal = Val;
@@ -238,8 +205,6 @@ void Value::SaveSQL()
     }
     else
     {
-        //update += std::to_string(handle);
-        //comand += ", '";
         if(!ID)
             TestValSQL();
         std::stringstream sd;
@@ -249,30 +214,17 @@ void Value::SaveSQL()
         else
             sd << GetString();
         sd << " WHERE name = '" << Patch.c_str() << "';";
-        //sprintf_s(ss, 1023, " WHERE name = '%s';", Patch.c_str());
-        //update += sd.str(); // " WHERE name = '" + Patch + "';";
 
-        PGresult* res = Conn->PGexec(sd.str());
-        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, update);
+        std::string comand = sd.str();
+        PGresult* res = Conn->PGexec(comand);
+        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        {
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-        }
+            LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
         InsertValue();
         OldVal = Val;
     }
     
-}
-
-void MySetWindowText(HWND h, const char* ss)
-{
-    if(h)
-    {
-        SetWindowText(h, ss);
-        InvalidateRect(h, NULL, false);
-    }
 }
 
 Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s) :
@@ -297,6 +249,18 @@ Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn):
     }
 };
 
+Value::Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC sec, std::string fo, OpcUa::Variant v, std::string com):
+    Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn), Arhive(ar), format(fo), Sec(sec), Val(v), OldVal(v), Comment(com)
+{
+    if(!Patch.length())
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
+
+    if(Patch.find("WDG") != SIZE_MAX)
+    {
+        Arhive = false;
+    }
+}
+
 
 void Value::InitNodeId(Client* cds)
 {
@@ -314,28 +278,6 @@ OpcUa::Node Value::GetNode()
 
     return Codesys->GetNode(Patch);
 }
-
-//void Value::Subscribe()
-//{
-//    if(!isRun)
-//        throw std::runtime_error((FUNCTION_LINE_NAME + std::string("Завершение работы")).c_str());
-//
-//    if(Sec ==  sec00000) return;
-//
-//    try
-//    {
-//        if(Node.IsValid())
-//        {
-//            Log(Codesys ? Codesys->Logger : AllLogger, spdlog::level::level_enum::info, std::string("Подключение переменной ") + Patch);
-//            SetWindowText(hWndDebug, (std::string("Подключение переменной ") + Patch).c_str());
-//            Codesys->Subscribe(Sec, Node);
-//            Log(Codesys ? Codesys->Logger : AllLogger, spdlog::level::level_enum::info, std::string("Подключена переменная ") + Patch);
-//            SetWindowText(hWndDebug, (std::string("Подключена переменная ") + Patch).c_str());
-//        }
-//    }
-//    VARCATCH(!"Node.IsValid ");
-//
-//}
 
 OpcUa::VariantType Value::GetType()
 {
@@ -400,12 +342,10 @@ void Value::Set_Value(OpcUa::Variant var)
         }
         catch(std::runtime_error& exc)
         {
-            //isNode++;
             LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
         }
         catch(...)
         {
-            //isNode++;
             LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
         }
     }
@@ -450,9 +390,6 @@ std::string Value::GetString(std::string patch)
         {
             char ss[256] = "";
 
-
-            //HMISheetData.Sheet.WDG
-
             if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
             else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
             else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
@@ -489,9 +426,6 @@ std::string Value::GetString()
         if(format.length())
         {
             char ss[256] = "0";
-
-
-            //HMISheetData.Sheet.WDG
 
             if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
             else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
@@ -547,9 +481,6 @@ void Value::SetVariant(std::string patch, HWNDCLIENT id)
     }
 }
 
-//Ошибка	LNK2019	ссылка на неразрешенный внешний символ "public: short __cdecl Value::GetVal<short>(void)" (??$GetVal@F@Value@@QEAAFXZ) в функции "unsigned long __cdecl KPVL::DataMaskKlapan1(class Value *)" (?DataMaskKlapan1@KPVL@@YAKPEAVValue@@@Z).	HistoryKpvl	D:\YandexDisk\Project\HistoryKpvl\hard.obj	1		
-
-
 bool Value::Find(const uint32_t h, const std::string p, const OpcUa::Variant& v, OpcUa::AttributeId a)
 {
     if(isRun)
@@ -589,13 +520,11 @@ bool Value::TestNode(Client* cds)
     {
 
         if(!Patch.length())return false;
-            //throw std::exception(std::string(FUNCTION_LINE_NAME, std::string("; Error Patch = NULL")).c_str());
 
         if(cds)
         {
             Codesys = cds;
 
-            //Log(cds->Logger, spdlog::level::level_enum::info, "Проверка Patch = " + Patch);
             SetWindowText(hWndDebug, (std::string("Проверка Patch = ") + Patch).c_str());
 
             Node = cds->client->GetNode(OpcUa::NodeId(Patch, cds->NamespaceIndex));
@@ -603,10 +532,36 @@ bool Value::TestNode(Client* cds)
             if(!Node.IsValid()) 
                 return false;
 
-                //throw std::exception(std::string(FUNCTION_LINE_NAME, std::string("; Error Patch = ") + Patch).c_str());
             return true;
         }
     }
     return false;
 }
 
+void MySetWindowText(HWND h, const char* ss)
+{
+    if(h)
+    {
+        SetWindowText(h, ss);
+        InvalidateRect(h, NULL, false);
+    }
+}
+
+void MySetWindowText(HWND h, std::string ss)
+{
+    if(h)
+    {
+        SetWindowText(h, ss.c_str());
+        InvalidateRect(h, NULL, false);
+    }
+}
+
+void MySetWindowText(Value* value)
+{
+    HWND h = winmap(value->winId);
+    if(value && h)
+    {
+        SetWindowText(h, value->GetString().c_str());
+        InvalidateRect(h, NULL, false);
+    }
+}

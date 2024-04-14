@@ -1251,11 +1251,11 @@ enum Cassete{
     CassetteNo,
     SheetInCassette,
     //Close,
+    Peth,
     Run_at,
-    Error_at,
     End_at,
     Finish_at,
-    Peth,
+    Error_at,
 };
 
 typedef struct _TCassette{

@@ -25,6 +25,27 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 
 #define CATCH(_l, _s) catch(std::runtime_error& exc)LOG_ERROR(_l, _s + exc.what()) catch(...)LOG_ERROR(_l, _s + "Unknown error")
 
+#define CATCH_RUN(_l) \
+    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);\
+    }catch(...){LOG_ERROR(_l, "{:89}| Unknown error countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);};
+
+#define CATCH_OPEN(_l, _u) \
+catch(std::runtime_error& exc)\
+{\
+    LOG_ERROR(_l, "{:89}| Error {} countconnect = {} to: {}", FUNCTION_LINE_NAME, exc.what(), countconnect, _u);\
+}\
+catch(...)\
+{\
+    LOG_ERROR(_l, "{:89}| Unknown error countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, _u);\
+};
+
+
+#define LOG_ERR_SQL(_l, _r, _c){\
+LOG_ERROR(_l, "{:89}| {}", FUNCTION_LINE_NAME, _c);\
+LOG_ERROR(_l, "{:89}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(_r)));\
+}\
+
+
 
 #define TIME_OUT 91000
 

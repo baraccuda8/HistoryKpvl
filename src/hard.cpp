@@ -584,23 +584,22 @@ T_PlateData PlateData[7];
 extern std::deque<Value*> AllTagPeth;
 std::deque<Value*> AllTagKpvl = {
 #ifndef TESTTEMPER
-//вачдог WDG
+
 #pragma region вачдог WDG
     {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
     {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::WDG::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
     {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
 #pragma endregion
 
-//Касеты и листы
 #pragma region Касеты и листы
-    {HMISheetData.NewData           = new Value(AppHMISheetData + "NewData",            HWNDCLIENT::hGroup05, KPVL::Z6::NewSheetData, &conn_kpvl)},       //Новые лист в касету
-    {HMISheetData.SaveDone           = new Value(AppHMISheetData + "SaveDone",          HWNDCLIENT::hNull, 0, &conn_kpvl)},                         //Ответ Новые лист в касету
-    {HMISheetData.CasseteIsFill     = new Value(AppHMISheetData + "CasseteIsFill",      HWNDCLIENT::hNull,    KPVL::Z6::CassetteIsFill, &conn_kpvl)},     //Кассета наполяентся
-    {HMISheetData.StartNewCassette  = new Value(AppHMISheetData + "StartNewCassette",   HWNDCLIENT::hNull,    KPVL::Z6::StartNewCassette, &conn_kpvl)},  //Начать новую кассету
+    {HMISheetData.NewData            = new Value(AppHMISheetData + "NewData",            HWNDCLIENT::hGroup05, KPVL::Sheet::Z6::NewSheetData,       &conn_kpvl)},   //Новые лист в касету
+    {HMISheetData.SaveDone           = new Value(AppHMISheetData + "SaveDone",           HWNDCLIENT::hNull,    0, &conn_kpvl)},                                     //Ответ Новые лист в касету
+    {HMISheetData.CasseteIsFill      = new Value(AppHMISheetData + "CasseteIsFill",      HWNDCLIENT::hNull,    KPVL::Cassette::CasseteIsFill,       &conn_kpvl)},   //Кассета наполяентся
+    //{HMISheetData.StartNewCassette   = new Value(AppHMISheetData + "StartNewCassette",   HWNDCLIENT::hNull,    KPVL::Cassette::StartNewCassette,    &conn_kpvl)},   //Начать новую кассету
+    //{HMISheetData.CassetteIsComplete = new Value(AppHMISheetData + "CassetteIsComplete", HWNDCLIENT::hNull,    KPVL::Cassette::CassetteIsComplete,    &conn_kpvl)},   //Кассета готова
 #pragma endregion
 
-//Скорость выгрузки, Уставка температуры, Давление, Температура воды
-#pragma region Уставки, Аналоги
+#pragma region Скорость выгрузки, Уставка температуры, Давление, Температура воды
     //|var|PLC210 OPC-UA.Application.Par_Gen.Par.UnloadSpeed
     {Par_Gen.UnloadSpeed        = new Value(AppPar_Gen + "UnloadSpeed",         HWNDCLIENT::hEditUnloadSpeed,     0, &conn_kpvl)},            //Скорость выгрузки
     {Par_Gen.TimeForPlateHeat   = new Value(AppPar_Gen + "TimeForPlateHeat",    HWNDCLIENT::hTimeForPlateHeat,    KPVL::An::fTimeForPlateHeat, &conn_kpvl)},   //Время сигнализации окончания нагрева, мин
@@ -616,7 +615,6 @@ std::deque<Value*> AllTagKpvl = {
     {AI_Hmi_210.Za_TE4          = new Value(AppAI_Hmi_210 + "Za_TE4.AI_eu",         HWNDCLIENT::hEditTempPerometr,    0, &conn_kpvl)},                    //Пирометр
 #pragma endregion
 
-//Режим работы клапана
 #pragma region Режим работы клапана
     {HMISheetData.Valve_1x              = new Value(AppHMISheetData + "Valve_1x",               HWNDCLIENT::hEditClapTop0,    KPVL::Mask::DataMaskKlapan1, &conn_kpvl)},    //Режим работы клапана 1x
     {HMISheetData.Valve_2x              = new Value(AppHMISheetData + "Valve_2x",               HWNDCLIENT::hEditClapBot0,    KPVL::Mask::DataMaskKlapan2, &conn_kpvl)},    //Режим работы клапана 2x
@@ -628,107 +626,100 @@ std::deque<Value*> AllTagKpvl = {
     {HMISheetData.LaminarSection2.Bot   = new Value(AppHMISheetData + "LaminarSection2.Bottom", HWNDCLIENT::hEditLAM2_BotSet, KPVL::Lam2::LaminarSection2Bot, &conn_kpvl)}, //Клапан. Ламинарная секция 2. Низ
 #pragma endregion
 
-//Зона 0 Лист перед печью
 #pragma region Зона 0 Лист перед печью
-    {PlateData[0].AlloyCodeText  = new Value(AppGenSeqFromHmi1 + "AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ0_AlloyCode,   KPVL::Z0::DataAlloyThikn, &conn_kpvl)}, //Марка стали
-    {PlateData[0].ThiknessText   = new Value(AppGenSeqFromHmi1 + "ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ0_Thikness,    KPVL::Z0::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[0].Melt           = new Value(AppGenSeqFromHmi1 + "Melt",                HWNDCLIENT::hEditPlate_DataZ0_Melt,        KPVL::Z0::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[0].PartNo         = new Value(AppGenSeqFromHmi1 + "PartNo",              HWNDCLIENT::hEditPlate_DataZ0_PartNo,      KPVL::Z0::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[0].Pack           = new Value(AppGenSeqFromHmi1 + "Pack",                HWNDCLIENT::hEditPlate_DataZ0_Pack,        KPVL::Z0::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[0].Sheet          = new Value(AppGenSeqFromHmi1 + "Sheet",               HWNDCLIENT::hEditPlate_DataZ0_Sheet,       KPVL::Z0::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[0].AlloyCodeText  = new Value(AppGenSeqFromHmi1 + "AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ0_AlloyCode,   KPVL::Sheet::Z0::DataAlloyThikn, &conn_kpvl)}, //Марка стали
+    {PlateData[0].ThiknessText   = new Value(AppGenSeqFromHmi1 + "ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ0_Thikness,    KPVL::Sheet::Z0::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[0].Melt           = new Value(AppGenSeqFromHmi1 + "Melt",                HWNDCLIENT::hEditPlate_DataZ0_Melt,        KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[0].PartNo         = new Value(AppGenSeqFromHmi1 + "PartNo",              HWNDCLIENT::hEditPlate_DataZ0_PartNo,      KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[0].Pack           = new Value(AppGenSeqFromHmi1 + "Pack",                HWNDCLIENT::hEditPlate_DataZ0_Pack,        KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[0].Sheet          = new Value(AppGenSeqFromHmi1 + "Sheet",               HWNDCLIENT::hEditPlate_DataZ0_Sheet,       KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Z0::Data, &conn_kpvl)},    //Номер сляба
-    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    KPVL::Z0::Data, &conn_kpvl)},    //Номер подлиста
+    {PlateData[0].Slab           = new Value(AppGenSeqFromHmi1 + "Slab",                HWNDCLIENT::hEditPlate_DataZ0_Slab,        KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер сляба
+    {PlateData[0].SubSheet       = new Value(AppGenSeqFromHmi1 + "SubSheet",            HWNDCLIENT::hEditPlate_DataZ0_SubSheet,    KPVL::Sheet::Z0::Data, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
-//Зона 1 занята листом (печь, вход)
 #pragma region Зона 1 занята листом (печь, вход)
-    {PlateData[1].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z1.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ1_AlloyCode,  KPVL::Z1::DataAlloyThikn, &conn_kpvl)}, //Марка стали
-    {PlateData[1].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z1.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ1_Thikness,   KPVL::Z1::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[1].Melt          = new Value(AppGenSeqToHmi1 + "Z1.Melt",                HWNDCLIENT::hEditPlate_DataZ1_Melt,       KPVL::Z1::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[1].PartNo        = new Value(AppGenSeqToHmi1 + "Z1.PartNo",              HWNDCLIENT::hEditPlate_DataZ1_PartNo,     KPVL::Z1::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[1].Pack          = new Value(AppGenSeqToHmi1 + "Z1.Pack",                HWNDCLIENT::hEditPlate_DataZ1_Pack,       KPVL::Z1::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[1].Sheet         = new Value(AppGenSeqToHmi1 + "Z1.Sheet",               HWNDCLIENT::hEditPlate_DataZ1_Sheet,      KPVL::Z1::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[1].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z1.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ1_AlloyCode,  KPVL::Sheet::Z1::DataAlloyThikn, &conn_kpvl)}, //Марка стали
+    {PlateData[1].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z1.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ1_Thikness,   KPVL::Sheet::Z1::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[1].Melt          = new Value(AppGenSeqToHmi1 + "Z1.Melt",                HWNDCLIENT::hEditPlate_DataZ1_Melt,       KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[1].PartNo        = new Value(AppGenSeqToHmi1 + "Z1.PartNo",              HWNDCLIENT::hEditPlate_DataZ1_PartNo,     KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[1].Pack          = new Value(AppGenSeqToHmi1 + "Z1.Pack",                HWNDCLIENT::hEditPlate_DataZ1_Pack,       KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[1].Sheet         = new Value(AppGenSeqToHmi1 + "Z1.Sheet",               HWNDCLIENT::hEditPlate_DataZ1_Sheet,      KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Z1::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Sheet::Z1::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[1].SubSheet      = new Value(AppGenSeqToHmi1 + "Z1.SubSheet",            HWNDCLIENT::hEditPlate_DataZ1_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
-//Зона 2 занята листом (закалка)
 #pragma region Зона 2 занята листом (закалка)
-    {PlateData[2].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z2.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ2_AlloyCode,  KPVL::Z2::DataAlloyThikn, &conn_kpvl)}, //Марка стали
-    {PlateData[2].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z2.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ2_Thikness,   KPVL::Z2::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[2].Melt          = new Value(AppGenSeqToHmi1 + "Z2.Melt",                HWNDCLIENT::hEditPlate_DataZ2_Melt,       KPVL::Z2::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[2].PartNo        = new Value(AppGenSeqToHmi1 + "Z2.PartNo",              HWNDCLIENT::hEditPlate_DataZ2_PartNo,     KPVL::Z2::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[2].Pack          = new Value(AppGenSeqToHmi1 + "Z2.Pack",                HWNDCLIENT::hEditPlate_DataZ2_Pack,       KPVL::Z2::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[2].Sheet         = new Value(AppGenSeqToHmi1 + "Z2.Sheet",               HWNDCLIENT::hEditPlate_DataZ2_Sheet,      KPVL::Z2::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[2].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z2.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ2_AlloyCode,  KPVL::Sheet::Z2::DataAlloyThikn, &conn_kpvl)}, //Марка стали
+    {PlateData[2].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z2.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ2_Thikness,   KPVL::Sheet::Z2::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[2].Melt          = new Value(AppGenSeqToHmi1 + "Z2.Melt",                HWNDCLIENT::hEditPlate_DataZ2_Melt,       KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[2].PartNo        = new Value(AppGenSeqToHmi1 + "Z2.PartNo",              HWNDCLIENT::hEditPlate_DataZ2_PartNo,     KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[2].Pack          = new Value(AppGenSeqToHmi1 + "Z2.Pack",                HWNDCLIENT::hEditPlate_DataZ2_Pack,       KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[2].Sheet         = new Value(AppGenSeqToHmi1 + "Z2.Sheet",               HWNDCLIENT::hEditPlate_DataZ2_Sheet,      KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Z2::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Sheet::Z2::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[2].SubSheet      = new Value(AppGenSeqToHmi1 + "Z2.SubSheet",            HWNDCLIENT::hEditPlate_DataZ2_SubSheet,   0, &conn_kpvl)}, //Номер подлиста
 #pragma endregion
 
-//Зона 3 занята листом (Ламинарка)
 #pragma region Зона 3 занята листом (Ламинарка)
-    {PlateData[3].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z3.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ3_AlloyCode,  KPVL::Z3::DataAlloyThikn, &conn_kpvl)}, //Код марки
-    {PlateData[3].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z3.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ3_Thikness,   KPVL::Z3::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[3].Melt          = new Value(AppGenSeqToHmi1 + "Z3.Melt",                HWNDCLIENT::hEditPlate_DataZ3_Melt,       KPVL::Z3::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[3].PartNo        = new Value(AppGenSeqToHmi1 + "Z3.PartNo",              HWNDCLIENT::hEditPlate_DataZ3_PartNo,     KPVL::Z3::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[3].Pack          = new Value(AppGenSeqToHmi1 + "Z3.Pack",                HWNDCLIENT::hEditPlate_DataZ3_Pack,       KPVL::Z3::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[3].Sheet         = new Value(AppGenSeqToHmi1 + "Z3.Sheet",               HWNDCLIENT::hEditPlate_DataZ3_Sheet,      KPVL::Z3::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[3].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z3.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ3_AlloyCode,  KPVL::Sheet::Z3::DataAlloyThikn, &conn_kpvl)}, //Код марки
+    {PlateData[3].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z3.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ3_Thikness,   KPVL::Sheet::Z3::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[3].Melt          = new Value(AppGenSeqToHmi1 + "Z3.Melt",                HWNDCLIENT::hEditPlate_DataZ3_Melt,       KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[3].PartNo        = new Value(AppGenSeqToHmi1 + "Z3.PartNo",              HWNDCLIENT::hEditPlate_DataZ3_PartNo,     KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[3].Pack          = new Value(AppGenSeqToHmi1 + "Z3.Pack",                HWNDCLIENT::hEditPlate_DataZ3_Pack,       KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[3].Sheet         = new Value(AppGenSeqToHmi1 + "Z3.Sheet",               HWNDCLIENT::hEditPlate_DataZ3_Sheet,      KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Z3::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Sheet::Z3::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[3].SubSheet      = new Value(AppGenSeqToHmi1 + "Z3.SubSheet",            HWNDCLIENT::hEditPlate_DataZ3_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
-//Зона 4 занята листом (Охлаждение)
 #pragma region Зона 4 занята листом (Охлаждение)
-    {PlateData[4].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z4.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ4_AlloyCode,  KPVL::Z4::DataAlloyThikn, &conn_kpvl)}, //Марка стали
-    {PlateData[4].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z4.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ4_Thikness,   KPVL::Z4::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[4].Melt          = new Value(AppGenSeqToHmi1 + "Z4.Melt",                HWNDCLIENT::hEditPlate_DataZ4_Melt,       KPVL::Z4::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[4].PartNo        = new Value(AppGenSeqToHmi1 + "Z4.PartNo",              HWNDCLIENT::hEditPlate_DataZ4_PartNo,     KPVL::Z4::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[4].Pack          = new Value(AppGenSeqToHmi1 + "Z4.Pack",                HWNDCLIENT::hEditPlate_DataZ4_Pack,       KPVL::Z4::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[4].Sheet         = new Value(AppGenSeqToHmi1 + "Z4.Sheet",               HWNDCLIENT::hEditPlate_DataZ4_Sheet,      KPVL::Z4::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[4].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z4.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ4_AlloyCode,  KPVL::Sheet::Z4::DataAlloyThikn, &conn_kpvl)}, //Марка стали
+    {PlateData[4].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z4.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ4_Thikness,   KPVL::Sheet::Z4::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[4].Melt          = new Value(AppGenSeqToHmi1 + "Z4.Melt",                HWNDCLIENT::hEditPlate_DataZ4_Melt,       KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[4].PartNo        = new Value(AppGenSeqToHmi1 + "Z4.PartNo",              HWNDCLIENT::hEditPlate_DataZ4_PartNo,     KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[4].Pack          = new Value(AppGenSeqToHmi1 + "Z4.Pack",                HWNDCLIENT::hEditPlate_DataZ4_Pack,       KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[4].Sheet         = new Value(AppGenSeqToHmi1 + "Z4.Sheet",               HWNDCLIENT::hEditPlate_DataZ4_Sheet,      KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Z4::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Sheet::Z4::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[4].SubSheet      = new Value(AppGenSeqToHmi1 + "Z4.SubSheet",            HWNDCLIENT::hEditPlate_DataZ4_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 
-//Зона 5 Выдача
 #pragma region Зона 5 Выдача
-    {PlateData[5].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z5.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ5_AlloyCode,  KPVL::Z5::DataAlloyThikn, &conn_kpvl)}, //Марка стали
-    {PlateData[5].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z5.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ5_Thikness,   KPVL::Z5::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
-    {PlateData[5].Melt          = new Value(AppGenSeqToHmi1 + "Z5.Melt",                HWNDCLIENT::hEditPlate_DataZ5_Melt,       KPVL::Z5::Data, &conn_kpvl)},    //Номер плавки
-    {PlateData[5].PartNo        = new Value(AppGenSeqToHmi1 + "Z5.PartNo",              HWNDCLIENT::hEditPlate_DataZ5_PartNo,     KPVL::Z5::Data, &conn_kpvl)},    //Номер партии
-    {PlateData[5].Pack          = new Value(AppGenSeqToHmi1 + "Z5.Pack",                HWNDCLIENT::hEditPlate_DataZ5_Pack,       KPVL::Z5::Data, &conn_kpvl)},    //Номер пачки
-    {PlateData[5].Sheet         = new Value(AppGenSeqToHmi1 + "Z5.Sheet",               HWNDCLIENT::hEditPlate_DataZ5_Sheet,      KPVL::Z5::Data, &conn_kpvl)},    //Номер листа
+    {PlateData[5].AlloyCodeText = new Value(AppGenSeqToHmi1 + "Z5.AlloyCodeText.sText", HWNDCLIENT::hEditPlate_DataZ5_AlloyCode,  KPVL::Sheet::Z5::DataAlloyThikn, &conn_kpvl)}, //Марка стали
+    {PlateData[5].ThiknessText  = new Value(AppGenSeqToHmi1 + "Z5.ThiknessText.sText",  HWNDCLIENT::hEditPlate_DataZ5_Thikness,   KPVL::Sheet::Z5::DataAlloyThikn, &conn_kpvl)}, //Толщина листа
+    {PlateData[5].Melt          = new Value(AppGenSeqToHmi1 + "Z5.Melt",                HWNDCLIENT::hEditPlate_DataZ5_Melt,       KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер плавки
+    {PlateData[5].PartNo        = new Value(AppGenSeqToHmi1 + "Z5.PartNo",              HWNDCLIENT::hEditPlate_DataZ5_PartNo,     KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер партии
+    {PlateData[5].Pack          = new Value(AppGenSeqToHmi1 + "Z5.Pack",                HWNDCLIENT::hEditPlate_DataZ5_Pack,       KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер пачки
+    {PlateData[5].Sheet         = new Value(AppGenSeqToHmi1 + "Z5.Sheet",               HWNDCLIENT::hEditPlate_DataZ5_Sheet,      KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Z5::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Sheet::Z5::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[5].SubSheet      = new Value(AppGenSeqToHmi1 + "Z5.SubSheet",            HWNDCLIENT::hEditPlate_DataZ5_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
 
-//Лист на кантовке
+
 #pragma region Лист на кантовке
-    {PlateData[6].AlloyCodeText = new Value(AppHMISheetData1 + "AlloyCodeText.sText", HWNDCLIENT::hEdit_Sheet_AlloyCode,    KPVL::Z6::DataAlloyThikn, &conn_kpvl)},   //Марка стали
-    {PlateData[6].ThiknessText  = new Value(AppHMISheetData1 + "ThiknessText.sText",  HWNDCLIENT::hEdit_Sheet_Thikness,     KPVL::Z6::DataAlloyThikn, &conn_kpvl)},   //Толщина листа
-    {PlateData[6].Melt          = new Value(AppHMISheetData1 + "Melt",                HWNDCLIENT::hEdit_Sheet_Melt,         KPVL::Z6::Data, &conn_kpvl)},      //Номер плавки
-    {PlateData[6].PartNo        = new Value(AppHMISheetData1 + "PartNo",              HWNDCLIENT::hEdit_Sheet_PartNo,       KPVL::Z6::Data, &conn_kpvl)},      //Номер партии
-    {PlateData[6].Pack          = new Value(AppHMISheetData1 + "Pack",                HWNDCLIENT::hEdit_Sheet_Pack,         KPVL::Z6::Data, &conn_kpvl)},      //Номер пачки
-    {PlateData[6].Sheet         = new Value(AppHMISheetData1 + "Sheet",               HWNDCLIENT::hEdit_Sheet_Sheet,        KPVL::Z6::Data, &conn_kpvl)},      //Номер листа
+    {PlateData[6].AlloyCodeText = new Value(AppHMISheetData1 + "AlloyCodeText.sText", HWNDCLIENT::hEdit_Sheet_AlloyCode,    KPVL::Sheet::Z6::DataAlloyThikn, &conn_kpvl)},   //Марка стали
+    {PlateData[6].ThiknessText  = new Value(AppHMISheetData1 + "ThiknessText.sText",  HWNDCLIENT::hEdit_Sheet_Thikness,     KPVL::Sheet::Z6::DataAlloyThikn, &conn_kpvl)},   //Толщина листа
+    {PlateData[6].Melt          = new Value(AppHMISheetData1 + "Melt",                HWNDCLIENT::hEdit_Sheet_Melt,         KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер плавки
+    {PlateData[6].PartNo        = new Value(AppHMISheetData1 + "PartNo",              HWNDCLIENT::hEdit_Sheet_PartNo,       KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер партии
+    {PlateData[6].Pack          = new Value(AppHMISheetData1 + "Pack",                HWNDCLIENT::hEdit_Sheet_Pack,         KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер пачки
+    {PlateData[6].Sheet         = new Value(AppHMISheetData1 + "Sheet",               HWNDCLIENT::hEdit_Sheet_Sheet,        KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер листа
 
-    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Z6::DataSlab, &conn_kpvl)},      //Номер сляба
-    {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},      //Номер подлиста
+    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Sheet::Z6::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},                            //Номер подлиста
 
-    {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNew,      KPVL::Z6::CassetteNo, &conn_kpvl)},       //Номер кассеты за день
-    {HMISheetData.Cassette.Day              = new Value(AppHMISheetData2 + "Day",                 HWNDCLIENT::hEdit_Sheet_Cassette_Day,     KPVL::Z6::InitCassette, &conn_kpvl)},     //День ID листа
-    {HMISheetData.Cassette.Month            = new Value(AppHMISheetData2 + "Month",               HWNDCLIENT::hEdit_Sheet_Cassette_Month,   KPVL::Z6::InitCassette, &conn_kpvl)},     //Месяц ID листа
-    {HMISheetData.Cassette.Year             = new Value(AppHMISheetData2 + "Year",                HWNDCLIENT::hEdit_Sheet_Cassette_Year,    KPVL::Z6::InitCassette, &conn_kpvl)},     //Год ID листа
-    {HMISheetData.Cassette.SheetInCassette  = new Value(AppHMISheetData2 + "SheetInCassette",     HWNDCLIENT::hEdit_Sheet_InCassette,       KPVL::Z6::Sheet_InCassette, &conn_kpvl)}, //Номер листа в касете
+    {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNew,      KPVL::Cassette::CassetteNo, &conn_kpvl)},       //Номер кассеты за день
+    {HMISheetData.Cassette.Day              = new Value(AppHMISheetData2 + "Day",                 HWNDCLIENT::hEdit_Sheet_Cassette_Day,     KPVL::Cassette::CassetteDay, &conn_kpvl)},      //День ID листа
+    {HMISheetData.Cassette.Month            = new Value(AppHMISheetData2 + "Month",               HWNDCLIENT::hEdit_Sheet_Cassette_Month,   KPVL::Cassette::CassetteMonth, &conn_kpvl)},    //Месяц ID листа
+    {HMISheetData.Cassette.Year             = new Value(AppHMISheetData2 + "Year",                HWNDCLIENT::hEdit_Sheet_Cassette_Year,    KPVL::Cassette::CassetteYear, &conn_kpvl)},     //Год ID листа
+    {HMISheetData.Cassette.SheetInCassette  = new Value(AppHMISheetData2 + "SheetInCassette",     HWNDCLIENT::hEdit_Sheet_InCassette,       KPVL::Cassette::Sheet_InCassette, &conn_kpvl)}, //Номер листа в касете
 #pragma endregion
 
 
-//Отклонения листа на кантовке
 #pragma region Отклонения листа на кантовке
     {HMISheetData.Top_Side.h1 = new Value(AppHMISheetData + "Top_Side.h1",     HWNDCLIENT::hNull, KPVL::Side::SheetTop1, &conn_kpvl)}, //Откланение до кантовки
     {HMISheetData.Top_Side.h2 = new Value(AppHMISheetData + "Top_Side.h2",     HWNDCLIENT::hNull, KPVL::Side::SheetTop2, &conn_kpvl)}, //Откланение до кантовки
@@ -749,7 +740,6 @@ std::deque<Value*> AllTagKpvl = {
     {HMISheetData.Bot_Side.h8 = new Value(AppHMISheetData + "Bottom_Side.h8",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
 #pragma endregion
 
-//Шаг прохождения листа
 #pragma region Шаг прохождения листа
     {GenSeqToHmi.Seq_1_StateNo = new Value(AppGenSeqToHmi + "Seq_1_StateNo",  HWNDCLIENT::hEditState_11, KPVL::ZState::DataPosState_1, &conn_kpvl)},    //Номер шага последовательности загрузки в печь
     {GenSeqToHmi.Seq_2_StateNo = new Value(AppGenSeqToHmi + "Seq_2_StateNo",  HWNDCLIENT::hEditState_21, KPVL::ZState::DataPosState_2, &conn_kpvl)},    //Номер шага последовательности выгрузки в печи
@@ -761,7 +751,6 @@ std::deque<Value*> AllTagKpvl = {
 #pragma endregion
 #endif
 
-//Температуры печи
 #pragma region Температуры печи
     {Hmi210_1.Htr1_1  = new Value(PathKpvl + "Hmi210_1.Htr_1.ToHmi.TAct",   HWNDCLIENT::hEditTemp11TAct, 0, &conn_kpvl)},       //Температура в зоне 1.1
     {Hmi210_1.Htr1_2  = new Value(PathKpvl + "Hmi210_1.Htr_2.ToHmi.TAct",   HWNDCLIENT::hEditTemp12TAct, 0, &conn_kpvl)},       //Температура в зоне 1.2
@@ -773,29 +762,6 @@ std::deque<Value*> AllTagKpvl = {
     {Hmi210_1.Htr2_4 = new Value(PathKpvl + "Hmi210_1.Htr2_4.ToHmi.TAct",  HWNDCLIENT::hEditTemp24TAct, 0, &conn_kpvl)},       //Температура в зоне 2.4
 #pragma endregion
 
-
-    ////Список марок и размеров листа
-    //{TextData.PlateText.PlateTypeArray[0].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[0].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy0, 0)},
-    //{TextData.PlateText.PlateTypeArray[1].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[1].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy1, 0)},
-    //{TextData.PlateText.PlateTypeArray[2].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[2].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy2, 0)},
-    //{TextData.PlateText.PlateTypeArray[3].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[3].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy3, 0)},
-    //{TextData.PlateText.PlateTypeArray[4].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[4].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy4, 0)},
-    //{TextData.PlateText.PlateTypeArray[5].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[5].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy5, 0)},
-    //{TextData.PlateText.PlateTypeArray[6].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[6].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy6, 0)},
-    //{TextData.PlateText.PlateTypeArray[7].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[7].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy7, 0)},
-    //{TextData.PlateText.PlateTypeArray[8].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[8].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy8, 0)},
-    //{TextData.PlateText.PlateTypeArray[9].sText = new Value(PathKpvl + "TextData.PlateText.PlateTypeArray[9].sText",  PLCsec1, "", HWNDCLIENT::hEditAlloy9, 0)},
-    //
-    //{TextData.PlateText.PlateThicknessArray[0].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[0].sText",  PLCsec1, "", HWNDCLIENT::hEditThick0, 0)},
-    //{TextData.PlateText.PlateThicknessArray[1].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[1].sText",  PLCsec1, "", HWNDCLIENT::hEditThick1, 0)},
-    //{TextData.PlateText.PlateThicknessArray[2].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[2].sText",  PLCsec1, "", HWNDCLIENT::hEditThick2, 0)},
-    //{TextData.PlateText.PlateThicknessArray[3].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[3].sText",  PLCsec1, "", HWNDCLIENT::hEditThick3, 0)},
-    //{TextData.PlateText.PlateThicknessArray[4].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[4].sText",  PLCsec1, "", HWNDCLIENT::hEditThick4, 0)},
-    //{TextData.PlateText.PlateThicknessArray[5].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[5].sText",  PLCsec1, "", HWNDCLIENT::hEditThick5, 0)},
-    //{TextData.PlateText.PlateThicknessArray[6].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[6].sText",  PLCsec1, "", HWNDCLIENT::hEditThick6, 0)},
-    //{TextData.PlateText.PlateThicknessArray[7].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[7].sText",  PLCsec1, "", HWNDCLIENT::hEditThick7, 0)},
-    //{TextData.PlateText.PlateThicknessArray[8].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[8].sText",  PLCsec1, "", HWNDCLIENT::hEditThick8, 0)},
-    //{TextData.PlateText.PlateThicknessArray[9].sText = new Value(PathKpvl + "TextData.PlateText.PlateThicknessArray[9].sText",  PLCsec1, "", HWNDCLIENT::hEditThick9, 0)},
 };
 
 
@@ -967,33 +933,6 @@ void PLC_KPVL::InitTag()
     }
 }
 
-//void PLC_KPVL::Connect()
-//{
-//    while(isRun)
-//    {
-//        try
-//        {
-//            countconnect2++;
-//            HARD_LOGGER(std::string("Опрос PLC_KPVL::Run") + " countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//
-//            SetWindowText(winmap(hEditDiagnose7), (std::to_string(countconnect1) + "." + std::to_string(countconnect2)).c_str());
-//
-//            //client->DefaultTimeout = 59000;
-//            //client->KeepAlive
-//            client->Connect(Uri);
-//            return;
-//        }
-//        catch(std::runtime_error& exc)
-//        {
-//            HARD_LOGGER2(std::string("Run: Error Connect: ") + exc.what() + " countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//        }
-//        catch(...)
-//        {
-//            HARD_LOGGER2(std::string("Run: Error Connect: ") + "Unknown error countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
-//        };
-//        Sleep(2000);
-//    }
-//}
 
 void PLC_KPVL::Run(int count)
 {
@@ -1044,15 +983,13 @@ void PLC_KPVL::Run(int count)
             //Проверяем на новый лист на кантовке
             if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый
             {
-                if(++NewDataVal > 5)
+                if(++NewDataVal > 5)    //5 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)", FUNCTION_LINE_NAME);
-                    if(!MyServer)
-                    {
-                        LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                        KPVL::Z6::SetSaveDone();
-                        //HMISheetData.SaveDone->Set_Value(true);
-                    }
+                    LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                    KPVL::Sheet::Z6::SetSaveDone();
+                    //HMISheetData.SaveDone->Set_Value(true);
+                    //PlateData[5].Sheet->Set_Value((int32_t)0);
                 }
             }
             else
@@ -1064,17 +1001,8 @@ void PLC_KPVL::Run(int count)
             //Проверяем WatchDog
             if(WD())
                 throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
-            /*
-            if(bSendNewSheet)
-            {
-                SetNewSheet();
-            }
-            if(bSendNewCassette)
-            {
-                SetNewCassette();
-            }
-            */
 
+            //задержка 1 секунда минус время затраченое на работу
             TestTimeRun(time1);
 
             //Считаем время работы
@@ -1093,14 +1021,7 @@ void PLC_KPVL::Run(int count)
 #endif
         return;
     }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    };
+    CATCH_RUN(Logger);
 
     LOG_INFO(Logger, "{:90}| Выход из опроса 1 countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     if(isRun)
@@ -1123,14 +1044,8 @@ void PLC_KPVL::Run(int count)
         delete client;
 #endif
     }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    };
+    CATCH_RUN(Logger);
+
 
     LOG_INFO(Logger, "{:90}| ... Вышли {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 };
@@ -1258,16 +1173,7 @@ void Open_KPVL_RUN()
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
             PLC->Run(countconnect);
         }
-        catch(std::runtime_error& exc)
-        {
-            SetWindowText(winmap(hEditMode1), "runtime_error");
-            LOG_ERROR(Logger, "{:90}| Error {} countconnect = {} to: {}", FUNCTION_LINE_NAME, exc.what(), countconnect, KPVL::URI);
-        }
-        catch(...)
-        {
-            SetWindowText(winmap(hEditMode1), "Unknown error");
-            LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
-        };
+        CATCH_OPEN(Logger, KPVL::URI);
 
         LOG_INFO(Logger, "{:90}| Выход из опроса countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
 
@@ -1324,10 +1230,6 @@ void UpdateSheetPos()
     PQclear(res);
 }
 
-void GetDataTime_All(TSheet& TS)
-{
-
-}
 
 void Open_KPVL_SQL()
 {
@@ -1344,9 +1246,9 @@ void Open_KPVL_SQL()
         KPVL::SQL::KPVL_SQL();
         for(auto& TS : AllSheet)
         {
-            if(atof(TS.DataTime_All.c_str()) == 0)
+            if(std::stof(TS.DataTime_All) == 0)
             {
-                GetDataTime_All(TS);
+                KPVL::SQL::GetDataTime_All(TS);
             }
         }
         size_t count = AllSheet.size();

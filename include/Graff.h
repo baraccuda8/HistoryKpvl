@@ -21,6 +21,7 @@ public:
 	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt);
 	void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 
+	void DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
 	void Paint(HWND hWnd);
 
 	//void SqlTemp(T_SqlTemp& st, Value* val);

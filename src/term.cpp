@@ -310,11 +310,7 @@ void PLC_S107::Run(int count)
         DataChangeS107.InitGoot = FALSE;
         countget = 1;
 
-#if NEWS
         client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
-#else
-        client = new OpcUa::UaClient(Logger);
-#endif
 
         SetWindowText(winmap(hEditMode2), "Connect");
         w1 = hEditTime_3;
@@ -347,16 +343,6 @@ void PLC_S107::Run(int count)
             //Проверяем WatchDog
             if(WD())
                 throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
-            /*
-            if(bSendNewSheet)
-            {
-                SetNewSheet();
-            }
-            if(bSendNewCassette)
-            {
-                SetNewCassette();
-            }
-            */
 
             TestTimeRun(time1);
 
@@ -374,14 +360,7 @@ void PLC_S107::Run(int count)
 #endif
         return;
     }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    };
+    CATCH_RUN(Logger);
 
     LOG_INFO(Logger, "{:90}| Выход из опроса 1 countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     if(isRun)
@@ -396,22 +375,11 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "delete Sub");
         for(auto s : cssS107)s.second.Delete();
 
-#if NEWS
         LOG_INFO(Logger, "{:90}| reset countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         SetWindowText(winmap(hEditMode2), "reset");
         client.reset();
-#else
-        delete client
-#endif
     }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    };
+    CATCH_RUN(Logger);
 
     LOG_INFO(PethLogger, "{:90}| ... Вышли countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 };
@@ -540,16 +508,7 @@ void Open_FURN_RUN()
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
             PLC->Run(countconnect);
         }
-        catch(std::runtime_error& exc)
-        {
-            SetWindowText(winmap(hEditMode2), "runtime_error");
-            LOG_ERROR(Logger, "{:90}| Error {} countconnect = {} to: {}", FUNCTION_LINE_NAME, exc.what(), countconnect, S107::URI);
-        }
-        catch(...)
-        {
-            SetWindowText(winmap(hEditMode2), "Unknown error");
-            LOG_ERROR(Logger, "{:90}| Unknown error countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
-        };
+        CATCH_OPEN(Logger, S107::URI);
 
         LOG_INFO(Logger, "{:90}| Выход из опроса countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
 

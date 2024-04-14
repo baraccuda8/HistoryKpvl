@@ -60,44 +60,43 @@ extern const int Col_Sheet_prestostartcomp;
 
 //Печь закалки
 namespace KPVL {
+    extern std::string ServerDataTime;
 
     namespace SQL
     {
+        //Получаем список листов из базы
         void KPVL_SQL();
+        void GetDataTime_All(TSheet& TS);
     };
 
-    extern std::string ServerDataTime;
+    namespace Sheet{
+        //Получаем ID листа
+        std::string GetIdSheet(std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
 
-    bool IsCassete(T_CassetteData& CD);
-     //Получаем ID кассеты по листу Из касеты
-    std::string GetIdCassette(T_CassetteData& CD);
-    int GetCountSheetInCassete(T_CassetteData& CD);
-     //Закрываем все не закрытые касеты кроме кассеты на кантовке
-    void CloseCassete(T_CassetteData& CD);
-    bool IsSheet(T_PlateData& PD);
-    //Получаем ID листа
-    std::string GetIdSheet(T_PlateData& PD);
-    void InsertSheet(T_PlateData& PD, int pos);
-    //Обновлякем в базе данные по листу
-    void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
-    bool SetUpdateSheet(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
-    //bool SetUpdateSheet2(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
-    //bool SetUpdateSheet3(PGConnection* con, T_PlateData* PD, std::string update, std::string where);
-    void SheetPos(T_PlateData& PD, int pos);
-    void InsertCassette(T_CassetteData& CD);
-    void UpdateCassette(T_CassetteData& CD, std::string id);
-    void CassettePos(T_CassetteData& CD);
-    //bool TestIDSheet(T_PlateData& PD, int& Melt, int& Pack, int& PartNo, int& Sheet);
-    DWORD WINAPI ThreadState2(LPVOID);
-        //Собираем данные по 2 секции через 5 секунд после State_2 = 5
-    //void InsertSheetPos0(T_PlateData& PD);
-    //void UpdateSheetPos0(T_PlateData& PD);
-    //void UpdateSheet0();
-        //void InsertPos(int pos, std::string name);
-    void OutTime(T_PlateData& PD, HWNDCLIENT chwnd);
-    DWORD DataPosBool(Value* value);
+    //Проверка на наличие листа
+        //bool IsSheet(T_PlateData& PD);
 
-    //Зона 0 на входе в печь
+        ////Получаем ID листа
+        //std::string GetIdSheet(T_PlateData& PD);
+
+        ////Добовление листа в базу
+        //void InsertSheet(T_PlateData& PD, int pos);
+
+        ////Обновляем в базе данные по листу
+        //bool SetUpdateSheet(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
+
+        ////Обновляем позицию листа
+        //void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
+
+        ////Обновляем данные по листу если лист есть или добовляем новый
+        //void SheetPos(T_PlateData& PD, int pos);
+
+        ////Вывод даны-вревени
+        //void OutTime(T_PlateData& PD, HWNDCLIENT chwnd);
+
+        //DWORD DataPosBool(Value* value);
+
+        //Зона 0 на входе в печь
         namespace  Z0{
             DWORD DataAlloyThikn(Value* value);
 
@@ -154,28 +153,54 @@ namespace KPVL {
             DWORD Data(Value* value);
             DWORD DataSlab(Value* value);
 
-            //Вывод Номер кассеты за день
-            DWORD CassetteNo(Value* value);
-
-            //Вывод День ID листа
-            DWORD InitCassette(Value* value);
-
-            //Вывод Номер листа в касете
-            DWORD Sheet_InCassette(Value* value);
-
             //Новые лист в касету, Кассета наполяентся
             DWORD NewSheetData(Value* value);
 
-            DWORD StartNewCassette(Value* value);
+            //DWORD StartNewCassette(Value* value);
 
-            DWORD CassetteIsFill(Value* value);
+            //DWORD CassetteIsFill(Value* value);
 
             void SetSaveDone();
 
         }
+    }
+
+    namespace Cassette{
+        //Обновляем данные по кассете если кассета есть или добовляем новую
+        void CassettePos(T_CassetteData& CD);
+
+        //Вывод Номер листа в касете
+        DWORD Sheet_InCassette(Value* value);
+
+        //Вывод Номер кассеты за день
+        DWORD CassetteNo(Value* value);
+
+        //Вывод День ID листа
+        DWORD CassetteDay(Value* value);
+
+        //Вывод Месяц ID листа
+        DWORD CassetteMonth(Value* value);
+
+        //Вывод Год ID листа
+        DWORD CassetteYear(Value* value);
+
+        //кассета наполяентся
+        DWORD CasseteIsFill(Value* value);
+
+        ////начать новую кассету
+        //DWORD StartNewCassette(Value* value);
+        //
+        ////кассета готова
+        //DWORD CassetteIsComplete(Value* value);
+
+
+    }
 
     //Операция в зонах
     namespace ZState{
+
+        ////5-ти секундная задержка на запись данных по листу во 2- зоне
+        //DWORD WINAPI ThreadState2(LPVOID);
         //Операция в 1 зоне
         DWORD DataPosState_1(Value* value);
 
@@ -186,12 +211,6 @@ namespace KPVL {
         DWORD DataPosState_3(Value* value);
     }
 
-    //Касеты и листы и вачдог WDG
-    //Битовый вачтог
-
-
-    ////Начать новую кассету
-    //DWORD CassetteIsFill(Value* value);
 
     //Аналоги
     namespace An{
@@ -281,7 +300,7 @@ namespace KPVL {
         //Низ
         DWORD LaminarSection2Bot(Value* value);
     };
-//Отклонения листа на кантовке
+    //Отклонения листа на кантовке
     namespace Side{
         DWORD SheetTop1(Value* value);
         DWORD SheetTop2(Value* value);
@@ -302,13 +321,9 @@ namespace KPVL {
         DWORD SheetBot8(Value* value);
     }
 
-    //namespace TimePos{
-    //    DWORD TimePosState_1(Value* value);
-    //    DWORD TimePosState_2(Value* value);
-    //    DWORD TimePosState_3(Value* value);
-    //}
-
+    //вачтог
     namespace WDG{
+        //Битовый вачтог
         DWORD SheetData_WDG_toBase(Value* value);
     }
 

@@ -360,33 +360,14 @@ void Graff::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 
 }
 
-void Graff::Paint(HWND hWnd)
+
+void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 {
-	if(!init.Good() || !full)return;
-	if(!TempRef.size() || !TempAct.size())return;
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hWnd, &ps);
-
-	RECT rcBounds;
-	GetWindowRect(hWnd, &rcBounds);
-
-	Gdiplus::REAL Width = Gdiplus::REAL(abs(rcBounds.right - rcBounds.left));
-	Gdiplus::REAL Height = Gdiplus::REAL(abs(rcBounds.bottom - rcBounds.top));
-
-	Gdiplus::Graphics g(hdc);
-	Gdiplus::Bitmap backBuffer (INT(Width * Mashtab), INT(Height * Mashtab), &g);
-	Gdiplus::Graphics temp(&backBuffer);
-	Gdiplus::RectF RectG(0, 0, Width * Mashtab, Height * Mashtab);
-	
-
-	Gdiplus::RectF RectBottom(0, 0, Width, Height);
-	temp.Clear(Gdiplus::Color(255, 255, 255));
-
 	Gdiplus::Pen Gdi_Bar(Gdiplus::Color(0, 0, 0), 1);
 
 	double maxt = 0;
 	double mint = 2000;
-	int64_t mind = (std::min)(TempAct.begin()->second.first,	TempRef.begin()->second.first);
+	int64_t mind = (std::min)(TempAct.begin()->second.first, TempRef.begin()->second.first);
 
 	auto b = TempAct.begin();
 	auto e = TempAct.end();
@@ -420,7 +401,7 @@ void Graff::Paint(HWND hWnd)
 	RectG2.X += 35;
 	RectG2.Width -= 40;
 
-	DrawBottom(temp, RectG2, Red,  TempRef, mind, maxd, mint, maxt);	//Красный; Заданное значение температуры
+	DrawBottom(temp, RectG2, Red, TempRef, mind, maxd, mint, maxt);	//Красный; Заданное значение температуры
 	DrawBottom(temp, RectG2, Blue, TempAct, mind, maxd, mint, maxt);	//Синий; Фактическое значение температуры
 
 	Gdiplus::RectF RectG3(RectG);
@@ -443,13 +424,36 @@ void Graff::Paint(HWND hWnd)
 
 	stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
 	DrawTime(temp, RectText, sDataEnd, stringFormat);
+}
 
+void Graff::Paint(HWND hWnd)
+{
+	if(!init.Good() || !full)return;
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hWnd, &ps);
 
-	std::wstring SaveFile(Name.begin(), Name.end());
-	SaveFile += L".jpg";
+	RECT rcBounds;
+	GetWindowRect(hWnd, &rcBounds);
 
-	backBuffer.Save(SaveFile.c_str(), &guidJpeg, NULL);
+	Gdiplus::REAL Width = Gdiplus::REAL(abs(rcBounds.right - rcBounds.left));
+	Gdiplus::REAL Height = Gdiplus::REAL(abs(rcBounds.bottom - rcBounds.top));
 
+	Gdiplus::Graphics g(hdc);
+	Gdiplus::Bitmap backBuffer (INT(Width * Mashtab), INT(Height * Mashtab), &g);
+	Gdiplus::Graphics temp(&backBuffer);
+	Gdiplus::RectF RectG(0, 0, Width * Mashtab, Height * Mashtab);
+	
+
+	Gdiplus::RectF RectBottom(0, 0, Width, Height);
+	temp.Clear(Gdiplus::Color(255, 255, 255));
+	if(TempRef.size() && TempAct.size())
+	{
+		DrawTemp(temp, RectG);
+
+		std::wstring SaveFile(Name.begin(), Name.end());
+		SaveFile += L".jpg";
+		backBuffer.Save(SaveFile.c_str(), &guidJpeg, NULL);
+	}
 	//backBuffer.
 	g.DrawImage(&backBuffer, RectBottom);
 
@@ -994,7 +998,7 @@ void InitGrafWindow(HWND hWnd)
 	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
 	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
 
-	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1330, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
+	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1370, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
 
 	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
 	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);

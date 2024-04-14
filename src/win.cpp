@@ -213,11 +213,11 @@ std::vector <ListTitle> Cassette_Collumn ={
     { "Касета", XL_CX6 },
     { "Листов", XL_CX6 },
     //{ "Кассета закрыта", XL_CX8 },
+    { "Печь",  XL_CX6},
     { "Начало оптуска", XL_CX8 },
-    { "Ошибка оптуска", XL_CX8 },
     { "Конец оптуска", XL_CX8 },
     { "Конец процесса",  XL_CX8},
-    { "Печь",  XL_CX6},
+    { "Ошибка оптуска", XL_CX8 },
 };
 
 //std::map<HWNDCLIENT, structWindow>mapWindow;
@@ -270,12 +270,12 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 #pragma endregion
 
 #pragma region Список касет и листов
-    {hEdit_Cassette,{szList,   List1Flag,{0, 530, 1050, 160}, ""}},
+    {hEdit_Cassette,{szList,   List1Flag,{0, 530, 1090, 160}, ""}},
     {hEdit_Sheet,  {szList,    List1Flag, {0, 700, 750, 130}, ""}},
 #pragma endregion
 
 #pragma region Список кассет 7 штук, для печей отпуска
-    {hGroup11,{szTem1, Temp1Flag,{1060, 530, 259 , 160}, ""}},
+    {hGroup11,{szTem1, Temp1Flag,{1100, 530, 259 , 160}, ""}},
         {hEditState_selected_cassetN, {szStat, Stat10Flag, {0,   0, 19, 19}, ""}},
         {hEditState_selected_casset1, {szStat, Stat10Flag, {0,  20, 19, 19}, "*"}},
         {hEditState_selected_casset2, {szStat, Stat10Flag, {0,  40, 19, 19}, "*"}},
@@ -889,9 +889,6 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 #pragma endregion
 
 };
-
-
-
 
 //Рисуем заголовок ListBox
 LRESULT OnPaintHeadListView(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)

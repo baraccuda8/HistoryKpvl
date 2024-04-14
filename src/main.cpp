@@ -16,7 +16,6 @@ void StopGraff();
 
 std::string szTitle = "История данных по Комплексу Подготовки Высокопрочного Листа. Версия ";
 
-
 //Текущий рабочий каталог
 std::string strPatchFileName = "";
 std::string CurrentDirPatch = "";

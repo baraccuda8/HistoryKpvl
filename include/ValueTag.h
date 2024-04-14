@@ -6,25 +6,15 @@
 
 extern std::shared_ptr<spdlog::logger> AllLogger;
 
-//#define isControllerTest true
-//#define VARLOGGER(_s){Log(Codesys ? Codesys->Logger : AllLogger, spdlog::level::level_enum::info, _s); SendDebug(_s);} 
-//#define VARCATCH(_s)catch(std::runtime_error& exc){VARLOGGER(_s + exc.what());}catch(...){VARLOGGER(_s + "Unknown error");}
 
-
-void MySetWindowText(HWND h, const char* ss);
-
-//template<class T>
-//class Value;
 
 #define SETALLTAG(_p, _t, _f, _e, _s,  _d) {_t = new Value(_p + #_t, _f, _s, _e, _d)}
 
 
 class Client;
 
-//template<class T>
 class Value{
 public:
-    //template<class T>DWORD (*myfun)(Value* v);
     typedef DWORD (*myfun)(Value* v);
 
     PGConnection* Conn;
@@ -46,7 +36,6 @@ public:
     myfun FunctionCallbak = NULL;
 
     Client* Codesys = NULL;
-    //int isNode = 0;
     OpcUa::Node Node = OpcUa::Node();
     OpcUa::NodeId NodeId = OpcUa::NodeId();
     MSSEC Sec =  sec00000;
@@ -69,6 +58,7 @@ public:
     Value(){};
     Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn);
     Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s);
+    Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC s, std::string fo, OpcUa::Variant v, std::string com);
     void InitNodeId(Client* cds);
     OpcUa::Node GetNode();
     OpcUa::VariantType GetType();
@@ -103,12 +93,6 @@ inline T GetVal(Value* value)
 }
 
 
-
-typedef struct Data{
-    std::string patch;
-    OpcUa::Variant val;
-}Data;
-
 class ClassDataChange: public Subscriptions
 {
 public:
@@ -116,9 +100,10 @@ public:
     bool WatchDog = false;
     int WatchDogWait = 0;
 
-    std::deque<Data>V_Data;
-
     virtual void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) = 0;
 };
 
 
+void MySetWindowText(HWND h, const char* ss);
+void MySetWindowText(HWND h, std::string ss);
+void MySetWindowText(Value* value);

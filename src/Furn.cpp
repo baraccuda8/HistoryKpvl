@@ -127,10 +127,7 @@ namespace S107
                 }
             }
             else
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
             int tt = 0;
@@ -187,10 +184,7 @@ namespace S107
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
             //std::stringstream ss;
@@ -210,10 +204,7 @@ namespace S107
             res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
         }
@@ -238,10 +229,7 @@ namespace S107
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
         }
     }
@@ -266,10 +254,7 @@ namespace S107
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
         }
     }
@@ -293,10 +278,7 @@ namespace S107
                 PGresult* res = conn_temp.PGexec(comand);
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME,  comand);
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                {
-                    LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                }
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
             }
     }
@@ -325,10 +307,7 @@ namespace S107
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME,  comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
         }
     }
@@ -414,7 +393,7 @@ namespace S107
         DWORD SetNull_Temper(Value* value)
         {
             AppFurn1.Cassette.f_temper = "0";
-            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            MySetWindowText(value);
             return 0;
         }
 
@@ -422,7 +401,7 @@ namespace S107
         //REAL Время до окончания процесса, мин
         DWORD TimeToProcEnd(Value* value)
         {
-            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            MySetWindowText(value);
             float time = GetVal<float>(value);
             if(time <= 5.0 && time >= 4.9)
             {
@@ -436,108 +415,6 @@ namespace S107
             }
             return 0;
         }
-
-        ////REAL Время разгона
-        //DWORD PointTime_1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Уставка температуры
-        //DWORD PointRef_1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Время выдержки
-        //DWORD PointDTime_2(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        // 
-        ////REAL Заданное значение температуры
-        //DWORD TempRef(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Фактическое значение температуры
-        //DWORD TempAct(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Термопара 1
-        //DWORD T1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Термопара 2
-        //DWORD T2(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////ID касеты
-        //DWORD IDCassette(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn1.Cassette, 1);
-        //    return 0;
-        //}
-        //
-        ////ID касеты месяц
-        //DWORD Month(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn1.Cassette, 1);
-        //    return 0;
-        //}
-        //
-        ////ID касеты день
-        //DWORD Day(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn1.Cassette, 1);
-        //    return 0;
-        //}
-        //
-        ////ID касеты номер
-        //DWORD CassetteNo(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn1.Cassette, 1);
-        //    return 0;
-        //}
-        //
-        ////Выбор
-        //DWORD SelectedCassete(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        ////REAL Полное время процесса (уставка), мин
-        //DWORD TimeProcSet(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Время процесса, час (0..XX)
-        //DWORD ProcTimeMin(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-
     }
 
     //Печ отпуска #2
@@ -618,7 +495,7 @@ namespace S107
         DWORD SetNull_Temper(Value* value)
         {
             AppFurn2.Cassette.f_temper = "0";
-            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            MySetWindowText(value);
             return 0;
         }
 
@@ -627,7 +504,7 @@ namespace S107
         //REAL Время до окончания процесса, мин
         DWORD TimeToProcEnd(Value* value)
         {
-            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            MySetWindowText(value);
             float time = GetVal<float>(value);
             if(time <= 5.0 && time >= 4.9)
             {
@@ -641,114 +518,6 @@ namespace S107
             }
             return 0;
         }
-
-        ////REAL Время разгона
-        //DWORD PointTime_1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Уставка температуры
-        //DWORD PointRef_1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Время выдержки
-        //DWORD PointDTime_2(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        ////REAL Полное время процесса (уставка), мин
-        //DWORD TimeProcSet(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Время процесса, час (0..XX)
-        //DWORD ProcTimeMin(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-                ////REAL Заданное значение температуры
-        //DWORD TempRef(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Фактическое значение температуры
-        //DWORD TempAct(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Термопара 1
-        //DWORD T1(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////REAL Термопара 2
-        //DWORD T2(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        //
-        ////ID касеты год
-        //DWORD IDCassette(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn2.Cassette, 2);
-        //    return 0;
-        //}
-        //
-        ////ID касеты месяц
-        //DWORD Month(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn2.Cassette, 2);
-        //    return 0;
-        //}
-        //
-        ////ID касеты день
-        //DWORD Day(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn2.Cassette, 2);
-        //    return 0;
-        //}
-        //
-        ////ID касеты номер
-        //DWORD CassetteNo(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    CloseAllCassette2(AppFurn2.Cassette, 2);
-        //    return 0;
-        //}
-        //
-        ////Выбор
-        //DWORD SelectedCassete(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    return 0;
-        //}
-        
     };
-
-    //DWORD SelectedCassete(Value* value)
-    //{
-    //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-    //    return 0;
-    //}
-
 
 }

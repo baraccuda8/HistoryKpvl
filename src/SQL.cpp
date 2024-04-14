@@ -140,6 +140,7 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
 
             OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(atoi(conn_spis.PGgetvalue(res, l, ColType).c_str()));
             SetValue(type, val, value);
+            val->Update = true;
             LOG_INFO(SQLLogger, "{:90}| ID = {}, coeff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coeff, val->GetString(), val->Patch);
             break;
         }
@@ -226,6 +227,15 @@ void InitTag()
             {"15", "Потерян Кантовке"},
             {"16", "Потерян Кантовке"},
             {"17", "Потерян В касете"},
+
+            {"20", "Потерян На входе" },
+            {"21", "Потерян 1-я часть печи"},
+            {"22", "Потерян 2-я часть печи"},
+            {"23", "Потерян Закалке"},
+            {"24", "Потерян Охлаждении"},
+            {"25", "Потерян Кантовке"},
+            {"26", "Потерян Кантовке"},
+            {"27", "Потерян В касете"},
         };
 
 
