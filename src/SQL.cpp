@@ -33,6 +33,7 @@ extern std::map<std::string, std::string> NamePos;
 extern std::map<int, std::string> GenSeq1;
 extern std::map<int, std::string> GenSeq2;
 extern std::map<int, std::string> GenSeq3;
+extern std::map<int, std::string> EventCassette;
 
 namespace KPVL {
     extern uint32_t NextID;
@@ -259,7 +260,10 @@ void InitTag()
 
         std::stringstream ss;
         for(std::map <std::string, std::string>::iterator it = NamePos.begin(); it != NamePos.end(); it++)
+        {
             ss << "INSERT INTO possheet (id, content) VALUES ('" << it->first << "', '" << it->second << "');\n";
+            NamePos[it->first] = it->second;
+        }
         comand = ss.str();
         res = conn_kpvl.PGexec(comand);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -270,6 +274,54 @@ void InitTag()
         PQclear(res);
     }
 #pragma endregion
+
+
+#pragma region EventCassette
+    comand = "SELECT id, content FROM EventCassette"; ///* WHERE name = '" + val->Patch + "'*/;";
+    res = conn_kpvl.PGexec(comand);
+    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        int line = PQntuples(res);
+        for(int l = 0; l < line; l++)
+            EventCassette[(evCassete::EV)std::stoi(conn_kpvl.PGgetvalue(res, l, 0))] = conn_kpvl.PGgetvalue(res, l, 1).c_str();
+    }
+    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+    {
+        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+    }
+    PQclear(res);
+
+    if(!EventCassette.size())
+    {
+        std::map<int, std::string> eventcassette ={
+            {evCassete::Nul,  "Неизвестно"},
+            {evCassete::Fill, "Набирается"},
+            {evCassete::Wait, "Ожидает"},
+            {evCassete::Rel, "Отпуск"},
+            {evCassete::Error, "Авария"},
+            {evCassete::End, "Конец"},
+            {evCassete::History, "Из базы"},
+        };
+
+        std::stringstream ss;
+        for(std::map <int, std::string>::iterator it = eventcassette.begin(); it != eventcassette.end(); it++)
+        {
+            ss << "INSERT INTO EventCassette (id, content) VALUES (" << it->first << ", '" << it->second << "');\n";
+            EventCassette[it->first] = it->second;
+        }
+
+        comand = ss.str();
+        res = conn_kpvl.PGexec(comand);
+        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+        {
+            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
+            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        }
+        PQclear(res);
+    }
+#pragma endregion
+
 
 #pragma region genseq1
     comand = "SELECT id, content FROM genseq1"; ///* WHERE name = '" + val->Patch + "'*/;";
@@ -303,7 +355,10 @@ void InitTag()
 
         std::stringstream ss;
         for(std::map <int, std::string>::iterator it = GenSeq1.begin(); it != GenSeq1.end(); it++)
+        {
             ss << "INSERT INTO genseq1 (id, content) VALUES (" << it->first << ", '" << it->second << "');\n";
+            GenSeq1[it->first] = it->second;
+        }
 
         comand = ss.str();
         res = conn_kpvl.PGexec(comand);
@@ -347,7 +402,10 @@ void InitTag()
 
         std::stringstream ss;
         for(std::map <int, std::string>::iterator it = GenSeq2.begin(); it != GenSeq2.end(); it++)
+        {
             ss << "INSERT INTO genseq2 (id, content) VALUES (" << it->first << ", '" << it->second << "');\n";
+            GenSeq2[it->first] = it->second;
+        }
 
         comand = ss.str();
         res = conn_kpvl.PGexec(comand);
@@ -390,6 +448,7 @@ void InitTag()
         for(std::map <int, std::string>::iterator it = GenSeq3.begin(); it != GenSeq3.end(); it++)
         {
             ss << "INSERT INTO genseq3 (id, content) VALUES (" << it->first << ", '" << it->second << "');\n";
+            GenSeq3[it->first] = it->second;
         }
 
         comand = ss.str();

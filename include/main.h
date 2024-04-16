@@ -163,6 +163,8 @@ std::string GetLastErrorString();
 std::string ToString(const OpcUa::DateTime& t);
 std::string GetDataTimeString();
 std::string GetDataTimeString(std::time_t& st);
+std::string GetDataTimeString(std::time_t* st);
+
 BOOL DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);
 BOOL DataTimeOfString(std::string str, std::string format, std::tm& TM);
 

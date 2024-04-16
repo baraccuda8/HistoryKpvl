@@ -191,14 +191,14 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
 };
 
 //Заголовки колонок окна касет
-std::map<evCassete::EV, const char*> NameEventCassette ={
-    {evCassete::Nul,  "Неизвестно"},
-    {evCassete::Fill, "Набирается"},
-    {evCassete::Wait, "Ожидает"},
-    {evCassete::Rel, "Отпуск"},
-    {evCassete::Error, "Авария"},
-    {evCassete::End, "Конец"},
-    {evCassete::History, "Из базы"},
+std::map<int, std::string> EventCassette ={
+    //{evCassete::Nul,  "Неизвестно"},
+    //{evCassete::Fill, "Набирается"},
+    //{evCassete::Wait, "Ожидает"},
+    //{evCassete::Rel, "Отпуск"},
+    //{evCassete::Error, "Авария"},
+    //{evCassete::End, "Конец"},
+    //{evCassete::History, "Из базы"},
 };
 
 
@@ -1462,8 +1462,7 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         if(plvdi->item.iSubItem == Cassete::NN)                lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                         if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
-                        if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, NameEventCassette[(evCassete::EV)atoi(p.Event.c_str())]);
-                        if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, NameEventCassette[(evCassete::EV)atoi(p.Event.c_str())]);
+                        if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, EventCassette[std::stoi(p.Event)].c_str());
                         if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, p.Create_at.c_str());
                         if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                         if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());

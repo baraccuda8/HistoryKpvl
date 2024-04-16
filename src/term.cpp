@@ -168,9 +168,11 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
             {
                 if((uint32_t)OpcUa::ObjectId::Server_ServerStatus_CurrentTime == id.GetIntegerIdentifier())
                 {
+                    SetWindowText(winmap(hEditMode2), "Пришло время...");
                     WatchDog = TRUE; //Бит жизни
                     S107::ServerDataTime = val.ToString();
                     SetWindowText(winmap(hEditTimeServer_2), S107::ServerDataTime.c_str());
+                    SetWindowText(winmap(hEditMode2), "Жду данные...");
                 }
             }
             else if(id.IsString())

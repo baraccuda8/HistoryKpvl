@@ -116,37 +116,41 @@ namespace KPVL {
         void KPVL_SQL()
         {
             //AllSheet.erase(AllSheet.begin(), AllSheet.end());
-            std::string sStartId = "0";
-            std::string sStopId = "0";
-
-            std::string sMaxId = "SELECT max(id) FROM sheet";
-            PGresult* res = conn_spis.PGexec(sMaxId);
-            //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
-            if(PQresultStatus(res) == PGRES_TUPLES_OK)
-            {
-                int line = PQntuples(res);
-                if(line)
-                    sStopId = conn_kpvl.PGgetvalue(res, line - 1, 0);
-            }
-            else
-                LOG_ERR_SQL(SQLLogger, res, sMaxId);
-            PQclear(res);
+            //std::string sStartId = "0";
+            //std::string sStopId = "0";
+            //
+            //std::string sMaxId = "SELECT max(id) FROM sheet";
+            //PGresult* res = conn_spis.PGexec(sMaxId);
+            ////LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
+            //if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            //{
+            //    int line = PQntuples(res);
+            //    if(line)
+            //        sStopId = conn_kpvl.PGgetvalue(res, line - 1, 0);
+            //}
+            //else
+            //    LOG_ERR_SQL(SQLLogger, res, sMaxId);
+            //PQclear(res);
+            //if(!sStopId.length())sStopId = "0";
+            //long TempId = atoi(sStopId.c_str());
+            //TempId = TempId > 100 ? TempId - 100 : 0;
+            //sStartId = std::to_string(TempId);
 
             AllSheet.erase(AllSheet.begin(), AllSheet.end());
 
-            if(!sStopId.length())sStopId = "0";
-            long TempId = atoi(sStopId.c_str());
-            TempId = TempId > 100 ? TempId - 100 : 0;
-            sStartId = std::to_string(TempId);
+            std::time_t stop = time(NULL);;
+            std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 2)); //2-е суток
+            std::string start_at = GetDataTimeString(&statr);
 
             std::stringstream FilterComand;
             FilterComand << "SELECT * FROM sheet ";
-            FilterComand << "WHERE id > " << sStartId;
-            FilterComand << " AND id <= " << sStopId;
+            FilterComand << "WHERE  create_at > '" << start_at << "'";
+            //FilterComand << " AND id <= " << sStopId;
             FilterComand << " ORDER BY  create_at DESC, pos DESC, start_at DESC;";
             //FilterSheet();
             //bFilterData = TRUE;
-            res = conn_spis.PGexec(FilterComand.str());
+            std::string comand = FilterComand.str();
+            PGresult* res = conn_spis.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -219,14 +223,14 @@ namespace KPVL {
 
             }
             else
-                LOG_ERR_SQL(SQLLogger, res, FilterComand.str());
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
             //AddHistoriSheet(true, (int)AllSheet.size());
             int t = 0;
         }
 
-        float GetHeatTime_Z2(std::string enddata_at)
+        float GetHeatTime_Z2(PGConnection * conn, std::string enddata_at)
         {
             float out = 0;
             std::string next_at = "";
@@ -236,11 +240,11 @@ namespace KPVL {
                 std::stringstream co;
                 co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
                 std::string comand = co.str();
-                PGresult* res = conn_spis.PGexec(comand);
+                PGresult* res = conn->PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))
-                        next_at = conn_kpvl.PGgetvalue(res, 0, 0);
+                        next_at = conn->PGgetvalue(res, 0, 0);
                 }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
@@ -252,11 +256,11 @@ namespace KPVL {
                 std::stringstream co;
                 co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
                 std::string comand = co.str();
-                PGresult* res = conn_spis.PGexec(comand);
+                PGresult* res = conn->PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))
-                        sout = conn_kpvl.PGgetvalue(res, 0, 0);
+                        sout = conn->PGgetvalue(res, 0, 0);
                 }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
@@ -309,7 +313,7 @@ namespace KPVL {
                 }
                 if(enddata_at.length())
                 {
-                    float HeatTime_Z2 = GetHeatTime_Z2(enddata_at);
+                    float HeatTime_Z2 = GetHeatTime_Z2(&conn_kpvl, enddata_at);
 
                     std::string Id = Sheet::GetIdSheet(TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
 
@@ -1382,19 +1386,18 @@ namespace KPVL {
             {
                 int32_t id = GetIdCassette(HMISheetData.Cassette);
 
-                if(!id)
+                LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, OldCassette.Id = {}, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id, id);
+                if(id)
                     SetOldCassette(HMISheetData.Cassette, id);
                 else
                     InsertCassette(HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id);
             }
             else
             {
+                LOG_INFO(HardLogger, "{:90}| Id = {}, Year = {}, Month = {}, Day = {}, CassetteNo = {}, SheetInCassette = {}", FUNCTION_LINE_NAME,
+                         OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.CassetteNo, OldCassette.SheetInCassette);
                 CloseCassete(OldCassette);
                 OldCassette = O_CassetteData();
-                LOG_INFO(HardLogger, "{:90}| Id = {}, Year = {}, Month = {}, Day = {}, CassetteNo = {}, SheetInCassette = {}", FUNCTION_LINE_NAME, 
-                         OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.CassetteNo, OldCassette.SheetInCassette);
-                LOG_INFO(HardLogger, "{:90}| CasseteIsFill = false, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id);
             }
 
 
@@ -1451,7 +1454,7 @@ namespace KPVL {
                 {
                     time_t st;
                     std::string datatimeend_at = GetDataTimeString(st);
-                    Time_Z2 = SQL::GetHeatTime_Z2(datatimeend_at);
+                    Time_Z2 = SQL::GetHeatTime_Z2(&conn_dops, datatimeend_at);
                 }
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, 2);
 
