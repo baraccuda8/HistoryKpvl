@@ -266,6 +266,7 @@ namespace KPVL {
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
             }
+
             if(sout.length())
                 out = std::stof(sout);
             return out;
@@ -315,7 +316,7 @@ namespace KPVL {
                 {
                     float HeatTime_Z2 = GetHeatTime_Z2(&conn_kpvl, enddata_at);
 
-                    std::string Id = Sheet::GetIdSheet(TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string Id = Sheet::GetIdSheet(&conn_kpvl, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
 
                     std::stringstream co;
                     co << "UPDATE sheet SET datatime_end = '" << enddata_at << "', datatime_all = " << HeatTime_Z2 << " WHERE id = " << Id;
@@ -390,7 +391,7 @@ namespace KPVL {
         }
 
         //Получаем ID листа
-        std::string GetIdSheet(T_PlateData& PD)
+        std::string GetIdSheet(PGConnection* conn, T_PlateData& PD)
         {
             std::string id = "0";
 
@@ -424,7 +425,7 @@ namespace KPVL {
         }
 
         //Получаем ID листа
-        std::string GetIdSheet(std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
+        std::string GetIdSheet(PGConnection* conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
         {
             std::string id = "0";
 
@@ -458,7 +459,7 @@ namespace KPVL {
         }
 
                 //Получаем ID листа
-        std::string GetIdSheet(int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
+        std::string GetIdSheet(PGConnection* conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
         {
             std::string id = "0";
 
@@ -474,7 +475,7 @@ namespace KPVL {
                 co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
-                PGresult* res = conn_kpvl.PGexec(comand);
+                PGresult* res = conn_kpvl.PGexec(co.str());
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
                     id = conn_kpvl.PGgetvalue(res, 0, 0);
                 else
@@ -489,7 +490,7 @@ namespace KPVL {
         {
             if(IsSheet(PD))
             {
-                std::string id = GetIdSheet(PD);
+                std::string id = GetIdSheet(&conn_kpvl, PD);
                 if(!id.length() || id == "" || id == "0")
                 {
                     std::stringstream sd;
@@ -636,7 +637,7 @@ namespace KPVL {
         //Обновляем данные по листу если лист есть или добовляем новый
         void SheetPos(T_PlateData& PD, int pos)
         {
-            std::string id = GetIdSheet(PD);
+            std::string id = GetIdSheet(&conn_kpvl, PD);
 
             if(id.length() && std::stoi(id) != 0)
             {
@@ -689,7 +690,7 @@ namespace KPVL {
                    || PD.Slab->Val.As<int32_t>() != std::stoi(TS.Slab))
                 {
                     //std::string sId = GetIdSheet(PD);
-                    std::string sId = GetIdSheet(TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string sId = GetIdSheet(&conn_kpvl, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
                     if(atoi(sId.c_str()))
                     {
                         int iPos = -1;
@@ -1090,7 +1091,7 @@ namespace KPVL {
 
                 if(IsSheet(PD))
                 {
-                    std::string id = GetIdSheet(PD);
+                    std::string id = GetIdSheet(&conn_kpvl, PD);
                     if(id.length() && id != "0")
                     {
 
@@ -1454,14 +1455,15 @@ namespace KPVL {
                 {
                     time_t st;
                     std::string datatimeend_at = GetDataTimeString(st);
-                    Time_Z2 = SQL::GetHeatTime_Z2(&conn_dops, datatimeend_at);
+                    if(datatimeend_at.length())
+                        Time_Z2 = SQL::GetHeatTime_Z2(&conn_dops, datatimeend_at);
                 }
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, 2);
 
                 if(Melt && Pack && PartNo && Sheet)
                 {
                     //LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
-                    int Id = std::stoi(Sheet::GetIdSheet(Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+                    int Id = std::stoi(Sheet::GetIdSheet(&conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
 
                     std::stringstream ss1;
                     ss1 << "UPDATE sheet SET ";

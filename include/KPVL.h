@@ -71,8 +71,8 @@ namespace KPVL {
 
     namespace Sheet{
         //Получаем ID листа
-        std::string GetIdSheet(std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
-        std::string GetIdSheet(int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab);
+        std::string GetIdSheet(PGConnection* conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
+        std::string GetIdSheet(PGConnection* conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab);
 
     //Проверка на наличие листа
         //bool IsSheet(T_PlateData& PD);
