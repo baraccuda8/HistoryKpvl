@@ -408,13 +408,13 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
                 sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
                 std::string comand = sd.str();
-                PGresult* res = conn_kpvl.PGexec(comand);
+                PGresult* res = conn->PGexec(comand);
 
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = conn_kpvl.PGgetvalue(res, 0, 0);
+                        id = conn->PGgetvalue(res, 0, 0);
                     }
                 }
                 else
@@ -448,9 +448,9 @@ namespace KPVL {
                 co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
-                PGresult* res = conn_kpvl.PGexec(comand);
+                PGresult* res = conn->PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn_kpvl.PGgetvalue(res, 0, 0);
+                    id = conn->PGgetvalue(res, 0, 0);
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
@@ -475,9 +475,9 @@ namespace KPVL {
                 co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
-                PGresult* res = conn_kpvl.PGexec(co.str());
+                PGresult* res = conn->PGexec(co.str());
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn_kpvl.PGgetvalue(res, 0, 0);
+                    id = conn->PGgetvalue(res, 0, 0);
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
