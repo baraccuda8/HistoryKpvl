@@ -109,18 +109,16 @@ void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Va
 	sde << " AND create_at <= '";
 	sde << Start;
 	sde << "';";
-	std::string command = sde.str();
-	PGresult* res = conn.PGexec(command);
+	std::string comand = sde.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = conn.PGexec(comand);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
 		if(PQntuples(res))
 			sBegTime2 = conn.PGgetvalue(res, 0, 0);
 	}
 	else
-	{
-		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-	}
+		LOG_ERR_SQL(SQLLogger, res, comand);
 	PQclear(res);
 
 
@@ -131,8 +129,9 @@ void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Va
 
 	sdt << " ORDER BY create_at ASC;";
 
-	command = sdt.str();
-	res = conn.PGexec(command);
+	comand = sdt.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	res = conn.PGexec(comand);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
 		int line = PQntuples(res);
@@ -172,6 +171,9 @@ void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Va
 			tr[GetStringData(Stop)] = std::pair(mktime(&TM_Temp), f);
 		}
 	}
+	else
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 }
 
@@ -204,8 +206,9 @@ void PdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 	sdt << "' ORDER BY create_at ASC ;";
 
 
-	std::string command = sdt.str();
-	PGresult* res = conn.PGexec(command);
+	std::string comand = sdt.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = conn.PGexec(comand);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
 		int line = PQntuples(res);
@@ -221,7 +224,7 @@ void PdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 				if(Sheet.Start_at <= sData)
 				{
 					auto a = tr.find(sData);
-	
+
 					if(a != tr.end() && a._Ptr != NULL)
 					{
 						a->second.second = (f + a->second.second) / 2.0f;
@@ -243,110 +246,13 @@ void PdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 			}
 		}
 	}
+	else
+		LOG_ERR_SQL(SQLLogger, res, comand);
 	PQclear(res);
 
 	std::ostringstream oss;
 	oss << std::setprecision(1) << std::fixed << SrTemp;
 	strSrTemp = oss.str();
-
-
-	//float allsec = atof(Sheet.DataTime_All.c_str()) * 60.0f;
-	//
-	//
-	//GraffKPVL.TempAct.erase(GraffKPVL.TempAct.begin(), GraffKPVL.TempAct.end()); //Синий; Фактическое значение температуры
-	//
-	//std::tm TM_End ={0};
-	//std::tm TM_Beg ={0};
-	//std::tm TM_Temp ={0};
-	//std::string TecTime;
-	//time_t tStop1 = time(NULL);
-	//localtime_s(&TM_End, &tStop1);
-	//time_t tStop = _mkgmtime(&TM_End);
-	//time_t tStart = (time_t)difftime(tStop, GraffKPVL.MaxSecCount);
-	//gmtime_s(&TM_Beg, &tStart);
-	//
-	//std::stringstream sdw;
-	//sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
-	//sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
-	//sdw << boost::format("%|02| ") % TM_End.tm_mday;
-	//sdw << boost::format("%|02|:") % TM_End.tm_hour;
-	//sdw << boost::format("%|02|:") % TM_End.tm_min;
-	//sdw << boost::format("%|02|") % TM_End.tm_sec;
-	////sdw << "+05";
-	//std::string sEndTime = sdw.str();
-	//
-	//sdw.str(std::string());
-	//sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
-	//sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
-	//sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
-	//sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
-	//sdw << boost::format("%|02|:") % TM_Beg.tm_min;
-	//sdw << boost::format("%|02|") % TM_Beg.tm_sec;
-	////sdw << "+05";
-	//std::string sBegTime = sdw.str();
-	//
-	////std::string sBegTime2 = SqlTempKPVL(sBegTime);
-	//
-	//std::stringstream sdt;
-	//sdt << "SELECT create_at, content FROM todos WHERE (";
-	//
-	//sdt << "id_name = " << Hmi210_1.Htr_1->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr_2->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr_3->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr_4->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
-	//sdt << "id_name = " << Hmi210_1.Htr2_4->ID << " ) ";
-	//
-	//sdt << " AND create_at >= '";
-	//sdt << sBegTime;
-	//sdt << "' AND create_at <= '";
-	//sdt << sEndTime;
-	//sdt << "' ORDER BY create_at ASC ;";
-	//
-	//std::string command = sdt.str();
-	//PGresult* res = GraffKPVL.conn->PGexec(command);
-	////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-	//if(PQresultStatus(res) == PGRES_TUPLES_OK)
-	//{
-	//	int line = PQntuples(res);
-	//	if(line)
-	//	{
-	//		for(int l = 0; l < line; l++)
-	//		{
-	//			std::string sData = GraffKPVL.conn->PGgetvalue(res, l, 0);
-	//			if(sBegTime <= sData)
-	//			{
-	//				auto a = GraffKPVL.TempAct.find(sData);
-	//				std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
-	//				float f =  atoi_t(float, atof, sTemp); //static_cast<float>(atof(sTemp.c_str()));
-	//
-	//				if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
-	//				{
-	//					a->second.second = (f + a->second.second) / 2.0f;
-	//				}
-	//				else
-	//				{
-	//					if(f != 0)
-	//					{
-	//						DataTimeOfString(sData, FORMATTIME, TM_Temp.tm_year, TM_Temp.tm_mon, TM_Temp.tm_mday, TM_Temp.tm_hour, TM_Temp.tm_min, TM_Temp.tm_sec);
-	//						TM_Temp.tm_year -= 1900;
-	//						TM_Temp.tm_mon -= 1;
-	//						GraffKPVL.TempAct[sData] = std::pair(mktime(&TM_Temp), f);
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//PQclear(res);
-	//
-	//
-	//GraffKPVL.full = true;
-	//InvalidateRect(GraffKPVL.gHwnd, NULL, false);
-
-
 }
 
 void PdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt)
@@ -615,16 +521,17 @@ void GetCassete(TSheet& p, TCassette& сassette)
 	if(!p.Day.length()) return;
 	if(!p.CassetteNo.length()) return;
 
-	std::string FilterComand1 = "SELECT * FROM cassette ";
-	FilterComand1 += "WHERE ";
-	FilterComand1 += "year = '" + p.Year + "' AND ";
-	FilterComand1 += "month = '" + p.Month + "' AND ";
-	FilterComand1 += "day = '" + p.Day + "' AND ";
-	FilterComand1 += "cassetteno = '" + p.CassetteNo + "' ";
-	FilterComand1 += "ORDER BY create_at DESC";
-	FilterComand1 += ";";
+	std::string comand = "SELECT * FROM cassette ";
+	comand += "WHERE ";
+	comand += "year = " + p.Year + " AND ";
+	comand += "month = " + p.Month + " AND ";
+	comand += "day = " + p.Day + " AND ";
+	comand += "cassetteno = " + p.CassetteNo + " ";
+	comand += "ORDER BY create_at DESC";
+	comand += ";";
 
-	PGresult* res = conn_kpvl.PGexec(FilterComand1);
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = conn_kpvl.PGexec(comand);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
 		int line = PQntuples(res);
@@ -656,9 +563,7 @@ void GetCassete(TSheet& p, TCassette& сassette)
 		}
 	}
 	else
-	{
-		std::string errc = utf8_to_cp1251(PQresultErrorMessage(res));
-	}
+		LOG_ERR_SQL(SQLLogger, res, comand);
 	PQclear(res);
 
 }

@@ -503,8 +503,9 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 	sde << sBegTime;
 	sde << "';";
 	std::string sBegTime2 = sBegTime;
-	std::string command = sde.str();
-	PGresult* res = conn->PGexec(command);
+	std::string comand = sde.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -512,10 +513,8 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 			sBegTime2 = conn->PGgetvalue(res, 0, 0);
 	}
 	else
-	{
-		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-	}
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 
 
@@ -526,8 +525,9 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 
 	sdt << " ORDER BY create_at ASC ;";
 
-	command = sdt.str();
-	res = conn->PGexec(command);
+	comand = sdt.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	res = conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -565,6 +565,9 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 			st[sEndTime] = std::pair(tStop1, f);
 		}
 	}
+	else
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 }
 
@@ -585,8 +588,9 @@ std::string SqlTempKPVL2(std::string sBegTime)
 	sde << sBegTime;
 	sde << "';";
 	std::string sBegTime2 = sBegTime;
-	std::string command = sde.str();
-	PGresult* res = GraffKPVL.conn->PGexec(command);
+	std::string comand = sde.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = GraffKPVL.conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -594,10 +598,8 @@ std::string SqlTempKPVL2(std::string sBegTime)
 			sBegTime2 = conn_kpvl.PGgetvalue(res, 0, 0);
 	}
 	else
-	{
-		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-	}
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 
 	return sBegTime2;
@@ -659,8 +661,9 @@ void GetGrTempKPVLTempAct()
 	sdt << sEndTime;
 	sdt << "' ORDER BY create_at ASC ;";
 	
-	std::string command = sdt.str();
-	PGresult* res = GraffKPVL.conn->PGexec(command);
+	std::string comand = sdt.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = GraffKPVL.conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -674,7 +677,7 @@ void GetGrTempKPVLTempAct()
 				{
 					auto a = GraffKPVL.TempAct.find(sData);
 					std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
-					float f =  atoi_t(float, atof, sTemp); //static_cast<float>(atof(sTemp.c_str()));
+					float f =  std::stof(sTemp); //static_cast<float>(atof(sTemp.c_str()));
 
 					if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
 					{
@@ -694,6 +697,8 @@ void GetGrTempKPVLTempAct()
 			}
 		}
 	}
+	else
+		LOG_ERR_SQL(SQLLogger, res, comand);
 	PQclear(res);
 
 
@@ -818,6 +823,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			std::stringstream sdd;
 			sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << ") AND content = 'true';"; // OR id_name = " << app.ProcFault->ID << "
 			std::string comand = sdd.str();
+			if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 			PGresult* res = conn->PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
@@ -825,10 +831,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 					sTempTime = conn->PGgetvalue(res, 0, 0);
 			}
 			else
-			{
-				LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-				LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			}
+				LOG_ERR_SQL(SQLLogger, res, comand);
 			PQclear(res);
 			if(!sTempTime.length())
 				return;
@@ -884,8 +887,9 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 	sde << sBegTime;
 	sde << "';";
 	std::string sBegTime2 = sBegTime;
-	std::string command = sde.str();
-	PGresult* res = conn->PGexec(command);
+	std::string comand = sde.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	PGresult* res = conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -893,10 +897,8 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			sBegTime2 = conn->PGgetvalue(res, 0, 0);
 	}
 	else
-	{
-		LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-		LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-	}
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 
 
@@ -907,8 +909,9 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 
 	sdt << " ORDER BY create_at ASC ;";
 
-	command = sdt.str();
-	res = conn->PGexec(command);
+	comand = sdt.str();
+	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	res = conn->PGexec(comand);
 	//LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
@@ -946,6 +949,9 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			st[sEndTime] = std::pair(tStop1, f);
 		}
 	}
+	else
+		LOG_ERR_SQL(SQLLogger, res, comand);
+
 	PQclear(res);
 }
 

@@ -48,13 +48,11 @@ void Value::UpdateVal()
     ////Временная функция для обновления таблици tag
     //char comand[1024];
     //sprintf_s(comand, 1023, "UPDATE tag SET comment = '%s' WHERE id = %u;", Comment.c_str(), ID);
-    PGresult* res = Conn->PGexec(st.str());
-    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, st.str());
+    std::string comand =st.str();
+    PGresult* res = Conn->PGexec(comand);
+    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, st.str());
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 
     Update = true;
@@ -91,10 +89,7 @@ void Value::GetIdValSQL()
         if(line)
             ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
         else
-        {
-            LOG_ERROR(SQLLogger, "{:90}| PQntuples = {}", FUNCTION_LINE_NAME, line);
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        }
+            LOG_ERR_SQL(SQLLogger, res, comand);
     }
     else
         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -232,7 +227,7 @@ Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, M
 {
     if(!Patch.length())
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
-    if(Patch.find("WDG") != SIZE_MAX)
+    if(Patch.find("WDG") != std::string::npos)
     {
         Arhive = false;
     }
@@ -243,7 +238,7 @@ Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn):
 {
     if(!Patch.length())
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
-    if(Patch.find("WDG") != SIZE_MAX)
+    if(Patch.find("WDG") != std::string::npos)
     {
         Arhive = false;
     }
@@ -255,7 +250,7 @@ Value::Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, 
     if(!Patch.length())
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
 
-    if(Patch.find("WDG") != SIZE_MAX)
+    if(Patch.find("WDG") != std::string::npos)
     {
         Arhive = false;
     }

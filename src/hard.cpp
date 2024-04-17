@@ -90,7 +90,7 @@ std::deque<Value*> AllTagKpvl = {
 
 #pragma region вачдог WDG
     {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
-    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::WDG::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
+    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
     {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
 #pragma endregion
 
@@ -224,23 +224,23 @@ std::deque<Value*> AllTagKpvl = {
 
 
 #pragma region Отклонения листа на кантовке
-    {HMISheetData.Top_Side.h1 = new Value(AppHMISheetData + "Top_Side.h1",     HWNDCLIENT::hNull, KPVL::Side::SheetTop1, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h2 = new Value(AppHMISheetData + "Top_Side.h2",     HWNDCLIENT::hNull, KPVL::Side::SheetTop2, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h3 = new Value(AppHMISheetData + "Top_Side.h3",     HWNDCLIENT::hNull, KPVL::Side::SheetTop3, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h4 = new Value(AppHMISheetData + "Top_Side.h4",     HWNDCLIENT::hNull, KPVL::Side::SheetTop4, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h5 = new Value(AppHMISheetData + "Top_Side.h5",     HWNDCLIENT::hNull, KPVL::Side::SheetTop5, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h6 = new Value(AppHMISheetData + "Top_Side.h6",     HWNDCLIENT::hNull, KPVL::Side::SheetTop6, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h7 = new Value(AppHMISheetData + "Top_Side.h7",     HWNDCLIENT::hNull, KPVL::Side::SheetTop7, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h8 = new Value(AppHMISheetData + "Top_Side.h8",     HWNDCLIENT::hNull, KPVL::Side::SheetTop8, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h1 = new Value(AppHMISheetData + "Top_Side.h1",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h2 = new Value(AppHMISheetData + "Top_Side.h2",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h3 = new Value(AppHMISheetData + "Top_Side.h3",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h4 = new Value(AppHMISheetData + "Top_Side.h4",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h5 = new Value(AppHMISheetData + "Top_Side.h5",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h6 = new Value(AppHMISheetData + "Top_Side.h6",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h7 = new Value(AppHMISheetData + "Top_Side.h7",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h8 = new Value(AppHMISheetData + "Top_Side.h8",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
 
-    {HMISheetData.Bot_Side.h1 = new Value(AppHMISheetData + "Bottom_Side.h1",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h2 = new Value(AppHMISheetData + "Bottom_Side.h2",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h3 = new Value(AppHMISheetData + "Bottom_Side.h3",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h4 = new Value(AppHMISheetData + "Bottom_Side.h4",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h5 = new Value(AppHMISheetData + "Bottom_Side.h5",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h6 = new Value(AppHMISheetData + "Bottom_Side.h6",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h7 = new Value(AppHMISheetData + "Bottom_Side.h7",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h8 = new Value(AppHMISheetData + "Bottom_Side.h8",  HWNDCLIENT::hNull, KPVL::Side::SheetBot1, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h1 = new Value(AppHMISheetData + "Bottom_Side.h1",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h2 = new Value(AppHMISheetData + "Bottom_Side.h2",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h3 = new Value(AppHMISheetData + "Bottom_Side.h3",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h4 = new Value(AppHMISheetData + "Bottom_Side.h4",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h5 = new Value(AppHMISheetData + "Bottom_Side.h5",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h6 = new Value(AppHMISheetData + "Bottom_Side.h6",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h7 = new Value(AppHMISheetData + "Bottom_Side.h7",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h8 = new Value(AppHMISheetData + "Bottom_Side.h8",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
 #pragma endregion
 
 #pragma region Шаг прохождения листа
@@ -492,7 +492,7 @@ void PLC_KPVL::Run(int count)
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)", FUNCTION_LINE_NAME);
                     LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    KPVL::Sheet::Z6::SetSaveDone();
+                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
                     //HMISheetData.SaveDone->Set_Value(true);
                     //PlateData[5].Sheet->Set_Value((int32_t)0);
                 }
@@ -700,15 +700,13 @@ void Open_KPVL_RUN()
 void GetEndData(TSheet& sheet)
 {
     std::string comand = "SELECT FROM todos WHERE pos > 2 AND id = " + sheet.id;
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_spis.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 }
 
@@ -717,21 +715,17 @@ extern std::string  FORMATTIME;
 void UpdateSheetPos()
 {
     std::string comand = "DELETE FROM sheet WHERE pos = 10 OR pos = 20 OR pos = 30";
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_spis.PGexec(comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
-    PQclear(res);
+        LOG_ERR_SQL(SQLLogger, res, comand);
+   PQclear(res);
 
     comand = "UPDATE sheet SET pos = 7 WHERE news = 1;";
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_spis.PGexec(comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 }
 
@@ -748,12 +742,12 @@ void Open_KPVL_SQL()
         //SepState_2();
         UpdateSheetPos();
 
-        KPVL::SQL::KPVL_SQL();
+        KPVL::SQL::KPVL_SQL(conn_spis);
         for(auto& TS : AllSheet)
         {
-            if(std::stof(TS.DataTime_All) == 0 || !TS.DataTime_End.length() )
+            //if(std::stof(TS.DataTime_All) == 0 || !TS.DataTime_End.length() )
             {
-                KPVL::SQL::GetDataTime_All(TS);
+                KPVL::SQL::GetDataTime_All(conn_spis, TS);
             }
         }
         size_t count = AllSheet.size();

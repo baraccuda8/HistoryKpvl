@@ -65,14 +65,14 @@ namespace KPVL {
     namespace SQL
     {
         //Получаем список листов из базы
-        void KPVL_SQL();
-        void GetDataTime_All(TSheet& TS);
+        void KPVL_SQL(PGConnection& conn);
+        void GetDataTime_All(PGConnection& conn, TSheet& TS);
     };
 
     namespace Sheet{
         //Получаем ID листа
-        std::string GetIdSheet(PGConnection* conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
-        std::string GetIdSheet(PGConnection* conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab);
+        std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
+        std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab);
 
     //Проверка на наличие листа
         //bool IsSheet(T_PlateData& PD);
@@ -84,7 +84,8 @@ namespace KPVL {
         //void InsertSheet(T_PlateData& PD, int pos);
 
         ////Обновляем в базе данные по листу
-        //bool SetUpdateSheet(PGConnection* con, T_PlateData& PD, std::string update, std::string where);
+        bool SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where);
+        bool SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where);
 
         ////Обновляем позицию листа
         //void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
@@ -161,14 +162,14 @@ namespace KPVL {
 
             //DWORD CassetteIsFill(Value* value);
 
-            void SetSaveDone();
+            void SetSaveDone(PGConnection& conn);
 
         }
     }
 
     namespace Cassette{
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        void CassettePos(T_CassetteData& CD);
+        void CassettePos(PGConnection& conn, T_CassetteData& CD);
 
         //Вывод Номер листа в касете
         DWORD Sheet_InCassette(Value* value);
@@ -301,32 +302,12 @@ namespace KPVL {
         //Низ
         DWORD LaminarSection2Bot(Value* value);
     };
+
     //Отклонения листа на кантовке
-    namespace Side{
-        DWORD SheetTop1(Value* value);
-        DWORD SheetTop2(Value* value);
-        DWORD SheetTop3(Value* value);
-        DWORD SheetTop4(Value* value);
-        DWORD SheetTop5(Value* value);
-        DWORD SheetTop6(Value* value);
-        DWORD SheetTop7(Value* value);
-        DWORD SheetTop8(Value* value);
+    DWORD Side(Value* value);
 
-        DWORD SheetBot1(Value* value);
-        DWORD SheetBot2(Value* value);
-        DWORD SheetBot3(Value* value);
-        DWORD SheetBot4(Value* value);
-        DWORD SheetBot5(Value* value);
-        DWORD SheetBot6(Value* value);
-        DWORD SheetBot7(Value* value);
-        DWORD SheetBot8(Value* value);
-    }
-
-    //вачтог
-    namespace WDG{
-        //Битовый вачтог
-        DWORD SheetData_WDG_toBase(Value* value);
-    }
+    //Битовый вачтог
+    DWORD SheetData_WDG_toBase(Value* value);
 
 }
 

@@ -113,20 +113,20 @@ namespace KPVL {
     namespace SQL
     {
         //Получаем список листов из базы
-        void KPVL_SQL()
+        void KPVL_SQL(PGConnection& conn)
         {
             //AllSheet.erase(AllSheet.begin(), AllSheet.end());
             //std::string sStartId = "0";
             //std::string sStopId = "0";
             //
             //std::string sMaxId = "SELECT max(id) FROM sheet";
-            //PGresult* res = conn_spis.PGexec(sMaxId);
+            //PGresult* res = conn.PGexec(sMaxId);
             ////LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
             //if(PQresultStatus(res) == PGRES_TUPLES_OK)
             //{
             //    int line = PQntuples(res);
             //    if(line)
-            //        sStopId = conn_kpvl.PGgetvalue(res, line - 1, 0);
+            //        sStopId = conn.PGgetvalue(res, line - 1, 0);
             //}
             //else
             //    LOG_ERR_SQL(SQLLogger, res, sMaxId);
@@ -150,7 +150,8 @@ namespace KPVL {
             //FilterSheet();
             //bFilterData = TRUE;
             std::string comand = FilterComand.str();
-            PGresult* res = conn_spis.PGexec(comand);
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -158,65 +159,65 @@ namespace KPVL {
                 for(int l = 0; l < line; l++)
                 {
                     TSheet sheet;
-                    sheet.DataTime = GetStringData(conn_kpvl.PGgetvalue(res, l, Col_Sheet_create_at));
-                    sheet.Pos = conn_kpvl.PGgetvalue(res, l, Col_Sheet_pos);
-                    sheet.id = conn_kpvl.PGgetvalue(res, l, Col_Sheet_id);
-                    sheet.DataTime_End = GetStringData(conn_kpvl.PGgetvalue(res, l, Col_Sheet_datatime_end));
-                    sheet.DataTime_All = conn_kpvl.PGgetvalue(res, l, Col_Sheet_datatime_all);
-                    sheet.Alloy = conn_kpvl.PGgetvalue(res, l, Col_Sheet_alloy);
-                    sheet.Thikness = conn_kpvl.PGgetvalue(res, l, Col_Sheet_thikness);
-                    sheet.Melt = conn_kpvl.PGgetvalue(res, l, Col_Sheet_melt);
-                    sheet.Slab = conn_kpvl.PGgetvalue(res, l, Col_Sheet_slab);
-                    sheet.PartNo = conn_kpvl.PGgetvalue(res, l, Col_Sheet_partno);
-                    sheet.Pack = conn_kpvl.PGgetvalue(res, l, Col_Sheet_pack);
-                    sheet.Sheet = conn_kpvl.PGgetvalue(res, l, Col_Sheet_sheet);
-                    sheet.SubSheet = conn_kpvl.PGgetvalue(res, l, Col_Sheet_subsheet);
-                    sheet.Temper = conn_kpvl.PGgetvalue(res, l, Col_Sheet_temper);
-                    sheet.Speed = conn_kpvl.PGgetvalue(res, l, Col_Sheet_speed);
+                    sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
+                    sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
+                    sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
+                    sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
+                    sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
+                    sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
+                    sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
+                    sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
+                    sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
+                    sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
+                    sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
+                    sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
+                    sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
+                    sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
+                    sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
 
-                    sheet.Za_PT3 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_za_pt3);
-                    sheet.Za_TE3 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_za_te3);
+                    sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
+                    sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
 
-                    sheet.LaminPressTop = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lampresstop);
-                    sheet.LaminPressBot = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lampressbot);
-                    sheet.PosClapanTop = conn_kpvl.PGgetvalue(res, l, Col_Sheet_posclapantop);
-                    sheet.PosClapanBot = conn_kpvl.PGgetvalue(res, l, Col_Sheet_posclapanbot);
-                    sheet.Mask = conn_kpvl.PGgetvalue(res, l, Col_Sheet_mask);
+                    sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
+                    sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
+                    sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
+                    sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
+                    sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
 
-                    sheet.Lam1PosClapanTop = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
-                    sheet.Lam1PosClapanBot = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
-                    sheet.Lam2PosClapanTop = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
-                    sheet.Lam2PosClapanBot = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
+                    sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
+                    sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
+                    sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
+                    sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
 
-                    sheet.LAM_TE1 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_lam_te1);
-                    sheet.News = conn_kpvl.PGgetvalue(res, l, Col_Sheet_news);
-                    sheet.Top1 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top1);
-                    sheet.Top2 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top2);
-                    sheet.Top3 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top3);
-                    sheet.Top4 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top4);
-                    sheet.Top5 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top5);
-                    sheet.Top6 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top6);
-                    sheet.Top7 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top7);
-                    sheet.Top8 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_top8);
+                    sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
+                    sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
+                    sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
+                    sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
+                    sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
+                    sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
+                    sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
+                    sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
+                    sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
+                    sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
 
-                    sheet.Bot1 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot1);
-                    sheet.Bot2 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot2);
-                    sheet.Bot3 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot3);
-                    sheet.Bot4 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot4);
-                    sheet.Bot5 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot5);
-                    sheet.Bot6 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot6);
-                    sheet.Bot7 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot7);
-                    sheet.Bot8 = conn_kpvl.PGgetvalue(res, l, Col_Sheet_bot8);
+                    sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
+                    sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
+                    sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
+                    sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
+                    sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
+                    sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
+                    sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
+                    sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
 
-                    sheet.Day = conn_kpvl.PGgetvalue(res, l, Col_Sheet_day);
-                    sheet.Month = conn_kpvl.PGgetvalue(res, l, Col_Sheet_month);
-                    sheet.Year = conn_kpvl.PGgetvalue(res, l, Col_Sheet_year);
-                    sheet.CassetteNo = conn_kpvl.PGgetvalue(res, l, Col_Sheet_cassetteno);
-                    sheet.SheetInCassette = conn_kpvl.PGgetvalue(res, l, Col_Sheet_sheetincassette);
+                    sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
+                    sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
+                    sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
+                    sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
+                    sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
 
-                    sheet.Start_at = GetStringData(conn_kpvl.PGgetvalue(res, l, Col_Sheet_start_at));
-                    sheet.TimeForPlateHeat = conn_kpvl.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
-                    sheet.PresToStartComp = conn_kpvl.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
+                    sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
+                    sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
+                    sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
 
                     AllSheet.push_back(sheet);
                 }
@@ -230,7 +231,7 @@ namespace KPVL {
             int t = 0;
         }
 
-        float GetHeatTime_Z2(PGConnection * conn, std::string enddata_at)
+        float GetHeatTime_Z2(PGConnection& conn, std::string enddata_at)
         {
             float out = 0;
             std::string next_at = "";
@@ -240,11 +241,12 @@ namespace KPVL {
                 std::stringstream co;
                 co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
                 std::string comand = co.str();
-                PGresult* res = conn->PGexec(comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))
-                        next_at = conn->PGgetvalue(res, 0, 0);
+                        next_at = conn.PGgetvalue(res, 0, 0);
                 }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
@@ -256,11 +258,12 @@ namespace KPVL {
                 std::stringstream co;
                 co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
                 std::string comand = co.str();
-                PGresult* res = conn->PGexec(comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))
-                        sout = conn->PGgetvalue(res, 0, 0);
+                        sout = conn.PGgetvalue(res, 0, 0);
                 }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
@@ -272,25 +275,54 @@ namespace KPVL {
             return out;
         }
 
-        void GetDataTime_All(TSheet& TS)
+        void GetDataTime_All(PGConnection& conn, TSheet& TS)
         {
-            if(std::stoi(TS.DataTime_All) == 0)
+
+            if(std::stoi(TS.Pos) < 3)return;
+
+            if(!TS.Start_at.length())
+            {
+                std::stringstream sd;
+                sd << " start_at = (SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3')";
+                std::string update = sd.str();
+
+                Sheet::SetUpdateSheet(conn, TS, update, ""); // " start_at IS NULL AND ");
+
+                std::stringstream sa;
+                sa << "SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3'";
+
+                std::string comand = sa.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
+                if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    if(PQntuples(res))
+                        TS.Start_at = GetStringData(conn.PGgetvalue(res, 0, 0));
+                }
+                else
+                    LOG_ERR_SQL(SQLLogger, res, comand);
+                PQclear(res);
+            }
+
+            if(std::stoi(TS.DataTime_All) == 0 || !TS.DataTime_End.length())
             {
                 //TS.Start_at
                 std::string next_at = "";
                 std::string enddata_at = "";
                 std::string HeatTime_Z2 = "";
 
+
                 if(TS.Start_at.length())
                 {
                     std::stringstream co;
                     co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                     std::string comand = co.str();
-                    PGresult* res = conn_spis.PGexec(comand);
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
-                            next_at = conn_kpvl.PGgetvalue(res, 0, 0);
+                            next_at = conn.PGgetvalue(res, 0, 0);
                     }
                     else
                         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -300,13 +332,14 @@ namespace KPVL {
                 if(next_at.length())
                 {
                     std::stringstream co;
-                    co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                    co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                     std::string comand = co.str();
-                    PGresult* res = conn_spis.PGexec(comand);
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
-                            enddata_at = conn_kpvl.PGgetvalue(res, 0, 0);
+                            enddata_at = conn.PGgetvalue(res, 0, 0);
                     }
                     else
                         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -314,14 +347,15 @@ namespace KPVL {
                 }
                 if(enddata_at.length())
                 {
-                    float HeatTime_Z2 = GetHeatTime_Z2(&conn_kpvl, enddata_at);
+                    float HeatTime_Z2 = GetHeatTime_Z2(conn, enddata_at);
 
-                    std::string Id = Sheet::GetIdSheet(&conn_kpvl, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string Id = Sheet::GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
 
                     std::stringstream co;
                     co << "UPDATE sheet SET datatime_end = '" << enddata_at << "', datatime_all = " << HeatTime_Z2 << " WHERE id = " << Id;
                     std::string comand = co.str();
-                    PGresult* res = conn_kpvl.PGexec(comand);
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    PGresult* res = conn.PGexec(comand);
                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -391,7 +425,7 @@ namespace KPVL {
         }
 
         //Получаем ID листа
-        std::string GetIdSheet(PGConnection* conn, T_PlateData& PD)
+        std::string GetIdSheet(PGConnection& conn, T_PlateData& PD)
         {
             std::string id = "0";
 
@@ -408,13 +442,15 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
                 sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
                 std::string comand = sd.str();
-                PGresult* res = conn->PGexec(comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                PGresult* res = conn.PGexec(comand);
 
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = conn->PGgetvalue(res, 0, 0);
+                        id = conn.PGgetvalue(res, 0, 0);
                     }
                 }
                 else
@@ -425,7 +461,7 @@ namespace KPVL {
         }
 
         //Получаем ID листа
-        std::string GetIdSheet(PGConnection* conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
+        std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
         {
             std::string id = "0";
 
@@ -448,9 +484,11 @@ namespace KPVL {
                 co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
-                PGresult* res = conn->PGexec(comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn->PGgetvalue(res, 0, 0);
+                    id = conn.PGgetvalue(res, 0, 0);
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
@@ -459,7 +497,7 @@ namespace KPVL {
         }
 
                 //Получаем ID листа
-        std::string GetIdSheet(PGConnection* conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
+        std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
         {
             std::string id = "0";
 
@@ -475,9 +513,10 @@ namespace KPVL {
                 co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
-                PGresult* res = conn->PGexec(co.str());
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn->PGgetvalue(res, 0, 0);
+                    id = conn.PGgetvalue(res, 0, 0);
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
@@ -486,11 +525,11 @@ namespace KPVL {
         }
 
         //Добовление листа в базу
-        void InsertSheet(T_PlateData& PD, int Pos)
+        void InsertSheet(PGConnection& conn, T_PlateData& PD, int Pos)
         {
             if(IsSheet(PD))
             {
-                std::string id = GetIdSheet(&conn_kpvl, PD);
+                std::string id = GetIdSheet(conn, PD);
                 if(!id.length() || id == "" || id == "0")
                 {
                     std::stringstream sd;
@@ -557,7 +596,8 @@ namespace KPVL {
                     sd << Pos << ");";
 
                     std::string comand = sd.str();
-                    PGresult* res = conn_kpvl.PGexec(comand);
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    PGresult* res = conn.PGexec(comand);
                     //LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -567,10 +607,46 @@ namespace KPVL {
             }
         }
 
+
         //Обновлякем в базе данные по листу
-        bool SetUpdateSheet(PGConnection* con, T_PlateData& PD, std::string update, std::string where)
+        bool SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where)
         {
-            if(!con) return false;
+            bool ret = true;
+            if(IsSheet(TS))
+            {
+                std::stringstream sd;
+                sd << "UPDATE sheet SET" << update;
+                sd << " WHERE" << where;
+                sd << " melt = " << TS.Melt;
+                sd << " AND partno = " << TS.PartNo;
+                sd << " AND pack = " << TS.Pack;
+                sd << " AND sheet = " << TS.Sheet;
+                sd << " AND subsheet = " << TS.SubSheet;
+                sd << " AND slab = " << TS.Slab;
+                sd << ";";
+
+                std::string comand = sd.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
+                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                {
+                    LOG_ERR_SQL(SQLLogger, res, comand);
+                }
+                else
+                {
+                    ret = true;
+                }
+                PQclear(res);
+            }
+            return ret;
+        }
+
+        //Обновлякем в базе данные по листу
+        bool SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where)
+        {
+            bool ret = true;
             if(IsSheet(PD))
             {
                 std::stringstream sd;
@@ -585,34 +661,38 @@ namespace KPVL {
                 sd << ";";
 
                 std::string comand = sd.str();
-                PGresult* res = con->PGexec(comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                 {
                     LOG_ERR_SQL(SQLLogger, res, comand);
-                    PQclear(res);
-                    return false;
+                }
+                else
+                {
+                    ret = true;
                 }
                 PQclear(res);
-                return true;
             }
-            return false;
+            return ret;
         }
 
         //Обновляем позицию листа
-        void UpdateSheetPos(T_PlateData& PD, std::string id, int Pos)
+        void UpdateSheetPos(PGConnection& conn, T_PlateData& PD, std::string id, int Pos)
         {
             if(IsSheet(PD))
             {
                 int pos = 0;
                 std::stringstream se;
                 se << "SELECT pos FROM sheet WHERE id = " << id;
-                PGresult* res = conn_kpvl.PGexec(se.str());
+                std::string comand = se.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    pos = std::stoi(conn_kpvl.PGgetvalue(res, 0, 0));
+                    pos = std::stoi(conn.PGgetvalue(res, 0, 0));
                 else
-                    LOG_ERR_SQL(SQLLogger, res, se.str());
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
 
                 if(pos != Pos && pos > 0 && pos < 7)
@@ -623,61 +703,61 @@ namespace KPVL {
                     sd << " WHERE";
                     sd << " id = " << id;
                     sd << ";";
-                    //std::string comand = sd.str();
-                    PGresult* res = conn_kpvl.PGexec(sd.str());
+                    std::string comand = sd.str();
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    PGresult* res = conn.PGexec(comand);
                     LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
-                    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, sd.str());
+                        LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
                 }
             }
         };
 
         //Обновляем данные по листу если лист есть или добовляем новый
-        void SheetPos(T_PlateData& PD, int pos)
+        void SheetPos(PGConnection& conn, T_PlateData& PD, int pos)
         {
-            std::string id = GetIdSheet(&conn_kpvl, PD);
+            std::string id = GetIdSheet(conn, PD);
 
             if(id.length() && std::stoi(id) != 0)
             {
-                UpdateSheetPos(PD, id, pos);
+                UpdateSheetPos(conn, PD, id, pos);
 
                 if(pos == 1 || pos == 2)
                 {
                     //std::stringstream sAlloy;
                     //sAlloy << " alloy = '" << PD.AlloyCodeText->GetString() << "'";
-                    //SetUpdateSheet(&conn_kpvl, PD, sAlloy.str(), " alloy = '' AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " alloy = '" + PD.AlloyCodeText->GetString() + "'", " thikness = '' AND");
+                    //SetUpdateSheet(&conn, PD, sAlloy.str(), " alloy = '' AND");
+                    SetUpdateSheet(conn, PD, " alloy = '" + PD.AlloyCodeText->GetString() + "'", " thikness = '' AND");
 
                     //std::stringstream sThikness;
                     //sThikness << " thikness = '" + PD.ThiknessText->GetString() + "'";
-                    //SetUpdateSheet(&conn_kpvl, PD, sThikness.str(), " thikness = '' AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " thikness = '" + PD.ThiknessText->GetString() + "'", " thikness = '' AND");
+                    //SetUpdateSheet(&conn, PD, sThikness.str(), " thikness = '' AND");
+                    SetUpdateSheet(conn, PD, " thikness = '" + PD.ThiknessText->GetString() + "'", " thikness = '' AND");
 
-                    SetUpdateSheet(&conn_kpvl, PD, " temper = " + GenSeqFromHmi.TempSet1->GetString(), " temper = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " speed = " + Par_Gen.UnloadSpeed->GetString(), " speed = 0 AND");
+                    SetUpdateSheet(conn, PD, " temper = " + GenSeqFromHmi.TempSet1->GetString(), " temper = 0 AND");
+                    SetUpdateSheet(conn, PD, " speed = " + Par_Gen.UnloadSpeed->GetString(), " speed = 0 AND");
 
-                    SetUpdateSheet(&conn_kpvl, PD, " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString(), "");
-                    SetUpdateSheet(&conn_kpvl, PD, " prestostartcomp = " + Par_Gen.PresToStartComp->GetString(), "");
+                    SetUpdateSheet(conn, PD, " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString(), "");
+                    SetUpdateSheet(conn, PD, " prestostartcomp = " + Par_Gen.PresToStartComp->GetString(), "");
 
-                    SetUpdateSheet(&conn_kpvl, PD, " posclapantop = " + HMISheetData.SpeedSection.Top->GetString(), " posclapantop = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " posclapanbot = " + HMISheetData.SpeedSection.Bot->GetString(), " posclapanbot = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " mask = '" + MaskKlapan + "' ", " mask = '' AND");
+                    SetUpdateSheet(conn, PD, " posclapantop = " + HMISheetData.SpeedSection.Top->GetString(), " posclapantop = 0 AND");
+                    SetUpdateSheet(conn, PD, " posclapanbot = " + HMISheetData.SpeedSection.Bot->GetString(), " posclapanbot = 0 AND");
+                    SetUpdateSheet(conn, PD, " mask = '" + MaskKlapan + "' ", " mask = '' AND");
 
-                    SetUpdateSheet(&conn_kpvl, PD, " lam1posclapantop = " + HMISheetData.LaminarSection1.Top->GetString(), " lam1posclapantop = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " lam1posclapanbot = " + HMISheetData.LaminarSection1.Bot->GetString(), " lam1posclapanbot = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " lam2posclapantop = " + HMISheetData.LaminarSection2.Top->GetString(), " lam2posclapantop = 0 AND");
-                    SetUpdateSheet(&conn_kpvl, PD, " lam2posclapanbot = " + HMISheetData.LaminarSection2.Bot->GetString(), " lam2posclapanbot = 0 AND");
+                    SetUpdateSheet(conn, PD, " lam1posclapantop = " + HMISheetData.LaminarSection1.Top->GetString(), " lam1posclapantop = 0 AND");
+                    SetUpdateSheet(conn, PD, " lam1posclapanbot = " + HMISheetData.LaminarSection1.Bot->GetString(), " lam1posclapanbot = 0 AND");
+                    SetUpdateSheet(conn, PD, " lam2posclapantop = " + HMISheetData.LaminarSection2.Top->GetString(), " lam2posclapantop = 0 AND");
+                    SetUpdateSheet(conn, PD, " lam2posclapanbot = " + HMISheetData.LaminarSection2.Bot->GetString(), " lam2posclapanbot = 0 AND");
                 }
             }
             else
             {
-                InsertSheet(PD, pos);
+                InsertSheet(conn, PD, pos);
             }
         }
 
-        void DeleteNullSgeet(T_PlateData& PD, int Pos)
+        void DeleteNullSgeet(PGConnection& conn, T_PlateData& PD, int Pos)
         {
             TSheet& TS = PalletSheet[Pos];
             if(Pos != 5 && IsSheet(PD) && IsSheet(TS))
@@ -690,17 +770,18 @@ namespace KPVL {
                    || PD.Slab->Val.As<int32_t>() != std::stoi(TS.Slab))
                 {
                     //std::string sId = GetIdSheet(PD);
-                    std::string sId = GetIdSheet(&conn_kpvl, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string sId = GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
                     if(atoi(sId.c_str()))
                     {
                         int iPos = -1;
                         std::string comand = "SELECT pos FROM sheet WHERE id = " + sId;
-                        PGresult* res = conn_kpvl.PGexec(comand);
+                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        PGresult* res = conn.PGexec(comand);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK)
                         {
                             if(PQntuples(res))
                             {
-                                std::string pos = conn_spis.PGgetvalue(res, 0, 0);
+                                std::string pos = conn.PGgetvalue(res, 0, 0);
                                 if(pos.length())
                                     iPos = atoi(pos.c_str());
                                 PQclear(res);
@@ -713,7 +794,8 @@ namespace KPVL {
                                     sd << mod;
                                     sd << " WHERE news <> 1 AND ID = " << sId;
                                     comand = sd.str();
-                                    res = conn_kpvl.PGexec(comand);
+                                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                    res = conn.PGexec(comand);
                                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -724,14 +806,7 @@ namespace KPVL {
                             }
                         }
                         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        {
-                            //Вывести ошибку
-                            std::string errc = utf8_to_cp1251(PQresultErrorMessage(res));
-                            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, errc);
-                            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                            PQclear(res);
-                        }
-
+                            LOG_ERR_SQL(SQLLogger, res, comand);
                     }
 
                     PalletSheet[Pos].Slab = "";
@@ -786,7 +861,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 MySetWindowText(value);
-                DeleteNullSgeet(PD, Pos);
+                //DeleteNullSgeet(conn, PD, Pos);
                 LocSheet(PD, Pos);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ0_Time);
                 return 0;
@@ -803,7 +878,7 @@ namespace KPVL {
                 PD.ThiknessText->GetValue();
 
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ1_Time);
@@ -816,27 +891,27 @@ namespace KPVL {
                 T_PlateData& PD = PlateData[Pos];
 
                 MySetWindowText(value);
-                SheetPos(PD, Pos);
+                SheetPos(conn_kpvl, PD, Pos);
 
                 std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
-                SetUpdateSheet(&conn_kpvl, PD, " start_at = now()", "");
+                SetUpdateSheet(conn_kpvl, PD, " start_at = (SELECT MAX(create_at) FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND content = '3')", " start_at IS NULL AND ");
 
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ1_Time);
-                DeleteNullSgeet(PD, Pos);
+                DeleteNullSgeet(conn_kpvl, PD, Pos);
                 LocSheet(PD, Pos);
                 return 0;
             }
@@ -845,7 +920,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
@@ -860,7 +935,7 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
@@ -872,31 +947,31 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 MySetWindowText(value);
-                SheetPos(PD, 2);
+                SheetPos(conn_kpvl, PD, 2);
 
                 std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
-                DeleteNullSgeet(PD, Pos);
+                DeleteNullSgeet(conn_kpvl, PD, Pos);
                 LocSheet(PD, Pos);
 
                 return 0;
@@ -906,7 +981,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
@@ -921,7 +996,7 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 LocSheet(PD, Pos);
@@ -933,8 +1008,8 @@ namespace KPVL {
                 T_PlateData& PD = PlateData[Pos];;
                 MySetWindowText(value);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ3_Time);
-                SheetPos(PD, Pos);
-                DeleteNullSgeet(PD, Pos);
+                SheetPos(conn_kpvl, PD, Pos);
+                DeleteNullSgeet(conn_kpvl, PD, Pos);
                 LocSheet(PD, Pos);
                 return 0;
             }
@@ -943,7 +1018,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
@@ -958,7 +1033,7 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 LocSheet(PD, Pos);
@@ -971,8 +1046,8 @@ namespace KPVL {
                 PD.SubSheet->GetValue();
                 MySetWindowText(value);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ4_Time);
-                SheetPos(PD, Pos);
-                DeleteNullSgeet(PD, Pos);
+                SheetPos(conn_kpvl, PD, Pos);
+                DeleteNullSgeet(conn_kpvl, PD, Pos);
                 LocSheet(PD, Pos);
                 return 0;
             }
@@ -981,7 +1056,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
@@ -996,7 +1071,7 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 LocSheet(PD, Pos);
@@ -1019,7 +1094,7 @@ namespace KPVL {
             {
                 T_PlateData& PD = PlateData[Pos];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
@@ -1046,7 +1121,7 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
                 std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
                 LocSheet(PD, Pos);
@@ -1062,8 +1137,8 @@ namespace KPVL {
                 if(!IsSheet(PD))
                     PD = PlateData[5];
 
-                SheetPos(PD, Pos);
-                DeleteNullSgeet(PD, Pos);
+                SheetPos(conn_kpvl, PD, Pos);
+                DeleteNullSgeet(conn_kpvl, PD, Pos);
                 LocSheet(PD, Pos);
                 return 0;
             }
@@ -1074,12 +1149,12 @@ namespace KPVL {
                 if(!IsSheet(PD))
                     PD = PlateData[5];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
-                SetUpdateSheet(&conn_kpvl, PD, update, "");
+                SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
             }
 
-            void SetSaveDone()
+            void SetSaveDone(PGConnection& conn)
             {
                 T_Side Top_Side = HMISheetData.Top_Side;
                 T_Side Bot_Side = HMISheetData.Bot_Side;
@@ -1091,7 +1166,7 @@ namespace KPVL {
 
                 if(IsSheet(PD))
                 {
-                    std::string id = GetIdSheet(&conn_kpvl, PD);
+                    std::string id = GetIdSheet(conn, PD);
                     if(id.length() && id != "0")
                     {
 
@@ -1123,10 +1198,12 @@ namespace KPVL {
                         co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
                         co << " WHERE id = " << id << ";";
 #pragma endregion
+                        std::string comand = co.str();
+                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
-                        PGresult* res = conn_kpvl.PGexec(co.str());
+                        PGresult* res = conn.PGexec(comand);
                         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            LOG_ERR_SQL(SQLLogger, res, co.str());
+                            LOG_ERR_SQL(SQLLogger, res, comand);
                         PQclear(res);
                         LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                         HMISheetData.SaveDone->Set_Value(true);
@@ -1145,8 +1222,8 @@ namespace KPVL {
                 const char* ss = WaitKant;
                 if(value->Val.As<bool>())                   //Если лист новый
                 {
-                    Cassette::CassettePos(HMISheetData.Cassette);
-                    SetSaveDone();
+                    Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    SetSaveDone(conn_kpvl);
                     ss = WaitResv;
                 }
                 //else
@@ -1176,7 +1253,7 @@ namespace KPVL {
         }
 
         //Получаем ID кассеты
-        int32_t GetIdCassette(O_CassetteData& CD)
+        int32_t GetIdCassette(PGConnection& conn, O_CassetteData& CD)
         {
             int32_t id = 0;
 
@@ -1184,21 +1261,23 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
-                co << " Day = " << CD.Day;
+                co << " day = " << CD.Day;
                 co << " AND month = " << CD.Month;
                 co << " AND year = " << CD.Year;
                 co << " AND cassetteno = " << CD.CassetteNo;
                 co << ";";
-                PGresult* res = conn_kpvl.PGexec(co.str());
+                std::string comand = co.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = std::stoi(conn_kpvl.PGgetvalue(res, 0, 0));
+                        id = std::stoi(conn.PGgetvalue(res, 0, 0));
                     }
                 }
                 else
-                    LOG_ERR_SQL(SQLLogger, res, co.str());
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
             }
             return id;
@@ -1217,7 +1296,7 @@ namespace KPVL {
         }
 
         //Получаем ID кассеты по листу Из касеты
-        int32_t GetIdCassette(T_CassetteData& CD)
+        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD)
         {
             int32_t id = 0;
 
@@ -1225,28 +1304,30 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
-                co << " Day = " << CD.Day->Val.As<int32_t>();
+                co << " day = " << CD.Day->Val.As<int32_t>();
                 co << " AND month = " << CD.Month->Val.As<int32_t>();
                 co << " AND year = " << CD.Year->Val.As<int32_t>();
                 co << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
                 co << ";";
-                PGresult* res = conn_kpvl.PGexec(co.str());
+                std::string comand = co.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = std::stoi(conn_kpvl.PGgetvalue(res, 0, 0));
+                        id = std::stoi(conn.PGgetvalue(res, 0, 0));
                     }
                 }
                 else
-                    LOG_ERR_SQL(SQLLogger, res, co.str());
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
             }
             return id;
         }
 
         //Добовление кассеты в базу
-        void InsertCassette(T_CassetteData& CD)
+        void InsertCassette(PGConnection& conn, T_CassetteData& CD)
         {
             if(IsCassete(CD))
             {
@@ -1258,22 +1339,23 @@ namespace KPVL {
                 co << CD.Day->Val.As<int32_t>() << ", ";
                 co << CD.CassetteNo->Val.As<int32_t>() << ", ";
                 co << CD.SheetInCassette->Val.As<int16_t>() << ");";
-
-                PGresult* res = conn_kpvl.PGexec(co.str());
+                std::string comand = co.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
 
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                    LOG_ERR_SQL(SQLLogger, res, co.str());
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
 
-                int32_t id = GetIdCassette(CD);
+                int32_t id = GetIdCassette(conn, CD);
 
                 SetOldCassette(CD, id);
             }
         }
 
         //Обновляем в базе данные по кассете
-        void UpdateCassette(T_CassetteData& CD, int32_t id)
+        void UpdateCassette(PGConnection& conn, T_CassetteData& CD, int32_t id)
         {
             std::stringstream co;
             co << "UPDATE cassette SET";
@@ -1285,42 +1367,45 @@ namespace KPVL {
             co << " close_at = DEFAULT, event = 1";
             co << " WHERE id = " << id;
             co << ";";
-
-            PGresult* res = conn_kpvl.PGexec(co.str());
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
+            
+            std::string comand = co.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn.PGexec(comand);
 
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                LOG_ERR_SQL(SQLLogger, res, co.str());
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
             SetOldCassette(CD, id);
 
         }
 
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        void CassettePos(T_CassetteData& CD)
+        void CassettePos(PGConnection& conn, T_CassetteData& CD)
         {
             if(IsCassete(CD))
             {
-                int32_t id = GetIdCassette(CD);
+                int32_t id = GetIdCassette(conn, CD);
                 if(id)
-                    UpdateCassette(CD, id);
+                    UpdateCassette(conn, CD, id);
                 else
-                    InsertCassette(CD);
+                    InsertCassette(conn, CD);
             }
         }
 
         //Закрываем все не закрытые касеты кроме кассеты на кантовке
-        void CloseCassete(O_CassetteData& CD)
+        void CloseCassete(PGConnection& conn, O_CassetteData& CD)
         {
             if(IsCassete(CD))
             {
-                int32_t id = GetIdCassette(CD);
+                int32_t id = GetIdCassette(conn, CD);
                 std::stringstream co;
                 co << "UPDATE cassette SET close_at = now(), event = 2 WHERE close_at IS NULL AND id = " << id;
 
-                PGresult* res = conn_kpvl.PGexec(co.str());
+                std::string comand = co.str();
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                    LOG_ERR_SQL(SQLLogger, res, co.str());
+                    LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
             }
         }
@@ -1333,7 +1418,7 @@ namespace KPVL {
             char ss[256];
             sprintf_s(ss, 256, "%d", value->Val.As<int16_t>() + 1);
             MySetWindowText(winmap(value->winId), ss);
-            CassettePos(HMISheetData.Cassette);
+            CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int16_t>(), OldCassette.Id);
             return 0;
         }
@@ -1344,7 +1429,7 @@ namespace KPVL {
             MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
             MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
             MySetWindowText(value);
-            CassettePos(HMISheetData.Cassette);
+            CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
             return 0;
         }
@@ -1353,7 +1438,7 @@ namespace KPVL {
         DWORD CassetteDay(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(HMISheetData.Cassette);
+            CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
             return 0;
         }
@@ -1362,7 +1447,7 @@ namespace KPVL {
         DWORD CassetteMonth(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(HMISheetData.Cassette);
+            CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
             return 0;
         }
@@ -1371,7 +1456,7 @@ namespace KPVL {
         DWORD CassetteYear(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(HMISheetData.Cassette);
+            CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
             return 0;
         }
@@ -1385,19 +1470,19 @@ namespace KPVL {
             bool b = value->Val.As<bool>();
             if(b)
             {
-                int32_t id = GetIdCassette(HMISheetData.Cassette);
+                int32_t id = GetIdCassette(conn_kpvl, HMISheetData.Cassette);
 
                 LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, OldCassette.Id = {}, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id, id);
                 if(id)
                     SetOldCassette(HMISheetData.Cassette, id);
                 else
-                    InsertCassette(HMISheetData.Cassette);
+                    InsertCassette(conn_kpvl, HMISheetData.Cassette);
             }
             else
             {
                 LOG_INFO(HardLogger, "{:90}| Id = {}, Year = {}, Month = {}, Day = {}, CassetteNo = {}, SheetInCassette = {}", FUNCTION_LINE_NAME,
                          OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.CassetteNo, OldCassette.SheetInCassette);
-                CloseCassete(OldCassette);
+                CloseCassete(conn_kpvl, OldCassette);
                 OldCassette = O_CassetteData();
             }
 
@@ -1456,14 +1541,14 @@ namespace KPVL {
                     time_t st;
                     std::string datatimeend_at = GetDataTimeString(st);
                     if(datatimeend_at.length())
-                        Time_Z2 = SQL::GetHeatTime_Z2(&conn_dops, datatimeend_at);
+                        Time_Z2 = SQL::GetHeatTime_Z2(conn_dops, datatimeend_at);
                 }
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, 2);
 
                 if(Melt && Pack && PartNo && Sheet)
                 {
                     //LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
-                    int Id = std::stoi(Sheet::GetIdSheet(&conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+                    int Id = std::stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
 
                     std::stringstream ss1;
                     ss1 << "UPDATE sheet SET ";
@@ -1481,10 +1566,13 @@ namespace KPVL {
                     //ss1 <<  " AND slab = " << Slab;
                     //ss1 << ";";
 
-                    res = conn_dops.PGexec(ss1.str());
+                    std::string comand = ss1.str();
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                    res = conn_dops.PGexec(comand);
                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss1.str());
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, ss1.str());
+                        LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
 
                     std::stringstream ss2;
@@ -1501,15 +1589,18 @@ namespace KPVL {
                     //ss2 <<  " AND slab = " << Slab;
                     //ss2 << ";";
 
+                    comand = ss2.str();
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
-                    res = conn_dops.PGexec(ss2.str());
+                    res = conn_dops.PGexec(comand);
                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss2.str());
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, ss2.str());
+                        LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
 
                     int r = 0;
-                    while(isRun && r++ < 5) //5 секунд
+                    //5 секунд
+                    while(isRun && r++ < 5) 
                     {
                         SetWindowText(winmap(hEditState_34), std::to_string(r).c_str());
                         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -1537,11 +1628,14 @@ namespace KPVL {
                     //ss4 << ";";
 
 
-                    res = conn_dops.PGexec(ss4.str());
+                    comand = ss4.str();
+                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                    res = conn_dops.PGexec(comand);
                     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss4.str());
 
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, ss4.str());
+                        LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
                 }
                 //else
@@ -1607,8 +1701,8 @@ namespace KPVL {
             if(value->Val.As<float>() > 0)
             {
                 std::string update = " temper = " + value->GetString();
-                Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
             }
             return 0;
         }
@@ -1621,8 +1715,8 @@ namespace KPVL {
             if(value->Val.As<float>() > 0)
             {
                 std::string update = " speed = " + value->GetString();
-                Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
             }
             return 0;
         }
@@ -1633,8 +1727,8 @@ namespace KPVL {
             MySetWindowText(value);
 
             std::string update = " timeforplateheat = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
             return 0;
         }
 
@@ -1643,8 +1737,8 @@ namespace KPVL {
         {
             MySetWindowText(winmap(value->winId), value->GetString().c_str());
             std::string update = " prestostartcomp = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
 
             return 0;
         }
@@ -1675,8 +1769,8 @@ namespace KPVL {
             MaskKlapan = MaskKlapan1 + " " + MaskKlapan2;
 
             std::string update = " mask = '" + MaskKlapan + "'";
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
 
             return 0;
         }
@@ -1699,8 +1793,8 @@ namespace KPVL {
 
             MaskKlapan = MaskKlapan1 + " " + MaskKlapan2;
             std::string update = " mask = '" + MaskKlapan + "'";
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, "");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
 
             return 0;
         }
@@ -1713,8 +1807,8 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " posclapantop = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " posclapantop = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " posclapantop = 0 AND");
             return 0;
         }
         //Низ
@@ -1722,8 +1816,8 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " posclapanbot = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " posclapanbot = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " posclapanbot = 0 AND");
             return 0;
         }
     }
@@ -1735,8 +1829,8 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " lam1posclapantop = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " lam1posclapantop = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " lam1posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam1posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam1posclapantop = 0 AND");
             return 0;
         }
         //Низ
@@ -1744,8 +1838,8 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " lam1posclapanbot = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " lam1posclapanbot = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " lam1posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam1posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam1posclapanbot = 0 AND");
             return 0;
         }
     };
@@ -1757,8 +1851,8 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " lam2posclapantop = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " lam2posclapantop = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " lam2posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam2posclapantop = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam2posclapantop = 0 AND");
             return 0;
         }
         //Низ
@@ -1766,127 +1860,76 @@ namespace KPVL {
         {
             MySetWindowText(value);
             std::string update = " lam2posclapanbot = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[1], update, " lam2posclapanbot = 0 AND");
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[2], update, " lam2posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam2posclapanbot = 0 AND");
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam2posclapanbot = 0 AND");
             return 0;
         }
     };
 
     //Отклонения листа на кантовке
-    namespace Side{
-        DWORD SheetTop1(Value* value)
+    DWORD Side(Value* value)
+    {
+        std::map <std::string, std::string> find ={
+            {" top1", "Top_Side.h1"},
+            {" top2", "Top_Side.h2"},
+            {" top3", "Top_Side.h3"},
+            {" top4", "Top_Side.h4"},
+            {" top5", "Top_Side.h5"},
+            {" top6", "Top_Side.h6"},
+            {" top7", "Top_Side.h7"},
+            {" top8", "Top_Side.h8"},
+            {" bot1", "Bottom_Side.h1"},
+            {" bot2", "Bottom_Side.h2"},
+            {" bot3", "Bottom_Side.h3"},
+            {" bot4", "Bottom_Side.h4"},
+            {" bot5", "Bottom_Side.h5"},
+            {" bot6", "Bottom_Side.h6"},
+            {" bot7", "Bottom_Side.h7"},
+            {" bot8", "Bottom_Side.h8"},
+        };
+        for(auto f : find)
         {
-            std::string update = " top1 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop2(Value* value)
-        {
-            std::string update = " top2 = " + value->GetString();
-            
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop3(Value* value)
-        {
-            std::string update = " top3 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop4(Value* value)
-        {
-            std::string update = " top4 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop5(Value* value)
-        {
-            std::string update = " top5 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop6(Value* value)
-        {
-            std::string update = " top6 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop7(Value* value)
-        {
-            std::string update = " top7 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetTop8(Value* value)
-        {
-            std::string update = " top8 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
+            size_t l = value->Patch.find(f.second);
+            if(l != std::string::npos)
+            {
+                std::stringstream up;
+                up << f.first << " = " << value->Val.As<float>();
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
+                Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
+            }
         }
 
-        DWORD SheetBot1(Value* value)
-        {
-            std::string update = " bot1 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot2(Value* value)
-        {
-            std::string update = " bot2 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot3(Value* value)
-        {
-            std::string update = " bot3 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot4(Value* value)
-        {
-            std::string update = " bot4 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot5(Value* value)
-        {
-            std::string update = " bot5 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot6(Value* value)
-        {
-            std::string update = " bot6 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot7(Value* value)
-        {
-            std::string update = " bot7 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
-        DWORD SheetBot8(Value* value)
-        {
-            std::string update = " bot8 = " + value->GetString();
-            Sheet::SetUpdateSheet(&conn_kpvl, PlateData[6], update, "");
-            return 0;
-        }
+
+        //else
+        //{
+        //    std::string find = "Bottom_Side.h";
+        //    size_t l = value->Patch.find(find);
+        //    if(l != std::string::npos)
+        //    {
+        //        char s = value->Patch[l + 13];
+        //        std::stringstream up;
+        //        up << " top" << value->Patch[l + find.length()] << " = " << value->Val.As<float>();
+        //        LOG_INFO(SQLLogger, "{:90}| {}", up.str());
+        //        Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
+        //    }
+        //}
+
+        //std::string update = " top1 = " + value->GetString();
+        //Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], update, "");
+        return 0;
     }
     
     //Бит жмизни
-    namespace WDG {
-        DWORD SheetData_WDG_toBase(Value* value)
+    DWORD SheetData_WDG_toBase(Value* value)
+    {
+        if(GetVal<bool>(value))
         {
-            if(GetVal<bool>(value))
-            {
-                PLC_KPVL_old_dt = time(NULL);
-                struct tm TM;
-                localtime_s(&TM, &PLC_KPVL_old_dt);
-                SetWindowText(winmap(value->winId), string_time(&TM).c_str());
-            }
-            return 0;
+            PLC_KPVL_old_dt = time(NULL);
+            struct tm TM;
+            localtime_s(&TM, &PLC_KPVL_old_dt);
+            SetWindowText(winmap(value->winId), string_time(&TM).c_str());
         }
+        return 0;
     }
 
 

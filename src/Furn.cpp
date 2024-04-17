@@ -64,6 +64,7 @@ namespace S107
             ss << boost::format("%|02|'") % TM_Beg.tm_sec;
             ss << " ORDER BY event ASC, create_at DESC;"; //DESC
             std::string comand = ss.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_spic.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -181,6 +182,7 @@ namespace S107
             sd << ";";
 
             std::string comand = sd.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -201,6 +203,7 @@ namespace S107
             sd << ";";
 
             comand = sd.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -226,6 +229,7 @@ namespace S107
             sd << ";";
 
             std::string comand = sd.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -251,6 +255,7 @@ namespace S107
             sd << ";";
 
             std::string comand = sd.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| Peth={}, {}", FUNCTION_LINE_NAME, Peth, comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -269,12 +274,13 @@ namespace S107
                 comand += " facttemper = " + teper;
                 comand += " WHERE ";
                 //comand += " facttemper = 0.0 AND";
-                comand += " day = " + CD.Day->GetString();
-                comand += " AND month = " + CD.Month->GetString();
-                comand += " AND year = " + CD.Year->GetString();
-                comand += " AND cassetteno = " + CD.CassetteNo->GetString();
+                comand += " day = " + CD.Day->Val.As<int32_t>();
+                comand += " AND month = " + CD.Month->Val.As<int32_t>();
+                comand += " AND year = " + CD.Year->Val.As<int32_t>();
+                comand += " AND cassetteno = " + CD.CassetteNo->Val.As<int32_t>();
                 comand += ";";
 
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn_temp.PGexec(comand);
                 //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME,  comand);
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -304,6 +310,7 @@ namespace S107
             sd << ";";
 
             std::string comand = sd.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_temp.PGexec(comand);
             //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME,  comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)

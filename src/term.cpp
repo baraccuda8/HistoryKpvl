@@ -557,6 +557,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     std::stringstream sddEnd;
     sddEnd << "SELECT min(create_at) FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcEnd->ID << " AND content = 'true';";
     comand = sddEnd.str();
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_spic.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
@@ -564,16 +565,14 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             end_at = conn_spic.PGgetvalue(res, 0, 0);
     }
     else
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 
     std::stringstream sddErr;
     sddErr << "SELECT min(create_at) FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcFault->ID << " AND content = 'true';";
 
     comand = sddErr.str();
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_spic.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
@@ -581,10 +580,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             err_at = conn_spic.PGgetvalue(res, 0, 0);
     }
     else
-    {
-        LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    }
+        LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 
     if(!TC.End_at.length() && end_at.length())
@@ -599,12 +595,10 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         sde << "cassetteno = " << TC.CassetteNo << ";";
 
         comand = sde.str();
+        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         res = conn_spic.PGexec(comand);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        {
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        }
+            LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
     }
 
@@ -620,12 +614,10 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         sde << "cassetteno = " << TC.CassetteNo << ";";
 
         comand = sde.str();
+        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         res = conn_spic.PGexec(comand);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        {
-            LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        }
+            LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
     }
 
@@ -661,12 +653,10 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             sdf << "year = " << TC.Year << " AND ";
             sdf << "cassetteno = " << TC.CassetteNo << ";";
             comand = sdf.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             res = conn_spic.PGexec(comand);
             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            {
-                LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessage(res)));
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            }
+                LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
         }
     }

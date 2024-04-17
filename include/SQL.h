@@ -5,7 +5,7 @@
 #include <file.h>
 
 #pragma comment(lib, "libpq.lib")
-
+extern int DEB;
 extern std::shared_ptr<spdlog::logger> SQLLogger;
 
 extern std::string m_dbhost;
@@ -81,6 +81,8 @@ void InitCurentTag();
 bool InitSQL();
 
 extern PGConnection conn_kpvl;
+extern PGConnection conn_kpvl2;
+
 extern PGConnection conn_dops;
 extern PGConnection conn_temp;
 extern PGConnection conn_spis;

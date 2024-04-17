@@ -1933,7 +1933,8 @@ BOOL CALLBACK MyInfoEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonit
     {
         std::string d = iMonitor.szDevice;
         size_t t = d.find("DISPLAY");
-        ScreenArrayInfo[atoi(&d[t + 7])] = iMonitor;
+        if(t != std::string::npos)
+            ScreenArrayInfo[atoi(&d[t + 7])] = iMonitor;
     }
     return true;
 }
