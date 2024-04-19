@@ -714,6 +714,18 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {hEndGroup201, {}},
     #pragma endregion
 
+    #pragma region Факт времени процеса
+        {hGroup20111,{szTem1,   Temp1Flag,{5, 90, 209, 40}, ""}},
+        {RelF1_Stat_TimeHeatAcc,  {szStat, Stat10Flag, {70 * 0 , 0, 69, 19}, "Нагрев"}},
+        {RelF1_Stat_TimeHeatWait, {szStat, Stat10Flag, {70 * 1 , 0, 69, 19}, "Выдержка"}},
+        {RelF1_Stat_TimeTotal,    {szStat, Stat10Flag, {70 * 2 , 0, 69, 19}, "Общее"}},
+        {RelF1_Edit_TimeHeatAcc,  {szStat, Stat04Flag, {70 * 0 , 20, 69, 19}, ""}},
+        {RelF1_Edit_TimeHeatWait, {szStat, Stat04Flag, {70 * 1 , 20, 69, 19}, ""}},
+        {RelF1_Edit_TimeTotal,    {szStat, Stat04Flag, {70 * 2 , 20, 69, 19}, ""}},
+        {hEndGroup20111, {}},
+    #pragma endregion
+
+
     // Задание
     #pragma region Задание
     {hGroup204,{szTem1,   Temp1Flag,{289, 25, 70 * 3 + 3, 62}, "Задание"}},
@@ -787,6 +799,17 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
             {RelF2_Edit_CassetteNo,     {szStat, Stat04Flag, {55 * 3 + 2, 40, 54, 19}, ""}},
             {RelF2_Edit_SheetInCassette,{szStat, Stat04Flag, {55 * 4 + 2, 40, 54, 19}, ""}},
             {hEndGroup301, {}},
+        #pragma endregion
+
+        #pragma region Факт времени процеса
+            {hGroup20311,{szTem1,   Temp1Flag,{5, 90, 209, 40}, ""}},
+            {RelF2_Stat_TimeHeatAcc,  {szStat, Stat10Flag, {70 * 0 , 0, 69, 19}, "Нагрев"}},
+            {RelF2_Stat_TimeHeatWait, {szStat, Stat10Flag, {70 * 1 , 0, 69, 19}, "Выдержка"}},
+            {RelF2_Stat_TimeTotal,    {szStat, Stat10Flag, {70 * 2 , 0, 69, 19}, "Общее"}},
+            {RelF2_Edit_TimeHeatAcc,  {szStat, Stat04Flag, {70 * 0 , 20, 69, 19}, ""}},
+            {RelF2_Edit_TimeHeatWait, {szStat, Stat04Flag, {70 * 1 , 20, 69, 19}, ""}},
+            {RelF2_Edit_TimeTotal,    {szStat, Stat04Flag, {70 * 2 , 20, 69, 19}, ""}},
+            {hEndGroup20311, {}},
         #pragma endregion
 
         //Задание

@@ -126,6 +126,18 @@ std::string GetDataTimeString(std::time_t& st)
     return sdt.str();
 }
 
+std::string GetDataTimeString(std::tm& st)
+{
+    std::stringstream sdt;
+    sdt << boost::format("%|04|-") % (st.tm_year + 1900);
+    sdt << boost::format("%|02|-") % (st.tm_mon + 1);
+    sdt << boost::format("%|02| ") % st.tm_mday;
+    sdt << boost::format("%|02|:") % st.tm_hour;
+    sdt << boost::format("%|02|:") % st.tm_min;
+    sdt << boost::format("%|02|") % st.tm_sec;
+    return sdt.str();
+}
+
 std::string GetDataTimeString(std::time_t* st)
 {
     //st = time(NULL);

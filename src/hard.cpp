@@ -8,6 +8,7 @@
 #include "ValueTag.h"
 #include "hard.h"
 #include "KPVL.h"
+#include "pdf.h"
 
 //FFFF F000 0000 0000 Плавка
 //0000 0FFF 0000 0000 Партия
@@ -43,6 +44,7 @@ std::thread hFindSheet;
 
 std::thread hKPVLURI;
 std::thread hKPVLSQL;
+std::thread hAllPlf;
 HANDLE hThreadState2 = NULL;
 
 
@@ -730,6 +732,19 @@ void UpdateSheetPos()
 }
 
 
+void AllPdf()
+{
+    PGConnection conn_pdf;
+    conn_pdf.connection();
+    std::deque<TSheet>Sheet = AllSheet;
+    for(auto TS : Sheet)
+    {
+        if(!isRun)return;
+        KPVL::SQL::GetDataTime_All(conn_pdf, TS);
+        PrintPdfAuto(TS, false);
+    }
+}
+
 void Open_KPVL_SQL()
 {
     size_t old_count = 0;
@@ -737,19 +752,28 @@ void Open_KPVL_SQL()
     //int64_t Next = 1;
     
     LOG_INFO(SQLLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
+
+    KPVL::SQL::KPVL_SQL(conn_spis);
+    hAllPlf = std::thread(AllPdf);
+
+    //for(auto& TS : AllSheet)
+    //{
+    //    KPVL::SQL::GetDataTime_All(conn_spis, TS);
+    //    PrintPdfAuto(TS, false);
+    //}
+
     while(isRun)
     {
         //SepState_2();
-        UpdateSheetPos();
-
         KPVL::SQL::KPVL_SQL(conn_spis);
         for(auto& TS : AllSheet)
         {
-            //if(std::stof(TS.DataTime_All) == 0 || !TS.DataTime_End.length() )
-            {
-                KPVL::SQL::GetDataTime_All(conn_spis, TS);
-            }
+            KPVL::SQL::GetDataTime_All(conn_spis, TS);
+            //PrintPdfAuto(TS, false);
         }
+
+        UpdateSheetPos();
+
         size_t count = AllSheet.size();
         if(old_count != count)
         {
@@ -766,7 +790,7 @@ void Open_KPVL_SQL()
 
             InvalidateRect(hwndSheet, NULL, false);
 
-            ListView_EnsureVisible(hwndSheet, TopIndex, FALSE); 
+            ListView_EnsureVisible(hwndSheet, TopIndex, FALSE);
             ListView_SetItemState(hwndSheet, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
 
 #ifndef TESTGRAFF
@@ -782,7 +806,7 @@ void Open_KPVL_SQL()
         }
 
         //while(isRun &&  f--)
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 
     LOG_INFO(SQLLogger, "{:90} Stop Open_KPVL_SQL", FUNCTION_LINE_NAME);
@@ -855,6 +879,7 @@ void Close_KPVL()
     int size = 0;
         WaitCloseKPVL(hFindSheet, "hFindSheet");
         WaitCloseKPVL(hThreadState2, "ThreadState2");
+        WaitCloseKPVL(hAllPlf, "ThreadhAllPlf");
         WaitCloseKPVL(hKPVLURI, "hKPVLURI");
         WaitCloseKPVL(hKPVLSQL, "hKPVLSQL");
 }

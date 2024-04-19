@@ -20,12 +20,23 @@ class PGConnection
 public:
     PGconn* m_connection;
     bool connections = false;
+    std::string Name = "";
     PGConnection() { };
-    void PGDisConnection() { if(connections)PQfinish(m_connection); connections = false; };
-    ~PGConnection(){ PGDisConnection(); };
+    //void PGDisConnection() 
+    //{ 
+    //    if(connections)PQfinish(m_connection); 
+    //    connections = false; 
+    //};
+    ~PGConnection()
+    { 
+        if(connections)PQfinish(m_connection); 
+        connections = false; 
+    };
     bool connection(){
         try
         {
+            if(connections)return connections;
+
             m_connection = PQsetdbLogin(m_dbhost.c_str(), m_dbport.c_str(), nullptr, nullptr, m_dbname.c_str(), m_dbuser.c_str(), m_dbpass.c_str());
 
             if(PQstatus(m_connection) != CONNECTION_OK && PQsetnonblocking(m_connection, 1) != 0)
@@ -54,20 +65,27 @@ public:
         return connections;
     }
     
+    int PQntuples(PGresult* res)
+    {
+        if(!connections) return 0;
+        return ::PQntuples(res);
+    }
+
     PGresult* PGexec(std::string std){ 
-        //SendDebug("<SQL> " + std);
+        if(!connections) return 0;
         return 
-            PQexec(m_connection, cp1251_to_utf8(std).c_str());
+            ::PQexec(m_connection, cp1251_to_utf8(std).c_str());
     };
 
     PGresult* MyPQexec(std::string std){
-    //SendDebug("<SQL> " + std);
+        if(!connections) return 0;
         return
-            PQexec(m_connection, std.c_str());
+            ::PQexec(m_connection, std.c_str());
     };
 
     std::string PGgetvalue(PGresult* res, int l, int i)
     {
+        if(!connections) return "";
         std::string ss = PQgetvalue(res, l, i);
         if(!ss.empty())
             return utf8_to_cp1251(ss);

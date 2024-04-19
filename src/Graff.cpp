@@ -558,7 +558,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 					TM_Temp.tm_mon -= 1;
 
 					f = static_cast<float>(atof(sTemp.c_str()));
-					if(f != 0)
+					if(f > 0 && f < 2000)
 						st[sData] = std::pair(mktime(&TM_Temp), f);
 				}
 			}
@@ -678,19 +678,21 @@ void GetGrTempKPVLTempAct()
 					auto a = GraffKPVL.TempAct.find(sData);
 					std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
 					float f =  std::stof(sTemp); //static_cast<float>(atof(sTemp.c_str()));
-
-					if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
+					if(f > 0 && f < 2000)
 					{
-						a->second.second = (f + a->second.second) / 2.0f;
-					}
-					else
-					{
-						if(f != 0)
+						if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
 						{
-							DataTimeOfString(sData, FORMATTIME, TM_Temp);
-							TM_Temp.tm_year -= 1900;
-							TM_Temp.tm_mon -= 1;
-							GraffKPVL.TempAct[sData] = std::pair(mktime(&TM_Temp), f);
+							a->second.second = (f + a->second.second) / 2.0f;
+						}
+						else
+						{
+							if(f != 0)
+							{
+								DataTimeOfString(sData, FORMATTIME, TM_Temp);
+								TM_Temp.tm_year -= 1900;
+								TM_Temp.tm_mon -= 1;
+								GraffKPVL.TempAct[sData] = std::pair(mktime(&TM_Temp), f);
+							}
 						}
 					}
 				}
@@ -942,7 +944,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 					TM_Temp.tm_mon -= 1;
 
 					f = static_cast<float>(atof(sTemp.c_str()));
-					if(f != 0)
+					if(f != 0 && f < 2000)
 						st[sData] = std::pair(mktime(&TM_Temp), f);
 				}
 			}
@@ -984,7 +986,7 @@ void Open_GRAFF_FURN(TCassette& TC)
 	}
 
 
-	GraffFurn.conn->PGDisConnection();
+	//GraffFurn.conn->PGDisConnection();
 }
 
 

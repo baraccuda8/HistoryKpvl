@@ -10,6 +10,7 @@
 #include "term.h"
 #include "hard.h"
 #include "KPVL.h"
+#include "Furn.h"
 #include "Graff.h"
 
 
@@ -28,6 +29,23 @@ extern GUID guidTiff;
 extern GUID guidPng;
 
 std::string tempImage = "temp.jpg";
+std::string furnImage = "furn.jpg";
+
+std::map <int, std::string> MonthName{
+	{0, "Unknown"},
+	{1, "January"},
+	{2, "February"},
+	{3, "March"},
+	{4, "April"},
+	{5, "May"},
+	{6, "June"},
+	{7, "July"},
+	{8, "August"},
+	{9, "September"},
+	{10, "October"},
+	{11, "November"},
+	{12, "December"},
+};
 
 
 jmp_buf env;
@@ -74,7 +92,11 @@ public:
 	TSheet Sheet;
 	TCassette ñassette;
 
-	PdfClass(TSheet& sheet);
+	PdfClass(TSheet& sheet, bool view = true);
+	~PdfClass()
+	{
+		//conn.PGDisConnection();
+	};
 
 	int MaxSecCount = 0;
 	const int XP = 70;
@@ -96,7 +118,7 @@ public:
 	void DrawHeder(HPDF_REAL left, HPDF_REAL top);
 	void DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
 	void DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
-
+	void GetCassete(TCassette& ñassette);
 };
 
 
@@ -184,10 +206,8 @@ void PdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 	int t = 0;
 	std::tm TM_Temp ={0};
 
-	if(Stop.length() < 1)
-		throw std::exception(__FUN(std::string("Error: Sheet.Sheet.DataTime_End")));
-	if(Start.length() < 1)
-		throw std::exception(__FUN(std::string("Error: Sheet.Start_at")));
+	if(Stop.length() < 1) return;
+	if(Start.length() < 1)return;
 
 
 	std::stringstream sdt;
@@ -373,7 +393,9 @@ void PdfClass::PaintGraffKPVL()
 	temp.Clear(Gdiplus::Color(255, 255, 255));
 
 	Gdiplus::Pen Gdi_Bar(Gdiplus::Color(0, 0, 0), 1);
-
+	if(!TempAct.size()) return;
+	if(!TempRef.size()) return;
+	
 	double maxt = 0;
 	double mint = 2000;
 	int64_t mind = (std::min)(TempAct.begin()->second.first, TempRef.begin()->second.first);
@@ -513,53 +535,36 @@ void PdfClass::DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
 
 }
 
-void GetCassete(TSheet& p, TCassette& ñassette)
+void PdfClass::GetCassete(TCassette& ñassette)
 {
 	
-	if(!p.Year.length()) return;
-	if(!p.Month.length()) return;
-	if(!p.Day.length()) return;
-	if(!p.CassetteNo.length()) return;
+	if(Sheet.Year.empty() /*|| !p.Year.length()*/) return;
+	if(Sheet.Month.empty() /*|| !p.Month.length()*/) return;
+	if(Sheet.Day.empty() /*|| !p.Day.length()*/) return;
+	if(Sheet.CassetteNo.empty() /*|| !p.CassetteNo.length()*/) return;
 
 	std::string comand = "SELECT * FROM cassette ";
 	comand += "WHERE ";
-	comand += "year = " + p.Year + " AND ";
-	comand += "month = " + p.Month + " AND ";
-	comand += "day = " + p.Day + " AND ";
-	comand += "cassetteno = " + p.CassetteNo + " ";
+	comand += "year = " + Sheet.Year + " AND ";
+	comand += "month = " + Sheet.Month + " AND ";
+	comand += "day = " + Sheet.Day + " AND ";
+	comand += "cassetteno = " + Sheet.CassetteNo + " ";
 	comand += "ORDER BY create_at DESC";
 	comand += ";";
 
 	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-	PGresult* res = conn_kpvl.PGexec(comand);
+	PGresult* res = conn.PGexec(comand);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 	{
-		int line = PQntuples(res);
-		int nFields = PQnfields(res);
-		for(int l = 0; l < line; l++)
+		S107::GetColl(res);
+
+
+		int line = conn.PQntuples(res);
+		//for(int l = 0; l < line; l++)
+		if(line)
 		{
-			ñassette.Create_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::create_at));
-			ñassette.Id = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::id);
-			ñassette.Event = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::event);
-			ñassette.Day = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::day);
-			ñassette.Month = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::month);
-			ñassette.Year = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::year);
-			ñassette.CassetteNo = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::cassetteno);
-			ñassette.SheetInCassette = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::sheetincassette);
-			ñassette.Close_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::close_at));
-			ñassette.Peth = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::peth);
-			ñassette.Run_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::run_at));
-			ñassette.Error_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::error_at));
-			ñassette.End_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::end_at));
-			ñassette.Delete_at = GetStringData(conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::delete_at));
-
-			ñassette.TempRef = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::tempref);
-			ñassette.PointTime_1 = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::pointtime_1);
-			ñassette.PointRef_1 = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::pointref_1);
-			ñassette.TimeProcSet = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::timeprocset);
-			ñassette.PointDTime_2 = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::pointdtime_2);
-			ñassette.f_temper = conn_kpvl.PGgetvalue(res, l, casCassette::emCassette::f_temper);
-
+			//TCassette cassette;
+			S107::GetCassette(res, ñassette, 0);
 		}
 	}
 	else
@@ -599,20 +604,21 @@ void PdfClass::DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
 
 }
 
-PdfClass::PdfClass(TSheet& sheet)
+PdfClass::PdfClass(TSheet& sheet, bool view)
 {
 	Sheet = sheet;
 
 	if(!conn.connection())
-		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffKPVL")));
+		return;// throw std::exception(__FUN(std::string("Error SQL conn connection to GraffKPVL")));
+	conn.Name = "test";
 
 	GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1);
 	SqlTempActKPVL(TempAct);
 
-	
-	GetCassete(Sheet, ñassette);
+
+	GetCassete(ñassette);
 	int P = atoi(ñassette.Peth.c_str());
-	while(P >= 10) P -= 10;
+	//while(P >= 10) P -= 10;
 
 	if(P == 1)
 	{
@@ -633,16 +639,16 @@ PdfClass::PdfClass(TSheet& sheet)
 
 	pdf = HPDF_New (error_handler, NULL);
 	if(!pdf)
-		throw std::exception(__FUN(std::string("error: cannot create PdfDoc object")));
+		return; //throw std::exception(__FUN(std::string("error: cannot create PdfDoc object")));
 
 	if(setjmp(env))
 	{
 		HPDF_Free (pdf);
-		throw std::exception(__FUN(std::string("error: cannot setjmp PdfDoc")));
+		return;// throw std::exception(__FUN(std::string("error: cannot setjmp PdfDoc")));
 	}
 
 	// create default-font
-	
+
 	HPDF_UseUTFEncodings(pdf);
 	HPDF_SetCurrentEncoder(pdf, "UTF-8");
 	char* detail_font_name = (char*)HPDF_LoadTTFontFromFile (pdf, "arial.ttf", HPDF_TRUE);
@@ -695,24 +701,54 @@ PdfClass::PdfClass(TSheet& sheet)
 	draw_text(page, 20, Height - 100, "Çàêàëêà");
 	HPDF_Page_Rectangle(page, 20, Height - 240, 374, 140);
 	HPDF_Page_Stroke(page);
-	HPDF_Image image = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
-	HPDF_Page_DrawImage (page, image, 22, Height - 239, 370, 137);
+	HPDF_Image image1 = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
+	HPDF_Page_DrawImage (page, image1, 22, Height - 239, 370, 137);
 
 	//Ãðàôèê òåìïåðàòóðû îòïóñêà
 	draw_text(page, 20, Height - 270, "Îòïóñê");
 	HPDF_Page_Rectangle(page, 20, Height - 410, 374, 140);
 	HPDF_Page_Stroke(page);
+	HPDF_Image image2 = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
+	HPDF_Page_DrawImage (page, image2, 22, Height - 409, 370, 137);
 
 
 	/* save the document to a file */
-	HPDF_SaveToFile (pdf, (lpLogPdf + "/" + fname).c_str());
-	/* clean up */
+	//326581-0402-007-158-000000
+	std::stringstream temp;
+	temp << lpLogPdf;
+
+	CheckDir(temp.str());
+	//temp.fill('0');
+	//std::fill ('*');
+	temp << std::string("/") << Sheet.Year;
+	CheckDir(temp.str());
+	temp << std::string("/") << MonthName[std::stoi(sheet.Month)];
+	CheckDir(temp.str());
+	temp << std::string("/") << std::setw(2) << std::setfill('0') << std::right << Sheet.Day;
+	CheckDir(temp.str());
+
+	std::stringstream fname;
+	fname << temp.str() + "/";
+	fname << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+	fname << std::setw(3) << std::setfill('0') << Sheet.Slab << "-";
+	fname << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+	fname << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+	fname << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+	fname << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".pdf";
+
+
+	HPDF_SaveToFile (pdf, fname.str().c_str());
 	HPDF_Free (pdf);
 #pragma endregion
 
-
-	if(!std::system(("start " +lpLogPdf + "/" + fname).c_str()))
-		throw std::exception(__FUN(std::string("std::system: fname") + lpLogPdf + "\\" + fname));
+	if(view)
+	{
+		if(
+			!std::system(("start " + fname.str()).c_str())
+		   )
+		{
+		}
+	}
 };
 
 
@@ -726,3 +762,15 @@ void PrintPdf(TSheet& Sheet)
 	}
 	CATCH(AllLogger, std::string("PrintPdf: "));
 }
+
+void PrintPdfAuto(TSheet& Sheet, bool view)
+{
+	try
+	{
+//#ifdef TESTPFD
+		PdfClass pdf(Sheet, view);
+//#endif
+	}
+	CATCH(AllLogger, std::string("PrintPdf: "));
+}
+

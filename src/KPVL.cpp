@@ -139,7 +139,7 @@ namespace KPVL {
             AllSheet.erase(AllSheet.begin(), AllSheet.end());
 
             std::time_t stop = time(NULL);;
-            std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 2)); //2-е суток
+            std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 100)); //100-е суток
             std::string start_at = GetDataTimeString(&statr);
 
             std::stringstream FilterComand;
@@ -1291,7 +1291,13 @@ namespace KPVL {
             int32_t Month = GetVal<int32_t>(CD.Month);
             int32_t Year = GetVal<int32_t>(CD.Year);
             int32_t CassetteNo = GetVal<int32_t>(CD.CassetteNo);
-            int16_t SheetInCassette = GetVal<int16_t>(CD.SheetInCassette);
+            int16_t SheetInCassette = 0;
+            auto t = CD.SheetInCassette->GetType();
+            if(t == OpcUa::VariantType::INT16)
+                SheetInCassette = GetVal<int16_t>(CD.SheetInCassette);
+            else
+                if(t == OpcUa::VariantType::INT32)
+                    SheetInCassette = GetVal<int32_t>(CD.SheetInCassette);
             return Day && Month && Year && CassetteNo && SheetInCassette;
         }
 

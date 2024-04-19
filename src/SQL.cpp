@@ -98,6 +98,10 @@ DLLRESULT CALLBACK bagSave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
+    if(val->ID == 151)
+    {
+        int t = 0;
+    }
     if(type == OpcUa::VariantType::BOOLEAN)        val->Val = atoi_t(bool, atoi, value);
     else if(type == OpcUa::VariantType::SBYTE)     val->Val = atoi_t(int8_t, atoi, value) / (int8_t)val->coeff;
     else if(type == OpcUa::VariantType::BYTE)      val->Val = atoi_t(uint8_t, atoi, value) / (uint8_t)val->coeff;
@@ -110,6 +114,7 @@ void SetValue(OpcUa::VariantType type, Value* val, std::string value)
     else if(type == OpcUa::VariantType::FLOAT)     val->Val = atoi_t(float, atof, value) / (float)val->coeff;
     else if(type == OpcUa::VariantType::DOUBLE)    val->Val = atoi_t(double, atof, value) / (double)val->coeff;
     else if(type == OpcUa::VariantType::STRING)    val->Val =  cp1251_to_utf8(value);
+    val->GetString();
     val->OldVal = val->Val;
 }
 
@@ -141,7 +146,7 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
             if(!val->Sec) val->Sec = static_cast<MSSEC>(atoi(conn_spis.PGgetvalue(res, l, ColIdSec).c_str()));
             if(!val->Sec) val->Sec = MSSEC::sec01000;
 
-            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(atoi(conn_spis.PGgetvalue(res, l, ColType).c_str()));
+            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(std::stoi(conn_spis.PGgetvalue(res, l, ColType)));
             SetValue(type, val, value);
             val->Update = true;
             //LOG_INFO(SQLLogger, "{:90}| ID = {}, coeff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coeff, val->GetString(), val->Patch);
@@ -181,9 +186,15 @@ void InitCurentTag()
     PQclear(res);
 
     for(auto& val : AllTagKpvl)
-        if(val->ID)val->UpdateVal();
+        val->UpdateVal();
     for(auto& val : AllTagPeth)
-        if(val->ID)val->UpdateVal();
+    {
+        if(val->Patch.find("ActTimeHeatAcc") != std::string::npos)
+        {
+            int tt = 0;
+        }
+        val->UpdateVal();
+    }
 
 #pragma endregion
 }
@@ -461,6 +472,8 @@ bool InitSQL()
             if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
             if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
             if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
+            
+            
 
 
             SaveConnect();
@@ -474,6 +487,7 @@ bool InitSQL()
             if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
             if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
             
+
 
 
         }

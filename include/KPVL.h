@@ -168,6 +168,10 @@ namespace KPVL {
     }
 
     namespace Cassette{
+
+        //ѕроверка на наличие кассеты
+        bool IsCassete(T_CassetteData& CD);
+
         //ќбновл€ем данные по кассете если кассета есть или добовл€ем новую
         void CassettePos(PGConnection& conn, T_CassetteData& CD);
 

@@ -749,6 +749,15 @@ enum HWNDCLIENT{
     RelF1_Stat_SheetInCassette,
     RelF1_Edit_SheetInCassette,
     hEndGroup201,
+
+    hGroup20111,
+    RelF1_Stat_TimeHeatAcc,
+    RelF1_Stat_TimeHeatWait,
+    RelF1_Stat_TimeTotal,
+    RelF1_Edit_TimeHeatAcc,
+    RelF1_Edit_TimeHeatWait,
+    RelF1_Edit_TimeTotal,
+    hEndGroup20111,
     #endif
     #if 202
     hGroup202,
@@ -842,7 +851,17 @@ enum HWNDCLIENT{
     RelF2_Stat_SheetInCassette,
     RelF2_Edit_SheetInCassette,
     hEndGroup301,
+
+    hGroup20311,
+    RelF2_Stat_TimeHeatAcc,
+    RelF2_Stat_TimeHeatWait,
+    RelF2_Stat_TimeTotal,
+    RelF2_Edit_TimeHeatAcc,
+    RelF2_Edit_TimeHeatWait,
+    RelF2_Edit_TimeTotal,
+    hEndGroup20311,
     #endif
+
     #if 302
     hGroup302,
         //RelF1_Stat_Param,

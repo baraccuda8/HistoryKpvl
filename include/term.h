@@ -119,36 +119,46 @@ typedef struct T_ForBase_RelFurn{
     //REAL Термопара 2
     Value* T2;
 
+    //REAL Факт время нагрева
+    Value* ActTimeHeatAcc;
+
+    //REAL Факт время выдержки
+    Value* ActTimeHeatWait;
+
+    //REAL Факт общее время 
+    Value* ActTimeTotal;
+
     T_cassette Cassette;
 };
 
 extern std::deque<TCassette> AllCassette;
 
 namespace casCassette{
-    namespace emCassette{
-        enum {
-            create_at=0,
-            id,
-            event,
-            day,
-            month,
-            year,
-            cassetteno,
-            sheetincassette,
-            close_at,
-            peth,
-            run_at,
-            error_at,
-            end_at,
-            delete_at,
-            tempref,            //Заданное значение температуры
-            pointtime_1,        //Время разгона
-            pointref_1,         //Уставка температуры
-            timeprocset,        //Полное время процесса (уставка), мин
-            pointdtime_2,       //Время выдержки
-            f_temper,           //Факт температуры за 5 минут до конца отпуска
-        };
-    };
+    //namespace emCassette{
+    //    enum {
+    //        create_at=0,
+    //        id,
+    //        event,
+    //        day,
+    //        month,
+    //        year,
+    //        cassetteno,
+    //        sheetincassette,
+    //        close_at,
+    //        peth,
+    //        run_at,
+    //        error_at,
+    //        end_at,
+    //        delete_at,
+    //        tempref,            //Заданное значение температуры
+    //        pointtime_1,        //Время разгона
+    //        pointref_1,         //Уставка температуры
+    //        timeprocset,        //Полное время процесса (уставка), мин
+    //        pointdtime_2,       //Время выдержки
+    //        f_temper,           //Факт температуры за 5 минут до конца отпуска
+    //        finish_at,
+    //    };
+    //};
 
     enum cas {
         nn = 0,
@@ -180,5 +190,29 @@ extern T_ForBase_RelFurn ForBase_RelFurn_2;
 
 namespace S107
 {
+//#pragma region Номера колонок в кассете
+//    extern int Create_at;
+//    extern int Id;
+//    extern int Event;
+//    extern int Day;
+//    extern int Month;
+//    extern int Year;
+//    extern int CassetteNo;
+//    extern int SheetInCassette;
+//    extern int Close_at;
+//    extern int Peth;
+//    extern int Run_at;
+//    extern int Error_at;
+//    extern int End_at;
+//    extern int Delete_at;
+//    extern int TempRef;           //Заданное значение температуры
+//    extern int PointTime_1;       //Время разгона
+//    extern int PointRef_1;        //Уставка температуры
+//    extern int TimeProcSet;       //Полное время процесса (уставка), мин
+//    extern int PointDTime_2;      //Время выдержки
+//    extern int f_temper;          //Факт температуры за 5 минут до конца отпуска
+//    extern int Finish_at;
+//#pragma endregion
+
     extern std::string ServerDataTime;
 };

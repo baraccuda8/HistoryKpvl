@@ -30,31 +30,31 @@ void Value::InsertVal()
     GetIdValSQL();
 }
 
+//Временная функция для обновления таблици tag
 void Value::UpdateVal()
 {
     if(Update)return;
+
+    int type = (int)Val.Type();
 
     std::stringstream st;
     st << "INSERT INTO tag (content, name, comment, arhive, type, coeff, hist, format, idsec) VALUES (";
     st << "'" << GetString() << "', ";
     st << "'" << Patch << "', ";
     st << "'" << Comment << "', ";
-    st << Arhive << ", ";
-    st << GetType() << ", ";
+    st << (Arhive ? "true" : "false") << ", ";
+    st << type << ", ";
     st << coeff << ", ";
     st << hist << ", ";
     st << "'" << format << "', ";
     st << Sec << ");";
-    ////Временная функция для обновления таблици tag
-    //char comand[1024];
-    //sprintf_s(comand, 1023, "UPDATE tag SET comment = '%s' WHERE id = %u;", Comment.c_str(), ID);
     std::string comand =st.str();
     PGresult* res = Conn->PGexec(comand);
     LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
-
+    GetIdValSQL();
     Update = true;
 }
 

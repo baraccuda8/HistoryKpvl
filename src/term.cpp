@@ -67,12 +67,15 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.TempAct               = new Value(StrFurn1 + "TempAct",               HWNDCLIENT::RelF1_Edit_TempAct,         0, &conn_temp)}, //: REAL;//Фактическое значение температуры
     {AppFurn1.T1                    = new Value(StrFurn1 + "T1",                    HWNDCLIENT::RelF1_Edit_T1,              0, &conn_temp)}, //: REAL; // термопара 1
     {AppFurn1.T2                    = new Value(StrFurn1 + "T2",                    HWNDCLIENT::RelF1_Edit_T2,              0, &conn_temp)}, //: REAL; // термопара 2
+    {AppFurn1.ActTimeHeatAcc        = new Value(StrFurn1 + "ActTimeHeatAcc",        HWNDCLIENT::RelF1_Edit_TimeHeatAcc,     S107::Furn1::TimeHeatAcc, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт время нагрева")}, //: REAL; // Факт время нагрева
+    {AppFurn1.ActTimeHeatWait       = new Value(StrFurn1 + "ActTimeHeatWait",       HWNDCLIENT::RelF1_Edit_TimeHeatWait,    S107::Furn1::TimeHeatWait, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт время выдержки")}, //: REAL; // Факт время выдержки
+    {AppFurn1.ActTimeTotal          = new Value(StrFurn1 + "ActTimeTotal",          HWNDCLIENT::RelF1_Edit_TimeTotal,       S107::Furn1::TimeTotal, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт общее время")}, //: REAL; // Факт общее время
 
     {AppFurn1.Cassette.Day          = new Value(StrFurn1 + "Cassette.Day",          HWNDCLIENT::RelF1_Edit_Cassette_Day,    S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты день
     {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты месяц
     {AppFurn1.Cassette.Year         = new Value(StrFurn1 + "Cassette.Year",         HWNDCLIENT::RelF1_Edit_Cassette_Year,   S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты год
     {AppFurn1.Cassette.CassetteNo   = new Value(StrFurn1 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF1_Edit_CassetteNo,      S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты номер
-
+    
 
 
     //Вторая печь
@@ -94,6 +97,10 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn2.TempAct               = new Value(StrFurn2 + "TempAct",               HWNDCLIENT::RelF2_Edit_TempAct,         0, &conn_temp)}, //: REAL;//Фактическое значение температуры
     {AppFurn2.T1                    = new Value(StrFurn2 + "T1",                    HWNDCLIENT::RelF2_Edit_T1,              0, &conn_temp)}, //: REAL; // термопара 1
     {AppFurn2.T2                    = new Value(StrFurn2 + "T2",                    HWNDCLIENT::RelF2_Edit_T2,              0, &conn_temp)}, //: REAL; // термопара 2
+
+    {AppFurn2.ActTimeHeatAcc        = new Value(StrFurn2 + "ActTimeHeatAcc",        HWNDCLIENT::RelF2_Edit_TimeHeatAcc,     S107::Furn2::TimeHeatAcc, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт время нагрева")}, //: REAL; // Факт время нагрева
+    {AppFurn2.ActTimeHeatWait       = new Value(StrFurn2 + "ActTimeHeatWait",       HWNDCLIENT::RelF2_Edit_TimeHeatWait,    S107::Furn2::TimeHeatWait, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт время выдержки")}, //: REAL; // Факт время выдержки
+    {AppFurn2.ActTimeTotal          = new Value(StrFurn2 + "ActTimeTotal",          HWNDCLIENT::RelF2_Edit_TimeTotal,       S107::Furn2::TimeTotal, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт общее время")}, //: REAL; // Факт общее время
 
     {AppFurn2.Cassette.Day          = new Value(StrFurn2 + "Cassette.Day",          HWNDCLIENT::RelF2_Edit_Cassette_Day,    S107::Furn2::SetNull_Temper, &conn_temp)}, ///ID касеты день
     {AppFurn2.Cassette.Month        = new Value(StrFurn2 + "Cassette.Month",        HWNDCLIENT::RelF2_Edit_Cassette_Month,  S107::Furn2::SetNull_Temper, &conn_temp)}, //ID касеты месяц
@@ -138,6 +145,8 @@ std::deque<Value*> AllTagPeth = {
 
     {AppSelected1 = new Value(StrSelected1,  hEditState_selected_casset1, 0, &conn_temp)}, //Выбор кассеты в 1-й печи
     {AppSelected2 = new Value(StrSelected2,  hEditState_selected_casset2, 0, &conn_temp)}, //Выбор кассеты в 2-й печи
+
+    
 };
 
 
@@ -399,40 +408,6 @@ void PLC_S107::GetWD()
         sprintf_s(sFormat, 50, "%04d-%02d-%02d %02d:%02d:%02d", TM.tm_year-70, TM.tm_mon, TM.tm_mday - 1, TM.tm_hour, TM.tm_min, TM.tm_sec);
         SetWindowText(winmap(hEditTime_4), sFormat);
     }
-
-
-    //if(PLC_KPVL_old_dt != 0 && PLC_KPVL_old_dt - time(NULL) > 5)
-    //{
-    //    try
-    //    {
-    //        //bool WDG_toBase = AllTagKpvl[std::string("HMISheetData.Sheet.WDG_toBase")].Val.As<bool>();
-    //        for(auto& a : AllTagKpvl)
-    //        {
-    //            if("|var|PLC210 OPC-UA.Application.HMISheetData.Sheet.WDG_toBase" == a.second.Patch)
-    //            {
-    //            //HMISheetData.Sheet.WDG_toBase.GetValue();
-    //            //if(WDG_toBase)
-    //                PLC_KPVL_old_dt = time(NULL);
-    //                //if(!MyServer)
-    //                {
-    //                    HARD_LOGGER("HMISheetData.Sheet.WDG_fromBase.Set_Value(true)");
-    //                    a.second.
-    //                    //OpcUa::Variant var = true;
-    //                    //AllTagKpvl["HMISheetData.Sheet.WDG_toBase"].Set_Value(true);
-    //                    //HMISheetData.Sheet.WDG_fromBase.Set_Value(true);
-    //                }
-    //
-    //                WDGSheetData_To++;
-    //                struct tm TM;
-    //                localtime_s(&TM, &PLC_KPVL_old_dt);
-    //
-    //                SetWindowText(winmap(hEditState_WDG), string_time(&TM).c_str());
-    //            }
-    //        }
-    //    }
-    //    LOG_CATCH("Ошибка данных HMISheetData.Sheet.WDG_fromBase.Set_Value");
-    //
-    //}
 }
 
 
@@ -672,7 +647,7 @@ void Open_FURN_SQL()
     {
 #pragma region Рисуем текущий график
 
-        S107::SQL::FURN_SQL();
+        S107::SQL::FURN_SQL(conn_spic);
 
         size_t count = AllCassette.size();
 

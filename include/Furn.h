@@ -6,21 +6,52 @@ namespace S107
     extern std::string URI;
     extern std::string ServerDataTime;
 
+    namespace Coll{
+        extern int Create_at;
+        extern int Id;
+        extern int Event;
+        extern int Day;
+        extern int Month;
+        extern int Year;
+        extern int CassetteNo;
+        extern int SheetInCassette;
+        extern int Close_at;
+        extern int Peth;
+        extern int Run_at;
+        extern int Error_at;
+        extern int End_at;
+        extern int Delete_at;
+        extern int TempRef;           //Заданное значение температуры
+        extern int PointTime_1;       //Время разгона
+        extern int PointRef_1;        //Уставка температуры
+        extern int TimeProcSet;       //Полное время процесса (уставка), мин
+        extern int PointDTime_2;      //Время выдержки
+        extern int f_temper;          //Факт температуры за 5 минут до конца отпуска
+        extern int Finish_a;
+    };
+
+    void GetColl(PGresult* res);
+    void GetCassette(PGresult* res, TCassette& cassette, int line);
+
+
     namespace SQL{
-        void FURN_SQL();
+        void FURN_SQL(PGConnection& conn);
+        void GetIsPos(PGConnection& conn, TCassette& CD);
+        bool GetCountSheet(PGConnection& conn, TCassette& CD);
     };
 
 
 #pragma region Функции с кассетами в базе
+    bool IsCassete(TCassette& CD);
     bool IsCassete1(T_cassette& CD);
     bool IsCassete2(T_cassette& CD);
 
-    void UpdateCassetteProcRun(T_ForBase_RelFurn& Furn, int Peth);
-    void UpdateCassetteProcEnd(T_ForBase_RelFurn& Furn, int Peth);
-    void UpdateCassetteProcError(T_ForBase_RelFurn& Furn, int Peth);
-    void SetTemperCassette(T_cassette& CD, std::string teper);;
+    void UpdateCassetteProcRun(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
+    void UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
+    void UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
+    void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper);;
 
-    void CloseAllCassette2(T_cassette& CD, int Peth);
+    void CloseAllCassette2(PGConnection& conn, T_cassette& CD, int Peth);
 #pragma endregion
 
     //Печ отпуска #1
@@ -38,6 +69,10 @@ namespace S107
 
         //Обнуление температуры для сравнения
         DWORD SetNull_Temper(Value* value);
+
+        DWORD TimeHeatAcc(Value* value);
+        DWORD TimeHeatWait(Value* value);
+        DWORD TimeTotal(Value* value);
 
         ////REAL Время до окончания процесса, мин
         //DWORD TimeToProcEnd(Value* value);
@@ -103,6 +138,9 @@ namespace S107
         //Обнуление температуры для сравнения
         DWORD SetNull_Temper(Value* value);
 
+        DWORD TimeHeatAcc(Value* value);
+        DWORD TimeHeatWait(Value* value);
+        DWORD TimeTotal(Value* value);
 
         ////REAL Время до окончания процесса, мин
         //DWORD TimeToProcEnd(Value* value);
