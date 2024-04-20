@@ -218,6 +218,11 @@ std::vector <ListTitle> Cassette_Collumn ={
     { "Конец оптуска", XL_CX8 },
     { "Конец процесса",  XL_CX8},
     { "Ошибка оптуска", XL_CX8 },
+
+    { "Факт время нагрева", XL_CX4 },
+    { "Факт время выдержки", XL_CX4 },
+    { "Факт общее время", XL_CX4 },
+
 };
 
 //std::map<HWNDCLIENT, structWindow>mapWindow;
@@ -1496,8 +1501,12 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         if(plvdi->item.iSubItem == Cassete::Run_at)            lstrcpy(plvdi->item.pszText, p.Run_at.c_str());      //Начало отпуска
                         if(plvdi->item.iSubItem == Cassete::Error_at)          lstrcpy(plvdi->item.pszText, p.Error_at.c_str());    //Ошибка отпуска
                         if(plvdi->item.iSubItem == Cassete::End_at)            lstrcpy(plvdi->item.pszText, p.End_at.c_str());      //Конец отпуска
-                        if(plvdi->item.iSubItem == Cassete::Finish_at)            lstrcpy(plvdi->item.pszText, p.Finish_at.c_str());//Конец процесса
+                        if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, p.Finish_at.c_str());//Конец процесса
                         if(plvdi->item.iSubItem == Cassete::Peth)              lstrcpy(plvdi->item.pszText, p.Peth.c_str());       //Печь
+                        if(plvdi->item.iSubItem == Cassete::HeatAcc)           lstrcpy(plvdi->item.pszText, p.HeatAcc.c_str());           //Факт время нагрева
+                        if(plvdi->item.iSubItem == Cassete::HeatWait)          lstrcpy(plvdi->item.pszText, p.HeatWait.c_str());          //Факт время выдержки
+                        if(plvdi->item.iSubItem == Cassete::Total)             lstrcpy(plvdi->item.pszText, p.Total.c_str());             //Факт общее время
+
                     }
                 }
             }

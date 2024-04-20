@@ -95,6 +95,11 @@ DLLRESULT CALLBACK bagSave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
     return (0);
 }
 
+bool cmpMaxMin(Value* first, Value* second)
+{
+    return first->ID< second->ID;
+}
+
 
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
@@ -118,36 +123,74 @@ void SetValue(OpcUa::VariantType type, Value* val, std::string value)
     val->OldVal = val->Val;
 }
 
+namespace CollTag{
 
-int ColId = 0;
-int ColContent = 1;
-int ColName = 2;
-int ColArhive = 3;
-int ColType = 4;
-int ColCoeff = 5;
-int ColHist = 6;
-int ColFormat = 7;
-int ColIdSec = 8;
+    int Id = 0;
+    int Name = 0;
+    int Type = 0;
+    int Arhive = 0;
+    int Comment = 0;
+    int Content = 0;
+    int Coeff = 0;
+    int Hist = 0;
+    int Format = 0;
+    int Idsec = 0;
+}
 
 
-void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int l)
+
+std::string GetType(OpcUa::VariantType type, std::string value)
+{
+    if(type == OpcUa::VariantType::BOOLEAN)        return "(bool)" + value;
+    else if(type == OpcUa::VariantType::SBYTE)     return "(int8_t)" + value;
+    else if(type == OpcUa::VariantType::BYTE)      return "(uint8_t)" + value;
+    else if(type == OpcUa::VariantType::INT16)     return "(int16_t)" + value;
+    else if(type == OpcUa::VariantType::UINT16)    return "(uint16_t)" + value;
+    else if(type == OpcUa::VariantType::INT32)     return "(int32_t)" + value;
+    else if(type == OpcUa::VariantType::UINT32)    return "(uint32_t)" + value;
+    else if(type == OpcUa::VariantType::INT64)     return "(int64_t)" + value;
+    else if(type == OpcUa::VariantType::UINT64)    return "(uint64_t)" + value;
+    else if(type == OpcUa::VariantType::FLOAT)     return "(float)" + value;
+    else if(type == OpcUa::VariantType::DOUBLE)    return "(double)" + value;
+    else if(type == OpcUa::VariantType::STRING)    return "std::string(\"" + value + "\")";
+    return "";
+}
+
+void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int l, std::ofstream& ofs)
 {
     for(auto& val : All)
     {
         if(val->Patch == Patch)
         {
 
-            val->ID = atol(conn_spis.PGgetvalue(res, l, ColId).c_str());
-            std::string value = conn_spis.PGgetvalue(res, l, ColContent);
-            val->Arhive = conn_spis.PGgetvalue(res, l, ColArhive) == "t";
-            val->coeff = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, ColCoeff).c_str()));
-            val->hist = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, ColHist).c_str()));
-            val->format = conn_spis.PGgetvalue(res, l, ColFormat);
-            if(!val->Sec) val->Sec = static_cast<MSSEC>(atoi(conn_spis.PGgetvalue(res, l, ColIdSec).c_str()));
+            val->ID = atol(conn_spis.PGgetvalue(res, l, CollTag::Id).c_str());
+            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(std::stoi(conn_spis.PGgetvalue(res, l, CollTag::Type)));
+            val->Arhive = conn_spis.PGgetvalue(res, l, CollTag::Arhive) == "t";
+            val->Comment = conn_spis.PGgetvalue(res, l, CollTag::Comment);
+            std::string value = conn_spis.PGgetvalue(res, l, CollTag::Content);
+            val->coeff = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, CollTag::Coeff).c_str()));
+            val->hist = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, CollTag::Hist).c_str()));
+            val->format = conn_spis.PGgetvalue(res, l, CollTag::Format);
+            if(!val->Sec) val->Sec = static_cast<MSSEC>(atoi(conn_spis.PGgetvalue(res, l, CollTag::Idsec).c_str()));
             if(!val->Sec) val->Sec = MSSEC::sec01000;
 
-            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(std::stoi(conn_spis.PGgetvalue(res, l, ColType)));
             SetValue(type, val, value);
+            
+
+            //boost::replace_all(value, ".", ",");
+            if(!ofs.bad())
+                ofs << val->ID << ";"
+                << "\"\"\"" << val->Patch << "\"\"\";" 
+                << (int)val->GetType() << ";" 
+                << val->Arhive << ";" 
+                << "\"\"\"" << val->Comment << "\"\"\";" 
+                << GetType(type, val->GetString()) << ";" 
+                << val->coeff << ";" 
+                << val->hist << ";" 
+                << "\"\"\"" << val->format << "\"\"\";" 
+                << val->Sec << ";" 
+                << std::endl;
+
             val->Update = true;
             //LOG_INFO(SQLLogger, "{:90}| ID = {}, coeff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coeff, val->GetString(), val->Patch);
             break;
@@ -155,47 +198,68 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
     }
 }
 
-
 void InitCurentTag()
 {
+#pragma region SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id 
+    std::ofstream ofs("all_tag.csv", std::ios_base::binary | std::ios_base::out | std::ios_base::trunc);
+    ofs << "id;name;type;arhive;comment;content;coeff;hist;format;idsec" << std::endl;
 
-#pragma region tag
-    std::string comand = "SELECT id, content, name, arhive, type, coeff, hist, format, idsec FROM tag ORDER BY id;"; ///* WHERE name = '" + val->Patch + "'*/;";
+    std::string comand = "SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id;";
 
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_spis.PGexec(comand);
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
+        if(!CollTag::Idsec)
+        {
+            int nFields = PQnfields(res);
+            for(int j = 0; j < nFields; j++)
+            {
+                std::string l =  utf8_to_cp1251(PQfname(res, j));
+                if(l == "id") CollTag::Id = j;
+                else if(l == "name") CollTag::Name = j;
+                else if(l == "type") CollTag::Type = j;
+                else if(l == "arhive") CollTag::Arhive = j;
+                else if(l == "comment") CollTag::Comment = j;
+                else if(l == "content") CollTag::Content = j;
+                else if(l == "coeff") CollTag::Coeff = j;
+                else if(l == "hist") CollTag::Hist = j;
+                else if(l == "format") CollTag::Format = j;
+                else if(l == "idsec") CollTag::Idsec = j;
+            }
+        }
+
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
         {
-            std::string Patch = conn_spis.PGgetvalue(res, l, ColName);
+            std::string Patch = conn_spis.PGgetvalue(res, l, CollTag::Name);
             if(Patch.find("PLC210 OPC-UA") != std::string::npos)
             {
-                GetTagTable(AllTagKpvl, Patch, res, l);
+                GetTagTable(AllTagKpvl, Patch, res, l, ofs);
             }
             else if(Patch.find("SPK107 (M01)") != std::string::npos)
             {
-                GetTagTable(AllTagPeth, Patch, res, l);
+                GetTagTable(AllTagPeth, Patch, res, l, ofs);
             }
         }
     }
+
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
 
     for(auto& val : AllTagKpvl)
+    {
         val->UpdateVal();
+    }
     for(auto& val : AllTagPeth)
     {
-        if(val->Patch.find("ActTimeHeatAcc") != std::string::npos)
-        {
-            int tt = 0;
-        }
         val->UpdateVal();
     }
 
+    if(!ofs.bad())
+        ofs.close();
 #pragma endregion
 }
 
@@ -203,7 +267,7 @@ void InitTag()
 {
     InitCurentTag();
     
-#pragma region possheet
+#pragma region SELECT id, content FROM possheet
     std::string comand = "SELECT id, content FROM possheet"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_kpvl.PGexec(comand);
@@ -282,8 +346,7 @@ void InitTag()
     }
 #pragma endregion
 
-
-#pragma region EventCassette
+#pragma region SELECT id, content FROM EventCassette
     comand = "SELECT id, content FROM EventCassette"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_kpvl.PGexec(comand);
@@ -325,8 +388,7 @@ void InitTag()
     }
 #pragma endregion
 
-
-#pragma region genseq1
+#pragma region SELECT id, content FROM genseq1
     comand = "SELECT id, content FROM genseq1"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_kpvl.PGexec(comand);
@@ -370,7 +432,7 @@ void InitTag()
     }
 #pragma endregion
 
-#pragma region genseq2
+#pragma region SELECT id, content FROM genseq2
     comand = "SELECT id, content FROM genseq2"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_kpvl.PGexec(comand);
@@ -413,7 +475,7 @@ void InitTag()
     }
 #pragma endregion
 
-#pragma region genseq3
+#pragma region SELECT id, content FROM genseq3
     comand = "SELECT id, content FROM genseq3"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     res = conn_kpvl.PGexec(comand);
@@ -452,8 +514,6 @@ void InitTag()
         PQclear(res);
     }
 #pragma endregion
-
-
 
 }
 

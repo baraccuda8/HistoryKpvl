@@ -10,6 +10,7 @@
 #include "Graff.h"
 #include "KPVL.h"
 #include "Furn.h"
+#include "Pdf.h"
 
 extern std::shared_ptr<spdlog::logger> PethLogger;
 extern std::string FORMATTIME;
@@ -49,12 +50,16 @@ namespace S107
         int PointDTime_2 = 0;      //Время выдержки
         int f_temper = 0;          //Факт температуры за 5 минут до конца отпуска
         int Finish_at = 0;
+        int HeatAcc = 0;           //Факт время нагрева
+        int HeatWait = 0;          //Факт время выдержки
+        int Total = 0;             //Факт общее время
+
     };
 #pragma endregion
 
     void GetColl(PGresult* res)
     {
-        if(!Coll::Finish_at)
+        if(!Coll::Total)
         {
             int nFields = PQnfields(res);
             for(int j = 0; j < nFields; j++)
@@ -81,6 +86,10 @@ namespace S107
                 else if(l == "pointdtime_2") Coll::PointDTime_2 = j;
                 else if(l == "facttemper") Coll::f_temper = j;
                 else if(l == "finish_at") Coll::Finish_at = j;
+                else if(l == "heatacc")Coll::HeatAcc = j;
+                else if(l == "heatwait")Coll::HeatWait = j;
+                else if(l == "total")Coll::Total = j;
+
             }
         }
     }
@@ -108,6 +117,9 @@ namespace S107
         cassette.PointDTime_2 = conn_spis.PGgetvalue(res, line, Coll::PointDTime_2);      //Время выдержки
         cassette.f_temper = conn_spis.PGgetvalue(res, line, Coll::f_temper);          //Факт температуры за 5 минут до конца отпуска
         cassette.Finish_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Finish_at)); //Завершение процесса + 15 минут
+        cassette.HeatAcc = conn_spis.PGgetvalue(res, line, Coll::HeatAcc); //Завершение процесса + 15 минут
+        cassette.HeatWait = conn_spis.PGgetvalue(res, line, Coll::HeatWait); //Завершение процесса + 15 минут
+        cassette.Total = conn_spis.PGgetvalue(res, line, Coll::Total); //Завершение процесса + 15 минут
     }
 
     std::string URI = "opc.tcp://192.168.9.40:4840";
@@ -302,6 +314,7 @@ namespace S107
 
         void FinishPdf(PGConnection& conn, TCassette& CD, int Peth, int id)
         {
+            PrintPdfAuto(CD);
         }
 
         void SearthEnd_at(PGConnection& conn, TCassette& CD, int id)
@@ -413,6 +426,7 @@ namespace S107
                             CD.Finish_at = "";
                         }
                     }
+                    //Касета на контовке
                     else if(isCasseteCant(HMISheetData.Cassette, CD))
                     {
                         if(CD.Event != "1")
@@ -459,7 +473,8 @@ namespace S107
                                 CD.Error_at = GetStringData(conn_spis.PGgetvalue(res, 0, 0));
                                 PQclear(res);
                             }
-                            LOG_ERR_SQL(SQLLogger, res, comand);
+                            else
+                                LOG_ERR_SQL(SQLLogger, res, comand);
 
                             if(CD.Error_at.length())
                             {
@@ -665,7 +680,7 @@ namespace S107
                 {
                     //if(!MyServer)
                     {
-                        //AppFurn1.WDG_fromBase->Set_Value(true);
+                        AppFurn1.WDG_fromBase->Set_Value(true);
                         //TAG_PLC_SPK1.Application.ForBase_RelFurn_1.Data;
                     }
                 }
@@ -791,7 +806,7 @@ namespace S107
                 {
                     //if(!MyServer)
                     {
-                        //AppFurn2.WDG_fromBase->Set_Value(true);
+                        AppFurn2.WDG_fromBase->Set_Value(true);
                     }
                 }
                 catch(std::exception& exc)

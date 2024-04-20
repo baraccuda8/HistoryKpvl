@@ -9,6 +9,7 @@
 #include "hard.h"
 #include "Graff.h"
 #include "Furn.h"
+#include "pdf.h"
 
 
 #define SPKsec1 sec01000
@@ -27,6 +28,7 @@ time_t PLC_S107_old_dt = 0;
 
 std::thread hS107URI;
 std::thread hS107SQL;
+std::thread hSQL;
 
 std::deque<TCassette> AllCassette;
 
@@ -49,8 +51,8 @@ struct T_cassetteArray{
 std::deque<Value*> AllTagPeth = {
 
     //Первая печь
-    {AppFurn1.WDG_toBase            = new Value(StrFurn1 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_1,          S107::Furn1::Data_WDG_toBase, &conn_temp, MSSEC::sec00500)}, //вачдог
-    {AppFurn1.WDG_fromBase          = new Value(StrFurn1 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, MSSEC::sec00500)}, //вачдог для обратной связи 
+    {AppFurn1.WDG_toBase            = new Value(StrFurn1 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_1,          S107::Furn1::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог")}, //вачдог
+    {AppFurn1.WDG_fromBase          = new Value(StrFurn1 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
     {AppFurn1.PointTime_1           = new Value(StrFurn1 + "PointTime_1",           HWNDCLIENT::RelF1_Edit_PointTime_1,     0, &conn_temp)}, //: REAL; //Время разгона
     {AppFurn1.PointRef_1            = new Value(StrFurn1 + "PointRef_1",            HWNDCLIENT::RelF1_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;  //Уставка температуры
@@ -75,12 +77,10 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты месяц
     {AppFurn1.Cassette.Year         = new Value(StrFurn1 + "Cassette.Year",         HWNDCLIENT::RelF1_Edit_Cassette_Year,   S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты год
     {AppFurn1.Cassette.CassetteNo   = new Value(StrFurn1 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF1_Edit_CassetteNo,      S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты номер
-    
-
 
     //Вторая печь
-    {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,           S107::Furn2::Data_WDG_toBase, &conn_temp, MSSEC::sec00500)}, //вачдог
-    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, MSSEC::sec00500)}, //вачдог для обратной связи 
+    {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false,  "Вачдог")}, //вачдог
+    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
     {AppFurn2.PointTime_1           = new Value(StrFurn2 + "PointTime_1",           HWNDCLIENT::RelF2_Edit_PointTime_1,     0, &conn_temp)}, //: REAL;//Время разгона
     {AppFurn2.PointRef_1            = new Value(StrFurn2 + "PointRef_1",            HWNDCLIENT::RelF2_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;//Уставка температуры
@@ -638,11 +638,25 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 
 }
 
+void FURN_SQL()
+{
+    //std::deque<TCassette> AC = AllCassette;
+    //for(auto ct : AC)
+    //{
+    //    if(!isRun)return;
+    //    PrintPdfAuto(ct);
+    //}
+}
+
 void Open_FURN_SQL()
 {
     size_t old_count = 0;
     LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 
+    S107::SQL::FURN_SQL(conn_spic);
+    hSQL = std::thread(FURN_SQL);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     while(isRun)
     {
 #pragma region Рисуем текущий график
@@ -715,6 +729,8 @@ void Close_FURN()
     HANDLE* h = NULL;
     int size = 0;
     //if(hS107URI)
+    
+    WaitClose_FURN(hSQL, "hSQL");
     WaitClose_FURN(hS107URI, "hS107URI");
     WaitClose_FURN(hS107SQL, "hS107SQL");
     

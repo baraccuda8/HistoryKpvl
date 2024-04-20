@@ -91,9 +91,15 @@ std::deque<Value*> AllTagKpvl = {
 #ifndef TESTTEMPER
 
 #pragma region вачдог WDG
-    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
-    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
-    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
+    //{HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
+    //{HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
+    //{HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
+
+                                      //Value(const std::string n,                HWNDCLIENT hc,                                myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC s, std::string fo, OpcUa::Variant v, std::string com);
+    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG,                                         0, &conn_kpvl, true, 1, 1, MSSEC::sec00500, "", (int32_t)0, "Счетчик циклов контроллера")},    //Счетчик циклов контроллера
+    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG,          KPVL::SheetData_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог")}, //вачдог
+    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull,                                            0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
+
 #pragma endregion
 
 #pragma region Касеты и листы
@@ -731,9 +737,10 @@ void UpdateSheetPos()
     PQclear(res);
 }
 
-
+//#define IS_PDF
 void AllPdf()
 {
+#ifdef IS_PDF
     PGConnection conn_pdf;
     conn_pdf.connection();
     std::deque<TSheet>Sheet = AllSheet;
@@ -743,6 +750,7 @@ void AllPdf()
         KPVL::SQL::GetDataTime_All(conn_pdf, TS);
         PrintPdfAuto(TS, false);
     }
+#endif
 }
 
 void Open_KPVL_SQL()

@@ -51,58 +51,58 @@ std::deque<TSheet>AllSheet;
 //Номер колонки в таблице листов
 #pragma region //Номер колонки в таблице листов
         //enum{
-const int Col_Sheet_id = 0;
-const int Col_Sheet_create_at = 1;
-const int Col_Sheet_start_at = 2;
-const int Col_Sheet_datatime_end = 3;
-const int Col_Sheet_pos = 4;
-const int Col_Sheet_datatime_all = 5;
-const int Col_Sheet_alloy = 6;
-const int Col_Sheet_thikness = 7;
-const int Col_Sheet_melt = 8;
-const int Col_Sheet_slab = 9;
-const int Col_Sheet_partno = 10;
-const int Col_Sheet_pack = 11;
-const int Col_Sheet_sheet = 12;
-const int Col_Sheet_subsheet = 13;
-const int Col_Sheet_temper = 14;
-const int Col_Sheet_speed = 15;
-const int Col_Sheet_za_pt3 = 16;
-const int Col_Sheet_za_te3 = 17;
-const int Col_Sheet_lampresstop = 18;
-const int Col_Sheet_lampressbot = 19;
-const int Col_Sheet_posclapantop  =20;
-const int Col_Sheet_posclapanbot = 21;
-const int Col_Sheet_mask = 22;
-const int Col_Sheet_lam1posclapantop = 23;
-const int Col_Sheet_lam1posclapanbot = 24;
-const int Col_Sheet_lam2posclapantop = 25;
-const int Col_Sheet_lam2posclapanbot = 26;
-const int Col_Sheet_lam_te1 = 27;
-const int Col_Sheet_news = 28;
-const int Col_Sheet_top1 = 29;
-const int Col_Sheet_top2 = 30;
-const int Col_Sheet_top3 = 31;
-const int Col_Sheet_top4 = 32;
-const int Col_Sheet_top5 = 33;
-const int Col_Sheet_top6 = 34;
-const int Col_Sheet_top7 = 35;
-const int Col_Sheet_top8 = 36;
-const int Col_Sheet_bot1 = 37;
-const int Col_Sheet_bot2 = 38;
-const int Col_Sheet_bot3 = 39;
-const int Col_Sheet_bot4 = 40;
-const int Col_Sheet_bot5 = 41;
-const int Col_Sheet_bot6 = 42;
-const int Col_Sheet_bot7 = 43;
-const int Col_Sheet_bot8 = 44;
-const int Col_Sheet_day = 45;
-const int Col_Sheet_month = 46;
-const int Col_Sheet_year = 47;
-const int Col_Sheet_cassetteno = 48;
-const int Col_Sheet_sheetincassette = 49;
-const int Col_Sheet_timeforplateheat = 50;
-const int Col_Sheet_prestostartcomp = 51;
+int Col_Sheet_id = 0;
+int Col_Sheet_create_at = 0;
+int Col_Sheet_start_at = 0;
+int Col_Sheet_datatime_end = 0;
+int Col_Sheet_pos = 0;
+int Col_Sheet_datatime_all = 0;
+int Col_Sheet_alloy = 0;
+int Col_Sheet_thikness = 0;
+int Col_Sheet_melt = 0;
+int Col_Sheet_slab = 0;
+int Col_Sheet_partno = 0;
+int Col_Sheet_pack = 0;
+int Col_Sheet_sheet = 0;
+int Col_Sheet_subsheet = 0;
+int Col_Sheet_temper = 0;
+int Col_Sheet_speed = 0;
+int Col_Sheet_za_pt3 = 0;
+int Col_Sheet_za_te3 = 0;
+int Col_Sheet_lampresstop = 0;
+int Col_Sheet_lampressbot = 0;
+int Col_Sheet_posclapantop  = 0;
+int Col_Sheet_posclapanbot = 0;
+int Col_Sheet_mask = 0;
+int Col_Sheet_lam1posclapantop = 0;
+int Col_Sheet_lam1posclapanbot = 0;
+int Col_Sheet_lam2posclapantop = 0;
+int Col_Sheet_lam2posclapanbot = 0;
+int Col_Sheet_lam_te1 = 0;
+int Col_Sheet_news = 0;
+int Col_Sheet_top1 = 0;
+int Col_Sheet_top2 = 0;
+int Col_Sheet_top3 = 0;
+int Col_Sheet_top4 = 0;
+int Col_Sheet_top5 = 0;
+int Col_Sheet_top6 = 0;
+int Col_Sheet_top7 = 0;
+int Col_Sheet_top8 = 0;
+int Col_Sheet_bot1 = 0;
+int Col_Sheet_bot2 = 0;
+int Col_Sheet_bot3 = 0;
+int Col_Sheet_bot4 = 0;
+int Col_Sheet_bot5 = 0;
+int Col_Sheet_bot6 = 0;
+int Col_Sheet_bot7 = 0;
+int Col_Sheet_bot8 = 0;
+int Col_Sheet_day = 0;
+int Col_Sheet_month = 0;
+int Col_Sheet_year = 0;
+int Col_Sheet_cassetteno = 0;
+int Col_Sheet_sheetincassette = 0;
+int Col_Sheet_timeforplateheat = 0;
+int Col_Sheet_prestostartcomp = 0;
 //};
 #pragma endregion
 
@@ -112,30 +112,73 @@ namespace KPVL {
     //Список последних 100 листов из базы
     namespace SQL
     {
+        //Получаем список колонов в таблице sheet
+        void GetCollumn(PGresult* res)
+        {
+            if(!Col_Sheet_prestostartcomp)
+            {
+                int nFields = PQnfields(res);
+                for(int j = 0; j < nFields; j++)
+                {
+                    std::string l =  utf8_to_cp1251(PQfname(res, j));
+                    if(l == "id") Col_Sheet_id = j;
+                    else if(l == "create_at") Col_Sheet_create_at = j;
+                    else if(l == "start_at") Col_Sheet_start_at = j;
+                    else if(l == "datatime_end") Col_Sheet_datatime_end = j;
+                    else if(l == "pos") Col_Sheet_pos = j;
+                    else if(l == "datatime_all") Col_Sheet_datatime_all = j;
+                    else if(l == "alloy") Col_Sheet_alloy = j;
+                    else if(l == "thikness") Col_Sheet_thikness = j;
+                    else if(l == "melt") Col_Sheet_melt = j;
+                    else if(l == "slab") Col_Sheet_slab = j;
+                    else if(l == "partno") Col_Sheet_partno = j;
+                    else if(l == "pack") Col_Sheet_pack = j;
+                    else if(l == "sheet") Col_Sheet_sheet = j;
+                    else if(l == "subsheet") Col_Sheet_subsheet = j;
+                    else if(l == "temper") Col_Sheet_temper = j;
+                    else if(l == "speed") Col_Sheet_speed = j;
+                    else if(l == "za_pt3") Col_Sheet_za_pt3 = j;
+                    else if(l == "za_te3") Col_Sheet_za_te3 = j;
+                    else if(l == "lampresstop") Col_Sheet_lampresstop = j;
+                    else if(l == "lampressbot") Col_Sheet_lampressbot = j;
+                    else if(l == "posclapantop") Col_Sheet_posclapantop = j;
+                    else if(l == "posclapanbot") Col_Sheet_posclapanbot = j;
+                    else if(l == "mask") Col_Sheet_mask = j;
+                    else if(l == "lam1posclapantop") Col_Sheet_lam1posclapantop = j;
+                    else if(l == "lam1posclapanbot") Col_Sheet_lam1posclapanbot = j;
+                    else if(l == "lam2posclapantop") Col_Sheet_lam2posclapantop = j;
+                    else if(l == "lam2posclapanbot") Col_Sheet_lam2posclapanbot = j;
+                    else if(l == "lam_te1") Col_Sheet_lam_te1 = j;
+                    else if(l == "news") Col_Sheet_news = j;
+                    else if(l == "top1") Col_Sheet_top1 = j;
+                    else if(l == "top2") Col_Sheet_top2 = j;
+                    else if(l == "top3") Col_Sheet_top3 = j;
+                    else if(l == "top4") Col_Sheet_top4 = j;
+                    else if(l == "top5") Col_Sheet_top5 = j;
+                    else if(l == "top6") Col_Sheet_top6 = j;
+                    else if(l == "top7") Col_Sheet_top7 = j;
+                    else if(l == "top8") Col_Sheet_top8 = j;
+                    else if(l == "bot1") Col_Sheet_bot1 = j;
+                    else if(l == "bot2") Col_Sheet_bot2 = j;
+                    else if(l == "bot3") Col_Sheet_bot3 = j;
+                    else if(l == "bot4") Col_Sheet_bot4 = j;
+                    else if(l == "bot5") Col_Sheet_bot5 = j;
+                    else if(l == "bot6") Col_Sheet_bot6 = j;
+                    else if(l == "bot7") Col_Sheet_bot7 = j;
+                    else if(l == "bot8") Col_Sheet_bot8 = j;
+                    else if(l == "day") Col_Sheet_day = j;
+                    else if(l == "month") Col_Sheet_month = j;
+                    else if(l == "year") Col_Sheet_year = j;
+                    else if(l == "cassetteno") Col_Sheet_cassetteno = j;
+                    else if(l == "sheetincassette") Col_Sheet_sheetincassette = j;
+                    else if(l == "timeforplateheat") Col_Sheet_timeforplateheat = j;
+                    else if(l == "prestostartcomp") Col_Sheet_prestostartcomp = j;
+                }
+            }
+        }
         //Получаем список листов из базы
         void KPVL_SQL(PGConnection& conn)
         {
-            //AllSheet.erase(AllSheet.begin(), AllSheet.end());
-            //std::string sStartId = "0";
-            //std::string sStopId = "0";
-            //
-            //std::string sMaxId = "SELECT max(id) FROM sheet";
-            //PGresult* res = conn.PGexec(sMaxId);
-            ////LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
-            //if(PQresultStatus(res) == PGRES_TUPLES_OK)
-            //{
-            //    int line = PQntuples(res);
-            //    if(line)
-            //        sStopId = conn.PGgetvalue(res, line - 1, 0);
-            //}
-            //else
-            //    LOG_ERR_SQL(SQLLogger, res, sMaxId);
-            //PQclear(res);
-            //if(!sStopId.length())sStopId = "0";
-            //long TempId = atoi(sStopId.c_str());
-            //TempId = TempId > 100 ? TempId - 100 : 0;
-            //sStartId = std::to_string(TempId);
-
             AllSheet.erase(AllSheet.begin(), AllSheet.end());
 
             std::time_t stop = time(NULL);;
@@ -155,6 +198,8 @@ namespace KPVL {
             //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
+                GetCollumn(res);
+
                 int line = PQntuples(res);
                 for(int l = 0; l < line; l++)
                 {

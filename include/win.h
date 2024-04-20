@@ -1275,6 +1275,10 @@ enum Cassete{
     End_at,
     Finish_at,
     Error_at,
+    HeatAcc,           //Факт время нагрева
+    HeatWait,          //Факт время выдержки
+    Total,             //Факт общее время
+
 };
 
 typedef struct _TCassette{
@@ -1299,6 +1303,9 @@ typedef struct _TCassette{
     std::string PointDTime_2 = "";      //Время выдержки
     std::string f_temper = "";          //Факт температуры за 5 минут до конца отпуска
     std::string Finish_at = "";         //Завершение процесса + 15 минут
+    std::string HeatAcc = "";           //Факт время нагрева
+    std::string HeatWait = "";          //Факт время выдержки
+    std::string Total = "";             //Факт общее время
 }TCassette;
 
 
