@@ -753,6 +753,7 @@ namespace KPVL {
 
                 if(pos != Pos /*&& pos > 0 && pos < 7*/)
                 {
+                    LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
                     std::stringstream sd;
                     sd << "UPDATE sheet SET";
                     sd << " pos = " << Pos;
