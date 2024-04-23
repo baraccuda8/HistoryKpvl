@@ -751,7 +751,7 @@ namespace KPVL {
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
 
-                if(pos != Pos /*&& pos > 0 && pos < 7*/)
+                if(pos != Pos && pos > 0 && pos < 7)
                 {
                     LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
                     std::stringstream sd;
@@ -767,7 +767,7 @@ namespace KPVL {
                     //LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
                     //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     //    LOG_ERR_SQL(SQLLogger, res, comand);
-                    PQclear(res);
+                    //PQclear(res);
                 }
             }
         };
@@ -989,15 +989,15 @@ namespace KPVL {
             const int Pos = 2;
             DWORD DataAlloyThikn(Value* value)
             {
-                T_PlateData& PD = PlateData[Pos];
-                PD.AlloyCodeText->GetValue();
-                PD.ThiknessText->GetValue();
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
-
+                //T_PlateData& PD = PlateData[Pos];
+                //PD.AlloyCodeText->GetValue();
+                //PD.ThiknessText->GetValue();
+                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
+                //SetUpdateSheet(conn_kpvl, PD, update, "");
+                //
                 MySetWindowText(value);
-                OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
-                LocSheet(PD, Pos);
+                //OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
+                //LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1050,14 +1050,14 @@ namespace KPVL {
             const int Pos = 3;
             DWORD DataAlloyThikn(Value* value)
             {
-                T_PlateData& PD = PlateData[Pos];
-                PD.AlloyCodeText->GetValue();
-                PD.ThiknessText->GetValue();
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
-
+                //T_PlateData& PD = PlateData[Pos];
+                //PD.AlloyCodeText->GetValue();
+                //PD.ThiknessText->GetValue();
+                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
+                //SetUpdateSheet(conn_kpvl, PD, update, "");
+                //
                 MySetWindowText(value);
-                LocSheet(PD, Pos);
+                //LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1087,14 +1087,14 @@ namespace KPVL {
             const int Pos = 4;
             DWORD DataAlloyThikn(Value* value)
             {
-                T_PlateData& PD = PlateData[Pos];
-                PD.AlloyCodeText->GetValue();
-                PD.ThiknessText->GetValue();
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
-
+                //T_PlateData& PD = PlateData[Pos];
+                //PD.AlloyCodeText->GetValue();
+                //PD.ThiknessText->GetValue();
+                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
+                //SetUpdateSheet(conn_kpvl, PD, update, "");
+                //
                 MySetWindowText(value);
-                LocSheet(PD, Pos);
+                //LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1125,14 +1125,14 @@ namespace KPVL {
             const int Pos = 5;
             DWORD DataAlloyThikn(Value* value)
             {
-                T_PlateData& PD = PlateData[Pos];
-                PD.AlloyCodeText->GetValue();
-                PD.ThiknessText->GetValue();
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
-
+                //T_PlateData& PD = PlateData[Pos];
+                //PD.AlloyCodeText->GetValue();
+                //PD.ThiknessText->GetValue();
+                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
+                //SetUpdateSheet(conn_kpvl, PD, update, "");
+                //
                 MySetWindowText(value);
-                LocSheet(PD, Pos);
+                //LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1173,16 +1173,16 @@ namespace KPVL {
 
             DWORD DataAlloyThikn(Value* value)
             {
-                T_PlateData& PD = PlateData[6];
-                if(!IsSheet(PD))
-                    PD = PlateData[5];
-                PD.AlloyCodeText->GetValue();
-                PD.ThiknessText->GetValue();
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
+                //T_PlateData& PD = PlateData[6];
+                //if(!IsSheet(PD))
+                //    PD = PlateData[5];
+                //PD.AlloyCodeText->GetValue();
+                //PD.ThiknessText->GetValue();
+                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
+                //SetUpdateSheet(conn_kpvl, PD, update, "");
 
                 MySetWindowText(value);
-                LocSheet(PD, Pos);
+                //LocSheet(PD, Pos);
 
                 return 0;
             }
@@ -1191,7 +1191,7 @@ namespace KPVL {
             {
                 MySetWindowText(value);
 
-                T_PlateData PD = PlateData[6];
+                T_PlateData PD = PlateData[Pos];
                 if(!IsSheet(PD))
                     PD = PlateData[5];
 
@@ -1203,9 +1203,9 @@ namespace KPVL {
 
             DWORD DataSlab(Value* value)
             {
-                T_PlateData PD = PlateData[6];
-                if(!IsSheet(PD))
-                    PD = PlateData[5];
+                T_PlateData PD = PlateData[Pos];
+                //if(!IsSheet(PD))
+                //    PD = PlateData[5];
                 std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
@@ -1218,9 +1218,9 @@ namespace KPVL {
                 T_Side Bot_Side = HMISheetData.Bot_Side;
                 T_CassetteData Cassette = HMISheetData.Cassette;
 
-                T_PlateData PD = PlateData[6];
-                if(!IsSheet(PD))
-                    PD = PlateData[5];
+                T_PlateData PD = PlateData[Pos];
+                //if(!IsSheet(PD))
+                //    PD = PlateData[5];
 
                 if(IsSheet(PD))
                 {
@@ -1256,14 +1256,16 @@ namespace KPVL {
                         co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
                         co << " WHERE id = " << id << ";";
 #pragma endregion
-                        std::string comand = co.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        SETUPDATESQL(conn, co);
 
-                        PGresult* res = conn.PGexec(comand);
-                        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            LOG_ERR_SQL(SQLLogger, res, comand);
-                        PQclear(res);
-                        LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                        //std::string comand = co.str();
+                        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        //PGresult* res = conn.PGexec(comand);
+                        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                        //    LOG_ERR_SQL(SQLLogger, res, comand);
+                        //PQclear(res);
+
+                        LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                         HMISheetData.SaveDone->Set_Value(true);
                         //PlateData[5].Sheet->Set_Value((int32_t)0);
                     }
