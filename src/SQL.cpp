@@ -103,11 +103,7 @@ bool cmpMaxMin(Value* first, Value* second)
 
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
-    if(val->ID == 151)
-    {
-        int t = 0;
-    }
-    if(type == OpcUa::VariantType::BOOLEAN)        val->Val = atoi_t(bool, atoi, value);
+    if(type == OpcUa::VariantType::BOOLEAN)        val->Val = (bool)(value == "true");      // atoi_t(bool, atoi, value);
     else if(type == OpcUa::VariantType::SBYTE)     val->Val = atoi_t(int8_t, atoi, value) / (int8_t)val->coeff;
     else if(type == OpcUa::VariantType::BYTE)      val->Val = atoi_t(uint8_t, atoi, value) / (uint8_t)val->coeff;
     else if(type == OpcUa::VariantType::INT16)     val->Val = atoi_t(int16_t, atoi, value) / (int16_t)val->coeff;
@@ -370,6 +366,7 @@ void InitTag()
             {evCassete::Error, "Авария"},
             {evCassete::End, "Конец"},
             {evCassete::History, "Из базы"},
+            {evCassete::Delete, "Удален"},
         };
 
         std::stringstream ss;

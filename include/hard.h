@@ -241,6 +241,8 @@ public:
     };
 
     typedef struct T_Hmi210_1{
+        float Temperature = 0;
+
         //REAL Температура в зоне 1.1
         Value* Htr1_1;
 

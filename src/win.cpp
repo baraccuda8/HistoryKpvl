@@ -34,6 +34,7 @@ extern HWND hWndDebug;
 extern std::deque<TSheet>AllSheet;
 extern std::deque<TCassette> AllCassette;
 
+extern HANDLE hAllPlf;
 
 #define DefMinTrackSizeX   1920
 #define DefMinTrackSizeY   1080
@@ -150,6 +151,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::Sheet, { "Номер\nлиста", L0 }},
     {casSheet::SubSheet, { "Номер\nдодлиста", L0 }},
     {casSheet::Temper, { "Заданная\nтемпература\nС°", LL2 }},
+    {casSheet::Temperature, { "Факт\nтемпературы\nС°", LL2 }},
     {casSheet::Speed, { "Скорость\nвыдачи\nмм/с", 80 }},
     {casSheet::Za_PT3, { "Давление\nводы в баке.\nбар", LL2 }},
     {casSheet::Za_TE3, { "Температура\nводы в баке.\nС°", LL1 }},
@@ -246,6 +248,7 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 
 
 {hEditDiagnose, {szStat,   Stat03Flag, {0, 0, 0, 21}, "Информацмя"}},
+{hEditszButt,   {szButt,   Butt5Flag, {0, 0, 21, 21}, "Информацмя"}},
 
 #pragma region Задание: Время закалки, Давление воды
     {hGroup365, {szTem1,   Temp1Flag, {1650, 170, 215, 66}, "Задание"}},
@@ -880,7 +883,7 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 #pragma endregion
 
 #pragma region Температуры печи закалки
-    {hGroup345, {szTem1,   Temp1Flag, {865, 170, 290, 125}, "Температуры печи закалки"}},
+    {hGroup345, {szTem1,   Temp1Flag, {865, 170, 290, 145}, "Температуры печи закалки"}},
 
     #pragma region 1-я зона печи
         {hGroup3451, {szTem1,   Temp1Flag, {5, 27, 279, 40}, ""}},
@@ -913,6 +916,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {hEditTemp24TAct,     {szStat, Stat04Flag, { 210, 20,  69, 19}, ""}},
         {hEndGroup3452, {}},
     #pragma endregion
+    {hStatTempALLTAct, {szStat, Stat04Flag, { 5, 120,  69, 19}, "all"}},
+
     {hEndGroup053, {}},
 #pragma endregion
 
@@ -1389,6 +1394,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     ELSEIF (casSheet::Sheet, p.Sheet);
                     ELSEIF (casSheet::SubSheet, p.SubSheet);
                     ELSEIF (casSheet::Temper, p.Temper);
+                    ELSEIF (casSheet::Temperature, p.Temperature);
                     ELSEIF (casSheet::Speed, p.Speed);
                     ELSEIF (casSheet::Za_PT3, p.Za_PT3);
                     ELSEIF (casSheet::Za_TE3, p.Za_TE3);
@@ -1447,6 +1453,19 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     LPNM_LISTVIEW  pnm = (LPNM_LISTVIEW)lParam;
     switch(pnm->hdr.code)
     {
+        case NM_RCLICK:
+        {
+            HWND hwndLV = pnm->hdr.hwndFrom;
+            LV_ITEM lvi;
+            lvi.iItem = ListView_GetNextItem(hwndLV, -1, LVNI_ALL | LVNI_FOCUSED);
+            if(lvi.iItem == -1) return FALSE;
+            TCassette& cassette = AllCassette[lvi.iItem];
+            if(cassette.Event == "7")
+                DisplayContextMenu(hWnd, IDR_MENU2);
+            else
+                DisplayContextMenu(hWnd, IDR_MENU1);
+        }
+        break;
         case LVN_ITEMCHANGED:
         {
             LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
@@ -1511,10 +1530,11 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
         }
+        break;
     }
     return 0;
 }
-
+//ID_POP_40001
 //Вывод данных листа в ListBox
 LRESULT OnNotify(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1685,6 +1705,8 @@ LRESULT Size1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     std::string ss = "cx ";
     ss += std::to_string(rc.right - rc.left) + " cy: " + std::to_string(rc.bottom - rc.top);
     SetWindowText(winmap(HWNDCLIENT::hEditDiagnose), ss.c_str());
+    
+    
 
 
     POINT ptLT1 ={0, 0};
@@ -1695,25 +1717,64 @@ LRESULT Size1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         MoveWindow(winmap(HWNDCLIENT::hEditDiagnose), 0, cy - 20, cx, 20, true);
         MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet), 0, ptLT1.y - 1, cx, y2, true);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt), cx - 21, 0, 21, 21, false);
     }
     else
     {
         MoveWindow(winmap(HWNDCLIENT::hEditDiagnose), 0, 1007 - 20, cx, 20, false);
         MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet), 0, 700, cx, 286, true);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt), cx - 21, 0, 21, 21, false);
+        
     }
     //SetWindowPos(winmap(HWNDCLIENT::hEdit_Sheet), HWND_TOP, 5, 0, cx - 10, y2, SWP_NOMOVE);
 
     return 0;
 }
 
-
+DWORD WINAPI AllPdf(LPVOID);
 //Команды главного окна
+void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where);
+
 LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    //int command = LOWORD(wParam);
+    int command = LOWORD(wParam);
     // Разобрать выбор в меню:
     //if(command == IDM_ABOUT) return MessageBox(hWnd, "IDM_ABOUT", "IDM_ABOUT", 0);
-    //if(command == IDM_EXIT) return DestroyWindow(hWnd);
+    if(command == ID_POP_40001)
+    {
+        LV_ITEM lvi;
+        lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
+        if(lvi.iItem == -1) return FALSE;
+
+        if(lvi.iItem < AllCassette.size())
+        {
+            TCassette& cassette = AllCassette[lvi.iItem];
+            PGConnection conn;
+            conn.connection();
+            SetUpdateCassete(conn, cassette, "delete_at = now(), event = 7 ", "");
+            //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
+        }
+    }
+    if(command == ID_POP_40002)
+    {
+        LV_ITEM lvi;
+        lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
+        if(lvi.iItem == -1) return FALSE;
+
+        if(lvi.iItem < AllCassette.size())
+        {
+            TCassette& cassette = AllCassette[lvi.iItem];
+            PGConnection conn;
+            conn.connection();
+            SetUpdateCassete(conn, cassette, "delete_at = DEFAULT ", "");
+            //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
+        }
+    }
+    if(command == 999)
+    {
+        if(hAllPlf == NULL)
+            hAllPlf = CreateThread(0, 0, AllPdf, (LPVOID)0, 0, 0);
+    }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
@@ -2087,6 +2148,11 @@ void InitInstance()
                                   //MaxTrackSizeY,
                                   Global0, (HMENU)10, hInstance, NULL);
         if(!Global1) throw std::exception((FUNCTION_LINE_NAME + std::string(" Ошибка создания окна : " + std::string(szWindowClass1))).c_str());
+
+
+        //hWndMini = CreateWindow(szButt, "", Butt8Flag | WS_BORDER, cx - SIZEX * 2, 0, SIZEX + 1, SIZEY, Global0, (HMENU)IDI_MINI, hInstance, nullptr);
+        //SendMessage(hWndMini, BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)IDI_MINI);
+        //SetWindowSubclass(hWndMini, WndProcButton, 10, 0);
 
         //ShowWindow(Global0, SW_NORMAL);
         //ShowWindow(Global1, SW_NORMAL);

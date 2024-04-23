@@ -8,6 +8,9 @@
 #include "ValueTag.h"
 #include "hard.h"
 #include "KPVL.h"
+#include "pdf.h"
+
+HANDLE hAllPlf = NULL;
 
 extern std::string FORMATTIME;
 
@@ -103,6 +106,7 @@ int Col_Sheet_cassetteno = 0;
 int Col_Sheet_sheetincassette = 0;
 int Col_Sheet_timeforplateheat = 0;
 int Col_Sheet_prestostartcomp = 0;
+int Col_Sheet_temperature = 0;
 //};
 #pragma endregion
 
@@ -115,7 +119,7 @@ namespace KPVL {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res)
         {
-            if(!Col_Sheet_prestostartcomp)
+            if(!Col_Sheet_temperature)
             {
                 int nFields = PQnfields(res);
                 for(int j = 0; j < nFields; j++)
@@ -173,16 +177,18 @@ namespace KPVL {
                     else if(l == "sheetincassette") Col_Sheet_sheetincassette = j;
                     else if(l == "timeforplateheat") Col_Sheet_timeforplateheat = j;
                     else if(l == "prestostartcomp") Col_Sheet_prestostartcomp = j;
+                    else if(l == "temperature") Col_Sheet_temperature = j;
+                    
                 }
             }
         }
         //Получаем список листов из базы
-        void KPVL_SQL(PGConnection& conn)
+        void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& Sheet)
         {
-            AllSheet.erase(AllSheet.begin(), AllSheet.end());
+            Sheet.erase(Sheet.begin(), Sheet.end());
 
             std::time_t stop = time(NULL);;
-            std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 100)); //100-е суток
+            std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 10)); //7-е суток
             std::string start_at = GetDataTimeString(&statr);
 
             std::stringstream FilterComand;
@@ -263,8 +269,10 @@ namespace KPVL {
                     sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
                     sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
                     sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
+                    sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
+                    
 
-                    AllSheet.push_back(sheet);
+                    Sheet.push_back(sheet);
                 }
 
             }
@@ -272,7 +280,7 @@ namespace KPVL {
                 LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
-            //AddHistoriSheet(true, (int)AllSheet.size());
+            //AddHistoriSheet(true, (int)sheet.size());
             int t = 0;
         }
 
@@ -640,21 +648,22 @@ namespace KPVL {
                     }
                     sd << Pos << ");";
 
-                    std::string comand = sd.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
-                    //LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, comand);
-                    PQclear(res);
+                    SETUPDATESQL(conn, sd);
+                    //std::string comand = sd.str();
+                    //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //PGresult* res = conn.PGexec(comand);
+                    ////LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //
+                    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                    //    LOG_ERR_SQL(SQLLogger, res, comand);
+                    //PQclear(res);
                 }
             }
         }
 
 
         //Обновлякем в базе данные по листу
-        bool SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where)
+        void SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where)
         {
             bool ret = true;
             if(IsSheet(TS))
@@ -669,27 +678,28 @@ namespace KPVL {
                 sd << " AND subsheet = " << TS.SubSheet;
                 sd << " AND slab = " << TS.Slab;
                 sd << ";";
+                SETUPDATESQL(conn, sd);
 
-                std::string comand = sd.str();
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                PGresult* res = conn.PGexec(comand);
-                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-                if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                {
-                    LOG_ERR_SQL(SQLLogger, res, comand);
-                }
-                else
-                {
-                    ret = true;
-                }
-                PQclear(res);
+                //std::string comand = sd.str();
+                //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //PGresult* res = conn.PGexec(comand);
+                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //
+                //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                //{
+                //    LOG_ERR_SQL(SQLLogger, res, comand);
+                //}
+                //else
+                //{
+                //    ret = true;
+                //}
+                //PQclear(res);
             }
-            return ret;
+            //return ret;
         }
 
         //Обновлякем в базе данные по листу
-        bool SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where)
+        void SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where)
         {
             bool ret = true;
             if(IsSheet(PD))
@@ -704,23 +714,24 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
                 sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
                 sd << ";";
+                SETUPDATESQL(conn, sd);
 
-                std::string comand = sd.str();
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                PGresult* res = conn.PGexec(comand);
-                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-                if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                {
-                    LOG_ERR_SQL(SQLLogger, res, comand);
-                }
-                else
-                {
-                    ret = true;
-                }
-                PQclear(res);
+                //std::string comand = sd.str();
+                //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //PGresult* res = conn.PGexec(comand);
+                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //
+                //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                //{
+                //    LOG_ERR_SQL(SQLLogger, res, comand);
+                //}
+                //else
+                //{
+                //    ret = true;
+                //}
+                //PQclear(res);
             }
-            return ret;
+            //return ret;
         }
 
         //Обновляем позицию листа
@@ -740,7 +751,7 @@ namespace KPVL {
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
 
-                if(pos != Pos && pos > 0 && pos < 7)
+                if(pos != Pos /*&& pos > 0 && pos < 7*/)
                 {
                     std::stringstream sd;
                     sd << "UPDATE sheet SET";
@@ -748,12 +759,13 @@ namespace KPVL {
                     sd << " WHERE";
                     sd << " id = " << id;
                     sd << ";";
-                    std::string comand = sd.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
-                    LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
-                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                    SETUPDATESQL(conn, sd);
+                    //std::string comand = sd.str();
+                    //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //PGresult* res = conn.PGexec(comand);
+                    //LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
+                    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                    //    LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -835,17 +847,17 @@ namespace KPVL {
                                 {
                                     int mod = (int)(std::fmod)(iPos + 10, 30);
                                     std::stringstream sd;
-                                    sd << "UPDATE sheet SET Pos = ";
-                                    sd << mod;
+                                    sd << "UPDATE sheet SET Pos = " << mod;
                                     sd << " WHERE news <> 1 AND ID = " << sId;
-                                    comand = sd.str();
-                                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                                    res = conn.PGexec(comand);
-                                    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-                                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                        LOG_ERR_SQL(SQLLogger, res, comand);
-                                    PQclear(res);
+                                    SETUPDATESQL(conn, sd);
+                                    //comand = sd.str();
+                                    //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                    //res = conn.PGexec(comand);
+                                    ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                    //
+                                    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                                    //    LOG_ERR_SQL(SQLLogger, res, comand);
+                                    //PQclear(res);
                                 }
 
                             }
@@ -1970,6 +1982,31 @@ namespace KPVL {
         return 0;
     }
     
+    DWORD Temperature(Value* value)
+    {
+        if(
+            Hmi210_1.Htr2_1->Val.IsNul() ||
+            Hmi210_1.Htr2_2->Val.IsNul() ||
+            Hmi210_1.Htr2_3->Val.IsNul() ||
+            Hmi210_1.Htr2_4->Val.IsNul()
+            )return 0;
+
+        float f1 = Hmi210_1.Htr2_1->Val.As<float>();
+        float f2 = Hmi210_1.Htr2_2->Val.As<float>();
+        float f3 = Hmi210_1.Htr2_3->Val.As<float>();
+        float f4 = Hmi210_1.Htr2_4->Val.As<float>();
+        if(f1 && f2 && f3 && f4)
+        {
+            Hmi210_1.Temperature = (f1 + f2 + f3 + f4) / 4.0f;
+            std::stringstream ss;
+            ss << std::setprecision(0) << std::fixed << Hmi210_1.Temperature;
+            MySetWindowText(winmap(hStatTempALLTAct), ss.str());
+            std::string update = " temperature = " + ss.str();
+            Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+        }
+        return 0;
+    }
+
     //Бит жмизни
     DWORD SheetData_WDG_toBase(Value* value)
     {
@@ -1978,6 +2015,7 @@ namespace KPVL {
             PLC_KPVL_old_dt = time(NULL);
             struct tm TM;
             localtime_s(&TM, &PLC_KPVL_old_dt);
+            HMISheetData.WDG_fromBase->Set_Value(true);
             SetWindowText(winmap(value->winId), string_time(&TM).c_str());
         }
         return 0;
@@ -1987,3 +2025,26 @@ namespace KPVL {
 #pragma endregion
 };
 
+DWORD WINAPI AllPdf(LPVOID)
+{
+    PGConnection conn_pdf;
+    conn_pdf.connection();
+    std::deque<TSheet>Sheet;
+    KPVL::SQL::KPVL_SQL(conn_pdf, Sheet);
+    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto, Sheet.size = {}", FUNCTION_LINE_NAME, Sheet.size());
+    SetWindowText(hWndDebug, "Start PrintPdfAuto");
+    for(auto TS : Sheet)
+    {
+        if(!isRun)
+        {
+            hAllPlf = NULL;
+            return 0;
+        }
+        KPVL::SQL::GetDataTime_All(conn_pdf, TS);
+        PrintPdfAuto(TS, false);
+    }
+    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
+    SetWindowText(hWndDebug, "Stop PrintPdfAuto");
+    hAllPlf = NULL;
+    return 0;
+}

@@ -128,6 +128,7 @@ enum emFont {
 //Масив фонтов от 6 до 16 размера жирный шрифт Arial
 extern std::map<emFont, HFONT> Font;
 
+void DisplayContextMenu(HWND hwnd, int ID);
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction);
 

@@ -172,6 +172,7 @@ typedef struct _structWindow{
 //Список ID элементов окон. Важен порядок.
 enum HWNDCLIENT{
     hNull  = -1,
+    hEditszButt = 999,
     hEditDiagnose  = 1000,
     hEdit_Sheet = 1001,
     hEdit_Cassette  = 1002,
@@ -973,6 +974,7 @@ enum HWNDCLIENT{
             hStatTemp24TAct,
             hEditTemp24TAct,
         hEndGroup3452,
+        hStatTempALLTAct,
 
         hGroup3453,
             hStatTempPerometr,
@@ -1013,6 +1015,7 @@ namespace casSheet{
 
 
         Temper,
+        Temperature,
         Speed,
 
         Za_PT3,
@@ -1181,6 +1184,7 @@ typedef struct _TSheet{
     std::string TimeForPlateHeat = ""; //Время сигнализации окончания нагрева, мин
     std::string PresToStartComp = "";  //Уставка давления для запуска комперссора
     //std::string TempWatTankCool = "";  //Температура закалочной воды для вкл.охлаждения
+    std::string Temperature = "";       //Средняя температура 2-части печи закалки
 
     _TSheet()
     {
@@ -1248,6 +1252,7 @@ typedef struct _TSheet{
 
         TimeForPlateHeat = ""; //Время сигнализации окончания нагрева, мин
         PresToStartComp = "";  //Уставка давления для запуска комперссора    }
+        Temperature = "";
     }
 
     //bool compare(TSheet& rhs)
@@ -1281,7 +1286,7 @@ enum Cassete{
 
 };
 
-typedef struct _TCassette{
+typedef struct TCassette{
     std::string Create_at = "";
     std::string Id = "";
     std::string Event = "";
@@ -1306,8 +1311,17 @@ typedef struct _TCassette{
     std::string HeatAcc = "";           //Факт время нагрева
     std::string HeatWait = "";          //Факт время выдержки
     std::string Total = "";             //Факт общее время
-}TCassette;
 
+    bool compare(const TCassette& rhs)
+    {
+        return
+            CassetteNo == rhs.CassetteNo
+            && Day == rhs.Day
+            && Month == rhs.Month
+            && Year == rhs.Year;
+
+    }
+}TCassette;
 
 
 //Создание главного окна

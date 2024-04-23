@@ -14,6 +14,16 @@ extern std::string m_dbname;
 extern std::string m_dbuser;
 extern std::string m_dbpass;
 
+#define SETUPDATESQL(_c, _s) \
+{\
+    std::string comand = _s.str(); \
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand); \
+    PGresult* res = _c.PGexec(comand); \
+    if(PQresultStatus(res) == PGRES_FATAL_ERROR)\
+        LOG_ERR_SQL(SQLLogger, res, comand); \
+    PQclear(res);\
+}
+
 
 class PGConnection
 {

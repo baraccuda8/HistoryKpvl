@@ -13,6 +13,7 @@
 
 
 #define SPKsec1 sec01000
+#define SPKsec2 sec02000
 #define SPKsec5 sec05000
 
 extern std::string lpLogDir;
@@ -64,14 +65,14 @@ std::deque<Value*> AllTagPeth = {
 
     {AppFurn1.TimeProcSet           = new Value(StrFurn1 + "TimeProcSet",           HWNDCLIENT::RelF1_Edit_TimeProcSet,     0, &conn_temp)}, //: REAL;//Полное время процесса (уставка), мин
     {AppFurn1.ProcTimeMin           = new Value(StrFurn1 + "ProcTimeMin",           HWNDCLIENT::RelF1_Edit_ProcTimeMin,     0, &conn_temp)}, //: REAL;//Время процесса, час (0..XX)
-    {AppFurn1.TimeToProcEnd         = new Value(StrFurn1 + "TimeToProcEnd",         HWNDCLIENT::RelF1_Edit_TimeToProcEnd,   0, &conn_temp)}, //: REAL;//Время до окончания процесса, мин
+    {AppFurn1.TimeToProcEnd         = new Value(StrFurn1 + "TimeToProcEnd",         HWNDCLIENT::RelF1_Edit_TimeToProcEnd,   S107::Furn1::TimeToProcEnd, &conn_temp)}, //: REAL;//Время до окончания процесса, мин
     {AppFurn1.TempRef               = new Value(StrFurn1 + "TempRef",               HWNDCLIENT::RelF1_Edit_TempRef,         0, &conn_temp)}, //: REAL;//Заданное значение температуры
     {AppFurn1.TempAct               = new Value(StrFurn1 + "TempAct",               HWNDCLIENT::RelF1_Edit_TempAct,         0, &conn_temp)}, //: REAL;//Фактическое значение температуры
     {AppFurn1.T1                    = new Value(StrFurn1 + "T1",                    HWNDCLIENT::RelF1_Edit_T1,              0, &conn_temp)}, //: REAL; // термопара 1
     {AppFurn1.T2                    = new Value(StrFurn1 + "T2",                    HWNDCLIENT::RelF1_Edit_T2,              0, &conn_temp)}, //: REAL; // термопара 2
-    {AppFurn1.ActTimeHeatAcc        = new Value(StrFurn1 + "ActTimeHeatAcc",        HWNDCLIENT::RelF1_Edit_TimeHeatAcc,     S107::Furn1::TimeHeatAcc, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт время нагрева")}, //: REAL; // Факт время нагрева
-    {AppFurn1.ActTimeHeatWait       = new Value(StrFurn1 + "ActTimeHeatWait",       HWNDCLIENT::RelF1_Edit_TimeHeatWait,    S107::Furn1::TimeHeatWait, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт время выдержки")}, //: REAL; // Факт время выдержки
-    {AppFurn1.ActTimeTotal          = new Value(StrFurn1 + "ActTimeTotal",          HWNDCLIENT::RelF1_Edit_TimeTotal,       S107::Furn1::TimeTotal, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0f, "Факт общее время")}, //: REAL; // Факт общее время
+    {AppFurn1.ActTimeHeatAcc        = new Value(StrFurn1 + "ActTimeHeatAcc",        HWNDCLIENT::RelF1_Edit_TimeHeatAcc,     S107::Furn1::TimeHeatAcc, &conn_temp)}, //: REAL; // Факт время нагрева
+    {AppFurn1.ActTimeHeatWait       = new Value(StrFurn1 + "ActTimeHeatWait",       HWNDCLIENT::RelF1_Edit_TimeHeatWait,    S107::Furn1::TimeHeatWait, &conn_temp)}, //: REAL; // Факт время выдержки
+    {AppFurn1.ActTimeTotal          = new Value(StrFurn1 + "ActTimeTotal",          HWNDCLIENT::RelF1_Edit_TimeTotal,       S107::Furn1::TimeTotal, &conn_temp)}, //: REAL; // Факт общее время
 
     {AppFurn1.Cassette.Day          = new Value(StrFurn1 + "Cassette.Day",          HWNDCLIENT::RelF1_Edit_Cassette_Day,    S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты день
     {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты месяц
@@ -92,15 +93,15 @@ std::deque<Value*> AllTagPeth = {
 
     {AppFurn2.TimeProcSet           = new Value(StrFurn2 + "TimeProcSet",           HWNDCLIENT::RelF2_Edit_TimeProcSet,     0, &conn_temp)}, //: REAL;//Полное время процесса (уставка), мин
     {AppFurn2.ProcTimeMin           = new Value(StrFurn2 + "ProcTimeMin",           HWNDCLIENT::RelF2_Edit_ProcTimeMin,     0, &conn_temp)}, //: REAL;//Время процесса, час (0..XX)
-    {AppFurn2.TimeToProcEnd         = new Value(StrFurn2 + "TimeToProcEnd",         HWNDCLIENT::RelF2_Edit_TimeToProcEnd,   0, &conn_temp)}, //: REAL;//Время до окончания процесса, мин
+    {AppFurn2.TimeToProcEnd         = new Value(StrFurn2 + "TimeToProcEnd",         HWNDCLIENT::RelF2_Edit_TimeToProcEnd,   S107::Furn2::TimeToProcEnd, &conn_temp)}, //: REAL;//Время до окончания процесса, мин
     {AppFurn2.TempRef               = new Value(StrFurn2 + "TempRef",               HWNDCLIENT::RelF2_Edit_TempRef,         0, &conn_temp)}, //: REAL;//Заданное значение температуры
     {AppFurn2.TempAct               = new Value(StrFurn2 + "TempAct",               HWNDCLIENT::RelF2_Edit_TempAct,         0, &conn_temp)}, //: REAL;//Фактическое значение температуры
     {AppFurn2.T1                    = new Value(StrFurn2 + "T1",                    HWNDCLIENT::RelF2_Edit_T1,              0, &conn_temp)}, //: REAL; // термопара 1
     {AppFurn2.T2                    = new Value(StrFurn2 + "T2",                    HWNDCLIENT::RelF2_Edit_T2,              0, &conn_temp)}, //: REAL; // термопара 2
 
-    {AppFurn2.ActTimeHeatAcc        = new Value(StrFurn2 + "ActTimeHeatAcc",        HWNDCLIENT::RelF2_Edit_TimeHeatAcc,     S107::Furn2::TimeHeatAcc, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт время нагрева")}, //: REAL; // Факт время нагрева
-    {AppFurn2.ActTimeHeatWait       = new Value(StrFurn2 + "ActTimeHeatWait",       HWNDCLIENT::RelF2_Edit_TimeHeatWait,    S107::Furn2::TimeHeatWait, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт время выдержки")}, //: REAL; // Факт время выдержки
-    {AppFurn2.ActTimeTotal          = new Value(StrFurn2 + "ActTimeTotal",          HWNDCLIENT::RelF2_Edit_TimeTotal,       S107::Furn2::TimeTotal, &conn_temp, true, 1, 1, MSSEC::sec01000, "%0.1f", 0.0, "Факт общее время")}, //: REAL; // Факт общее время
+    {AppFurn2.ActTimeHeatAcc        = new Value(StrFurn2 + "ActTimeHeatAcc",        HWNDCLIENT::RelF2_Edit_TimeHeatAcc,     S107::Furn2::TimeHeatAcc, &conn_temp)}, //: REAL; // Факт время нагрева
+    {AppFurn2.ActTimeHeatWait       = new Value(StrFurn2 + "ActTimeHeatWait",       HWNDCLIENT::RelF2_Edit_TimeHeatWait,    S107::Furn2::TimeHeatWait, &conn_temp)}, //: REAL; // Факт время выдержки
+    {AppFurn2.ActTimeTotal          = new Value(StrFurn2 + "ActTimeTotal",          HWNDCLIENT::RelF2_Edit_TimeTotal,       S107::Furn2::TimeTotal, &conn_temp)}, //: REAL; // Факт общее время
 
     {AppFurn2.Cassette.Day          = new Value(StrFurn2 + "Cassette.Day",          HWNDCLIENT::RelF2_Edit_Cassette_Day,    S107::Furn2::SetNull_Temper, &conn_temp)}, ///ID касеты день
     {AppFurn2.Cassette.Month        = new Value(StrFurn2 + "Cassette.Month",        HWNDCLIENT::RelF2_Edit_Cassette_Month,  S107::Furn2::SetNull_Temper, &conn_temp)}, //ID касеты месяц
@@ -255,6 +256,7 @@ void PLC_S107::InitTag()
 
         CREATESUBSCRIPT(cssS107, sec00500, &DataChangeS107, Logger);
         CREATESUBSCRIPT(cssS107, SPKsec1, &DataChangeS107, Logger);
+        CREATESUBSCRIPT(cssS107, SPKsec2, &DataChangeS107, Logger);
         CREATESUBSCRIPT(cssS107, SPKsec5, &DataChangeS107, Logger);
 
         cssS107[sec00500].Subscribe(nodeCurrentTime);
@@ -351,6 +353,8 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "Чтение данных");
         while(isRun)
         {
+            HMISheetData.WDG_fromBase->Set_Value(true);
+
             //Проверяем WatchDog
             if(WD())
                 throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
@@ -506,18 +510,64 @@ void Open_FURN_RUN()
 #endif
 }
 
+float GetTime(std::string comand)
+{
+    float f = 0;
+    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+    PGresult* res = conn_spic.PGexec(comand);
+    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        if(PQntuples(res))
+            f = std::stof(conn_spic.PGgetvalue(res, 0, 0));
+    }
+    else
+        LOG_ERR_SQL(SQLLogger, res, comand);
+    PQclear(res);
+    return f;
+}
+
+void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
+{
+    //std::string comand = "";
+    std::stringstream sd1;
+    std::stringstream sd2;
+    if(!TC.Run_at.length() || !TC.Finish_at.length()) return;
+
+    //AppFurn1.ActTimeHeatAcc        // Факт время нагрева
+    sd1 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID;
+    sd1 << " AND create_at >= '" << TC.Run_at << "'";
+    sd1 << " AND create_at <= '" << TC.Finish_at << "'";
+    sd1 << ");";
+
+    float f1 = GetTime(sd1.str());
+
+    //AppFurn1.ActTimeHeatWait        // Факт время нагрева
+    sd2 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID;
+    sd2 << " AND create_at >= '" << TC.Run_at << "'";
+    sd2 << " AND create_at <= '" << TC.Finish_at << "'";
+    sd2 << ");";
+
+    float f2 = GetTime(sd2.str());
+    if(f1 || f2)
+    {
+        int tt = 0;
+    }
+}
+
 void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 {
-
     if(/*TC.CassetteNo == "3" &&*/ TC.Day == "11" && TC.Month == "4")
     {
         int tt = 0;
     }
 
+
     int ev = atoi(TC.Event.c_str());
     if(ev == evCassete::Nul || ev == evCassete::Rel || ev == evCassete::Fill) return;
     if(!TC.Run_at.length())
         return;
+
+    //GetCasseteTimeRun(app, TC);
 
     if(TC.Finish_at.length())
         return;
@@ -562,7 +612,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     {
         TC.End_at = end_at;
         std::stringstream sde;
-        sde << "UPDATE cassette SET end_at = '" << end_at << "' WHERE ";
+        sde << "UPDATE cassette SET end_at = '" << TC.End_at << "' WHERE ";
         sde << "end_at IS NULL AND ";
         sde << "day = " << TC.Day << " AND ";
         sde << "month = " << TC.Month << " AND ";
@@ -594,6 +644,8 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
+
+        //GetCasseteTimeRun(app, TC);
     }
 
     tmp_at = end_at;
@@ -638,28 +690,252 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 
 }
 
+
+typedef struct isrun_s{
+    std::string create_at = "";
+    int id_name = 0;
+    std::string content = "";
+}isrun_s;
+
+typedef struct isrun{
+    std::string create_at = "";
+    int day = 0;
+    int month = 0;
+    int year = 0;
+    int cassetteno = 0;
+    bool run_pr = false;
+    bool error_pr = false;
+    bool end_pr = false;
+    bool finish_pr = false;
+    int peth = 0;
+}isrun;
+
+std::vector<isrun_s>ISRUN;
+
+void InsertIsRun(PGConnection& conn, isrun& IR)
+{
+    if(IR.day && IR.month && IR.year && IR.cassetteno)
+    {
+        std::stringstream sd;
+        sd << "INSERT INTO isrun (create_at, day, month, year, cassetteno, run_pr, error_pr, end_pr, peth) VALUES (";
+        sd << "'" << IR.create_at << "', ";
+        sd << IR.day << ", ";
+        sd << IR.month << ", ";
+        sd << IR.year << ", ";
+        sd << IR.cassetteno << ", ";
+        sd << IR.run_pr << ", ";
+        sd << IR.error_pr << ", ";
+        sd << IR.end_pr << ", ";
+        sd << IR.peth << ");";
+
+        SETUPDATESQL(conn, sd);
+    }
+}
+
+//#define _INITPDF
 void FURN_SQL()
 {
-    //std::deque<TCassette> AC = AllCassette;
-    //for(auto ct : AC)
-    //{
-    //    if(!isRun)return;
-    //    PrintPdfAuto(ct);
-    //}
+#ifdef _INITPDF
+    //std::stringstream sd;
+
+    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto", FUNCTION_LINE_NAME);
+    std::deque<TCassette> AC = AllCassette;
+    for(auto ct : AC)
+    {
+        if(!isRun)return;
+        PrintPdfAuto(ct);
+    }
+    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
+
+#endif
+
+#ifdef _FURN_SQL
+    PGConnection conn;
+    conn.connection();
+    if(!conn.connections) return;
+    
+    ISRUN.erase(ISRUN.begin(), ISRUN.end());
+    std::stringstream sf("DELETE FROM isrun;");
+    SETUPDATESQL(conn, sf);
+
+    //SELECT create_at, id_name, content, (SELECT name FROM tag WHERE tag.id = todos.id_name) FROM todos WHERE id_name = 19 OR id_name = 21 OR id_name = 20 OR id_name = 27 OR id_name = 26 OR id_name = 25 OR id_name = 28 OR id_name = 5 OR id_name = 7 OR id_name = 6 OR id_name = 13 OR id_name = 12 OR id_name = 11 OR id_name = 14 ORDER BY id;
+    std::stringstream sd;
+    sd << "SELECT create_at, id_name, content FROM todos WHERE";
+    sd << " id_name = " << AppFurn1.ProcRun->ID;
+    sd << " OR id_name = " << AppFurn1.ProcEnd->ID;
+    sd << " OR id_name = " << AppFurn1.ProcFault->ID;
+    sd << " OR id_name = " << AppFurn1.Cassette.Day->ID;
+    sd << " OR id_name = " << AppFurn1.Cassette.Month->ID;
+    sd << " OR id_name = " << AppFurn1.Cassette.Year->ID;
+    sd << " OR id_name = " << AppFurn1.Cassette.CassetteNo->ID;
+
+    sd << " OR id_name = " << AppFurn2.ProcRun->ID;
+    sd << " OR id_name = " << AppFurn2.ProcEnd->ID;
+    sd << " OR id_name = " << AppFurn2.ProcFault->ID;
+    sd << " OR id_name = " << AppFurn2.Cassette.Day->ID;
+    sd << " OR id_name = " << AppFurn2.Cassette.Month->ID;
+    sd << " OR id_name = " << AppFurn2.Cassette.Year->ID;
+    sd << " OR id_name = " << AppFurn2.Cassette.CassetteNo->ID;
+    sd << " ORDER BY id;";
+
+    std::string comand = sd.str();
+
+    PGresult* res = conn.PGexec(comand);
+    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        int line =  PQntuples(res);
+
+        for(int l = 0; l < line; l++)
+        {
+            isrun_s IR;
+            IR.create_at = GetStringData(conn_spis.PGgetvalue(res, l, 0));
+            IR.id_name = std::stoi(conn_spis.PGgetvalue(res, l, 1));
+            IR.content = conn_spis.PGgetvalue(res, l, 2);
+            ISRUN.push_back(IR);
+        }
+    }
+    else
+        LOG_ERR_SQL(SQLLogger, res, comand);
+    PQclear(res);
+
+    isrun IR1;
+    isrun IR2;
+    IR1.peth = 1;
+    IR2.peth = 2;
+    for(auto& R : ISRUN)
+    { 
+        if(R.id_name == AppFurn1.Cassette.Day->ID)IR1.day = std::stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.Month->ID)IR1.month = std::stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.Year->ID)IR1.year = std::stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.CassetteNo->ID)IR1.cassetteno = std::stoi(R.content);
+
+        bool insert1 = false;
+        if(R.id_name == AppFurn1.ProcRun->ID)
+        {
+            bool t = R.content == "true";
+            if(IR1.run_pr != t)
+            {
+                IR1.create_at = R.create_at;
+                IR1.run_pr = t;
+                InsertIsRun(conn, IR1);
+            }
+        }
+        if(R.id_name == AppFurn1.ProcEnd->ID)
+        {
+            bool t = R.content == "true";
+            if(IR1.end_pr != t)
+            {
+                IR1.create_at = R.create_at;
+                IR1.end_pr = t;
+                InsertIsRun(conn, IR1);
+            }
+        }
+        if(R.id_name == AppFurn1.ProcFault->ID)
+        {
+            bool t = R.content == "true";
+            if(IR1.error_pr != t) 
+            {
+                IR1.create_at = R.create_at;
+                IR1.error_pr = t;
+                InsertIsRun(conn, IR1);
+            }
+        }
+
+
+        if(R.id_name == AppFurn2.Cassette.Day->ID)IR2.day = std::stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.Month->ID)IR2.month = std::stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.Year->ID)IR2.year = std::stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.CassetteNo->ID)IR2.cassetteno = std::stoi(R.content);
+
+        if(R.id_name == AppFurn2.ProcRun->ID)
+        {
+            bool t = R.content == "true";
+            if(IR2.run_pr != t)
+            {
+                IR2.create_at = R.create_at;
+                IR2.run_pr = t;
+                InsertIsRun(conn, IR2);
+            }
+        }
+        if(R.id_name == AppFurn2.ProcEnd->ID)
+        {
+            bool t = R.content == "true";
+            if(IR2.end_pr != t)
+            {
+
+                IR2.create_at = R.create_at;
+                IR2.end_pr = t;
+                InsertIsRun(conn, IR2);
+            }
+        }
+        if(R.id_name == AppFurn2.ProcFault->ID)
+        {
+            bool t = R.content == "true";
+            if(IR2.error_pr != t)
+            {
+                IR2.create_at = R.create_at;
+                IR2.error_pr = t;
+                InsertIsRun(conn, IR2);
+            }
+        }
+    }
+    int tt = 0;
+#endif
+
 }
+
+#define CountCaseteInRel 7
+const TCassette NullCasete;
+TCassette CassetteInRel[CountCaseteInRel] ={
+    NullCasete,
+    NullCasete,
+    NullCasete,
+    NullCasete,
+    NullCasete,
+    NullCasete,
+    NullCasete,
+};
+
+void SetCassetteToBase(int i)
+{
+    int32_t Year = std::stoi(CassetteInRel[i].Year);
+    int32_t Month = std::stoi(CassetteInRel[i].Month);
+    int32_t Day = std::stoi(CassetteInRel[i].Day);
+    int32_t CassetteNo = std::stoi(CassetteInRel[i].CassetteNo);
+
+    int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
+    int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
+    int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
+    int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
+    
+
+    if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
+    if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
+    if(aDay != Day)              AppCassette[i].Day->Set_Value(Day);
+    if(aCassetteNo != CassetteNo)AppCassette[i].CassetteNo->Set_Value(CassetteNo);
+
+}
+
+bool cmpCasete(TCassette& first, TCassette& second)
+{
+    return first.Create_at < second.Create_at;
+}
+
 
 void Open_FURN_SQL()
 {
     size_t old_count = 0;
+
+#ifdef _INITPDF
     LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
+#endif
 
-    S107::SQL::FURN_SQL(conn_spic);
-    hSQL = std::thread(FURN_SQL);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    //S107::SQL::FURN_SQL(conn_spic);
+    //hSQL = std::thread(FURN_SQL);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     while(isRun)
     {
-#pragma region Рисуем текущий график
+#pragma region Выводим список кассет
 
         S107::SQL::FURN_SQL(conn_spic);
 
@@ -687,6 +963,7 @@ void Open_FURN_SQL()
 
 
 #pragma region Вычисляем дату финала
+
         for(auto TC : AllCassette)
         {
             if(atoi(TC.Peth.c_str()) == 1)
@@ -695,6 +972,78 @@ void Open_FURN_SQL()
                 GetCasseteData(AppFurn2, TC);
         }
 #pragma endregion
+
+#ifndef _DEBUG
+        std::deque<TCassette> CIl;
+        //for(std::deque<TCassette>::iterator it = AllCassette.begin(); (int)CIl.size() < CountCaseteInRel && it != AllCassette.end(); it++)
+        for(auto& it : AllCassette)
+        {
+            //if(it->Event != "1")
+            //if(/*it->Close_at.size() &&*/
+            //   !it->End_at.size() &&
+            //   (!it->Run_at.size() || (it->Run_at.size() && it->Error_at.size()))
+            //   )
+
+            if(it.Event == "2" && !it.Delete_at.length())
+            {
+                CIl.push_back(it);
+            }
+        }
+        std::sort(CIl.begin(), CIl.end(), cmpCasete);
+
+        for(int i = 0; i < CountCaseteInRel; i++)
+        {
+            if(i < (int)CIl.size())
+            {
+
+                //if(!CIl[i].compare(CassetteInRel[i]))
+                {
+                    CassetteInRel[i] = CIl[i];
+                    SetCassetteToBase(i);
+                    //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)std::stoi(CassetteInRel[i].Year));
+                    //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)std::stoi(CassetteInRel[i].Month));
+                    //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)std::stoi(CassetteInRel[i].Day));
+                    //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)std::stoi(CassetteInRel[i].CassetteNo));
+                }
+            }
+            else
+            {
+                CassetteInRel[i] = TCassette();
+                //if(!CassetteInRel[i].compare(NullCasete))
+                //std::stoi(CassetteInRel[i].Year;
+                //std::stoi(CassetteInRel[i].Month;
+                //std::stoi(CassetteInRel[i].Day;
+                //int32_t CassetteNo  = std::stoi(CassetteInRel[i].CassetteNo;
+                if(AppCassette[i].Year->Val.As<int32_t>() != 0
+                   || AppCassette[i].Month->Val.As<int32_t>() != 0
+                   || AppCassette[i].Day->Val.As<int32_t>() != 0
+                   || AppCassette[i].CassetteNo->Val.As<int32_t>() != 0
+                   )
+                {
+                    //LOG_INFO(AllLogger, "{:90}| --> Обнуление катеты", FUNCTION_LINE_NAME);
+                    AppCassette[i].Year->Set_Value(int32_t(0));
+                    AppCassette[i].Month->Set_Value(int32_t(0));
+                    AppCassette[i].Day->Set_Value(int32_t(0));
+                    AppCassette[i].CassetteNo->Set_Value(int32_t(0));
+                    //LOG_INFO(AllLogger, "{:90}| <-- Обнуление катеты", FUNCTION_LINE_NAME);
+                    //if(run)
+                    {
+
+                        //SendDebug5("Обнуление крссеты", i + 1, CassetteInRel[i]);
+                        //if(!MyServer)
+                        {
+                            //SetCassetteToBase(i);
+                            //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)std::stoi(CassetteInRel[i].Year));
+                            //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)std::stoi(CassetteInRel[i].Month));
+                            //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)std::stoi(CassetteInRel[i].Day));
+                            //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)  cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)std::stoi(CassetteInRel[i].CassetteNo));
+                        }
+                    }
+                    //Отбравляем в печь
+                }
+            }
+        }
+#endif
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     };

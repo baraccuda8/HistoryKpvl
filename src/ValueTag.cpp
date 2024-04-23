@@ -332,7 +332,9 @@ void Value::Set_Value(OpcUa::Variant var)
                 }
 
                 Val = var;
-                Node.SetValue(Val);
+                //#ifndef _DEBUG
+                    Node.SetValue(Val);
+                //#endif
             }
         }
         catch(std::runtime_error& exc)
@@ -360,7 +362,9 @@ void Value::Set_Value(){
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
                 }
 
-                Node.SetValue(Val);
+                //#ifndef _DEBUG
+                    Node.SetValue(Val);
+                //#endif
             }
         }
         catch(std::runtime_error& exc)

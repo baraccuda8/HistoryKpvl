@@ -15,19 +15,10 @@
 extern std::shared_ptr<spdlog::logger> PethLogger;
 extern std::string FORMATTIME;
 
-#define SETUPDATESQL(_c, _s) \
-        {\
-        std::string comand = _s.str(); \
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand); \
-                PGresult* res = _c.PGexec(comand); \
-                if(PQresultStatus(res) == PGRES_FATAL_ERROR)\
-                    LOG_ERR_SQL(SQLLogger, res, comand); \
-                    PQclear(res);\
-        }
 
 namespace S107
 {
-#pragma region Номера колонок в кассете
+    //Номера колонок в кассете
     namespace Coll{
         int Create_at = 0;
         int Id = 0;
@@ -55,8 +46,8 @@ namespace S107
         int Total = 0;             //Факт общее время
 
     };
-#pragma endregion
 
+    //Получение номера колонки
     void GetColl(PGresult* res)
     {
         if(!Coll::Total)
@@ -94,6 +85,7 @@ namespace S107
         }
     }
 
+    //Чтение кассеты
     void GetCassette(PGresult* res, TCassette& cassette, int line)
     {
         cassette.Create_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Create_at));
@@ -471,10 +463,10 @@ namespace S107
                             {
                                 int nFields = PQnfields(res);
                                 CD.Error_at = GetStringData(conn_spis.PGgetvalue(res, 0, 0));
-                                PQclear(res);
                             }
                             else
                                 LOG_ERR_SQL(SQLLogger, res, comand);
+                            PQclear(res);
 
                             if(CD.Error_at.length())
                             {
@@ -487,7 +479,13 @@ namespace S107
                     }
                     else
                     {
-                        if(CD.Event != "2")
+                        if(CD.Delete_at.length())
+                        {
+                            std::stringstream sf;
+                            sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
+                            SETUPDATESQL(conn, sf);
+                        }
+                        else if(CD.Event != "2" && !CD.Delete_at.length())
                         {
                             std::stringstream sf;
                             sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
@@ -666,6 +664,7 @@ namespace S107
             SETUPDATESQL(conn, sd);
         }
     }
+
 #pragma endregion
 
     //Печ отпуска #1
@@ -792,6 +791,26 @@ namespace S107
             return 0;
         }
 
+        //REAL Время до окончания процесса, мин
+        DWORD TimeToProcEnd(Value* value)
+        {
+            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            float f = value->Val.As<float>();
+            if(f <= 5.0 && f >= 4.9)
+            {
+                MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.TempAct->GetString().c_str());
+                SetTemperCassette(conn_temp, AppFurn1.Cassette, AppFurn1.TempAct->GetString());
+            }
+            else if(f >= AppFurn1.TimeProcSet->Val.As<float>())
+            {
+                AppFurn1.Cassette.f_temper = "0";
+                MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.f_temper.c_str());
+
+            }
+            return 0;
+        }
+
+
     }
 
     //Печ отпуска #2
@@ -898,24 +917,58 @@ namespace S107
         {
             MySetWindowText(value);
             if(value->Val.As<float>())
-                SetUpdateCassete(conn_temp, AppFurn1, "heatacc = " + value->GetString());
+                SetUpdateCassete(conn_temp, AppFurn2, "heatacc = " + value->GetString());
             return 0;
         }
         DWORD TimeHeatWait(Value* value)
         {
             MySetWindowText(value);
             if(value->Val.As<float>())
-                SetUpdateCassete(conn_temp, AppFurn1, "heatwait = " + value->GetString());
+                SetUpdateCassete(conn_temp, AppFurn2, "heatwait = " + value->GetString());
             return 0;
         }
         DWORD TimeTotal(Value* value)
         {
             MySetWindowText(value);
             if(value->Val.As<float>())
-                SetUpdateCassete(conn_temp, AppFurn1, "total = " + value->GetString());
+                SetUpdateCassete(conn_temp, AppFurn2, "total = " + value->GetString());
+            return 0;
+        }
+
+        //REAL Время до окончания процесса, мин
+        DWORD TimeToProcEnd(Value* value)
+        {
+            MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            float f = value->Val.As<float>();
+            if(f <= 5.0 && f >= 4.9)
+            {
+                MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.TempAct->GetString().c_str());
+                SetTemperCassette(conn_temp, AppFurn2.Cassette, AppFurn2.TempAct->GetString());
+            }
+            else if(f >= AppFurn2.TimeProcSet->Val.As<float>())
+            {
+                AppFurn2.Cassette.f_temper = "0";
+                MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.f_temper.c_str());
+
+            }
             return 0;
         }
 
     };
 
+}
+
+
+void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where)
+{
+    if(S107::IsCassete(cassette))
+    {
+        std::stringstream sd;
+        sd << "UPDATE cassette SET ";
+        sd << update;
+        sd << " WHERE " + where;
+        sd << " id = " << cassette.Id;
+        sd << ";";
+        SETUPDATESQL(conn, sd);
+    }
 }

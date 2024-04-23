@@ -44,8 +44,8 @@ std::thread hFindSheet;
 
 std::thread hKPVLURI;
 std::thread hKPVLSQL;
-std::thread hAllPlf;
 HANDLE hThreadState2 = NULL;
+extern HANDLE hAllPlf;
 
 
 std::string MaskKlapan1 = "000000000";
@@ -91,14 +91,9 @@ std::deque<Value*> AllTagKpvl = {
 #ifndef TESTTEMPER
 
 #pragma region вачдог WDG
-    //{HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
-    //{HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
-    //{HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
-
-                                      //Value(const std::string n,                HWNDCLIENT hc,                                myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC s, std::string fo, OpcUa::Variant v, std::string com);
-    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG,                                         0, &conn_kpvl, true, 1, 1, MSSEC::sec00500, "", (int32_t)0, "Счетчик циклов контроллера")},    //Счетчик циклов контроллера
-    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG,          KPVL::SheetData_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог")}, //вачдог
-    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull,                                            0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
+    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
+    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
+    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
 
 #pragma endregion
 
@@ -267,10 +262,10 @@ std::deque<Value*> AllTagKpvl = {
     {Hmi210_1.Htr1_2  = new Value(PathKpvl + "Hmi210_1.Htr_2.ToHmi.TAct",   HWNDCLIENT::hEditTemp12TAct, 0, &conn_kpvl)},       //Температура в зоне 1.2
     {Hmi210_1.Htr1_3  = new Value(PathKpvl + "Hmi210_1.Htr_3.ToHmi.TAct",   HWNDCLIENT::hEditTemp13TAct, 0, &conn_kpvl)},       //Температура в зоне 1.3
     {Hmi210_1.Htr1_4  = new Value(PathKpvl + "Hmi210_1.Htr_4.ToHmi.TAct",   HWNDCLIENT::hEditTemp14TAct, 0, &conn_kpvl)},       //Температура в зоне 1.4
-    {Hmi210_1.Htr2_1 = new Value(PathKpvl + "Hmi210_1.Htr2_1.ToHmi.TAct",  HWNDCLIENT::hEditTemp21TAct, 0, &conn_kpvl)},       //Температура в зоне 2.1
-    {Hmi210_1.Htr2_2 = new Value(PathKpvl + "Hmi210_1.Htr2_2.ToHmi.TAct",  HWNDCLIENT::hEditTemp22TAct, 0, &conn_kpvl)},       //Температура в зоне 2.2
-    {Hmi210_1.Htr2_3 = new Value(PathKpvl + "Hmi210_1.Htr2_3.ToHmi.TAct",  HWNDCLIENT::hEditTemp23TAct, 0, &conn_kpvl)},       //Температура в зоне 2.3
-    {Hmi210_1.Htr2_4 = new Value(PathKpvl + "Hmi210_1.Htr2_4.ToHmi.TAct",  HWNDCLIENT::hEditTemp24TAct, 0, &conn_kpvl)},       //Температура в зоне 2.4
+    {Hmi210_1.Htr2_1 = new Value(PathKpvl + "Hmi210_1.Htr2_1.ToHmi.TAct",  HWNDCLIENT::hEditTemp21TAct, KPVL::Temperature, &conn_kpvl)},       //Температура в зоне 2.1
+    {Hmi210_1.Htr2_2 = new Value(PathKpvl + "Hmi210_1.Htr2_2.ToHmi.TAct",  HWNDCLIENT::hEditTemp22TAct, KPVL::Temperature, &conn_kpvl)},       //Температура в зоне 2.2
+    {Hmi210_1.Htr2_3 = new Value(PathKpvl + "Hmi210_1.Htr2_3.ToHmi.TAct",  HWNDCLIENT::hEditTemp23TAct, KPVL::Temperature, &conn_kpvl)},       //Температура в зоне 2.3
+    {Hmi210_1.Htr2_4 = new Value(PathKpvl + "Hmi210_1.Htr2_4.ToHmi.TAct",  HWNDCLIENT::hEditTemp24TAct, KPVL::Temperature, &conn_kpvl)},       //Температура в зоне 2.4
 #pragma endregion
 
 };
@@ -737,22 +732,6 @@ void UpdateSheetPos()
     PQclear(res);
 }
 
-//#define IS_PDF
-void AllPdf()
-{
-#ifdef IS_PDF
-    PGConnection conn_pdf;
-    conn_pdf.connection();
-    std::deque<TSheet>Sheet = AllSheet;
-    for(auto TS : Sheet)
-    {
-        if(!isRun)return;
-        KPVL::SQL::GetDataTime_All(conn_pdf, TS);
-        PrintPdfAuto(TS, false);
-    }
-#endif
-}
-
 void Open_KPVL_SQL()
 {
     size_t old_count = 0;
@@ -761,8 +740,15 @@ void Open_KPVL_SQL()
     
     LOG_INFO(SQLLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
-    KPVL::SQL::KPVL_SQL(conn_spis);
-    hAllPlf = std::thread(AllPdf);
+#ifdef IS_PDF
+    //KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
+    //for(auto& TS : AllSheet)
+    //{
+    //    KPVL::SQL::GetDataTime_All(conn_spis, TS);
+    //}
+
+    //UpdateSheetPos();
+#endif
 
     //for(auto& TS : AllSheet)
     //{
@@ -773,11 +759,10 @@ void Open_KPVL_SQL()
     while(isRun)
     {
         //SepState_2();
-        KPVL::SQL::KPVL_SQL(conn_spis);
+        KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
         for(auto& TS : AllSheet)
         {
             KPVL::SQL::GetDataTime_All(conn_spis, TS);
-            //PrintPdfAuto(TS, false);
         }
 
         UpdateSheetPos();

@@ -68,7 +68,8 @@ namespace KPVL {
         void GetCollumn(PGresult* res);
 
         //Получаем список листов из базы
-        void KPVL_SQL(PGConnection& conn);
+        //void KPVL_SQL(PGConnection& conn);
+        void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& Sheet);
         void GetDataTime_All(PGConnection& conn, TSheet& TS);
     };
 
@@ -87,8 +88,8 @@ namespace KPVL {
         //void InsertSheet(T_PlateData& PD, int pos);
 
         ////Обновляем в базе данные по листу
-        bool SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where);
-        bool SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where);
+        void SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where);
+        void SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where);
 
         ////Обновляем позицию листа
         //void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
@@ -312,6 +313,8 @@ namespace KPVL {
 
     //Отклонения листа на кантовке
     DWORD Side(Value* value);
+
+    DWORD Temperature(Value* value);
 
     //Битовый вачтог
     DWORD SheetData_WDG_toBase(Value* value);

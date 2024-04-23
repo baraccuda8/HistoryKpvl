@@ -50,7 +50,6 @@ namespace S107
     void UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
     void UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
     void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper);;
-
     void CloseAllCassette2(PGConnection& conn, T_cassette& CD, int Peth);
 #pragma endregion
 
@@ -75,7 +74,7 @@ namespace S107
         DWORD TimeTotal(Value* value);
 
         ////REAL Время до окончания процесса, мин
-        //DWORD TimeToProcEnd(Value* value);
+        DWORD TimeToProcEnd(Value* value);
 
         ////REAL Время разгона
         //DWORD PointTime_1(Value* value);
@@ -143,7 +142,7 @@ namespace S107
         DWORD TimeTotal(Value* value);
 
         ////REAL Время до окончания процесса, мин
-        //DWORD TimeToProcEnd(Value* value);
+        DWORD TimeToProcEnd(Value* value);
 
         ////REAL Время разгона
         //DWORD PointTime_1(Value* value);
@@ -191,3 +190,4 @@ namespace S107
 
     //DWORD SelectedCassete(Value* value);
 }
+void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where);

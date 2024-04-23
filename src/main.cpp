@@ -35,6 +35,8 @@ void Close_KPVL();
 void Open_FURN();
 void Close_FURN();
 
+
+
 uint32_t SizeLogger = 104857600;
 uint32_t CountLogger = 1000;
 int CountWatchDogWait  = TIME_OUT / 1000;
@@ -76,6 +78,22 @@ std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut)
 
 std::shared_ptr<spdlog::logger> AllLogger = NULL;
 
+
+
+void DisplayContextMenu(HWND hwnd, int ID)
+{
+    DWORD dwpos = GetMessagePos();
+    POINT pt;
+    pt.x = LOWORD(dwpos);
+    pt.y = HIWORD(dwpos);
+
+    HMENU hmenu = LoadMenu(hInstance, MAKEINTRESOURCE(ID));
+    if(hmenu == NULL) return;
+
+    HMENU hmenuTrackPopup = GetSubMenu(hmenu, 0);
+    TrackPopupMenu(hmenuTrackPopup, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+    DestroyMenu(hmenu);
+}
 
 void SetWacthDog()
 {
