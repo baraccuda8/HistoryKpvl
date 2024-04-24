@@ -562,6 +562,33 @@ int main()
     return Run();
 }
 
+std::string InitInfoText = std::string("Для запуска программы используйте ключи:\r\n\r\n")
++ "     1. Инсталяция сервиса \"PLC210 OPC-UA Service\"\r\n"
++ "             HistoryKpvl64v143.exe install\r\n\r\n"
++ "     2. Запуск сервиса \"PLC210 OPC-UA Service\"\r\n"
++ "             HistoryKpvl64v143.exe start\r\n\r\n"
++ "     3. Остановка сервиса \"PLC210 OPC-UA Service\"\r\n"
++ "             HistoryKpvl64v143.exe stop\r\n\r\n"
++ "     4. Деинсталяция сервиса \"PLC210 OPC-UA Service\"\r\n"
++ "             HistoryKpvl64v143.exe remove\r\n\r\n"
++ "     5. Деинсталяция сервиса \"PLC210 OPC-UA Service\"\r\n"
++ "             HistoryKpvl64v143.exe remove\r\n\r\n"
++ "     6. Запуск программы без сервиса\r\n"
++ "             HistoryKpvl64v143.exe debug"
+;
+
+DLLRESULT CALLBACK InfoStartProgramm(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if(message == WM_INITDIALOG)
+    {
+        SetWindowText(GetDlgItem(hWnd, IDC_STATIC1), InitInfoText.c_str());
+    }
+    if(message == WM_COMMAND && (wParam == IDCANCEL || wParam == IDOK))
+    {
+        EndDialog(hWnd, FALSE);
+    }
+    return (0);
+}
 
 //Глобальная функция для оконного
 int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -577,7 +604,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _I
     CurrentDir();
 
     if(argc < 2)
-        return 0;
+    {
+        DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG2), NULL, InfoStartProgramm); //IDC_STATIC1
+        return -1;
+    }
 
 
 
@@ -594,7 +624,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _I
         return StartServices();
     else if(_wcsicmp(cmdl, L"stop") == 0)
         return StoptServices();
-
+    else
+        DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG2), NULL, InfoStartProgramm); 
 
     //return Run();
     return -1;

@@ -11,6 +11,7 @@
 
 
 char serviceName[MAX_STRING] = "PLC210 OPC-UA Service";
+//char serviceName[MAX_STRING] = "KPVL OPC-UA Service";
 
 DWORD ProgProcessId = 0;
 
@@ -314,7 +315,7 @@ int InstallService()
         else if(d == ERROR_DATABASE_DOES_NOT_EXIST)
             addLogMessage("Error: Can't open Service Control Manager: DATABASE_DOES_NOT_EXIST");
         else
-            addLogMessage("Error: Can't open Service Control Manager: " + std::to_string(d));
+            addLogMessage("Error: Can't open Service Control Manager: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
 
@@ -333,7 +334,7 @@ int InstallService()
     CloseServiceHandle(hService);
 
     CloseServiceHandle(hSCManager);
-    addLogMessage("Success install service!");
+    addLogMessage(std::string("Success ") + "'" + serviceName + "'" + " install service!");
     return 0;
 }
 
@@ -347,14 +348,14 @@ int RemoveService() {
         else if(d == ERROR_DATABASE_DOES_NOT_EXIST)
             addLogMessage("Error: RemoveService: Can't open Service Control Manager: DATABASE_DOES_NOT_EXIST");
         else
-            addLogMessage("Error: RemoveService: Can't open Service Control Manager: " + std::to_string(d));
+            addLogMessage("Error: RemoveService: Can't open Service Control Manager: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
     SC_HANDLE hService = OpenService(hSCManager, serviceName, SERVICE_STOP | DELETE);
     if(!hService)
     {
         DWORD d = GetLastError();
-        addLogMessage("Error: RemoveService: Can't remove service: " + std::to_string(d));
+        addLogMessage("Error: RemoveService: Can't remove service: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
 
         CloseServiceHandle(hSCManager);
@@ -364,7 +365,7 @@ int RemoveService() {
     DeleteService(hService);
     CloseServiceHandle(hService);
     CloseServiceHandle(hSCManager);
-    addLogMessage("Success remove service!");
+    addLogMessage(std::string("Success ") + "'" + serviceName + "'" + " remove service!");
     return 0;
 }
 
@@ -378,14 +379,14 @@ int StartServices() {
         else if(d == ERROR_DATABASE_DOES_NOT_EXIST)
             addLogMessage("Error: StartServices: Can't open Service Control Manager: DATABASE_DOES_NOT_EXIST");
         else
-            addLogMessage("Error: StartServices: Can't open Service Control Manager: " + std::to_string(d));
+            addLogMessage("Error: StartServices: Can't open Service Control Manager: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
     SC_HANDLE hService = OpenService(hSCManager, serviceName, SERVICE_START);
     if(!hService)
     {
         DWORD d = GetLastError();
-        addLogMessage("Error: StartServices: Can't OpenService service: " + std::to_string(d));
+        addLogMessage("Error: StartServices: Can't OpenService service: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
 
         CloseServiceHandle(hSCManager);
@@ -396,7 +397,7 @@ int StartServices() {
         CloseServiceHandle(hSCManager);
 
         DWORD d = GetLastError();
-        addLogMessage("Error: StartServices: Can't start service" + std::to_string(d));
+        addLogMessage("Error: StartServices: Can't start service" + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
 
@@ -416,14 +417,14 @@ int StoptServices()
         else if(d == ERROR_DATABASE_DOES_NOT_EXIST)
             addLogMessage("Error: StoptServices: Can't open Service Control Manager: DATABASE_DOES_NOT_EXIST");
         else
-            addLogMessage("Error: StoptServices: Can't open Service Control Manager: " + std::to_string(d));
+            addLogMessage("Error: StoptServices: Can't open Service Control Manager: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
     SC_HANDLE hService = OpenService(hSCManager, serviceName, SERVICE_STOP);
     if(!hService)
     {
         DWORD d = GetLastError();
-        addLogMessage("Error: StoptServices: Can't OpenService service: " + std::to_string(d));
+        addLogMessage("Error: StoptServices: Can't OpenService service: " + std::to_string(d) + " '" + serviceName + "'");
         return -1;
 
         CloseServiceHandle(hSCManager);
@@ -436,7 +437,7 @@ int StoptServices()
         CloseServiceHandle(hSCManager);
 
         DWORD d = GetLastError();
-        addLogMessage("Error: StoptServices: Can't start service" + std::to_string(d));
+        addLogMessage("Error: StoptServices: Can't start service" + std::to_string(d) + " '" + serviceName + "'");
         return -1;
     }
 
@@ -456,7 +457,7 @@ int Services()
 
     if(!StartServiceCtrlDispatcher(ServiceTable))
     {
-        addLogMessage("Error: StartServiceCtrlDispatcher");
+        addLogMessage(std::string("Error: StartServiceCtrlDispatcher") + " '" + serviceName + "'");
     }
     return 0;
 }
