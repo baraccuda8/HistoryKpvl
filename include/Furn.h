@@ -35,7 +35,7 @@ namespace S107
 
 
     namespace SQL{
-        void FURN_SQL(PGConnection& conn);
+        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette);
         void GetIsPos(PGConnection& conn, TCassette& CD);
         bool GetCountSheet(PGConnection& conn, TCassette& CD);
     };

@@ -679,12 +679,16 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             sdf << "month = " << TC.Month << " AND ";
             sdf << "year = " << TC.Year << " AND ";
             sdf << "cassetteno = " << TC.CassetteNo << ";";
-            comand = sdf.str();
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            res = conn_spic.PGexec(comand);
-            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                LOG_ERR_SQL(SQLLogger, res, comand);
-            PQclear(res);
+            SETUPDATESQL(conn_spic, sdf);
+
+            //comand = sdf.str();
+            //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            //res = conn_spic.PGexec(comand);
+            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            //    LOG_ERR_SQL(SQLLogger, res, comand);
+            //PQclear(res);
+            PrintPdfAuto(TC);
+            
         }
     }
 
@@ -937,7 +941,7 @@ void Open_FURN_SQL()
     {
 #pragma region Выводим список кассет
 
-        S107::SQL::FURN_SQL(conn_spic);
+        S107::SQL::FURN_SQL(conn_spic, AllCassette);
 
         size_t count = AllCassette.size();
 
@@ -993,7 +997,7 @@ void Open_FURN_SQL()
 
         for(int i = 0; i < CountCaseteInRel; i++)
         {
-            if(i < (int)CIl.size())
+            if((int)CIl.size() > i)
             {
 
                 //if(!CIl[i].compare(CassetteInRel[i]))

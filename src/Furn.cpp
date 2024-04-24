@@ -14,7 +14,7 @@
 
 extern std::shared_ptr<spdlog::logger> PethLogger;
 extern std::string FORMATTIME;
-
+extern HANDLE hAllPlf;
 
 namespace S107
 {
@@ -118,7 +118,7 @@ namespace S107
     std::string ServerDataTime = "";
 
     namespace SQL{
-        void FURN_SQL(PGConnection& conn)
+        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette)
         {
             AppFurn1.Cassette.Day->GetValue();
             AppFurn1.Cassette.Month->GetValue();
@@ -155,23 +155,23 @@ namespace S107
             {
 
                 GetColl(res);
-                AllCassette.erase(AllCassette.begin(), AllCassette.end());
+                allCassette.erase(allCassette.begin(), allCassette.end());
                 int line =  PQntuples(res);
                 for(int l = 0; l < line; l++)
                 {
                     TCassette cassette;
                     GetCassette(res, cassette, l);
-                    AllCassette.push_back(cassette);
+                    allCassette.push_back(cassette);
                 }
             }
             else
                 LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
 
-            for(auto iCD = AllCassette.begin(); iCD != AllCassette.end();)
+            for(auto iCD = allCassette.begin(); iCD != allCassette.end();)
             {
                 if(GetCountSheet(conn, *iCD))
-                    iCD = AllCassette.erase(iCD);
+                    iCD = allCassette.erase(iCD);
                 else
                 {
                     GetIsPos(conn, *iCD);
@@ -359,7 +359,8 @@ namespace S107
                                 sf << "UPDATE cassette SET event = 5, finish_at = '" << CD.Finish_at << "' WHERE id = " << id;
                                 SETUPDATESQL(conn, sf);
 
-                                FinishPdf(conn, CD, Peth, id);
+                                PrintPdfAuto(CD);
+                                //FinishPdf(conn, CD, Peth, id);
                             }
                         }
                         ////Если ошибка была
@@ -544,8 +545,8 @@ namespace S107
             sd << ", pointdtime_2 = " << Furn.PointDTime_2->Val.As<float>(); //GetString();
 
             sd << " WHERE";
-            sd << " run_at IS NULL";
-            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            //sd << " run_at IS NULL";
+            sd << " day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
@@ -563,7 +564,11 @@ namespace S107
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(conn, sd);
+            LOG_INFO(PethLogger, "{:90}| run_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
+        else
+            LOG_INFO(PethLogger, "{:90}| Not run_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+
     }
     void UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
     {
@@ -573,15 +578,19 @@ namespace S107
             sd << "UPDATE cassette SET ";
             sd << "end_at = now()";
             sd << ", event = 5";
-            sd << " WHERE end_at IS NULL";
-            sd << " AND peth = " << Peth;
+            sd << " WHERE";
+            //sd << " end_at IS NULL";
+            sd << " peth = " << Peth;
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(conn, sd);
+            LOG_INFO(PethLogger, "{:90}| end_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
+        else
+            LOG_INFO(PethLogger, "{:90}| Not end_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
     void UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
     {
@@ -592,15 +601,19 @@ namespace S107
             sd << "run_at = DEFAULT";
             sd << ", error_at = now()";
             sd << ", event = 4";
-            sd << " WHERE error_at IS NULL";
-            sd << " AND peth = " << Peth;
+            sd << " WHERE";
+            //sd << " error_at IS NULL";
+            sd << " peth = " << Peth;
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(conn, sd);
+            LOG_INFO(PethLogger, "{:90}| error_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
+        else
+            LOG_INFO(PethLogger, "{:90}| Not error_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
 
     void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper)
@@ -972,3 +985,31 @@ void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string updat
         SETUPDATESQL(conn, sd);
     }
 }
+
+//DWORD WINAPI AllPdf(LPVOID)
+//{
+//    PGConnection conn_pdf;
+//    conn_pdf.connection();
+//    std::deque<TCassette>Cassette;
+//    //KPVL::SQL::KPVL_SQL(conn_pdf, Sheet);
+//
+//    std::deque<TCassette> all;
+//    S107::SQL::FURN_SQL(conn_pdf, all);
+//
+//    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto, Sheet.size = {}", FUNCTION_LINE_NAME, all.size());
+//    SetWindowText(hWndDebug, "Start PrintPdfAuto");
+//    for(auto TS : all)
+//    {
+//        if(!isRun)
+//        {
+//            hAllPlf = NULL;
+//            return 0;
+//        }
+//        //KPVL::SQL::GetDataTime_All(conn_pdf, TS);
+//        PrintPdfAuto(TS);
+//    }
+//    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
+//    SetWindowText(hWndDebug, "Stop PrintPdfAuto");
+//    hAllPlf = NULL;
+//    return 0;
+//}

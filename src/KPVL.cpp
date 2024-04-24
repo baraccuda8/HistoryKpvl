@@ -753,7 +753,7 @@ namespace KPVL {
 
                 if(pos != Pos && pos > 0 && pos < 7)
                 {
-                    LOG_INFO(SQLLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
+                    LOG_INFO(HardLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
                     std::stringstream sd;
                     sd << "UPDATE sheet SET";
                     sd << " pos = " << Pos;
@@ -846,10 +846,12 @@ namespace KPVL {
 
                                 if(iPos >= 0)
                                 {
-                                    int mod = (int)(std::fmod)(iPos + 10, 30);
+                                    iPos = iPos % 10;
+                                    iPos += 10;
+                                    //int mod = (int)(std::fmod)(iPos + 10, 30);
                                     std::stringstream sd;
-                                    sd << "UPDATE sheet SET Pos = " << mod;
-                                    sd << " WHERE news <> 1 AND ID = " << sId;
+                                    sd << "UPDATE sheet SET pos = " << iPos;
+                                    sd << " WHERE news <> 1 AND id = " << sId;
                                     SETUPDATESQL(conn, sd);
                                     //comand = sd.str();
                                     //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -935,9 +937,17 @@ namespace KPVL {
                 PD.AlloyCodeText->GetValue();
                 PD.ThiknessText->GetValue();
 
-                std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                SetUpdateSheet(conn_kpvl, PD, update, "");
-
+                std::string update;
+                if(PD.AlloyCodeText->strVal.length())
+                {
+                    update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+                if(PD.ThiknessText->strVal.length())
+                {
+                    update = " thikness = '" + PD.ThiknessText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
                 MySetWindowText(value);
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ1_Time);
                 LocSheet(PD, Pos);
@@ -989,15 +999,26 @@ namespace KPVL {
             const int Pos = 2;
             DWORD DataAlloyThikn(Value* value)
             {
-                //T_PlateData& PD = PlateData[Pos];
-                //PD.AlloyCodeText->GetValue();
-                //PD.ThiknessText->GetValue();
-                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                //SetUpdateSheet(conn_kpvl, PD, update, "");
-                //
+                T_PlateData& PD = PlateData[Pos];
+                PD.AlloyCodeText->GetValue();
+                PD.ThiknessText->GetValue();
+
+                std::string update;
+                if(PD.AlloyCodeText->strVal.length())
+                {
+                    update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+                if(PD.ThiknessText->strVal.length())
+                {
+                    update = " thikness = '" + PD.ThiknessText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+
+
                 MySetWindowText(value);
-                //OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
-                //LocSheet(PD, Pos);
+                OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
+                LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1050,14 +1071,23 @@ namespace KPVL {
             const int Pos = 3;
             DWORD DataAlloyThikn(Value* value)
             {
-                //T_PlateData& PD = PlateData[Pos];
-                //PD.AlloyCodeText->GetValue();
-                //PD.ThiknessText->GetValue();
-                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                //SetUpdateSheet(conn_kpvl, PD, update, "");
-                //
+                T_PlateData& PD = PlateData[Pos];
+                PD.AlloyCodeText->GetValue();
+                PD.ThiknessText->GetValue();
+                std::string update;
+                if(PD.AlloyCodeText->strVal.length())
+                {
+                    update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+                if(PD.ThiknessText->strVal.length())
+                {
+                    update = " thikness = '" + PD.ThiknessText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+
                 MySetWindowText(value);
-                //LocSheet(PD, Pos);
+                LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1087,14 +1117,24 @@ namespace KPVL {
             const int Pos = 4;
             DWORD DataAlloyThikn(Value* value)
             {
-                //T_PlateData& PD = PlateData[Pos];
-                //PD.AlloyCodeText->GetValue();
-                //PD.ThiknessText->GetValue();
-                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                //SetUpdateSheet(conn_kpvl, PD, update, "");
-                //
+                T_PlateData& PD = PlateData[Pos];
+                PD.AlloyCodeText->GetValue();
+                PD.ThiknessText->GetValue();
+
+                std::string update;
+                if(PD.AlloyCodeText->strVal.length())
+                {
+                    update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+                if(PD.ThiknessText->strVal.length())
+                {
+                    update = " thikness = '" + PD.ThiknessText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+
                 MySetWindowText(value);
-                //LocSheet(PD, Pos);
+                LocSheet(PD, Pos);
                 return 0;
             }
 
@@ -1173,16 +1213,27 @@ namespace KPVL {
 
             DWORD DataAlloyThikn(Value* value)
             {
-                //T_PlateData& PD = PlateData[6];
+                T_PlateData& PD = PlateData[6];
                 //if(!IsSheet(PD))
                 //    PD = PlateData[5];
-                //PD.AlloyCodeText->GetValue();
-                //PD.ThiknessText->GetValue();
-                //std::string update = " alloy = '" + PD.AlloyCodeText->strVal + "', thikness = '" + PD.ThiknessText->strVal + "'";
-                //SetUpdateSheet(conn_kpvl, PD, update, "");
+                PD.AlloyCodeText->GetValue();
+                PD.ThiknessText->GetValue();
+
+                std::string update;
+                if(PD.AlloyCodeText->strVal.length())
+                {
+                    update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+                if(PD.ThiknessText->strVal.length())
+                {
+                    update = " thikness = '" + PD.ThiknessText->strVal + "'";
+                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                }
+
 
                 MySetWindowText(value);
-                //LocSheet(PD, Pos);
+                LocSheet(PD, Pos);
 
                 return 0;
             }
@@ -1222,58 +1273,63 @@ namespace KPVL {
                 //if(!IsSheet(PD))
                 //    PD = PlateData[5];
 
-                if(IsSheet(PD))
+                if(HMISheetData.NewData->Val.As<bool>())
                 {
-                    std::string id = GetIdSheet(conn, PD);
-                    if(id.length() && id != "0")
+                    if(IsSheet(PD))
                     {
+                        std::string id = GetIdSheet(conn, PD);
+                        if(id.length() && id != "0")
+                        {
 
 #pragma region comand = "UPDATE sheet SET"
-                        std::stringstream co;
-                        co << "UPDATE sheet SET";
-                        co << " pos = 7";
-                        co << ", news = 1";
-                        co << ", top1 = " << Top_Side.h1->Val.As<float>();
-                        co << ", top2 = " << Top_Side.h2->Val.As<float>();
-                        co << ", top3 = " << Top_Side.h3->Val.As<float>();
-                        co << ", top4 = " << Top_Side.h4->Val.As<float>();
-                        co << ", top5 = " << Top_Side.h5->Val.As<float>();
-                        co << ", top6 = " << Top_Side.h6->Val.As<float>();
-                        co << ", top7 = " << Top_Side.h7->Val.As<float>();
-                        co << ", top8 = " << Top_Side.h8->Val.As<float>();
-                        co << ", bot1 = " << Bot_Side.h1->Val.As<float>();
-                        co << ", bot2 = " << Bot_Side.h2->Val.As<float>();
-                        co << ", bot3 = " << Bot_Side.h3->Val.As<float>();
-                        co << ", bot4 = " << Bot_Side.h4->Val.As<float>();
-                        co << ", bot5 = " << Bot_Side.h5->Val.As<float>();
-                        co << ", bot6 = " << Bot_Side.h6->Val.As<float>();
-                        co << ", bot7 = " << Bot_Side.h7->Val.As<float>();
-                        co << ", bot8 = " << Bot_Side.h8->Val.As<float>();
-                        co << ", day = " << Cassette.Day->Val.As<int32_t>();
-                        co << ", month = " << Cassette.Month->Val.As<int32_t>();
-                        co << ", year = " << Cassette.Year->Val.As<int32_t>();
-                        co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                        co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
-                        co << " WHERE id = " << id << ";";
+                            std::stringstream co;
+                            co << "UPDATE sheet SET";
+                            co << " pos = 7";
+                            co << ", news = 1";
+                            co << ", top1 = " << Top_Side.h1->Val.As<float>();
+                            co << ", top2 = " << Top_Side.h2->Val.As<float>();
+                            co << ", top3 = " << Top_Side.h3->Val.As<float>();
+                            co << ", top4 = " << Top_Side.h4->Val.As<float>();
+                            co << ", top5 = " << Top_Side.h5->Val.As<float>();
+                            co << ", top6 = " << Top_Side.h6->Val.As<float>();
+                            co << ", top7 = " << Top_Side.h7->Val.As<float>();
+                            co << ", top8 = " << Top_Side.h8->Val.As<float>();
+                            co << ", bot1 = " << Bot_Side.h1->Val.As<float>();
+                            co << ", bot2 = " << Bot_Side.h2->Val.As<float>();
+                            co << ", bot3 = " << Bot_Side.h3->Val.As<float>();
+                            co << ", bot4 = " << Bot_Side.h4->Val.As<float>();
+                            co << ", bot5 = " << Bot_Side.h5->Val.As<float>();
+                            co << ", bot6 = " << Bot_Side.h6->Val.As<float>();
+                            co << ", bot7 = " << Bot_Side.h7->Val.As<float>();
+                            co << ", bot8 = " << Bot_Side.h8->Val.As<float>();
+                            co << ", day = " << Cassette.Day->Val.As<int32_t>();
+                            co << ", month = " << Cassette.Month->Val.As<int32_t>();
+                            co << ", year = " << Cassette.Year->Val.As<int32_t>();
+                            co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
+                            co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
+                            co << " WHERE id = " << id << ";";
 #pragma endregion
-                        SETUPDATESQL(conn, co);
+                            SETUPDATESQL(conn, co);
 
-                        //std::string comand = co.str();
-                        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        //PGresult* res = conn.PGexec(comand);
-                        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        //    LOG_ERR_SQL(SQLLogger, res, comand);
-                        //PQclear(res);
+                            //std::string comand = co.str();
+                            //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                            //PGresult* res = conn.PGexec(comand);
+                            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                            //    LOG_ERR_SQL(SQLLogger, res, comand);
+                            //PQclear(res);
 
-                        LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                        HMISheetData.SaveDone->Set_Value(true);
-                        //PlateData[5].Sheet->Set_Value((int32_t)0);
+                            //PlateData[5].Sheet->Set_Value((int32_t)0);
+                            LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                        }
+                        else
+                            LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                     }
                     else
                         LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+
+                    LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                    HMISheetData.SaveDone->Set_Value(true);
                 }
-                else
-                    LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
             }
 
             //Новые лист в касету, Кассета наполяентся

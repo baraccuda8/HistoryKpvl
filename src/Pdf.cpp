@@ -111,7 +111,7 @@ public:
 		//conn.PGDisConnection();
 	};
 
-	void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Value* val);
+	void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID);
 	void SqlTempActKPVL(T_SqlTemp& tr);
 
 	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt);;
@@ -253,14 +253,14 @@ void PdfClass::GetSheet()
 	}CATCH(AllLogger, FUNCTION_LINE_NAME);
 }
 
-void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Value* val)
+void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID)
 {
 	try
 	{
 		std::tm TM_Temp ={0};
 		std::string sBegTime2 = Start;
 		std::stringstream sde;
-		sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+		sde << "SELECT max(create_at) FROM todos WHERE id_name = " << ID;
 		sde << " AND create_at <= '";
 		sde << Start;
 		sde << "';";
@@ -278,7 +278,7 @@ void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, Va
 
 
 		std::stringstream sdt;
-		sdt << "SELECT create_at, content FROM todos WHERE id_name = " << val->ID;
+		sdt << "SELECT create_at, content FROM todos WHERE id_name = " << ID;
 		if(sBegTime2.length())	sdt << " AND create_at >= '" << sBegTime2 << "'";
 		if(Stop.length())	sdt << " AND create_at <= '" << Stop << "'";
 
@@ -905,18 +905,20 @@ PdfClass::PdfClass(TSheet& sheet, bool view)
 			return;// throw std::exception(__FUN(std::string("Error SQL conn connection to GraffKPVL")));
 		conn.Name = "test";
 
-		if(Sheet.Year.length() && Sheet.Month.length() && Sheet.Day.length() && Sheet.CassetteNo.length())
+		if(!Sheet.Year.length() || !Sheet.Month.length() || !Sheet.Day.length() || !Sheet.CassetteNo.length())
 		{
-			GetCassete(Cassette);
-			if(!Cassette.Run_at.length() || !Cassette.Finish_at.length())
-			{
-				//MessageBox(GlobalWindow, "Лист еще небыл на отпуске", "Ошибка", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-				LOG_INFO(AllLogger, "{:90}| Лист {:06}-{:03}-{:03}-{:03}-{:03}/{:03}, Касета {:04}-{:02}-{:02}-{:02} еще не была в отпускной печи",
-						 FUNCTION_LINE_NAME,
-						 std::stoi(Sheet.Melt), std::stoi(Sheet.Slab), std::stoi(Sheet.PartNo), std::stoi(Sheet.Pack), std::stoi(Sheet.Sheet), std::stoi(Sheet.SubSheet),
-						 std::stoi(Cassette.Year), std::stoi(Cassette.Month), std::stoi(Cassette.Day), std::stoi(Cassette.CassetteNo));
-					//return;
-			}
+			return;
+		}
+
+		GetCassete(Cassette);
+		if(!Cassette.Run_at.length() || !Cassette.Finish_at.length())
+		{
+			//MessageBox(GlobalWindow, "Лист еще небыл на отпуске", "Ошибка", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+			LOG_INFO(AllLogger, "{:90}| Лист {:06}-{:03}-{:03}-{:03}-{:03}/{:03}, Касета {:04}-{:02}-{:02}-{:02} еще не была в отпускной печи",
+					 FUNCTION_LINE_NAME,
+					 std::stoi(Sheet.Melt), std::stoi(Sheet.Slab), std::stoi(Sheet.PartNo), std::stoi(Sheet.Pack), std::stoi(Sheet.Sheet), std::stoi(Sheet.SubSheet),
+					 std::stoi(Cassette.Year), std::stoi(Cassette.Month), std::stoi(Cassette.Day), std::stoi(Cassette.CassetteNo));
+			return;
 		}
 
 		int P = atoi(Cassette.Peth.c_str());
@@ -931,23 +933,53 @@ PdfClass::PdfClass(TSheet& sheet, bool view)
 			//Первая отпускная печь
 			if(P == 1)
 			{
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_1.TempRef);
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_1.TempAct);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_1.TempRef->ID);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_1.TempAct->ID);
 			}
 
 			//Вторая отпускная печь
 			if(P == 2)
 			{
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_2.TempRef);
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_2.TempAct);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_2.TempRef->ID);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_2.TempAct->ID);
+			}
+			if(!std::stof(Cassette.f_temper))
+			{
+				//std::tm TM_Temp ={0};
+				//int m = 60 * 5;
+				//if(Cassette.End_at.length())
+				//	DataTimeOfString(Cassette.End_at, FORMATTIME, TM_Temp);
+				//else
+				//{
+				//
+				//	DataTimeOfString(Cassette.End_at, FORMATTIME, TM_Temp);
+				//	m = 60 * 15;
+				//}
+				//
+				//TM_Temp.tm_year -= 1900;
+				//TM_Temp.tm_mon -= 1;
+				//std::time_t st = (std::time_t)difftime(mktime(&TM_Temp), m); 
+				////localtime_s(&TM_Temp, &st);
+				//std::string fd = GetDataTimeString(st);
+				//
+				//T_SqlTemp TempFurnAct ={};	//Временное Актуальное
+				//if(P == 1)
+				//	GetTempRef(Cassette.Run_at, fd, TempFurnAct, ForBase_RelFurn_1.TempAct->ID);
+				//if(P == 2)
+				//	GetTempRef(Cassette.Run_at, fd, TempFurnAct, ForBase_RelFurn_2.TempAct->ID);
+				//
+				//auto b = FurnAct.rbegin();
+				//float f = b->second.second;
+				//int tt = 0;
 			}
 		}
+		//return;
 
 		//Рисуем график FURN
 		PaintGraff(FurnAct, FurnRef, furnImage);
 
 		//Закалка
-		GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1);
+		GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
 		SqlTempActKPVL(TempAct);
 
 		//Рисуем график KPVL
@@ -1006,15 +1038,15 @@ PdfClass::PdfClass(TCassette& TC)
 		//Первая отпускная печь
 			if(P == 1)
 			{
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_1.TempRef);
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_1.TempAct);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_1.TempRef->ID);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_1.TempAct->ID);
 			}
 
 			//Вторая отпускная печь
 			if(P == 2)
 			{
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_2.TempRef);
-				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_2.TempAct);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, ForBase_RelFurn_2.TempRef->ID);
+				GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, ForBase_RelFurn_2.TempAct->ID);
 			}
 		}
 		//Рисуем график FURN
@@ -1025,7 +1057,7 @@ PdfClass::PdfClass(TCassette& TC)
 			Sheet = a;
 			//Закалка
 			TempRef.erase(TempRef.begin(), TempRef.end());
-			GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1);
+			GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
 
 			//TempAct.erase(TempAct.begin(), TempAct.end());
 			SqlTempActKPVL(TempAct);
