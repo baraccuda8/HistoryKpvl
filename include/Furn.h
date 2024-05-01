@@ -1,8 +1,21 @@
 #pragma once
 
 
+
+
 namespace S107
 {
+    typedef struct T_cass{
+        int id = 0;
+        std::string Run_at = "";
+        std::string End_at = "";
+        std::string Err_at = "";
+        int Day = 0;
+        int Month = 0;
+        int Year = 0;
+        int CassetteNo = 0;
+    };
+
     extern std::string URI;
     extern std::string ServerDataTime;
 
@@ -55,6 +68,8 @@ namespace S107
 
     //Печ отпуска #1
     namespace Furn1{
+        extern T_cass Petch;
+
         DWORD Data_WDG_toBase(Value* value);
 
         //BOOL Работа
@@ -67,7 +82,13 @@ namespace S107
         DWORD ProcError(Value* value);
 
         //Обнуление температуры для сравнения
-        DWORD SetNull_Temper(Value* value);
+        //DWORD SetNull_Temper(Value* value);
+
+        DWORD Day(Value* value);
+        DWORD Month(Value* value);
+        DWORD Year(Value* value);
+        DWORD No(Value* value);
+
 
         DWORD TimeHeatAcc(Value* value);
         DWORD TimeHeatWait(Value* value);
@@ -123,6 +144,8 @@ namespace S107
 
     //Печ отпуска #2
     namespace Furn2{
+        extern T_cass Petch;
+
         DWORD Data_WDG_toBase(Value* value);
 
         //BOOL Работа
@@ -135,7 +158,14 @@ namespace S107
         DWORD ProcError(Value* value);
 
         //Обнуление температуры для сравнения
-        DWORD SetNull_Temper(Value* value);
+        //DWORD SetNull_Temper(Value* value);
+
+        DWORD Day(Value* value);
+        DWORD Month(Value* value);
+        DWORD Year(Value* value);
+        DWORD No(Value* value);
+
+
 
         DWORD TimeHeatAcc(Value* value);
         DWORD TimeHeatWait(Value* value);
@@ -190,4 +220,6 @@ namespace S107
 
     //DWORD SelectedCassete(Value* value);
 }
+
+
 void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where);

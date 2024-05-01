@@ -208,7 +208,8 @@ void Value::SaveSQL()
             sd << "'" << GetString() << "'";
         else
             sd << GetString();
-        sd << " WHERE name = '" << Patch.c_str() << "';";
+        sd << " WHERE id = " << ID;
+        //sd << " WHERE name = '" << Patch.c_str() << "';";
 
         std::string comand = sd.str();
         PGresult* res = Conn->PGexec(comand);

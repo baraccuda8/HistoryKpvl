@@ -1,6 +1,14 @@
 #include "pch.h"
 #include "main.h"
 #include "win.h"
+#include "ValueTag.h"
+#include "term.h"
+#include "hard.h"
+#include "Graff.h"
+#include "KPVL.h"
+#include "Furn.h"
+#include "Pdf.h"
+
 #include "ClCodeSys.h"
 #include "file.h"
 #include "ValueTag.h"
@@ -194,6 +202,56 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
     }
 }
 
+void GetPetch(S107::T_cass& tc, int p)
+{
+    std::string comand = "SELECT max(id) FROM cassette2 WHERE peth = " + std::to_string(p);
+    PGresult* res = conn_spis.PGexec(comand);
+    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        int line = PQntuples(res);
+        if(line)
+        {
+            std::string sid = conn_spis.PGgetvalue(res, line - 1, 0);
+            if(sid.length())
+                tc.id = std::stoi(sid);
+        }
+    }
+    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+        LOG_ERR_SQL(SQLLogger, res, comand);
+    PQclear(res);
+
+    if(tc.id)
+    {
+        std::string comand = "SELECT day, month, year, cassetteno, run_at, error_at, end_at FROM cassette2 WHERE id = " + std::to_string(tc.id);
+        PGresult* res = conn_spis.PGexec(comand);
+        if(PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            int line = PQntuples(res);
+            if(line)
+            {
+                tc.End_at = conn_spis.PGgetvalue(res, line - 1, 6);
+                if(tc.End_at.size())
+                    tc = S107::T_cass();
+                else
+                {
+                    tc.Day = std::stoi(conn_spis.PGgetvalue(res, line - 1, 0));
+                    tc.Month = std::stoi(conn_spis.PGgetvalue(res, line - 1, 1));
+                    tc.Year = std::stoi(conn_spis.PGgetvalue(res, line - 1, 2));
+                    tc.CassetteNo = std::stoi(conn_spis.PGgetvalue(res, line - 1, 3));
+                    tc.Run_at = conn_spis.PGgetvalue(res, line - 1, 4);
+                    tc.Err_at = conn_spis.PGgetvalue(res, line - 1, 5);
+                }
+            }
+        }
+
+        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            LOG_ERR_SQL(SQLLogger, res, comand);
+        PQclear(res);
+
+
+    }
+}
+
 void InitCurentTag()
 {
 #pragma region SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id 
@@ -253,6 +311,10 @@ void InitCurentTag()
     {
         val->UpdateVal();
     }
+
+    GetPetch(S107::Furn1::Petch, 1);
+    GetPetch(S107::Furn2::Petch, 2);
+
 
     if(!ofs.bad())
         ofs.close();

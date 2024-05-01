@@ -500,6 +500,8 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 
+
+
     bool IsCassete(TCassette& CD)
     {
         int32_t Day = std::stoi(CD.Day);
@@ -678,11 +680,95 @@ namespace S107
         }
     }
 
+    bool isCassete(PGConnection& conn, T_cass& tc)
+    {
+        //if(tc.id) return true;
+        if(tc.Day && tc.Month && tc.Year && tc.CassetteNo)
+        {
+            std::stringstream sd;
+            sd << "SELECT id FROM cassette2 WHERE";
+            sd << " cassetteno = " << tc.CassetteNo;
+            sd << " AND day = " << tc.Day;
+            sd << " AND month = " << tc.Month;
+            sd << " AND year = " << tc.Year;
+            sd << " ORDER BY id;";
+
+            std::string comand = sd.str();
+            PGresult* res = conn.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                int len = PQntuples(res);
+                if(len)
+                {
+                    std::string sid = conn.PGgetvalue(res, len - 1, 0);
+                    if(sid.length())
+                        tc.id = std::stoi(sid);
+                }
+            }
+            else
+                LOG_ERR_SQL(SQLLogger, res, comand);
+            PQclear(res);
+
+            return true;
+        }
+        return false;
+    }
+
+    void write(T_cass& P1, int p)
+    {
+        std::ofstream s("cass1.csv", std::fstream::binary | std::ios::out | std::ios::app | std::ios::ate);
+        if(s.is_open())
+        {
+            s   << p << ";"
+                << " " << P1.Run_at << ";"
+                << " " << P1.End_at << ";"
+                << P1.Year << ";"
+                << P1.Month << ";"
+                << P1.Day << ";"
+                << P1.CassetteNo << ";"
+                << " " << P1.Err_at << ";";
+            s   << std::endl;
+            s.close();
+        }
+    }
+
+    void UpdateCassette(PGConnection& conn, T_cass& tc, const int nPetch)
+    {
+        if(tc.id)
+        {
+            std::stringstream sd;
+            sd << "UPDATE cassette2 SET";
+            if(tc.End_at.length())sd << " end_at = '" << tc.End_at << "',";
+            if(tc.Err_at.length())sd << " error_at = '" << tc.Err_at << "',";
+            sd << " peth = " << nPetch;
+            sd << " WHERE id = " << tc.id;
+            SETUPDATESQL(conn, sd);
+        }
+        else
+        {
+            std::stringstream sd;
+            sd << "INSERT INTO cassette2 (";
+            sd << "day, month, year, cassetteno, peth" ;
+            if(tc.Run_at.length()) sd << ", run_at";
+            if(tc.Err_at.length()) sd << ", error_at";
+            if(tc.End_at.length()) sd << ", end_at";
+            sd << ") VALUES (";
+            sd << tc.Day << ", " << tc.Month << ", " << tc.Year << ", " << tc.CassetteNo << ", " << nPetch;
+            sd << ", '" << tc.Run_at << "'";
+            sd << "', '" << tc.Err_at << "'";
+            sd << "', '" << tc.End_at << "'";
+            sd << ");";
+            SETUPDATESQL(conn, sd);
+        }
+    }
+
 #pragma endregion
 
     //Печ отпуска #1
     namespace Furn1{
-        const int Peth = 1;
+        T_cass Petch;
+
+        const int nPetch = 1;
         DWORD Data_WDG_toBase(Value* value)
         {
             if(value->Val.As<bool>())
@@ -723,9 +809,23 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcRun(conn_temp, AppFurn1, Peth);
+                UpdateCassetteProcRun(conn_temp, AppFurn1, nPetch);
+
+                if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
+                {
+                    Petch.Run_at = GetDataTimeString();
+                    //UpdateCassette(conn_temp, Petch, nPetch);
+                    std::stringstream sd;
+                    sd << "INSERT INTO cassette2 (";
+                    sd << "day, month, year, cassetteno, peth, run_at";
+                    sd << ") VALUES (";
+                    sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
+                    SETUPDATESQL(conn_temp, sd);
+                }
             }
             MySetWindowText(winmap(value->winId), out.c_str());
+
+
             return 0;
         }
 
@@ -736,9 +836,22 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcEnd(conn_temp, AppFurn1, Peth);
+                UpdateCassetteProcEnd(conn_temp, AppFurn1, nPetch);
+                AppFurn1.Cassette.f_temper = "0";
+
+                if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
+                {
+                    Petch.End_at = GetDataTimeString();
+                    UpdateCassette(conn_temp, Petch, nPetch);
+                    write(Petch, nPetch);
+                }
+
             }
+            Petch = T_cass();
+
             MySetWindowText(winmap(value->winId), out.c_str());
+
+
             return 0;
         }
 
@@ -749,20 +862,47 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcError(conn_temp, AppFurn1, Peth);
+                UpdateCassetteProcError(conn_temp, AppFurn1, nPetch);
+
+                if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
+                {
+                    Petch.Err_at = GetDataTimeString();
+                    UpdateCassette(conn_temp, Petch, nPetch);
+                }
+
             }
             MySetWindowText(winmap(value->winId), out.c_str());
+
             return 0;
         }
 
-        //Обнуление температуры для сравнения
-        DWORD SetNull_Temper(Value* value)
+        DWORD Day(Value* value)
         {
-            AppFurn1.Cassette.f_temper = "0";
             MySetWindowText(value);
+            Petch.Day = value->Val.As<int32_t>();
             return 0;
         }
 
+        DWORD Month(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Month = value->Val.As<int32_t>();
+            return 0;
+        }
+
+        DWORD Year(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Year = value->Val.As<int32_t>();
+            return 0;
+        }
+
+        DWORD No(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.CassetteNo = value->Val.As<int32_t>();
+            return 0;
+        }
 
         ////REAL Время до окончания процесса, мин
         //DWORD TimeToProcEnd(Value* value)
@@ -828,7 +968,10 @@ namespace S107
 
     //Печ отпуска #2
     namespace Furn2{
-        const int Peth = 2;
+        T_cass Petch;
+
+        const int nPetch = 2;
+
         DWORD Data_WDG_toBase(Value* value)
         {
             if(value->Val.As<bool>())
@@ -868,9 +1011,24 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcRun(conn_temp, AppFurn2, Peth);
+                UpdateCassetteProcRun(conn_temp, AppFurn2, nPetch);
+
+                if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
+                {
+                    Petch.Run_at = GetDataTimeString();
+                    //UpdateCassette(conn_temp, Petch, nPetch);
+                    std::stringstream sd;
+                    sd << "INSERT INTO cassette2 (";
+                    sd << "day, month, year, cassetteno, peth, run_at";
+                    sd << ") VALUES (";
+                    sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
+                    SETUPDATESQL(conn_temp, sd);
+
+                }
+
             }
             MySetWindowText(winmap(value->winId), out.c_str());
+
             return 0;
         }
 
@@ -881,9 +1039,19 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcEnd(conn_temp, AppFurn2, Peth);
+                UpdateCassetteProcEnd(conn_temp, AppFurn2, nPetch);
+                AppFurn1.Cassette.f_temper = "0";
+
+                if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
+                {
+                    Petch.End_at = GetDataTimeString();
+                    UpdateCassette(conn_temp, Petch, nPetch);
+                }
             }
+            Petch = T_cass();
+
             MySetWindowText(winmap(value->winId), out.c_str());
+
             return 0;
         }
 
@@ -894,19 +1062,48 @@ namespace S107
             if(value->Val.As<bool>())
             {
                 out = GetShortTimes();
-                UpdateCassetteProcError(conn_temp, AppFurn2, Peth);
+                UpdateCassetteProcError(conn_temp, AppFurn2, nPetch);
+
+                if(isCassete(conn_temp, Petch))
+                {
+                    Petch.Err_at = GetDataTimeString();
+                    UpdateCassette(conn_temp, Petch, nPetch);
+                }
             }
             MySetWindowText(winmap(value->winId), out.c_str());
+
+
             return 0;
         }
 
-        //Обнуление температуры для сравнения
-        DWORD SetNull_Temper(Value* value)
+        DWORD Day(Value* value)
         {
-            AppFurn2.Cassette.f_temper = "0";
             MySetWindowText(value);
+            Petch.Day = value->Val.As<int32_t>();
             return 0;
         }
+
+        DWORD Month(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Month = value->Val.As<int32_t>();
+            return 0;
+        }
+
+        DWORD Year(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Year = value->Val.As<int32_t>();
+            return 0;
+        }
+
+        DWORD No(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.CassetteNo = value->Val.As<int32_t>();
+            return 0;
+        }
+
 
         ////REAL Время до окончания процесса, мин
         //DWORD TimeToProcEnd(Value* value)

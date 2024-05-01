@@ -562,6 +562,7 @@ int main()
     return Run();
 }
 
+#pragma region std::string InitInfoText
 std::string InitInfoText = std::string("Для запуска программы используйте ключи:\r\n\r\n")
 + "     1. Инсталяция сервиса \"PLC210 OPC-UA Service\"\r\n"
 + "             HistoryKpvl64v143.exe install\r\n\r\n"
@@ -574,8 +575,9 @@ std::string InitInfoText = std::string("Для запуска программы используйте ключи:
 + "     5. Деинсталяция сервиса \"PLC210 OPC-UA Service\"\r\n"
 + "             HistoryKpvl64v143.exe remove\r\n\r\n"
 + "     6. Запуск программы без сервиса\r\n"
-+ "             HistoryKpvl64v143.exe debug"
-;
++ "             HistoryKpvl64v143.exe debug";
+#pragma endregion
+
 
 DLLRESULT CALLBACK InfoStartProgramm(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

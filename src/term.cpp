@@ -74,10 +74,10 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.ActTimeHeatWait       = new Value(StrFurn1 + "ActTimeHeatWait",       HWNDCLIENT::RelF1_Edit_TimeHeatWait,    S107::Furn1::TimeHeatWait, &conn_temp)}, //: REAL; // ‘акт врем€ выдержки
     {AppFurn1.ActTimeTotal          = new Value(StrFurn1 + "ActTimeTotal",          HWNDCLIENT::RelF1_Edit_TimeTotal,       S107::Furn1::TimeTotal, &conn_temp)}, //: REAL; // ‘акт общее врем€
 
-    {AppFurn1.Cassette.Day          = new Value(StrFurn1 + "Cassette.Day",          HWNDCLIENT::RelF1_Edit_Cassette_Day,    S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты день
-    {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты мес€ц
-    {AppFurn1.Cassette.Year         = new Value(StrFurn1 + "Cassette.Year",         HWNDCLIENT::RelF1_Edit_Cassette_Year,   S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты год
-    {AppFurn1.Cassette.CassetteNo   = new Value(StrFurn1 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF1_Edit_CassetteNo,      S107::Furn1::SetNull_Temper, &conn_temp)}, //ID касеты номер
+    {AppFurn1.Cassette.Day          = new Value(StrFurn1 + "Cassette.Day",          HWNDCLIENT::RelF1_Edit_Cassette_Day,    S107::Furn1::Day, &conn_temp)}, //ID касеты день
+    {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::Month, &conn_temp)}, //ID касеты мес€ц
+    {AppFurn1.Cassette.Year         = new Value(StrFurn1 + "Cassette.Year",         HWNDCLIENT::RelF1_Edit_Cassette_Year,   S107::Furn1::Year, &conn_temp)}, //ID касеты год
+    {AppFurn1.Cassette.CassetteNo   = new Value(StrFurn1 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF1_Edit_CassetteNo,      S107::Furn1::No, &conn_temp)}, //ID касеты номер
 
     //¬тора€ печь
     {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false,  "¬ачдог")}, //вачдог
@@ -103,10 +103,10 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn2.ActTimeHeatWait       = new Value(StrFurn2 + "ActTimeHeatWait",       HWNDCLIENT::RelF2_Edit_TimeHeatWait,    S107::Furn2::TimeHeatWait, &conn_temp)}, //: REAL; // ‘акт врем€ выдержки
     {AppFurn2.ActTimeTotal          = new Value(StrFurn2 + "ActTimeTotal",          HWNDCLIENT::RelF2_Edit_TimeTotal,       S107::Furn2::TimeTotal, &conn_temp)}, //: REAL; // ‘акт общее врем€
 
-    {AppFurn2.Cassette.Day          = new Value(StrFurn2 + "Cassette.Day",          HWNDCLIENT::RelF2_Edit_Cassette_Day,    S107::Furn2::SetNull_Temper, &conn_temp)}, ///ID касеты день
-    {AppFurn2.Cassette.Month        = new Value(StrFurn2 + "Cassette.Month",        HWNDCLIENT::RelF2_Edit_Cassette_Month,  S107::Furn2::SetNull_Temper, &conn_temp)}, //ID касеты мес€ц
-    {AppFurn2.Cassette.Year         = new Value(StrFurn2 + "Cassette.Year",         HWNDCLIENT::RelF2_Edit_Cassette_Year,   S107::Furn2::SetNull_Temper, &conn_temp)},  //ID касеты год
-    {AppFurn2.Cassette.CassetteNo   = new Value(StrFurn2 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF2_Edit_CassetteNo,      S107::Furn2::SetNull_Temper, &conn_temp)}, //ID касеты номер
+    {AppFurn2.Cassette.Day          = new Value(StrFurn2 + "Cassette.Day",          HWNDCLIENT::RelF2_Edit_Cassette_Day,    S107::Furn2::Day, &conn_temp)}, ///ID касеты день
+    {AppFurn2.Cassette.Month        = new Value(StrFurn2 + "Cassette.Month",        HWNDCLIENT::RelF2_Edit_Cassette_Month,  S107::Furn2::Month, &conn_temp)}, //ID касеты мес€ц
+    {AppFurn2.Cassette.Year         = new Value(StrFurn2 + "Cassette.Year",         HWNDCLIENT::RelF2_Edit_Cassette_Year,   S107::Furn2::Year, &conn_temp)},  //ID касеты год
+    {AppFurn2.Cassette.CassetteNo   = new Value(StrFurn2 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF2_Edit_CassetteNo,      S107::Furn2::No, &conn_temp)}, //ID касеты номер
 
     //—писок касет
     {AppCassette1.Year         = new Value(StrCassette1 + "Year",       HWNDCLIENT::hEditState1_Year,     0, &conn_temp)}, //ID касеты год
@@ -1062,6 +1062,16 @@ void Open_FURN()
 #ifndef TESTSPIS
 #ifndef TESTWIN
 #ifndef TESTGRAFF
+    //S107::Furn1::Petch.Day = AppFurn1.Cassette.Day->Val.As<int32_t>();
+    //S107::Furn1::Petch.Month = AppFurn1.Cassette.Month->Val.As<int32_t>();
+    //S107::Furn1::Petch.Year = AppFurn1.Cassette.Year->Val.As<int32_t>();
+    //S107::Furn1::Petch.CassetteNo = AppFurn1.Cassette.CassetteNo->Val.As<int32_t>();
+
+    //S107::Furn2::Petch.Day = AppFurn2.Cassette.Day->Val.As<int32_t>();
+    //S107::Furn2::Petch.Month = AppFurn2.Cassette.Month->Val.As<int32_t>();
+    //S107::Furn2::Petch.Year = AppFurn2.Cassette.Year->Val.As<int32_t>();
+    //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->Val.As<int32_t>();
+
     hS107URI = std::thread(Open_FURN_RUN);
 #endif
     hS107SQL = std::thread(Open_FURN_SQL);

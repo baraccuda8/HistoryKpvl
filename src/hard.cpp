@@ -60,10 +60,10 @@ const std::string AppGenSeqToHmi = PathKpvl + "GenSeqToHmi.Data.";
 const std::string AppAI_Hmi_210 = PathKpvl + "AI_Hmi_210.Hmi.";
 const std::string AppHMISheetData = PathKpvl + "HMISheetData.Sheet.";
 
-std::string AppGenSeqFromHmi1 = AppGenSeqFromHmi + "PlateData.";
-std::string AppGenSeqToHmi1 =  AppGenSeqToHmi + "PlateData_";
-std::string AppHMISheetData1 = AppHMISheetData + "SheetDataIN.";
-std::string AppHMISheetData2 = AppHMISheetData + "Cassette.";
+const std::string AppGenSeqFromHmi1 = AppGenSeqFromHmi + "PlateData.";
+const std::string AppGenSeqToHmi1 =  AppGenSeqToHmi + "PlateData_";
+const std::string AppHMISheetData1 = AppHMISheetData + "SheetDataIN.";
+const std::string AppHMISheetData2 = AppHMISheetData + "Cassette.";
 
 
 //std::string AppGenSeqToHmi = PathKpvl + "GenSeqToHmi.Data.";
