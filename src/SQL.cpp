@@ -581,23 +581,22 @@ bool InitSQL()
     try
     {
         SQLLogger = InitLogger("BASE_SQL");
-        if(!LoadConnect())
-        {
-            DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, bagSave);
+        //if(!LoadConnect())
+        //{
+        //    DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, bagSave);
             //if(!conn_kpvl.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl connection")));
+            //if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
+            //if(!conn_temp.connection()) throw std::exception(__FUN(std::string("Error SQL conn_temp connection")));
+            //if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
+            //if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
+            //if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
+            //
+            //
 
-            if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
-            if(!conn_temp.connection()) throw std::exception(__FUN(std::string("Error SQL conn_temp connection")));
-            if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
-            if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
-            if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
-            
-            
 
-
-            SaveConnect();
-        }
-        else
+            //SaveConnect();
+        //}
+        //else
         {
             if(!conn_kpvl.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl connection")));
             if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
@@ -605,10 +604,6 @@ bool InitSQL()
             if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
             if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
             if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
-            
-
-
-
         }
         LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
 

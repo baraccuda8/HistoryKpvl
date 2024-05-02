@@ -216,8 +216,8 @@ char sCommand[1024];
 
 void encode(char* pText, int len)
 {
-    for(int i = 0; i < len; i++)
-        pText[i] = (byte)(pText[i] ^ pKey[i % pKey.length()]);
+    //for(int i = 0; i < len; i++)
+    //    pText[i] = (byte)(pText[i] ^ pKey[i % pKey.length()]);
 }
 
 void SaveConnect()
@@ -232,7 +232,7 @@ void SaveConnect()
     std::string p = pass.str();
     memset(sCommand, 0, 1024);
     strcpy_s(sCommand, 255, p.c_str());;
-    encode(sCommand, (int)p.length());
+    //encode(sCommand, (int)p.length());
 
     std::ofstream s(SQLFileName, std::ios::binary | std::ios::out | std::ios::trunc);
     if(s.is_open())
@@ -251,7 +251,7 @@ bool LoadConnect()
         s.read(sCommand, 1024);
         int len = (int)s.gcount();
         s.close();
-        encode(sCommand, len);
+        //encode(sCommand, len);
         std::vector <std::string>split;
         boost::split(split, sCommand, boost::is_any_of("\n"));
         if(split.size() == 5)

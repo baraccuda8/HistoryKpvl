@@ -366,7 +366,7 @@ void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 	Gdiplus::Pen Gdi_Bar(Gdiplus::Color(0, 0, 0), 1);
 
 	double maxt = 0;
-	double mint = 2000;
+	double mint = 500;
 	int64_t mind = (std::min)(TempAct.begin()->second.first, TempRef.begin()->second.first);
 
 	auto b = TempAct.begin();
