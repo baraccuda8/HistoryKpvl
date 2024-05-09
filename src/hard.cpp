@@ -44,6 +44,7 @@ std::thread hFindSheet;
 
 std::thread hKPVLURI;
 std::thread hKPVLSQL;
+std::thread hRunAllPdf;
 HANDLE hThreadState2 = NULL;
 extern HANDLE hAllPlf;
 
@@ -833,6 +834,7 @@ void Open_KPVL()
     hKPVLURI = std::thread(Open_KPVL_RUN);
 #endif
     hKPVLSQL = std::thread(Open_KPVL_SQL);
+    hRunAllPdf = std::thread(RunAllPdf);
 #endif
 #endif
 
@@ -875,4 +877,6 @@ void Close_KPVL()
         WaitCloseKPVL(hAllPlf, "ThreadhAllPlf");
         WaitCloseKPVL(hKPVLURI, "hKPVLURI");
         WaitCloseKPVL(hKPVLSQL, "hKPVLSQL");
+        WaitCloseKPVL(hRunAllPdf, "hRunAllPdf");
+        
 }

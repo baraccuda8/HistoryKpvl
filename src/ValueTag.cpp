@@ -60,7 +60,7 @@ void Value::UpdateVal()
 
 void Value::InsertValue()
 {
-    char comand[1024];
+    //char comand[1024];
     if(!ID)
         GetIdValSQL();
     if(!ID)
@@ -69,12 +69,21 @@ void Value::InsertValue()
         return;
     }
 
-    sprintf_s(comand, 1023, "INSERT INTO todos (id_name, content) VALUES( %u, '%s');", ID, GetString().c_str());
-    PGresult* res = Conn->PGexec(comand);
-    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
+    //sprintf_s(comand, 1023, "INSERT INTO todos (id_name, content) VALUES(%u, '%s');", ID, GetString().c_str());
+    std::stringstream ssd;
+    if(GetType() == OpcUa::VariantType::STRING)
+        ssd << "INSERT INTO todos (id_name, content) VALUES(" << ID << ", '" << GetString() << "');";
+    else
+        ssd << "INSERT INTO todos (id_name, content) VALUES(" << ID << ", " << GetString() << ");";
+
+    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+    SETUPDATESQL(SQLLogger, (*Conn), ssd);
+
+    //PGresult* res = Conn->PGexec(comand);
+    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+    //    LOG_ERR_SQL(SQLLogger, res, comand);
+    //PQclear(res);
+
 }
 
 void Value::GetIdValSQL()
@@ -105,16 +114,17 @@ void Value::TestValSQL()
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
-        int line = PQntuples(res);
-        if(!line)
-        {
-            PQclear(res);
-            InsertVal();
-        }
-        else
+        if(PQntuples(res))
         {
             ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
             PQclear(res);
+            return;
+        }
+        else
+        {
+            PQclear(res);
+            InsertVal();
+            GetIdValSQL();
         }
     }
     else
@@ -122,9 +132,8 @@ void Value::TestValSQL()
         LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
         InsertVal();
+        GetIdValSQL();
     }
-    GetIdValSQL();
-
 }
 
 void Value::SetGraff()
@@ -143,6 +152,7 @@ void Value::SetGraff()
 void Value::SaveSQL()
 {
     if(!Arhive) return;
+    if(!ID) TestValSQL();
 
     bool ifval = OldVal.IsNul();
     if(GetType() == OpcUa::VariantType::FLOAT)
@@ -152,26 +162,21 @@ void Value::SaveSQL()
         float f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
-            if(!ID)
-                TestValSQL();
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = now(), content = ";
             sd << GetString();
-            sd << " WHERE name = '" << Patch.c_str() << "';";
-            std::string comand = sd.str();
-            PGresult* res = Conn->PGexec(comand);
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                LOG_ERR_SQL(SQLLogger, res, comand);
+            sd << " WHERE id = " << ID;
+            //sd << " WHERE name = '" << Patch.c_str() << "';";
+            SETUPDATESQL(SQLLogger, (*Conn), sd);
 
-            PQclear(res);
+            //std::string comand = sd.str();
+            //PGresult* res = Conn->PGexec(comand);
+            ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            //    LOG_ERR_SQL(SQLLogger, res, comand);
+            //PQclear(res);
             InsertValue();
             OldVal = Val;
-        }
-        else
-        {
-            float f1 = Val.As<float>() * coeff;
-            float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
         }
     }
     else if(GetType() == OpcUa::VariantType::DOUBLE)
@@ -181,27 +186,25 @@ void Value::SaveSQL()
         double f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
-            if(!ID)
-                TestValSQL();
-
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = now(), content = ";
             sd << GetString();
-            sd << " WHERE name = '" << Patch.c_str() << "';";
-            std::string comand = sd.str();
-            PGresult* res = Conn->PGexec(comand);
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                LOG_ERR_SQL(SQLLogger, res, comand);
-            PQclear(res);
+            sd << " WHERE id = " << ID;
+            //sd << " WHERE name = '" << Patch.c_str() << "';";
+            SETUPDATESQL(SQLLogger, (*Conn), sd);
+
+            //std::string comand = sd.str();
+            //PGresult* res = Conn->PGexec(comand);
+            ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            //    LOG_ERR_SQL(SQLLogger, res, comand);
+            //PQclear(res);
             InsertValue();
             OldVal = Val;
         }
     }
-    else
+    else if(ifval || OldVal != Val)
     {
-        if(!ID)
-            TestValSQL();
         std::stringstream sd;
         sd << "UPDATE tag SET content_at = now(), content = ";
         if(GetType() == OpcUa::VariantType::STRING)
@@ -209,14 +212,14 @@ void Value::SaveSQL()
         else
             sd << GetString();
         sd << " WHERE id = " << ID;
-        //sd << " WHERE name = '" << Patch.c_str() << "';";
+        SETUPDATESQL(SQLLogger, (*Conn), sd);
 
-        std::string comand = sd.str();
-        PGresult* res = Conn->PGexec(comand);
+        //std::string comand = sd.str();
+        //PGresult* res = Conn->PGexec(comand);
         //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
-        PQclear(res);
+        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+        //    LOG_ERR_SQL(SQLLogger, res, comand);
+        //PQclear(res);
         InsertValue();
         OldVal = Val;
     }
@@ -500,6 +503,7 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
     if(isRun)
     {
         Val = v;
+        SaveSQL();
         if(FunctionCallbak)
         {
             GetString(Patch);
@@ -509,7 +513,6 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
         {
             SetVariant(Patch);
         }
-        SaveSQL();
     }
     return true;
 }

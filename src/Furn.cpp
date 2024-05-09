@@ -215,7 +215,7 @@ namespace S107
                             ss << " AND month = " << CD.Month;
                             ss << " AND year = " << CD.Year;
                             ss << " AND cassetteno = " << CD.CassetteNo;
-                            SETUPDATESQL(conn, ss);
+                            SETUPDATESQL(SQLLogger, conn, ss);
                             return true;
                         }
                         else if(std::stoi(CD.SheetInCassette) != count)
@@ -304,10 +304,10 @@ namespace S107
             return id;
         }
 
-        void FinishPdf(PGConnection& conn, TCassette& CD, int Peth, int id)
-        {
-            PrintPdfAuto(CD);
-        }
+        //void FinishPdf(PGConnection& conn, TCassette& CD, int Peth, int id)
+        //{
+        //    PrintPdfAuto(CD);
+        //}
 
         void SearthEnd_at(PGConnection& conn, TCassette& CD, int id)
         {
@@ -336,7 +336,7 @@ namespace S107
                     {
                         std::stringstream sf;
                         sf << "UPDATE cassette SET end_at = '" << CD.End_at << "' WHERE id = " << id;
-                        SETUPDATESQL(conn, sf);
+                        SETUPDATESQL(SQLLogger, conn, sf);
                             
                         //Если небыло финиша
                         if(!CD.Finish_at.length())
@@ -357,9 +357,9 @@ namespace S107
                             {
                                 std::stringstream sf;
                                 sf << "UPDATE cassette SET event = 5, finish_at = '" << CD.Finish_at << "' WHERE id = " << id;
-                                SETUPDATESQL(conn, sf);
+                                SETUPDATESQL(SQLLogger, conn, sf);
 
-                                PrintPdfAuto(CD);
+                                //PrintPdfAuto(CD);
                                 //FinishPdf(conn, CD, Peth, id);
                             }
                         }
@@ -398,7 +398,7 @@ namespace S107
 
                             std::stringstream ss;
                             ss << "UPDATE cassette SET event = 3, peth = 1, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(conn, ss);
+                            SETUPDATESQL(SQLLogger, conn, ss);
                             CD.Event = 3;
                             CD.Peth = 1;
                             CD.End_at = "";
@@ -412,7 +412,7 @@ namespace S107
                         {
                             std::stringstream ss;
                             ss << "UPDATE cassette SET event = 3, peth = 2, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(conn, ss);
+                            SETUPDATESQL(SQLLogger, conn, ss);
                             CD.Event = 3;
                             CD.Peth = 2;
                             CD.End_at = "";
@@ -426,7 +426,7 @@ namespace S107
                         {
                             std::stringstream ss;
                             ss << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, error_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(conn, ss);
+                            SETUPDATESQL(SQLLogger, conn, ss);
                             CD.Event = 1;
                             CD.Peth = 1;
                             CD.Run_at = "";
@@ -473,7 +473,7 @@ namespace S107
                             {
                                 std::stringstream sf;
                                 sf << "UPDATE cassette SET event = 4, error_at = '" << CD.Error_at << "' WHERE id = " << id;
-                                SETUPDATESQL(conn, sf);
+                                SETUPDATESQL(SQLLogger, conn, sf);
                             }
                         }
 
@@ -484,13 +484,13 @@ namespace S107
                         {
                             std::stringstream sf;
                             sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
-                            SETUPDATESQL(conn, sf);
+                            SETUPDATESQL(SQLLogger, conn, sf);
                         }
                         else if(CD.Event != "2" && !CD.Delete_at.length())
                         {
                             std::stringstream sf;
                             sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
-                            SETUPDATESQL(conn, sf);
+                            SETUPDATESQL(SQLLogger, conn, sf);
                         }
                     }
                 }
@@ -553,7 +553,7 @@ namespace S107
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
             
             sd = std::stringstream("");
             sd << "UPDATE cassette SET ";
@@ -565,7 +565,7 @@ namespace S107
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
             LOG_INFO(PethLogger, "{:90}| run_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
@@ -588,7 +588,7 @@ namespace S107
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
             LOG_INFO(PethLogger, "{:90}| end_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
@@ -611,7 +611,7 @@ namespace S107
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
             LOG_INFO(PethLogger, "{:90}| error_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
@@ -635,7 +635,7 @@ namespace S107
                 sd << " AND year = " << CD.Year->Val.As<int32_t>();
                 sd << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
                 sd << ";";
-                SETUPDATESQL(conn, sd);
+                SETUPDATESQL(SQLLogger, conn, sd);
             }
     }
 
@@ -659,7 +659,7 @@ namespace S107
             }
             sd << ";";
 
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
         }
     }
 
@@ -676,7 +676,7 @@ namespace S107
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
         }
     }
 
@@ -742,7 +742,7 @@ namespace S107
             if(tc.Err_at.length())sd << " error_at = '" << tc.Err_at << "',";
             sd << " peth = " << nPetch;
             sd << " WHERE id = " << tc.id;
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
         }
         else
         {
@@ -758,7 +758,7 @@ namespace S107
             sd << "', '" << tc.Err_at << "'";
             sd << "', '" << tc.End_at << "'";
             sd << ");";
-            SETUPDATESQL(conn, sd);
+            SETUPDATESQL(SQLLogger, conn, sd);
         }
     }
 
@@ -820,7 +820,7 @@ namespace S107
                     sd << "day, month, year, cassetteno, peth, run_at";
                     sd << ") VALUES (";
                     sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
-                    SETUPDATESQL(conn_temp, sd);
+                    SETUPDATESQL(SQLLogger, conn_temp, sd);
                 }
             }
             MySetWindowText(winmap(value->winId), out.c_str());
@@ -1022,7 +1022,7 @@ namespace S107
                     sd << "day, month, year, cassetteno, peth, run_at";
                     sd << ") VALUES (";
                     sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
-                    SETUPDATESQL(conn_temp, sd);
+                    SETUPDATESQL(SQLLogger, conn_temp, sd);
 
                 }
 
@@ -1179,34 +1179,7 @@ void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string updat
         sd << " WHERE " + where;
         sd << " id = " << cassette.Id;
         sd << ";";
-        SETUPDATESQL(conn, sd);
+        SETUPDATESQL(SQLLogger, conn, sd);
     }
 }
 
-//DWORD WINAPI AllPdf(LPVOID)
-//{
-//    PGConnection conn_pdf;
-//    conn_pdf.connection();
-//    std::deque<TCassette>Cassette;
-//    //KPVL::SQL::KPVL_SQL(conn_pdf, Sheet);
-//
-//    std::deque<TCassette> all;
-//    S107::SQL::FURN_SQL(conn_pdf, all);
-//
-//    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto, Sheet.size = {}", FUNCTION_LINE_NAME, all.size());
-//    SetWindowText(hWndDebug, "Start PrintPdfAuto");
-//    for(auto TS : all)
-//    {
-//        if(!isRun)
-//        {
-//            hAllPlf = NULL;
-//            return 0;
-//        }
-//        //KPVL::SQL::GetDataTime_All(conn_pdf, TS);
-//        PrintPdfAuto(TS);
-//    }
-//    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
-//    SetWindowText(hWndDebug, "Stop PrintPdfAuto");
-//    hAllPlf = NULL;
-//    return 0;
-//}

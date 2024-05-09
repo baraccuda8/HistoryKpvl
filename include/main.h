@@ -47,6 +47,7 @@ LOG_ERROR(_l, "{:89}| {}", FUNCTION_LINE_NAME, utf8_to_cp1251(PQresultErrorMessa
 
 
 
+
 #define TIME_OUT 91000
 
 extern uint32_t SizeLogger;
@@ -171,7 +172,9 @@ std::string GetDataTimeString(std::time_t* st);
 std::string GetDataTimeString(std::tm& st);
 
 
-BOOL DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);
-BOOL DataTimeOfString(std::string str, std::string format, std::tm& TM);
+time_t DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);
+time_t DataTimeOfString(std::string str, std::string format, std::tm& TM);
 
 std::string GetStringData(std::string d);
+std::string Formats(float f);
+

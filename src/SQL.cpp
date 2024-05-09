@@ -141,6 +141,16 @@ namespace CollTag{
     int Idsec = 0;
 }
 
+namespace TODOS
+{
+    int create_at = 0;
+    int id = 0;
+    int id_name = 0;
+    int content = 0;
+    int type = 0;
+    int name = 0;
+};
+
 
 
 std::string GetType(OpcUa::VariantType type, std::string value)

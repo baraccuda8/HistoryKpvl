@@ -66,6 +66,9 @@ namespace KPVL {
     {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res);
+        //Чтение листов
+        void GetSheet(PGConnection& conn, PGresult* res, std::deque<TSheet>& Sheet);
+
 
         //Получаем список листов из базы
         //void KPVL_SQL(PGConnection& conn);
@@ -323,3 +326,5 @@ namespace KPVL {
 
 
 extern std::deque<TSheet>AllSheet;
+
+

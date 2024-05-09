@@ -556,20 +556,9 @@ void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
 
 void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 {
-    if(/*TC.CassetteNo == "3" &&*/ TC.Day == "11" && TC.Month == "4")
-    {
-        int tt = 0;
-    }
-
-
     int ev = atoi(TC.Event.c_str());
     if(ev == evCassete::Nul || ev == evCassete::Rel || ev == evCassete::Fill) return;
-    if(!TC.Run_at.length())
-        return;
-
-    //GetCasseteTimeRun(app, TC);
-
-    if(TC.Finish_at.length())
+    if(!TC.Run_at.length() || TC.Finish_at.length())
         return;
 
     
@@ -679,7 +668,8 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             sdf << "month = " << TC.Month << " AND ";
             sdf << "year = " << TC.Year << " AND ";
             sdf << "cassetteno = " << TC.CassetteNo << ";";
-            SETUPDATESQL(conn_spic, sdf);
+            SETUPDATESQL(SQLLogger, conn_spic, sdf);
+            TC.Finish_at = finish_at;
 
             //comand = sdf.str();
             //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -687,7 +677,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
             //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             //    LOG_ERR_SQL(SQLLogger, res, comand);
             //PQclear(res);
-            PrintPdfAuto(TC);
+            //PrintPdfAuto(TC);
             
         }
     }
@@ -732,7 +722,7 @@ void InsertIsRun(PGConnection& conn, isrun& IR)
         sd << IR.end_pr << ", ";
         sd << IR.peth << ");";
 
-        SETUPDATESQL(conn, sd);
+        SETUPDATESQL(SQLLogger, conn, sd);
     }
 }
 
@@ -968,8 +958,15 @@ void Open_FURN_SQL()
 
 #pragma region Вычисляем дату финала
 
-        for(auto TC : AllCassette)
+        for(auto& TC : AllCassette)
         {
+            if(TC.Finish_at.length() && std::stoi(TC.Event) != 5 && std::stoi(TC.Event) != 7)
+            {
+                std::stringstream sdf;
+                sdf << "UPDATE cassette SET event = 5 WHERE id = " << TC.Id;
+                SETUPDATESQL(SQLLogger, conn_spic, sdf);
+            }
+
             if(atoi(TC.Peth.c_str()) == 1)
                 GetCasseteData(AppFurn1, TC);
             if(atoi(TC.Peth.c_str()) == 2)

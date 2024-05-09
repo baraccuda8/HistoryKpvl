@@ -7,10 +7,11 @@
 #include "SQL.h"
 #include "ValueTag.h"
 #include "hard.h"
+#include "term.h"
+#include "Furn.h"
 #include "KPVL.h"
 #include "pdf.h"
 
-HANDLE hAllPlf = NULL;
 
 extern std::string FORMATTIME;
 
@@ -116,6 +117,8 @@ namespace KPVL {
     //Список последних 100 листов из базы
     namespace SQL
     {
+
+
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res)
         {
@@ -182,12 +185,86 @@ namespace KPVL {
                 }
             }
         }
+
+                //Чтение листов
+        void GetSheet(PGConnection& conn, PGresult* res, std::deque<TSheet>& Sheet)
+        {
+            int line = PQntuples(res);
+            for(int l = 0; l < line; l++)
+            {
+                TSheet sheet;
+                sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
+                sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
+                sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
+                sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
+                sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
+                sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
+                sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
+                sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
+                sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
+                sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
+                sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
+                sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
+                sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
+                sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
+                sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
+
+                sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
+                sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
+
+                sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
+                sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
+                sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
+                sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
+                sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
+
+                sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
+                sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
+                sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
+                sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
+
+                sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
+                sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
+                sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
+                sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
+                sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
+                sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
+                sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
+                sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
+                sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
+                sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
+
+                sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
+                sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
+                sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
+                sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
+                sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
+                sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
+                sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
+                sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
+
+                sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
+                sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
+                sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
+                sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
+                sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
+
+                sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
+                sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
+                sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
+                sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
+
+
+                Sheet.push_back(sheet);
+            }
+        }
+
         //Получаем список листов из базы
         void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& Sheet)
         {
             Sheet.erase(Sheet.begin(), Sheet.end());
 
-            std::time_t stop = time(NULL);;
+            std::time_t stop = time(NULL);
             std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 10)); //7-е суток
             std::string start_at = GetDataTimeString(&statr);
 
@@ -205,75 +282,7 @@ namespace KPVL {
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
                 GetCollumn(res);
-
-                int line = PQntuples(res);
-                for(int l = 0; l < line; l++)
-                {
-                    TSheet sheet;
-                    sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
-                    sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
-                    sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
-                    sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
-                    sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
-                    sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
-                    sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
-                    sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
-                    sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
-                    sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
-                    sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
-                    sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
-                    sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
-                    sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
-                    sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
-
-                    sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
-                    sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
-
-                    sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
-                    sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
-                    sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
-                    sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
-                    sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
-
-                    sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
-                    sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
-                    sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
-                    sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
-
-                    sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
-                    sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
-                    sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
-                    sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
-                    sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
-                    sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
-                    sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
-                    sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
-                    sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
-                    sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
-
-                    sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
-                    sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
-                    sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
-                    sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
-                    sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
-                    sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
-                    sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
-                    sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
-
-                    sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
-                    sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
-                    sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
-                    sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
-                    sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
-
-                    sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
-                    sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
-                    sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
-                    sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
-                    
-
-                    Sheet.push_back(sheet);
-                }
+                GetSheet(conn, res, Sheet);
 
             }
             else
@@ -588,6 +597,7 @@ namespace KPVL {
                     std::stringstream sd;
                     sd << "INSERT INTO sheet ";
                     sd << "(";
+#pragma region MyRegion
                     sd << "alloy, ";
                     sd << "thikness, ";
                     sd << "melt, ";
@@ -596,6 +606,9 @@ namespace KPVL {
                     sd << "pack, ";
                     sd << "sheet, ";
                     sd << "subsheet, ";
+#pragma endregion
+
+#pragma region MyRegion
                     if(Pos == 1 || Pos == 2)
                     {
                         sd << "temper, ";
@@ -606,12 +619,18 @@ namespace KPVL {
 
                         sd << "posclapantop, ";
                         sd << "posclapanbot, ";
-                        sd << "mask, ";
+
                         sd << "lam1posclapantop, ";
                         sd << "lam1posclapanbot, ";
+
                         sd << "lam2posclapantop, ";
                         sd << "lam2posclapanbot, ";
+
+                        sd << "mask, ";
                     }
+#pragma endregion
+
+#pragma region MyRegion
                     sd << " pos";
                     sd << ") VALUES (";
                     sd << "'" << PD.AlloyCodeText->GetString() << "', ";
@@ -627,28 +646,33 @@ namespace KPVL {
                     sd << PD.Pack->Val.As<int32_t>() << ", ";
                     sd << PD.Sheet->Val.As<int32_t>() << ", ";
                     sd << PD.SubSheet->Val.As<int32_t>() << ", ";
+#pragma endregion
 
+#pragma region MyRegion
                     if(Pos == 1 || Pos == 2)
                     {
                         sd << GenSeqFromHmi.TempSet1->Val.As<float>() << ", ";
-                        //LOG_INFO(HardLogger, "{:90} Speed = {}", FUNCTION_LINE_NAME, Par_Gen.UnloadSpeed->GetString());
                         sd << Par_Gen.UnloadSpeed->Val.As<float>() << ", ";
+
                         sd << Par_Gen.TimeForPlateHeat->Val.As<float>() << ", ";
                         sd << Par_Gen.PresToStartComp->Val.As<float>() << ", ";
 
-                        //comand += Par_Gen.Par.UnloadSpeed.GetString() + ", ";
-
                         sd << HMISheetData.SpeedSection.Top->Val.As<float>() << ", ";
                         sd << HMISheetData.SpeedSection.Bot->Val.As<float>() << ", ";
-                        sd << "'" + MaskKlapan + "', ";
+
                         sd << HMISheetData.LaminarSection1.Top->Val.As<float>() << ", ";
                         sd << HMISheetData.LaminarSection1.Bot->Val.As<float>() << ", ";
+
                         sd << HMISheetData.LaminarSection2.Top->Val.As<float>() << ", ";
                         sd << HMISheetData.LaminarSection2.Bot->Val.As<float>() << ", ";
+
+                        sd << "'" + MaskKlapan + "', ";
                     }
+#pragma endregion
+
                     sd << Pos << ");";
 
-                    SETUPDATESQL(conn, sd);
+                    SETUPDATESQL(SQLLogger, conn, sd);
                     //std::string comand = sd.str();
                     //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //PGresult* res = conn.PGexec(comand);
@@ -678,7 +702,7 @@ namespace KPVL {
                 sd << " AND subsheet = " << TS.SubSheet;
                 sd << " AND slab = " << TS.Slab;
                 sd << ";";
-                SETUPDATESQL(conn, sd);
+                SETUPDATESQL(SQLLogger, conn, sd);
 
                 //std::string comand = sd.str();
                 //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -714,7 +738,7 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
                 sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
                 sd << ";";
-                SETUPDATESQL(conn, sd);
+                SETUPDATESQL(SQLLogger, conn, sd);
 
                 //std::string comand = sd.str();
                 //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -760,7 +784,7 @@ namespace KPVL {
                     sd << " WHERE";
                     sd << " id = " << id;
                     sd << ";";
-                    SETUPDATESQL(conn, sd);
+                    SETUPDATESQL(SQLLogger, conn, sd);
                     //std::string comand = sd.str();
                     //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //PGresult* res = conn.PGexec(comand);
@@ -852,7 +876,7 @@ namespace KPVL {
                                     std::stringstream sd;
                                     sd << "UPDATE sheet SET pos = " << iPos;
                                     sd << " WHERE news <> 1 AND id = " << sId;
-                                    SETUPDATESQL(conn, sd);
+                                    SETUPDATESQL(SQLLogger, conn, sd);
                                     //comand = sd.str();
                                     //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                                     //res = conn.PGexec(comand);
@@ -1309,7 +1333,7 @@ namespace KPVL {
                             co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
                             co << " WHERE id = " << id << ";";
 #pragma endregion
-                            SETUPDATESQL(conn, co);
+                            SETUPDATESQL(SQLLogger, conn, co);
 
                             //std::string comand = co.str();
                             //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -2084,26 +2108,107 @@ namespace KPVL {
 #pragma endregion
 };
 
-DWORD WINAPI AllPdf(LPVOID)
-{
-    PGConnection conn_pdf;
-    conn_pdf.connection();
-    std::deque<TSheet>Sheet;
-    KPVL::SQL::KPVL_SQL(conn_pdf, Sheet);
-    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto, Sheet.size = {}", FUNCTION_LINE_NAME, Sheet.size());
-    SetWindowText(hWndDebug, "Start PrintPdfAuto");
-    for(auto TS : Sheet)
-    {
-        if(!isRun)
-        {
-            hAllPlf = NULL;
-            return 0;
-        }
-        KPVL::SQL::GetDataTime_All(conn_pdf, TS);
-        PrintPdfAuto(TS, false);
-    }
-    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
-    SetWindowText(hWndDebug, "Stop PrintPdfAuto");
-    hAllPlf = NULL;
-    return 0;
-}
+
+//void KPVL_SQL_Cassette(PGConnection& conn, std::deque<TSheet>& Sheet, std::string start_at, std::string stop_at)
+//{
+//    Sheet.erase(Sheet.begin(), Sheet.end());
+//
+//    //std::time_t stop = time(NULL);
+//    //std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 10)); //7-е суток
+//    //std::string start_at = "";  //GetDataTimeString(&statr);
+//    //std::string stop_at = "";
+//
+//    std::stringstream FilterComand;
+//    FilterComand << "SELECT * FROM sheet ";
+//    FilterComand << "WHERE  create_at > '" << start_at << "'";
+//    FilterComand << " AND id <= " << stop_at;
+//    FilterComand << " ORDER BY ORDER BY id;";
+//    //FilterSheet();
+//    //bFilterData = TRUE;
+//    std::string comand = FilterComand.str();
+//    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+//    PGresult* res = conn.PGexec(comand);
+//    //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
+//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+//    {
+//        KPVL::SQL::GetCollumn(res);
+//
+//        int line = PQntuples(res);
+//        for(int l = 0; l < line; l++)
+//        {
+//            TSheet sheet;
+//            sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
+//            sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
+//            sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
+//            sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
+//            sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
+//            sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
+//            sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
+//            sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
+//            sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
+//            sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
+//            sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
+//            sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
+//            sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
+//            sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
+//            sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
+//
+//            sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
+//            sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
+//
+//            sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
+//            sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
+//            sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
+//            sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
+//            sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
+//
+//            sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
+//            sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
+//            sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
+//            sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
+//
+//            sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
+//            sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
+//            sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
+//            sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
+//            sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
+//            sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
+//            sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
+//            sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
+//            sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
+//            sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
+//
+//            sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
+//            sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
+//            sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
+//            sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
+//            sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
+//            sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
+//            sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
+//            sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
+//
+//            sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
+//            sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
+//            sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
+//            sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
+//            sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
+//
+//            sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
+//            sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
+//            sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
+//            sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
+//
+//
+//            Sheet.push_back(sheet);
+//        }
+//
+//    }
+//    else
+//        LOG_ERR_SQL(SQLLogger, res, comand);
+//    PQclear(res);
+//
+//    //AddHistoriSheet(true, (int)sheet.size());
+//    int t = 0;
+//}
+
+

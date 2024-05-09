@@ -107,3 +107,4 @@ public:
 void MySetWindowText(HWND h, const char* ss);
 void MySetWindowText(HWND h, std::string ss);
 void MySetWindowText(Value* value);
+

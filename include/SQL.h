@@ -14,13 +14,13 @@ extern std::string m_dbname;
 extern std::string m_dbuser;
 extern std::string m_dbpass;
 
-#define SETUPDATESQL(_c, _s) \
+#define SETUPDATESQL(_l, _c, _s) \
 {\
     std::string comand = _s.str(); \
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand); \
+    if(DEB)LOG_INFO(_l, "{:90}| {}", FUNCTION_LINE_NAME, comand); \
     PGresult* res = _c.PGexec(comand); \
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)\
-        LOG_ERR_SQL(SQLLogger, res, comand); \
+        LOG_ERR_SQL(_l, res, comand); \
     PQclear(res);\
 }
 
@@ -49,13 +49,15 @@ public:
 
             m_connection = PQsetdbLogin(m_dbhost.c_str(), m_dbport.c_str(), nullptr, nullptr, m_dbname.c_str(), m_dbuser.c_str(), m_dbpass.c_str());
 
+            //if(PQstatus(m_connection) == CONNECTION_OK && PQsetnonblocking(m_connection, 1) != 0)
             if(PQstatus(m_connection) != CONNECTION_OK && PQsetnonblocking(m_connection, 1) != 0)
             {
                 connections = false;
                 throw std::runtime_error(PQerrorMessage(m_connection));
+                //LOG_INFO(AllLogger, "{:90}| conn_kpvl {}", FUNCTION_LINE_NAME, errc);
             }
             PGresult* res = PGexec("set time zone 'Asia/Yekaterinburg';");
-            if(PQresultStatus(res) == ExecStatusType::PGRES_TUPLES_OK)
+            if(PQresultStatus(res) != ExecStatusType::PGRES_TUPLES_OK)
             {
                 std::string errc = utf8_to_cp1251(PQresultErrorMessage(res));
                 LOG_INFO(AllLogger, "{:90}| conn_kpvl {}", FUNCTION_LINE_NAME, errc);
@@ -66,7 +68,8 @@ public:
         }
         catch(std::runtime_error rt)
         {
-            MessageBox(NULL, rt.what(), "Error", 0);
+            LOG_INFO(AllLogger, "{:90}| error conn_kpvl {} {}", FUNCTION_LINE_NAME, rt.what());
+            //MessageBox(NULL, rt.what(), "Error", 0);
         }
         catch(...)
         {
@@ -103,6 +106,42 @@ public:
     }
 
 };
+
+
+namespace CollTag{
+    extern int Id;
+    extern int Name;
+    extern int Type;
+    extern int Arhive;
+    extern int Comment;
+    extern int Content;
+    extern int Coeff;
+    extern int Hist;
+    extern int Format;
+    extern int Idsec;
+}
+
+namespace TODOS
+{
+    extern int create_at;
+    extern int id;
+    extern int id_name;
+    extern int content;
+    extern int type;
+    extern int name;
+};
+
+typedef struct T_Todos{
+    std::string create_at = "";
+    std::string id_name_at = "";
+    std::string value = "";
+    int id = 0;
+    int id_name = 0;
+    int type = 0;
+    int Petch = 0;
+    OpcUa::Variant content;
+}T_Todos;
+
 
 
 void InitCurentTag();

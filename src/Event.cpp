@@ -1,10 +1,13 @@
 #include "pch.h"
 #include "main.h"
 #include "win.h"
-#include "file.h"
-#include "ClCodeSys.h"
-#include "SQL.h"
+//#include "file.h"
+
+//#include "ClCodeSys.h"
+//#include "SQL.h"
+
 #include "ValueTag.h"
+
 #include "hard.h"
 #include "KPVL.h"
 #include "term.h"
@@ -15,9 +18,9 @@ HANDLE hEvent;
 std::string NameEvent = "\\\\192.168.9.65\\private\\sqlflag\\LoggrNew.log";
 
 
-
 DWORD WINAPI Event_Run(LPVOID pv)
 {
+#ifndef _DEBUG
 	std::string hardWDG = KPVL::ServerDataTime;
 	std::string termWDG = S107::ServerDataTime;
 
@@ -53,15 +56,21 @@ DWORD WINAPI Event_Run(LPVOID pv)
 		}
 		Sleep(1000);
 	}
+#endif
 	return 0;
 }
 
+
 void Open_Event()
 {
+#ifndef _DEBUG
 	hEvent = CreateThread(0, 0, Event_Run, 0, 0, 0);
+#endif
 }
 
 void Close_Event()
 {
+#ifndef _DEBUG
 	DWORD dwEvent = WaitForSingleObject(hEvent, INFINITE);
+#endif
 }

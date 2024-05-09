@@ -73,7 +73,7 @@ HRESULT GetGdiplusEncoderClsid(const std::wstring& format, GUID* pGuid)
 
 const int CountPoint = 86400; //Количеество секунд в сутках
 
-std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2})";
+std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2}).*";
 
 GUID guidBmp ={};
 GUID guidJpeg ={};

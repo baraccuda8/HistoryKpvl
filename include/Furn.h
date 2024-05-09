@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 namespace S107
 {
     typedef struct T_cass{
@@ -223,3 +220,4 @@ namespace S107
 
 
 void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where);
+

@@ -4,7 +4,9 @@
 void PrintPdf(TSheet& Sheet);
 
 //Автоматическое создание по листам
-void PrintPdfAuto(TSheet& Sheet, bool view = false);
+//void PrintPdfAuto(TSheet& Sheet, bool view = false);
 
 //Автоматическое создание по кассете
-void PrintPdfAuto(TCassette& TC);
+//void PrintPdfAuto(TCassette& TC);
+
+void RunAllPdf();

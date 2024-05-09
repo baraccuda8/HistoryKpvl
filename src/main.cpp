@@ -188,7 +188,7 @@ std::string GetDataTimeString()
     return sdt.str();
 }
 
-BOOL DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6)
+time_t DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6)
 {
     d1 = 0; d2 = 0; d3 = 0; d4 = 0; d5 = 0; d6 = 0;
     std::string::const_iterator start = str.begin();
@@ -205,13 +205,21 @@ BOOL DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int
         if(size >= 4)d4 = atoi(what[4].str().c_str());
         if(size >= 5)d5 = atoi(what[5].str().c_str());
         if(size >= 6)d6 = atoi(what[6].str().c_str());
-        return TRUE;
+
+        std::tm tm;
+        tm.tm_year = d1 - 1900;
+        tm.tm_mon = d2 - 1;
+        tm.tm_mday = d3;
+        tm.tm_hour = d4;
+        tm.tm_min = d5;
+        tm.tm_sec = d6;
+        return mktime(&tm);
     }
-    return FALSE;
+    return 0;
 }
 
 
-BOOL DataTimeOfString(std::string str, std::string format, std::tm& TM)
+time_t DataTimeOfString(std::string str, std::string format, std::tm& TM)
 {
     TM.tm_year = 0; TM.tm_mon = 0; TM.tm_mday = 0; TM.tm_hour = 0; TM.tm_min = 0; TM.tm_sec = 0;
     std::string::const_iterator start = str.begin();
@@ -228,9 +236,13 @@ BOOL DataTimeOfString(std::string str, std::string format, std::tm& TM)
         if(size >= 4)TM.tm_hour = atoi(what[4].str().c_str());
         if(size >= 5)TM.tm_min = atoi(what[5].str().c_str());
         if(size >= 6)TM.tm_sec = atoi(what[6].str().c_str());
-        return TRUE;
+
+        std::tm tm = TM;
+        tm.tm_year -= 1900;
+        tm.tm_mon -= 1;
+        return mktime(&tm); 
     }
-    return FALSE;
+    return 0;
 }
 
 std::string GetStringData(std::string d)
@@ -408,6 +420,18 @@ void GetVersionProg()
     boost::replace_last(rc, " ", "");
     szTitle += rc;
 }
+
+std::string Formats(float f)
+{
+    std::stringstream s;
+    //s << std::setw(4) << std::setfill('0') << f;
+    s << std::setprecision(1) << std::fixed << f;
+    //s << boost::format("%.1f") % f;
+    std::string d = s.str();
+    boost::replace_all(d, ".", ",");
+    return d;
+}
+
 
 void TestTimeRun(ULONGLONG& time)
 {

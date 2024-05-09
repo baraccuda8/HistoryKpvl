@@ -80,13 +80,13 @@ typedef struct T_ForBase_RelFurn{
     //BOOL
     Value* WDG_fromBase;
 
-    //REAL Время разгона
+    //REAL Задание Время разгона
     Value* PointTime_1;
 
     //REAL Уставка температуры
     Value* PointRef_1;
 
-    //REAL Время выдержки
+    //REAL Задание Время выдержки
     Value* PointDTime_2;
 
     //BOOL Работа
@@ -216,3 +216,4 @@ namespace S107
 
     extern std::string ServerDataTime;
 };
+
