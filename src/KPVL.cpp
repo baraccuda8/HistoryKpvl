@@ -1387,7 +1387,7 @@ namespace KPVL {
         }
 
         //ѕроверка на наличие кассеты
-        bool IsCassete(O_CassetteData& CD)
+        bool IsCassette(O_CassetteData& CD)
         {
             return CD.Day && CD.Month && CD.Year && CD.CassetteNo;
         }
@@ -1397,7 +1397,7 @@ namespace KPVL {
         {
             int32_t id = 0;
 
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
@@ -1425,7 +1425,7 @@ namespace KPVL {
         }
 
         //ѕроверка на наличие кассеты
-        bool IsCassete(T_CassetteData& CD)
+        bool IsCassette(T_CassetteData& CD)
         {
             int32_t Day = GetVal<int32_t>(CD.Day);
             int32_t Month = GetVal<int32_t>(CD.Month);
@@ -1446,7 +1446,7 @@ namespace KPVL {
         {
             int32_t id = 0;
 
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
@@ -1475,7 +1475,7 @@ namespace KPVL {
         //ƒобовление кассеты в базу
         void InsertCassette(PGConnection& conn, T_CassetteData& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 std::stringstream co;
                 co << "INSERT INTO cassette ";
@@ -1528,7 +1528,7 @@ namespace KPVL {
         //ќбновл€ем данные по кассете если кассета есть или добовл€ем новую
         void CassettePos(PGConnection& conn, T_CassetteData& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 int32_t id = GetIdCassette(conn, CD);
                 if(id)
@@ -1541,7 +1541,7 @@ namespace KPVL {
         //«акрываем все не закрытые касеты кроме кассеты на кантовке
         void CloseCassete(PGConnection& conn, O_CassetteData& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 int32_t id = GetIdCassette(conn, CD);
                 std::stringstream co;

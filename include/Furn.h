@@ -52,7 +52,7 @@ namespace S107
 
 
 #pragma region Функции с кассетами в базе
-    bool IsCassete(TCassette& CD);
+    bool IsCassette(TCassette& CD);
 
 #pragma endregion
 

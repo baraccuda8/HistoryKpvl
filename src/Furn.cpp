@@ -182,7 +182,7 @@ namespace S107
 
         bool GetCountSheet(PGConnection& conn, TCassette& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 std::stringstream ss;
                 ss << "SELECT count(*) FROM sheet WHERE";
@@ -249,7 +249,7 @@ namespace S107
 
         bool isCasseteFurn(T_cassette& Cassette, TCassette& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 int32_t FDay = Cassette.Day->Val.As<int32_t>();
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
@@ -266,7 +266,7 @@ namespace S107
 
         bool isCasseteCant(T_CassetteData& Cassette, TCassette& CD)
         {
-            if(KPVL::Cassette::IsCassete(HMISheetData.Cassette))
+            if(KPVL::Cassette::IsCassette(HMISheetData.Cassette))
             {
                 int32_t FDay = Cassette.Day->Val.As<int32_t>();
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
@@ -383,7 +383,7 @@ namespace S107
 
         void GetIsPos(PGConnection& conn, TCassette& CD)
         {
-            if(IsCassete(CD))
+            if(IsCassette(CD))
             {
                 int id = GetId(conn, CD);
 
@@ -502,7 +502,7 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 
-    bool IsCassete(TCassette& CD)
+    bool IsCassette(TCassette& CD)
     {
         int32_t Day = Stoi(CD.Day);
         int32_t Month = Stoi(CD.Month);
@@ -1169,7 +1169,7 @@ namespace S107
 
 void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where)
 {
-    if(S107::IsCassete(cassette))
+    if(S107::IsCassette(cassette))
     {
         std::stringstream sd;
         sd << "UPDATE cassette SET ";
