@@ -18,6 +18,10 @@
 #include <filesystem>
 
 std::shared_ptr<spdlog::logger> PdfLogger;
+
+//Отключаем поиск кассет
+#define NOCASSETE
+
 //Для выполнения дебага, начинапь прзод с самогго начала ишнарируя "correct IS NULL AND"
 #define TESTPDF
 
@@ -2051,6 +2055,7 @@ namespace PDF
 	//Поток автоматической корректировки
 	DWORD WINAPI RunAllPdf(LPVOID)
 	{
+#ifndef NOCASSETE
 		try
 		{
 			PdfLogger = InitLogger("Pdf Debug");
@@ -2058,8 +2063,8 @@ namespace PDF
 			conn_pdf.connection();
 			while(isRun)
 			{
-				PDF::GetPdf getpdf(conn_pdf);
 
+				PDF::GetPdf getpdf(conn_pdf);
 #ifdef _DEBUG
 				//В дебаге один прозод и выход из программы
 				isRun = false;
@@ -2072,6 +2077,7 @@ namespace PDF
 			LOG_INFO(PdfLogger, "{:90}| Stop Pdf Debug", FUNCTION_LINE_NAME);
 		}
 		CATCH(PdfLogger, "");;
+#endif
 		return 0;
 	}
 };

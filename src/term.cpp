@@ -1076,5 +1076,4 @@ void Close_FURN()
     WaitCloseTheread(hSQL, "hSQL");
     WaitCloseTheread(hS107URI, "hS107URI");
     WaitCloseTheread(hS107SQL, "hS107SQL");
-    
 }
