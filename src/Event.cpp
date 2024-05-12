@@ -23,7 +23,7 @@ DWORD WINAPI Event_Run(LPVOID pv)
 #ifndef _DEBUG
 	std::string hardWDG = KPVL::ServerDataTime;
 	std::string termWDG = S107::ServerDataTime;
-
+	int CounWait = 0;
 
 	while(isRun)
 	{
@@ -31,6 +31,7 @@ DWORD WINAPI Event_Run(LPVOID pv)
 		std::string a2 = S107::ServerDataTime;
 		if(hardWDG != a1 && termWDG != a2)
 		{
+			CounWait = 0;
 			hardWDG = a1;
 			termWDG = a2;
 			tm curr_tm;
@@ -53,6 +54,11 @@ DWORD WINAPI Event_Run(LPVOID pv)
 				LOG_ERROR(AllLogger, "{:90}| Фаил '{}' недостурен", FUNCTION_LINE_NAME, NameEvent);
 			}
 
+		}
+		else
+		{
+			if(CounWait++ > 90)
+				isRun = false;
 		}
 		Sleep(1000);
 	}

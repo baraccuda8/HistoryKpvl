@@ -13,7 +13,7 @@
 #include "pdf.h"
 
 
-extern std::string FORMATTIME;
+//extern const std::string FORMATTIME;
 
 extern std::shared_ptr<spdlog::logger> HardLogger;
 
@@ -333,14 +333,14 @@ namespace KPVL {
             }
 
             if(sout.length())
-                out = std::stof(sout);
+                out = Stof(sout);
             return out;
         }
 
         void GetDataTime_All(PGConnection& conn, TSheet& TS)
         {
 
-            if(std::stoi(TS.Pos) < 3)return;
+            if(Stoi(TS.Pos) < 3)return;
 
             if(!TS.Start_at.length())
             {
@@ -366,7 +366,7 @@ namespace KPVL {
                 PQclear(res);
             }
 
-            if(std::stoi(TS.DataTime_All) == 0 || !TS.DataTime_End.length())
+            if(Stoi(TS.DataTime_All) == 0 || !TS.DataTime_End.length())
             {
                 //TS.Start_at
                 std::string next_at = "";
@@ -455,10 +455,10 @@ namespace KPVL {
         }
         bool IsSheet(TSheet& PS)
         {
-            int32_t Melt = std::stoi(PS.Melt);
-            int32_t Pack = std::stoi(PS.Pack);
-            int32_t PartNo = std::stoi(PS.PartNo);
-            int32_t Sheet = std::stoi(PS.Sheet);
+            int32_t Melt = Stoi(PS.Melt);
+            int32_t Pack = Stoi(PS.Pack);
+            int32_t PartNo = Stoi(PS.PartNo);
+            int32_t Sheet = Stoi(PS.Sheet);
             //int32_t SubSheet = PS.SubSheet;
             //int32_t Slab = PS.Slab;
             return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
@@ -527,12 +527,12 @@ namespace KPVL {
         {
             std::string id = "0";
 
-            int32_t Melt = std::stoi(sMelt);
-            int32_t Pack = std::stoi(sPack);
-            int32_t PartNo = std::stoi(sPartNo);
-            int32_t Sheet = std::stoi(sSheet);
-            int32_t SubSheet = std::stoi(sSubSheet);
-            int32_t Slab = std::stoi(sSlab);
+            int32_t Melt = Stoi(sMelt);
+            int32_t Pack = Stoi(sPack);
+            int32_t PartNo = Stoi(sPartNo);
+            int32_t Sheet = Stoi(sSheet);
+            int32_t SubSheet = Stoi(sSubSheet);
+            int32_t Slab = Stoi(sSlab);
 
             if(Melt && Pack && PartNo && Sheet /*&& SubSheet && Slab*/)
             {
@@ -770,7 +770,7 @@ namespace KPVL {
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    pos = std::stoi(conn.PGgetvalue(res, 0, 0));
+                    pos = Stoi(conn.PGgetvalue(res, 0, 0));
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
@@ -801,7 +801,7 @@ namespace KPVL {
         {
             std::string id = GetIdSheet(conn, PD);
 
-            if(id.length() && std::stoi(id) != 0)
+            if(Stoi(id) != 0)
             {
                 UpdateSheetPos(conn, PD, id, pos);
 
@@ -844,12 +844,12 @@ namespace KPVL {
             TSheet& TS = PalletSheet[Pos];
             if(Pos != 5 && IsSheet(PD) && IsSheet(TS))
             {
-                if(PD.Melt->Val.As<int32_t>() != std::stoi(TS.Melt)
-                   || PD.Pack->Val.As<int32_t>() != std::stoi(TS.Pack)
-                   || PD.PartNo->Val.As<int32_t>() != std::stoi(TS.PartNo)
-                   || PD.Sheet->Val.As<int32_t>() != std::stoi(TS.Sheet)
-                   || PD.SubSheet->Val.As<int32_t>() != std::stoi(TS.SubSheet)
-                   || PD.Slab->Val.As<int32_t>() != std::stoi(TS.Slab))
+                if(PD.Melt->Val.As<int32_t>() != Stoi(TS.Melt)
+                   || PD.Pack->Val.As<int32_t>() != Stoi(TS.Pack)
+                   || PD.PartNo->Val.As<int32_t>() != Stoi(TS.PartNo)
+                   || PD.Sheet->Val.As<int32_t>() != Stoi(TS.Sheet)
+                   || PD.SubSheet->Val.As<int32_t>() != Stoi(TS.SubSheet)
+                   || PD.Slab->Val.As<int32_t>() != Stoi(TS.Slab))
                 {
                     //std::string sId = GetIdSheet(PD);
                     std::string sId = GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
@@ -1413,7 +1413,7 @@ namespace KPVL {
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = std::stoi(conn.PGgetvalue(res, 0, 0));
+                        id = Stoi(conn.PGgetvalue(res, 0, 0));
                     }
                 }
                 else
@@ -1462,7 +1462,7 @@ namespace KPVL {
                 {
                     if(PQntuples(res))//Линий
                     {
-                        id = std::stoi(conn.PGgetvalue(res, 0, 0));
+                        id = Stoi(conn.PGgetvalue(res, 0, 0));
                     }
                 }
                 else
@@ -1664,19 +1664,12 @@ namespace KPVL {
             try
             {
                 PGresult* res = NULL;
-                int32_t Melt = 0;
-                int32_t Pack = 0;
-                int32_t PartNo = 0;
-                int32_t Sheet = 0;
-                int32_t SubSheet = 0;
-                int32_t Slab = 0;
-
-                if(PalletSheet[2].Melt.length())        Melt     = std::stoi(PalletSheet[2].Melt);
-                if(PalletSheet[2].Pack.length())        Pack     = std::stoi(PalletSheet[2].Pack);
-                if(PalletSheet[2].PartNo.length())      PartNo   = std::stoi(PalletSheet[2].PartNo);
-                if(PalletSheet[2].Sheet.length())       Sheet    = std::stoi(PalletSheet[2].Sheet);
-                if(PalletSheet[2].SubSheet.length())    SubSheet = std::stoi(PalletSheet[2].SubSheet);
-                if(PalletSheet[2].Slab.length())        Slab     = std::stoi(PalletSheet[2].Slab);
+                int32_t Melt     = Stoi(PalletSheet[2].Melt);
+                int32_t Pack     = Stoi(PalletSheet[2].Pack);
+                int32_t PartNo   = Stoi(PalletSheet[2].PartNo);
+                int32_t Sheet    = Stoi(PalletSheet[2].Sheet);
+                int32_t SubSheet = Stoi(PalletSheet[2].SubSheet);
+                int32_t Slab     = Stoi(PalletSheet[2].Slab);
 
 
                 float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetVal<float>();
@@ -1694,7 +1687,7 @@ namespace KPVL {
                 if(Melt && Pack && PartNo && Sheet)
                 {
                     //LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
-                    int Id = std::stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+                    int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
 
                     std::stringstream ss1;
                     ss1 << "UPDATE sheet SET ";

@@ -1,8 +1,10 @@
 #pragma once
 
 
+
 //Глобальный Run
 extern bool isRun;
+
 
 //Глобальный Instance программы
 extern HINSTANCE hInstance;
@@ -13,6 +15,7 @@ extern std::string szTitle;
 extern std::string lpLogDir;
 std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut);
 
+extern const std::string FORMATTIME;
 
 extern std::shared_ptr<spdlog::logger> AllLogger;
 
@@ -23,7 +26,9 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 //#define TESTWIN
 #endif
 
-#define CATCH(_l, _s) catch(std::runtime_error& exc)LOG_ERROR(_l, _s + exc.what()) catch(...)LOG_ERROR(_l, _s + "Unknown error")
+#define CATCH(_l, _s) \
+    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
+    catch(...){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + "Unknown error")}
 
 #define CATCH_RUN(_l) \
     catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);\
@@ -83,6 +88,32 @@ extern int CountWatchDogWait;
 //#define S107TYPE PLC[PlcType::Type::S107]
 
 #define winmap(_s) mapWindow[_s].hWnd
+
+
+inline int Stoi(std::string input)
+{
+    std::optional<int> out = 0;
+    try
+    {
+        return std::stoi(input);
+    }
+    catch(...)
+    {
+    }
+    return 0;
+}
+
+ inline float Stof(std::string input)
+{
+    try
+    {
+        return std::stof(input);
+    }
+    catch(...)
+    {
+    }
+    return 0.0f;
+}
 
 //extern std::map<HWNDCLIENT, structWindow>mapWindow;
 
@@ -178,3 +209,4 @@ time_t DataTimeOfString(std::string str, std::string format, std::tm& TM);
 std::string GetStringData(std::string d);
 std::string Formats(float f);
 
+void WaitCloseTheread(HANDLE h, std::string hamd);

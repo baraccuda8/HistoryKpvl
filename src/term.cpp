@@ -27,9 +27,9 @@ bool isInitPLC_S107 = false;
 time_t PLC_S107_old_dt = 0;
 
 
-std::thread hS107URI;
-std::thread hS107SQL;
-std::thread hSQL;
+HANDLE hS107URI = NULL;
+HANDLE hS107SQL = NULL;
+HANDLE hSQL = NULL;
 
 std::deque<TCassette> AllCassette;
 
@@ -453,7 +453,7 @@ bool PLC_S107::WD()
     return false;
 }
 
-void Open_FURN_RUN()
+DWORD WINAPI Open_FURN_RUN(LPVOID)
 {
     //std::string Uri = (char*)pv;
     std::shared_ptr<spdlog::logger> Logger = PethLogger;
@@ -505,9 +505,7 @@ void Open_FURN_RUN()
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
 
-#ifdef API
     return 0;
-#endif
 }
 
 float GetTime(std::string comand)
@@ -518,7 +516,7 @@ float GetTime(std::string comand)
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         if(PQntuples(res))
-            f = std::stof(conn_spic.PGgetvalue(res, 0, 0));
+            f = Stof(conn_spic.PGgetvalue(res, 0, 0));
     }
     else
         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -783,7 +781,7 @@ void FURN_SQL()
         {
             isrun_s IR;
             IR.create_at = GetStringData(conn_spis.PGgetvalue(res, l, 0));
-            IR.id_name = std::stoi(conn_spis.PGgetvalue(res, l, 1));
+            IR.id_name = Stoi(conn_spis.PGgetvalue(res, l, 1));
             IR.content = conn_spis.PGgetvalue(res, l, 2);
             ISRUN.push_back(IR);
         }
@@ -798,10 +796,10 @@ void FURN_SQL()
     IR2.peth = 2;
     for(auto& R : ISRUN)
     { 
-        if(R.id_name == AppFurn1.Cassette.Day->ID)IR1.day = std::stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.Month->ID)IR1.month = std::stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.Year->ID)IR1.year = std::stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.CassetteNo->ID)IR1.cassetteno = std::stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.Day->ID)IR1.day = Stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.Month->ID)IR1.month = Stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.Year->ID)IR1.year = Stoi(R.content);
+        if(R.id_name == AppFurn1.Cassette.CassetteNo->ID)IR1.cassetteno = Stoi(R.content);
 
         bool insert1 = false;
         if(R.id_name == AppFurn1.ProcRun->ID)
@@ -836,10 +834,10 @@ void FURN_SQL()
         }
 
 
-        if(R.id_name == AppFurn2.Cassette.Day->ID)IR2.day = std::stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.Month->ID)IR2.month = std::stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.Year->ID)IR2.year = std::stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.CassetteNo->ID)IR2.cassetteno = std::stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.Day->ID)IR2.day = Stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.Month->ID)IR2.month = Stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.Year->ID)IR2.year = Stoi(R.content);
+        if(R.id_name == AppFurn2.Cassette.CassetteNo->ID)IR2.cassetteno = Stoi(R.content);
 
         if(R.id_name == AppFurn2.ProcRun->ID)
         {
@@ -892,10 +890,10 @@ TCassette CassetteInRel[CountCaseteInRel] ={
 
 void SetCassetteToBase(int i)
 {
-    int32_t Year = std::stoi(CassetteInRel[i].Year);
-    int32_t Month = std::stoi(CassetteInRel[i].Month);
-    int32_t Day = std::stoi(CassetteInRel[i].Day);
-    int32_t CassetteNo = std::stoi(CassetteInRel[i].CassetteNo);
+    int32_t Year = Stoi(CassetteInRel[i].Year);
+    int32_t Month = Stoi(CassetteInRel[i].Month);
+    int32_t Day = Stoi(CassetteInRel[i].Day);
+    int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
     int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
     int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
@@ -916,7 +914,7 @@ bool cmpCasete(TCassette& first, TCassette& second)
 }
 
 
-void Open_FURN_SQL()
+DWORD WINAPI Open_FURN_SQL(LPVOID)
 {
     size_t old_count = 0;
 
@@ -924,9 +922,6 @@ void Open_FURN_SQL()
     LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 #endif
 
-    //S107::SQL::FURN_SQL(conn_spic);
-    //hSQL = std::thread(FURN_SQL);
-    //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     while(isRun)
     {
 #pragma region Выводим список кассет
@@ -960,7 +955,7 @@ void Open_FURN_SQL()
 
         for(auto& TC : AllCassette)
         {
-            if(TC.Finish_at.length() && std::stoi(TC.Event) != 5 && std::stoi(TC.Event) != 7)
+            if(TC.Finish_at.length() && Stoi(TC.Event) != 5 && Stoi(TC.Event) != 7)
             {
                 std::stringstream sdf;
                 sdf << "UPDATE cassette SET event = 5 WHERE id = " << TC.Id;
@@ -1001,20 +996,20 @@ void Open_FURN_SQL()
                 {
                     CassetteInRel[i] = CIl[i];
                     SetCassetteToBase(i);
-                    //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)std::stoi(CassetteInRel[i].Year));
-                    //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)std::stoi(CassetteInRel[i].Month));
-                    //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)std::stoi(CassetteInRel[i].Day));
-                    //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)std::stoi(CassetteInRel[i].CassetteNo));
+                    //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)Stoi(CassetteInRel[i].Year));
+                    //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)Stoi(CassetteInRel[i].Month));
+                    //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)Stoi(CassetteInRel[i].Day));
+                    //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)Stoi(CassetteInRel[i].CassetteNo));
                 }
             }
             else
             {
                 CassetteInRel[i] = TCassette();
                 //if(!CassetteInRel[i].compare(NullCasete))
-                //std::stoi(CassetteInRel[i].Year;
-                //std::stoi(CassetteInRel[i].Month;
-                //std::stoi(CassetteInRel[i].Day;
-                //int32_t CassetteNo  = std::stoi(CassetteInRel[i].CassetteNo;
+                //Stoi(CassetteInRel[i].Year;
+                //Stoi(CassetteInRel[i].Month;
+                //Stoi(CassetteInRel[i].Day;
+                //int32_t CassetteNo  = Stoi(CassetteInRel[i].CassetteNo;
                 if(AppCassette[i].Year->Val.As<int32_t>() != 0
                    || AppCassette[i].Month->Val.As<int32_t>() != 0
                    || AppCassette[i].Day->Val.As<int32_t>() != 0
@@ -1034,10 +1029,10 @@ void Open_FURN_SQL()
                         //if(!MyServer)
                         {
                             //SetCassetteToBase(i);
-                            //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)std::stoi(CassetteInRel[i].Year));
-                            //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)std::stoi(CassetteInRel[i].Month));
-                            //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)std::stoi(CassetteInRel[i].Day));
-                            //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)  cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)std::stoi(CassetteInRel[i].CassetteNo));
+                            //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)Stoi(CassetteInRel[i].Year));
+                            //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)Stoi(CassetteInRel[i].Month));
+                            //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)Stoi(CassetteInRel[i].Day));
+                            //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)  cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)Stoi(CassetteInRel[i].CassetteNo));
                         }
                     }
                     //Отбравляем в печь
@@ -1048,6 +1043,7 @@ void Open_FURN_SQL()
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     };
+    return 0;
 }
 
 void Open_FURN()
@@ -1069,29 +1065,18 @@ void Open_FURN()
     //S107::Furn2::Petch.Year = AppFurn2.Cassette.Year->Val.As<int32_t>();
     //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->Val.As<int32_t>();
 
-    hS107URI = std::thread(Open_FURN_RUN);
+    hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
 #endif
-    hS107SQL = std::thread(Open_FURN_SQL);
+    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
     
 #endif
 #endif
-}
-
-void WaitClose_FURN(std::thread& h, std::string hamd)
-{
-    LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, hamd);
-    if(h.joinable())
-        h.join();
 }
 
 void Close_FURN()
 {
-    HANDLE* h = NULL;
-    int size = 0;
-    //if(hS107URI)
-    
-    WaitClose_FURN(hSQL, "hSQL");
-    WaitClose_FURN(hS107URI, "hS107URI");
-    WaitClose_FURN(hS107SQL, "hS107SQL");
+    WaitCloseTheread(hSQL, "hSQL");
+    WaitCloseTheread(hS107URI, "hS107URI");
+    WaitCloseTheread(hS107SQL, "hS107SQL");
     
 }

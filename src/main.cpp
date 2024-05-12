@@ -3,6 +3,8 @@
 #include "file.h"
 #include "exel.h"
 #include "win.h"
+#include "Graff.h"
+
 #include "SQL.h"
 #include "Event.h"
 
@@ -12,7 +14,8 @@
 #define FULLRUN 1
 #endif
 
-void StopGraff();
+const std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2}).*";
+
 
 std::string szTitle = "История данных по Комплексу Подготовки Высокопрочного Листа. Версия ";
 
@@ -432,6 +435,35 @@ std::string Formats(float f)
     return d;
 }
 
+void WaitCloseTheread(HANDLE h, std::string hamd)
+{
+    DWORD dwEvent = WaitForSingleObject(h, 2000);
+    if(dwEvent == WAIT_OBJECT_0)
+    {
+        LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_OBJECT_0 "));
+    }
+    else
+    {
+        if(dwEvent == WAIT_ABANDONED)
+        {
+            LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_ABANDONED "));
+        }
+        else if(dwEvent == WAIT_TIMEOUT)
+        {
+            LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_TIMEOUT "));
+        }
+        else if(dwEvent == WAIT_FAILED)
+        {
+            LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_FAILED "));
+        }
+        else
+        {
+            LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = ") + std::to_string(dwEvent) + " : ");
+        }
+
+        TerminateProcess(h, 0);
+    }
+}
 
 void TestTimeRun(ULONGLONG& time)
 {
@@ -534,7 +566,7 @@ int Run()
             Start();
 #endif
 
-            while(GetMessage(&msg, nullptr, 0, 0))
+            while(GetMessage(&msg, nullptr, 0, 0) && isRun)
             {
                 //if(!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
                 {
@@ -543,6 +575,7 @@ int Run()
                 }
             }
             isRun = false;
+            DestroyWindow(Global0);
         }
     }
     catch(std::exception& exc)

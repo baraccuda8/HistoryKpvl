@@ -40,13 +40,12 @@ bool isInitPLC_KPVL = false;
 time_t PLC_KPVL_old_dt = 0;
 
 
-std::thread hFindSheet;
+//HANDLE hFindSheet = NULL;
 
-std::thread hKPVLURI;
-std::thread hKPVLSQL;
-std::thread hRunAllPdf;
+HANDLE hKPVLURI = NULL;
+HANDLE hKPVLSQL = NULL;
+HANDLE hRunAllPdf = NULL;
 HANDLE hThreadState2 = NULL;
-extern HANDLE hAllPlf;
 
 
 std::string MaskKlapan1 = "000000000";
@@ -647,7 +646,7 @@ bool PLC_KPVL::WD()
     return false;
 }
 
-void Open_KPVL_RUN()
+DWORD WINAPI Open_KPVL_RUN(LPVOID)
 {
     std::shared_ptr<spdlog::logger> Logger = HardLogger;
 
@@ -697,8 +696,8 @@ void Open_KPVL_RUN()
     PLC.reset();
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
-    //ExitThread(0);
 
+    return 0;
 }
 
 void GetEndData(TSheet& sheet)
@@ -733,7 +732,7 @@ void UpdateSheetPos()
     PQclear(res);
 }
 
-void Open_KPVL_SQL()
+DWORD WINAPI Open_KPVL_SQL(LPVOID)
 {
     size_t old_count = 0;
     int f = 5;
@@ -805,6 +804,7 @@ void Open_KPVL_SQL()
 
     LOG_INFO(SQLLogger, "{:90} Stop Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
+    return 0;
 }
 
 
@@ -831,10 +831,10 @@ void Open_KPVL()
 #ifndef TESTSPIS
 #ifndef TESTWIN
 #ifndef TESTGRAFF
-    hKPVLURI = std::thread(Open_KPVL_RUN);
+    hKPVLURI = CreateThread(0, 0, Open_KPVL_RUN, (LPVOID)0, 0, 0);
 #endif
-    hKPVLSQL = std::thread(Open_KPVL_SQL);
-    hRunAllPdf = std::thread(RunAllPdf);
+    hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
+    hRunAllPdf = CreateThread(0, 0, PDF::RunAllPdf, (LPVOID)0, 0, 0);
 #endif
 #endif
 
@@ -843,40 +843,11 @@ void Open_KPVL()
 
 }
 
-void WaitCloseKPVL(std::thread& h, std::string hamd)
-{
-    LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, hamd);
-    if(h.joinable())
-        h.join();
-}
-
-void WaitCloseKPVL(HANDLE h, std::string hamd)
-{
-    DWORD dwEvent = WaitForSingleObject(h, INFINITE);
-    //if(dwEvent == WAIT_OBJECT_0)
-    //    HARD_LOGGER2(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = WAIT_OBJECT_0 "))
-    //else if(dwEvent == WAIT_ABANDONED)
-    //    HARD_LOGGER2(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = WAIT_ABANDONED "))
-    //else if(dwEvent == WAIT_TIMEOUT)
-    //    HARD_LOGGER2(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = WAIT_TIMEOUT "))
-    //else if(dwEvent == WAIT_FAILED)
-    //    HARD_LOGGER2(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = WAIT_FAILED "))
-    //else
-    //    HARD_LOGGER2(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = ") + std::to_string(dwEvent) + " : ")
-    //{
-    //    Log(HardLogger, spdlog::level::level_enum::info, std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = ") + std::to_string(dwEvent) + " : "); SendDebug(std::string("Close_KPVL_FURN: WaitForSingleObject( " + hamd + " ) = ") + std::to_string(dwEvent) + " : ");
-    //}
-}
-
 void Close_KPVL()
 {
-    HANDLE* h = NULL;
-    int size = 0;
-        WaitCloseKPVL(hFindSheet, "hFindSheet");
-        WaitCloseKPVL(hThreadState2, "ThreadState2");
-        WaitCloseKPVL(hAllPlf, "ThreadhAllPlf");
-        WaitCloseKPVL(hKPVLURI, "hKPVLURI");
-        WaitCloseKPVL(hKPVLSQL, "hKPVLSQL");
-        WaitCloseKPVL(hRunAllPdf, "hRunAllPdf");
-        
+    WaitCloseTheread(hThreadState2, "ThreadState2");
+    WaitCloseTheread(hKPVLURI, "hKPVLURI");
+    WaitCloseTheread(hKPVLSQL, "hKPVLSQL");
+    WaitCloseTheread(hRunAllPdf, "hRunAllPdf");
+       
 }

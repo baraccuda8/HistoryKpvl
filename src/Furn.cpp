@@ -13,8 +13,8 @@
 #include "Pdf.h"
 
 extern std::shared_ptr<spdlog::logger> PethLogger;
-extern std::string FORMATTIME;
-extern HANDLE hAllPlf;
+//extern const std::string FORMATTIME;
+
 
 namespace S107
 {
@@ -201,7 +201,7 @@ namespace S107
                     int line =  PQntuples(res);
                     if(line)
                     {
-                        count = std::stoi(conn.PGgetvalue(res, 0, 0));
+                        count = Stoi(conn.PGgetvalue(res, 0, 0));
                         PQclear(res);
                     }
 
@@ -218,7 +218,7 @@ namespace S107
                             SETUPDATESQL(SQLLogger, conn, ss);
                             return true;
                         }
-                        else if(std::stoi(CD.SheetInCassette) != count)
+                        else if(Stoi(CD.SheetInCassette) != count)
                         {
                             std::stringstream ss;
                             ss << "UPDATE cassette SET";
@@ -255,10 +255,10 @@ namespace S107
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
                 int32_t FYear = Cassette.Year->Val.As<int32_t>();
                 int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
-                int32_t CDay = std::stoi(CD.Day);
-                int32_t CMonth = std::stoi(CD.Month);
-                int32_t CYear = std::stoi(CD.Year);
-                int32_t CCassetteNo = std::stoi(CD.CassetteNo);
+                int32_t CDay = Stoi(CD.Day);
+                int32_t CMonth = Stoi(CD.Month);
+                int32_t CYear = Stoi(CD.Year);
+                int32_t CCassetteNo = Stoi(CD.CassetteNo);
                 return (FDay && FMonth && FYear && FCassetteNo && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
             }
             return false;
@@ -272,10 +272,10 @@ namespace S107
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
                 int32_t FYear = Cassette.Year->Val.As<int32_t>();
                 int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
-                int32_t CDay = std::stoi(CD.Day);
-                int32_t CMonth = std::stoi(CD.Month);
-                int32_t CYear = std::stoi(CD.Year);
-                int32_t CCassetteNo = std::stoi(CD.CassetteNo);
+                int32_t CDay = Stoi(CD.Day);
+                int32_t CMonth = Stoi(CD.Month);
+                int32_t CYear = Stoi(CD.Year);
+                int32_t CCassetteNo = Stoi(CD.CassetteNo);
                 return (FDay && FMonth && FYear && FCassetteNo && FDay == CDay && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
             }
             return false;
@@ -296,7 +296,7 @@ namespace S107
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
                 int nFields = PQnfields(res);
-                id = std::stoi(conn_spis.PGgetvalue(res, 0, 0));
+                id = Stoi(conn_spis.PGgetvalue(res, 0, 0));
             }
             else
                 LOG_ERR_SQL(SQLLogger, res, comand);
@@ -304,15 +304,10 @@ namespace S107
             return id;
         }
 
-        //void FinishPdf(PGConnection& conn, TCassette& CD, int Peth, int id)
-        //{
-        //    PrintPdfAuto(CD);
-        //}
-
         void SearthEnd_at(PGConnection& conn, TCassette& CD, int id)
         {
             std::stringstream sd;
-            int Peth = std::stoi(CD.Peth);
+            int Peth = Stoi(CD.Peth);
             int ID = 0;
 
             if(Peth == 1) ID = AppFurn1.ProcRun->ID;
@@ -342,15 +337,21 @@ namespace S107
                         if(!CD.Finish_at.length())
                         {
                             #pragma region Считае Finish_at  по End_at
-                                time_t tt;
+                                time_t tt1, tt2;
                                 std::tm TM;
                                 DataTimeOfString(CD.End_at, FORMATTIME, TM);
                                 TM.tm_year -= 1900;
                                 TM.tm_mon -= 1;
-                                tt = mktime(&TM);
-                                tt += 15 * 60; //плюс 15 минут
-                                localtime_s(&TM, &tt);
-                                CD.Finish_at = GetDataTimeString(TM);
+                                tt1 = mktime(&TM);
+                                tt1 += 15 * 60; //плюс 15 минут
+                                localtime_s(&TM, &tt1);
+                                tt2 = time(NULL);
+                                if(difftime(tt2, tt1) > 15 * 60)
+                                {
+                                    localtime_s(&TM, &tt2);
+                                    CD.Finish_at = GetDataTimeString(TM);
+                                    sf << "UPDATE cassette SET Finish_at = '" << CD.Finish_at << "' WHERE id = " << id;
+                                }
                             #pragma endregion
 
                             if(CD.Finish_at.length())
@@ -360,7 +361,6 @@ namespace S107
                                 SETUPDATESQL(SQLLogger, conn, sf);
 
                                 //PrintPdfAuto(CD);
-                                //FinishPdf(conn, CD, Peth, id);
                             }
                         }
                         ////Если ошибка была
@@ -387,10 +387,9 @@ namespace S107
             {
                 int id = GetId(conn, CD);
 
-
                 if(id)
                 {
-                     //Отпуск на 1й - печи
+                    //Отпуск на 1й - печи
                     if(isCasseteFurn(AppFurn1.Cassette, CD))
                     {
                         if(CD.Event != "3" || CD.Peth != "1")
@@ -446,24 +445,27 @@ namespace S107
                         }
 
                         int ID = 0;
-                        int Peth = std::stoi(CD.Peth);
+                        int Peth = Stoi(CD.Peth);
                         if(Peth == 1) ID = AppFurn1.ProcFault->ID;
                         else if(Peth == 2) ID = AppFurn2.ProcFault->ID;
 
                         //Если нет времени ошибки
-                        if(ID && !CD.Error_at.length())
+                        if(ID && !CD.Error_at.length() && CD.Run_at.length() && CD.End_at.length())
                         {
                             std::stringstream sd;
-                            sd << "SELECT min(create_at) FROM todos WHERE create_at >= '" << CD.Run_at << "'";
-                            if(CD.End_at.length()) sd << " AND create_at <= '" << CD.End_at << "'";
+                            sd << "SELECT DISTINCT ON (id) create_at FROM todos WHERE";
+                            sd << " create_at >= '" << CD.Run_at << "'";
+                            sd << " AND create_at <= '" << CD.End_at << "'";
                             sd << " AND content = 'true' AND id_name = " << ID;
+                            sd << " ORDER BY id ASC LIMIT 1";
                             std::string comand = sd.str();
                             if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                             PGresult* res = conn.PGexec(comand);
                             if(PQresultStatus(res) == PGRES_TUPLES_OK)
                             {
-                                int nFields = PQnfields(res);
-                                CD.Error_at = GetStringData(conn_spis.PGgetvalue(res, 0, 0));
+                                int line = PQntuples(res);
+                                if(line)
+                                    CD.Error_at = conn_spis.PGgetvalue(res, line - 1, 0);
                             }
                             else
                                 LOG_ERR_SQL(SQLLogger, res, comand);
@@ -500,23 +502,21 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 
-
-
     bool IsCassete(TCassette& CD)
     {
-        int32_t Day = std::stoi(CD.Day);
-        int32_t Month = std::stoi(CD.Month);
-        int32_t Year = std::stoi(CD.Year);
-        int32_t CassetteNo = std::stoi(CD.CassetteNo);
+        int32_t Day = Stoi(CD.Day);
+        int32_t Month = Stoi(CD.Month);
+        int32_t Year = Stoi(CD.Year);
+        int32_t CassetteNo = Stoi(CD.CassetteNo);
         return Day && Month && Year && CassetteNo;
     }
 
     bool IsCassete1(T_cassette& CD)
     {
-        int32_t Day = GetVal<int32_t>(CD.Day);
-        int32_t Month = GetVal<int32_t>(CD.Month);
-        int32_t Year = GetVal<int32_t>(CD.Year);
-        int32_t CassetteNo = GetVal<int32_t>(CD.CassetteNo);
+        int32_t Day = CD.Day->Val.As<int32_t>();
+        int32_t Month = CD.Month->Val.As<int32_t>();
+        int32_t Year = CD.Year->Val.As<int32_t>();
+        int32_t CassetteNo = CD.CassetteNo->Val.As<int32_t>();
         return Day && Month && Year && CassetteNo;
     }
     bool IsCassete2(T_cassette& CD)
@@ -639,29 +639,29 @@ namespace S107
             }
     }
 
-    void CloseAllCassette2(PGConnection& conn, T_cassette& CD, int Peth)
-    {
-        if(IsCassete2(CD))
-        {
-            std::stringstream sd;
-            sd << "UPDATE cassette SET ";
-            sd << " event = 5,";
-            sd << " end_at = now()";
-            sd << " WHERE end_at IS NULL";
-            sd << " AND event = 3";
-            sd << " AND peth = " << Peth;
-            if(IsCassete1(CD))
-            {
-                sd << " AND day <> " << CD.Day->Val.As<int32_t>(); //GetString();
-                sd << " AND month <> " << CD.Month->Val.As<int32_t>(); //GetString();
-                sd << " AND year <> " << CD.Year->Val.As<int32_t>(); //GetString();
-                sd << " AND cassetteno <> " << CD.CassetteNo->Val.As<int32_t>(); //GetString();
-            }
-            sd << ";";
-
-            SETUPDATESQL(SQLLogger, conn, sd);
-        }
-    }
+    //void CloseAllCassette2(PGConnection& conn, T_cassette& CD, int Peth)
+    //{
+    //    if(IsCassete2(CD))
+    //    {
+    //        std::stringstream sd;
+    //        sd << "UPDATE cassette SET ";
+    //        sd << " event = 5,";
+    //        sd << " end_at = now()";
+    //        sd << " WHERE end_at IS NULL";
+    //        sd << " AND event = 3";
+    //        sd << " AND peth = " << Peth;
+    //        if(IsCassete1(CD))
+    //        {
+    //            sd << " AND day <> " << CD.Day->Val.As<int32_t>(); //GetString();
+    //            sd << " AND month <> " << CD.Month->Val.As<int32_t>(); //GetString();
+    //            sd << " AND year <> " << CD.Year->Val.As<int32_t>(); //GetString();
+    //            sd << " AND cassetteno <> " << CD.CassetteNo->Val.As<int32_t>(); //GetString();
+    //        }
+    //        sd << ";";
+    //
+    //        SETUPDATESQL(SQLLogger, conn, sd);
+    //    }
+    //}
 
     void SetUpdateCassete(PGConnection& conn, T_ForBase_RelFurn& Furn, std::string update)
     {
@@ -692,7 +692,7 @@ namespace S107
             sd << " AND month = " << tc.Month;
             sd << " AND year = " << tc.Year;
             sd << " ORDER BY id;";
-
+    
             std::string comand = sd.str();
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -700,15 +700,13 @@ namespace S107
                 int len = PQntuples(res);
                 if(len)
                 {
-                    std::string sid = conn.PGgetvalue(res, len - 1, 0);
-                    if(sid.length())
-                        tc.id = std::stoi(sid);
+                    tc.id = Stoi(conn.PGgetvalue(res, len - 1, 0));
                 }
             }
             else
                 LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
-
+    
             return true;
         }
         return false;

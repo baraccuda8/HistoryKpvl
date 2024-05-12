@@ -53,14 +53,7 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
     bool IsCassete(TCassette& CD);
-    bool IsCassete1(T_cassette& CD);
-    bool IsCassete2(T_cassette& CD);
 
-    void UpdateCassetteProcRun(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
-    void UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
-    void UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth);
-    void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper);;
-    void CloseAllCassette2(PGConnection& conn, T_cassette& CD, int Peth);
 #pragma endregion
 
     //Печ отпуска #1
@@ -85,7 +78,6 @@ namespace S107
         DWORD Month(Value* value);
         DWORD Year(Value* value);
         DWORD No(Value* value);
-
 
         DWORD TimeHeatAcc(Value* value);
         DWORD TimeHeatWait(Value* value);
@@ -138,7 +130,6 @@ namespace S107
 
     }
 
-
     //Печ отпуска #2
     namespace Furn2{
         extern T_cass Petch;
@@ -161,8 +152,6 @@ namespace S107
         DWORD Month(Value* value);
         DWORD Year(Value* value);
         DWORD No(Value* value);
-
-
 
         DWORD TimeHeatAcc(Value* value);
         DWORD TimeHeatWait(Value* value);

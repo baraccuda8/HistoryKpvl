@@ -3,13 +3,15 @@
 #include "main.h"
 #include "hard.h"
 #include "term.h"
-#include "GdiPlusInit.h"
-#include <gdiplusimagecodec.h>
 
 #include "Graff.h"
 
 const int64_t SecCount1 = 60 * 60 * 12; //12 часов
 const int64_t SecCount2 = 60 * 60; //1 час
+
+HANDLE hGGraff1 = NULL;
+HANDLE hGGraff2 = NULL;
+HANDLE hGGraff3 = NULL;
 
 HRESULT GetGdiplusEncoderClsid(const std::wstring& format, GUID* pGuid)
 {
@@ -73,7 +75,6 @@ HRESULT GetGdiplusEncoderClsid(const std::wstring& format, GUID* pGuid)
 
 const int CountPoint = 86400; // оличеество секунд в сутках
 
-std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2}).*";
 
 GUID guidBmp ={};
 GUID guidJpeg ={};
@@ -677,7 +678,7 @@ void GetGrTempKPVLTempAct()
 				{
 					auto a = GraffKPVL.TempAct.find(sData);
 					std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
-					float f =  std::stof(sTemp); //static_cast<float>(atof(sTemp.c_str()));
+					float f =  Stof(sTemp); //static_cast<float>(atof(sTemp.c_str()));
 					if(f > 0 && f < 2000)
 					{
 						if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
@@ -741,12 +742,8 @@ namespace GRAGG{
 
 };
 
-HANDLE hKPVLGRAGG = NULL;
-HANDLE hFURN1GRAGG = NULL;
-HANDLE hFURN2GRAGG = NULL;
 
-
-void Open_GRAFF_FURN1()
+DWORD WINAPI Open_GRAFF_FURN1(LPVOID)
 {
 	if(!GraffFurn1.conn->connection()) 
 		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffFurn1")));
@@ -758,9 +755,10 @@ void Open_GRAFF_FURN1()
 		while(isRun && f--)
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+	return 0;
 }
 
-void Open_GRAFF_FURN2()
+DWORD WINAPI Open_GRAFF_FURN2(LPVOID)
 {
 	if(!GraffFurn2.conn->connection()) 
 		throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffFurn2")));
@@ -773,10 +771,10 @@ void Open_GRAFF_FURN2()
 		while(isRun && f--)
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
+	return 0;
 }
 
-
-void Open_GRAFF_KPVL()
+DWORD WINAPI Open_GRAFF_KPVL(LPVOID)
 {
 	try
 	{
@@ -793,6 +791,7 @@ void Open_GRAFF_KPVL()
 		}
 	}
 	CATCH(SQLLogger, std::string(""));
+	return 0;
 }
 
 
@@ -965,9 +964,48 @@ void GetGrTempFURN0(Graff& gr, T_ForBase_RelFurn& app, TCassette& TC)
 	gr.full = true;
 }
 
-std::thread GGraff1;
-std::thread GGraff2;
-std::thread GGraff3;
+
+void InitGrafWindow(HWND hWnd)
+{
+
+	GetGdiplusEncoderClsid(L"image/bmp", &guidBmp);
+	GetGdiplusEncoderClsid(L"image/jpeg", &guidJpeg);
+	GetGdiplusEncoderClsid(L"image/gif", &guidGif);
+	GetGdiplusEncoderClsid(L"image/tiff", &guidTiff);
+	GetGdiplusEncoderClsid(L"image/png", &guidPng);
+
+	GRAGG::RegisterClassGraf();
+
+	GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
+	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
+	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
+
+	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1370, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
+
+	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
+	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);
+	SetWindowLongPtr(GraffFurn2.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn2);
+	SetWindowLongPtr(GraffFurn.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn);
+
+	GraffKPVL.conn = &connKPVL;
+	GraffFurn1.conn = &connFurn1;
+	GraffFurn2.conn = &connFurn2;
+	GraffFurn.conn = &connFurn;
+
+
+	UpdateWindow(GraffKPVL.gHwnd);
+	UpdateWindow(GraffFurn1.gHwnd);
+	UpdateWindow(GraffFurn2.gHwnd);
+
+	UpdateWindow(GraffFurn.gHwnd);
+	//Open_GRAFF_FURN();
+
+	hGGraff1 = CreateThread(0, 0, Open_GRAFF_KPVL, (LPVOID)0, 0, 0);
+	hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
+	hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
+
+	int t = 0;
+}
 
 void Open_GRAFF_FURN(TCassette& TC)
 {
@@ -990,55 +1028,9 @@ void Open_GRAFF_FURN(TCassette& TC)
 }
 
 
-
-void InitGrafWindow(HWND hWnd)
-{
-
-	GetGdiplusEncoderClsid(L"image/bmp", &guidBmp);
-	GetGdiplusEncoderClsid(L"image/jpeg", &guidJpeg);
-	GetGdiplusEncoderClsid(L"image/gif", &guidGif);
-	GetGdiplusEncoderClsid(L"image/tiff", &guidTiff);
-	GetGdiplusEncoderClsid(L"image/png", &guidPng);
-
-	GRAGG::RegisterClassGraf();
-
-	GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
-	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
-	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE,  505,  25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
-
-	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1370, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
-
-	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
-	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);
-	SetWindowLongPtr(GraffFurn2.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn2);
-	SetWindowLongPtr(GraffFurn.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn);
-
-	GraffKPVL.conn = &connKPVL;
-	GraffFurn1.conn = &connFurn1;
-	GraffFurn2.conn = &connFurn2;
-	GraffFurn.conn = &connFurn;
-
-
-	UpdateWindow(GraffKPVL.gHwnd);
-	UpdateWindow(GraffFurn1.gHwnd);
-	UpdateWindow(GraffFurn2.gHwnd);
-
-	UpdateWindow(GraffFurn.gHwnd);
-	//Open_GRAFF_FURN();
-
-	GGraff1 = std::thread(Open_GRAFF_KPVL);
-	GGraff2 = std::thread(Open_GRAFF_FURN1);
-	GGraff3 = std::thread(Open_GRAFF_FURN2);
-
-	int t = 0;
-}
-
 void StopGraff()
 {
-	if(GGraff1.joinable())
-		GGraff1.join();
-	if(GGraff2.joinable())
-		GGraff2.join();
-	if(GGraff3.joinable())
-		GGraff3.join();
+	WaitCloseTheread(hGGraff1, "hGGraff1");
+	WaitCloseTheread(hGGraff2, "hGGraff1");
+	WaitCloseTheread(hGGraff3, "hGGraff1");
 }

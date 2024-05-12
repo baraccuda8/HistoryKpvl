@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "main.h"
 #include "win.h"
+#include "Graff.h"
+
 #include "file.h"
 #include "Subscript.h"
 #include "ClCodeSys.h"
@@ -34,7 +36,6 @@ extern HWND hWndDebug;
 extern std::deque<TSheet>AllSheet;
 extern std::deque<TCassette> AllCassette;
 
-extern HANDLE hAllPlf;
 
 #define DefMinTrackSizeX   1920
 #define DefMinTrackSizeY   1080
@@ -1358,7 +1359,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if(item >= 0 && item < (int)AllSheet.size())
             {
                 TSheet p = AllSheet[item];
-                PrintPdf(p);
+                //PDF::PrintPdf(p);
             }
         }
             break;
@@ -1514,7 +1515,7 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         {
                             if(plvdi->item.iSubItem == Cassete::NN)                lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                             if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
-                            if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, EventCassette[std::stoi(p.Event)].c_str());
+                            if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, EventCassette[Stoi(p.Event)].c_str());
                             if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, p.Create_at.c_str());
                             if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                             if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());

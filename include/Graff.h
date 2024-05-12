@@ -1,9 +1,9 @@
 #pragma once
 
 //#include "ValueTag.h"
+#include "GdiPlusInit.h"
+#include <gdiplusimagecodec.h>
 
-
-void InitGrafWindow(HWND hWnd);
 
 typedef std::map<std::string, std::pair<int64_t, float>> T_SqlTemp;
 
@@ -30,7 +30,10 @@ public:
 	void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
 };
 
+void InitGrafWindow(HWND hWnd);
 void Open_GRAFF_FURN(TCassette& p);
+void StopGraff();
+
 
 //extern Graff GraffKPVL;
 //extern Graff GraffFurn1;

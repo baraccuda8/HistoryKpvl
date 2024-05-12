@@ -178,7 +178,7 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
         {
 
             val->ID = atol(conn_spis.PGgetvalue(res, l, CollTag::Id).c_str());
-            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(std::stoi(conn_spis.PGgetvalue(res, l, CollTag::Type)));
+            OpcUa::VariantType type =  static_cast<OpcUa::VariantType>(Stoi(conn_spis.PGgetvalue(res, l, CollTag::Type)));
             val->Arhive = conn_spis.PGgetvalue(res, l, CollTag::Arhive) == "t";
             val->Comment = conn_spis.PGgetvalue(res, l, CollTag::Comment);
             std::string value = conn_spis.PGgetvalue(res, l, CollTag::Content);
@@ -223,7 +223,7 @@ void GetPetch(S107::T_cass& tc, int p)
         {
             std::string sid = conn_spis.PGgetvalue(res, line - 1, 0);
             if(sid.length())
-                tc.id = std::stoi(sid);
+                tc.id = Stoi(sid);
         }
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -244,10 +244,10 @@ void GetPetch(S107::T_cass& tc, int p)
                     tc = S107::T_cass();
                 else
                 {
-                    tc.Day = std::stoi(conn_spis.PGgetvalue(res, line - 1, 0));
-                    tc.Month = std::stoi(conn_spis.PGgetvalue(res, line - 1, 1));
-                    tc.Year = std::stoi(conn_spis.PGgetvalue(res, line - 1, 2));
-                    tc.CassetteNo = std::stoi(conn_spis.PGgetvalue(res, line - 1, 3));
+                    tc.Day = Stoi(conn_spis.PGgetvalue(res, line - 1, 0));
+                    tc.Month = Stoi(conn_spis.PGgetvalue(res, line - 1, 1));
+                    tc.Year = Stoi(conn_spis.PGgetvalue(res, line - 1, 2));
+                    tc.CassetteNo = Stoi(conn_spis.PGgetvalue(res, line - 1, 3));
                     tc.Run_at = conn_spis.PGgetvalue(res, line - 1, 4);
                     tc.Err_at = conn_spis.PGgetvalue(res, line - 1, 5);
                 }
@@ -422,7 +422,7 @@ void InitTag()
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            EventCassette[(evCassete::EV)std::stoi(conn_kpvl.PGgetvalue(res, l, 0))] = conn_kpvl.PGgetvalue(res, l, 1).c_str();
+            EventCassette[(evCassete::EV)Stoi(conn_kpvl.PGgetvalue(res, l, 0))] = conn_kpvl.PGgetvalue(res, l, 1).c_str();
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, comand);
