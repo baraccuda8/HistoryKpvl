@@ -1,9 +1,9 @@
 #pragma once
 
 //#include "ValueTag.h"
-#include "GdiPlusInit.h"
 #include <gdiplusimagecodec.h>
-
+#include "GdiPlusInit.h"
+#include "sql.h"
 
 typedef std::map<std::string, std::pair<int64_t, float>> T_SqlTemp;
 

@@ -713,7 +713,6 @@ void GetEndData(TSheet& sheet)
     PQclear(res);
 }
 
-extern std::string  FORMATTIME;
 
 void UpdateSheetPos()
 {

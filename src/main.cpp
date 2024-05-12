@@ -437,7 +437,7 @@ std::string Formats(float f)
 
 void WaitCloseTheread(HANDLE h, std::string hamd)
 {
-    DWORD dwEvent = WaitForSingleObject(h, 2000);
+    DWORD dwEvent = WaitForSingleObject(h, INFINITE);
     if(dwEvent == WAIT_OBJECT_0)
     {
         LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_OBJECT_0 "));
@@ -461,7 +461,7 @@ void WaitCloseTheread(HANDLE h, std::string hamd)
             LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = ") + std::to_string(dwEvent) + " : ");
         }
 
-        TerminateProcess(h, 0);
+        //TerminateProcess(h, 0);
     }
 }
 

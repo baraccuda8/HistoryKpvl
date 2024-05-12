@@ -20,8 +20,6 @@ extern std::string lpLogDir;
 
 std::shared_ptr<spdlog::logger> PethLogger = NULL;
 
-extern std::string  FORMATTIME;
-
 bool isInitPLC_S107 = false;
 
 time_t PLC_S107_old_dt = 0;

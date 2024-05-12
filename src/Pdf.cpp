@@ -852,7 +852,7 @@ namespace PDF
 			while(std::filesystem::exists(FileName))
 			{
 				std::string s1 = FileName;
-				std::vector <std::string>s plit1;
+				std::vector <std::string>split1;
 				boost::split(split1, s1, boost::is_any_of("."));
 				if(split1.size() == 2)
 					FileName = split1[0] + "_" + std::to_string(n) + "." + split1[0];
@@ -978,44 +978,45 @@ namespace PDF
 
 				if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
 				if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
-
+			}
+			//return;
+			
 			//Рисуем график FURN
-				PaintGraff(FurnAct, FurnRef, furnImage);
+			PaintGraff(FurnAct, FurnRef, furnImage);
 
-				//Закалка
-				GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
-				SqlTempActKPVL(TempAct);
+			//Закалка
+			GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+			SqlTempActKPVL(TempAct);
 
-				//Рисуем график KPVL
-				PaintGraff(TempAct, TempRef, tempImage);
+			//Рисуем график KPVL
+			PaintGraff(TempAct, TempRef, tempImage);
 
 
 #pragma endregion
 
-	//Создание PFD файла
-				if(NewPdf())
-				{
-					//Рисуем PDF заголовок
-					DrawHeder(0, Height);
+			//Создание PFD файла
+			if(NewPdf())
+			{
+				//Рисуем PDF заголовок
+				DrawHeder(0, Height);
 
-					//Рисуем PDF Закалка
-					DrawKpvlPDF();
+				//Рисуем PDF Закалка
+				DrawKpvlPDF();
 
-					//Рисуем PDF Отпуск
-					DrawFurnPDF();
+				//Рисуем PDF Отпуск
+				DrawFurnPDF();
 
-					//Сохраняем PDF
-					SavePDF(1);
+				//Сохраняем PDF
+				SavePDF(1);
 
-					//Отображение PDF
-					if(view) std::system(("start " + FileName).c_str());
-				}
-				remove(furnImage);
-				remove(tempImage);
-			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
-
-		}
-		CATCH(PdfLogger, FUNCTION_LINE_NAME);
+				//Отображение PDF
+				if(view) std::system(("start " + FileName).c_str());
+			}
+			remove(furnImage);
+			remove(tempImage);
+		//}
+		//CATCH(PdfLogger, FUNCTION_LINE_NAME);
+		}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 	}
 
 	PdfClass::PdfClass(TCassette& TC)
