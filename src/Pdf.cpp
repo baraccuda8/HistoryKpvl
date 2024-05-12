@@ -81,6 +81,48 @@ extern GUID guidPng;
 
 namespace PDF
 {
+	void TodosColumn(PGresult* res)
+	{
+		try
+		{
+			if(TODOS::type == 0)
+			{
+				int nFields = PQnfields(res);
+				for(int j = 0; j < nFields; j++)
+				{
+					std::string l =  utf8_to_cp1251(PQfname(res, j));
+					if(l == "create_at") TODOS::create_at = j;
+					else if(l == "id") TODOS::id = j;
+					else if(l == "id_name") TODOS::id_name = j;
+					else if(l == "content") TODOS::content = j;
+					else if(l == "type") TODOS::type = j;
+					else if(l == "name") TODOS::name = j;
+				}
+			}
+		}
+		CATCH(PdfLogger, "");;
+	}
+
+	OpcUa::Variant GetVarVariant(OpcUa::VariantType Type, std::string value)
+	{
+		try
+		{
+			if(Type == OpcUa::VariantType::BOOLEAN)        return (bool)(value == "true");
+			else if(Type == OpcUa::VariantType::SBYTE)     return int8_t(atoi_t(int8_t, atoi, value));
+			else if(Type == OpcUa::VariantType::BYTE)      return uint8_t(atoi_t(uint8_t, atoi, value));
+			else if(Type == OpcUa::VariantType::INT16)     return int16_t(atoi_t(int16_t, atoi, value));
+			else if(Type == OpcUa::VariantType::UINT16)    return uint16_t(atoi_t(uint16_t, atoi, value));
+			else if(Type == OpcUa::VariantType::INT32)     return int32_t(atoi_t(int32_t, atol, value));
+			else if(Type == OpcUa::VariantType::UINT32)    return uint32_t(atoi_t(uint32_t, atol, value));
+			else if(Type == OpcUa::VariantType::INT64)     return int64_t(atoi_t(int64_t, atoll, value));
+			else if(Type == OpcUa::VariantType::UINT64)    return int64_t(atoi_t(uint64_t, atoll, value));
+			else if(Type == OpcUa::VariantType::FLOAT)     return float(atoi_t(float, atof, value));
+			else if(Type == OpcUa::VariantType::DOUBLE)    return double(atoi_t(double, atof, value));
+			else if(Type == OpcUa::VariantType::STRING)    return /*utf8_to_cp1251*/(value);
+		}
+		CATCH(PdfLogger, "");;
+		return OpcUa::Variant();
+	}
 
 	namespace Cassette
 	{
@@ -780,8 +822,6 @@ namespace PDF
 			return false;
 		}
 
-//#include <iostream>
-//#include <filesystem>
 
 		//Перечисление дирректорий. Возвращает только файлы формата "YYYY-MM-DD.xlsx"
 		std::vector<boost::filesystem::path> getDir (const std::string lpDir)
@@ -1162,49 +1202,6 @@ namespace PDF
 			CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		};
 
-
-		void GetPdf::TodosColumn(PGresult* res)
-		{
-			try
-			{
-				if(TODOS::type == 0)
-				{
-					int nFields = PQnfields(res);
-					for(int j = 0; j < nFields; j++)
-					{
-						std::string l =  utf8_to_cp1251(PQfname(res, j));
-						if(l == "create_at") TODOS::create_at = j;
-						else if(l == "id") TODOS::id = j;
-						else if(l == "id_name") TODOS::id_name = j;
-						else if(l == "content") TODOS::content = j;
-						else if(l == "type") TODOS::type = j;
-						else if(l == "name") TODOS::name = j;
-					}
-				}
-			}
-			CATCH(PdfLogger, "");;
-		}
-
-		OpcUa::Variant GetPdf::GetVarVariant(OpcUa::VariantType Type, std::string value)
-		{
-			try
-			{
-				if(Type == OpcUa::VariantType::BOOLEAN)        return (bool)(value == "true");
-				else if(Type == OpcUa::VariantType::SBYTE)     return int8_t(atoi_t(int8_t, atoi, value));
-				else if(Type == OpcUa::VariantType::BYTE)      return uint8_t(atoi_t(uint8_t, atoi, value));
-				else if(Type == OpcUa::VariantType::INT16)     return int16_t(atoi_t(int16_t, atoi, value));
-				else if(Type == OpcUa::VariantType::UINT16)    return uint16_t(atoi_t(uint16_t, atoi, value));
-				else if(Type == OpcUa::VariantType::INT32)     return int32_t(atoi_t(int32_t, atol, value));
-				else if(Type == OpcUa::VariantType::UINT32)    return uint32_t(atoi_t(uint32_t, atol, value));
-				else if(Type == OpcUa::VariantType::INT64)     return int64_t(atoi_t(int64_t, atoll, value));
-				else if(Type == OpcUa::VariantType::UINT64)    return int64_t(atoi_t(uint64_t, atoll, value));
-				else if(Type == OpcUa::VariantType::FLOAT)     return float(atoi_t(float, atof, value));
-				else if(Type == OpcUa::VariantType::DOUBLE)    return double(atoi_t(double, atof, value));
-				else if(Type == OpcUa::VariantType::STRING)    return /*utf8_to_cp1251*/(value);
-			}
-			CATCH(PdfLogger, "");;
-			return OpcUa::Variant();
-		}
 
 		std::string GetPdf::GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at)
 		{
@@ -1765,7 +1762,7 @@ namespace PDF
 						//ct.id_name_at = "";
 						ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
 						ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-						ct.content = GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+						ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
 						ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
 						ct.Petch = Petch;
 						CassetteTodos[ct.id] = ct;
@@ -2082,13 +2079,14 @@ namespace PDF
 #ifdef NOCASSETTE
 			try
 			{
-				PdfLogger = InitLogger("Pdf Caccette Debug");
+				PdfLogger = InitLogger("Pdf Debug");
 				PGConnection conn_pdf;
 				conn_pdf.connection();
 				while(isRun)
 				{
+					PDF::SHEET::GetRawSheet(conn_pdf);
 
-					//PDF::sHEET++++++++++++++++++++++++++++++++++++++++                                                                                  ::GetPdf getpdf(conn_pdf);
+					//PDF::Cassette::GetPdf getpdf(conn_pdf);
 
 #ifdef _DEBUG
 					//В дебаге один прозод и выход из программы
@@ -2111,18 +2109,20 @@ namespace PDF
 #define NOLIST
 	namespace SHEET
 	{
+		std::map<int, T_Todos> AllTodos;
+
 		DWORD WINAPI RunAllPdf(LPVOID)
 		{
 #ifdef NOCASSETTE
 			try
 			{
-				PdfLogger = InitLogger("Pdf Shhet Debug");
+				PdfLogger = InitLogger("Pdf Suu Debug");
 				PGConnection conn_pdf;
 				conn_pdf.connection();
 				while(isRun)
 				{
 
-					//PDF::sHEET++++++++++++++++++++++++++++++++++++++++                                                                                  ::GetPdf getpdf(conn_pdf);
+					GetRawSheet(conn_pdf);
 
 #ifdef _DEBUG
 					//В дебаге один прозод и выход из программы
@@ -2139,11 +2139,97 @@ namespace PDF
 #endif
 
 			return 0;
-			return 0;
 		}
 
-	}
+		void GetTodosSQL(PGConnection& conn, std::string& comand)
+		{
 
+			AllTodos;
+
+			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				int line = PQntuples(res);
+				if(line)
+				{
+					float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
+
+					for(int l = 0; l < line; l++)
+					{
+						T_Todos td;
+						td.create_at = conn.PGgetvalue(res, l, 0);
+						td.id = Stoi(conn.PGgetvalue(res, l, 1));
+						td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
+						td.value = conn.PGgetvalue(res, l, 3);
+						int type = Stoi(conn.PGgetvalue(res, l, 4));
+						td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+						AllTodos[td.id] = td;
+
+					}
+				}
+			}
+		}
+
+		void GetRawSheet(PGConnection& conn)
+		{
+			{
+				std::stringstream ssd;
+
+				ssd << "SELECT create_at, id, id_name, content ";
+				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				ssd << "FROM todos WHERE";
+				ssd << " Id_name = " << GenSeqToHmi.Seq_1_StateNo->ID;
+				ssd << " AND ("
+					"content = '4'";
+				ssd << " OR "
+					"content = '7'"
+					")";
+				ssd << "ORDER BY id;";
+
+				std::string comand = ssd.str();
+				GetTodosSQL(conn, comand);
+			}
+			{
+				std::stringstream ssd;
+
+				ssd << "SELECT create_at, id, id_name, content ";
+				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				ssd << "FROM todos WHERE";
+				ssd << " Id_name = " << GenSeqToHmi.Seq_2_StateNo->ID;
+				ssd << " AND ("
+					"content = '4'";
+				ssd << " OR "
+					"content = '6'"
+					")";
+				ssd << "ORDER BY id;";
+
+				std::string comand = ssd.str();
+				GetTodosSQL(conn, comand);
+			}
+			{
+				std::stringstream ssd;
+
+				ssd << "SELECT create_at, id, id_name, content ";
+				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				ssd << "FROM todos WHERE";
+				ssd << " Id_name = " << GenSeqToHmi.Seq_3_StateNo->ID;
+				ssd << " AND ("
+					"content = ''";
+				ssd << " OR "
+					"content = '3'"
+					")";
+				ssd << "ORDER BY id;";
+
+				std::string comand = ssd.str();
+				GetTodosSQL(conn, comand);
+			}
+
+			INT II = 0;
+		}
+
+	};
+}
 
 
 

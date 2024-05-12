@@ -11,7 +11,11 @@ typedef std::map<int, TCassette> TCASS;
 
 namespace PDF
 {
+	OpcUa::Variant GetVarVariant(OpcUa::VariantType Type, std::string value);
+	void TodosColumn(PGresult* res);
+
 	namespace Cassette
+
 	{
 		class GetPdf
 		{
@@ -20,8 +24,6 @@ namespace PDF
 
 		public:
 
-			void TodosColumn(PGresult* res);
-			OpcUa::Variant GetVarVariant(OpcUa::VariantType Type, std::string value);
 			std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at);
 			void GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn);
 			void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
@@ -46,5 +48,11 @@ namespace PDF
 		//Поток автоматической корректировки
 		DWORD WINAPI RunCassettelPdf(LPVOID);
 	};
+	namespace SHEET
+	{
+		DWORD WINAPI RunAllPdf(LPVOID);
+		void GetRawSheet(PGConnection& conn);
+	};
+
 };
 
