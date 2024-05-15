@@ -603,12 +603,12 @@ namespace PDF
 				maxd = (std::max)(maxd, Ref.rbegin()->second.first - Ref.begin()->second.first);
 
 
-				for(auto a : Ref)
+				for(auto& a : Ref)
 				{
 					maxt = std::fmaxl(maxt, a.second.second);
 					mint = std::fminl(mint, a.second.second);
 				}
-				for(auto a : Act)
+				for(auto& a : Act)
 				{
 					maxt = std::fmaxl(maxt, a.second.second);
 					mint = std::fminl(mint, a.second.second);
@@ -867,43 +867,49 @@ namespace PDF
 
 			try
 			{
-				temp << "/" << std::setw(4) << std::setfill('0') << std::right << Cassette.Year << "-";
-				temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Month << "-";
-				temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Day << "-";
-				temp << std::setw(2) << std::setfill('0') << std::right << Cassette.CassetteNo;
+				//temp << "/";
+				//temp << std::setw(4) << std::setfill('0') << std::right << Cassette.Year << "-";
+				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Month << "-";
+				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Day << "-";
+				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.CassetteNo;
 
 	//В дебуге Удаляем катологи
 	#ifdef _DEBUG
-				if(!index)
-				{
-					std::filesystem::path dir = temp.str();
-					boost::system::error_code ec;
-					std::filesystem::remove_all(dir, ec);
-					std::string err = "";
-					if(ec)
-					{
-						std::vector<boost::filesystem::path> patch = getDir(temp.str());
-						for(auto p : patch)
-							remove(p.string().c_str());
-						if(ec)
-							LOG_ERROR(PdfLogger, "{:90}| Eor Delete dir: \"{}\"", FUNCTION_LINE_NAME, ec.message());
-						patch.erase(patch.begin(), patch.end());
-					}
-				}
+				//if(!index)
+				//{
+				//	std::filesystem::path dir = temp.str();
+				//	boost::system::error_code ec;
+				//	std::filesystem::remove_all(dir, ec);
+				//	std::string err = "";
+				//	if(ec)
+				//	{
+				//		std::vector<boost::filesystem::path> patch = getDir(temp.str());
+				//		for(auto& p : patch)
+				//			remove(p.string().c_str());
+				//		if(ec)
+				//			LOG_ERROR(PdfLogger, "{:90}| Eor Delete dir: \"{}\"", FUNCTION_LINE_NAME, ec.message());
+				//		patch.erase(patch.begin(), patch.end());
+				//	}
+				//}
 	#endif
 				CheckDir(temp.str());
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME + " File1: " + temp.str() + " ");
 
 			std::stringstream tfile;
+			std::stringstream ifile;
 			try
 			{
 				tfile << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
-				tfile << std::setw(3) << std::setfill('0') << Sheet.Slab << "-";
 				tfile << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
 				tfile << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
 				tfile << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
 				tfile << std::setw(2) << std::setfill('0') << Sheet.SubSheet;
-				tfile << ".pdf";
+
+				ifile << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+				ifile << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+				ifile << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+				ifile << std::setw(2) << std::setfill('0') << Cassette.CassetteNo;
+				//tfile << ".pdf";
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME + " File1: " + temp.str() + "/" + tfile.str());
 
 			try
@@ -912,27 +918,41 @@ namespace PDF
 	#pragma region Создаем 2 и последуюие файлы
 
 				std::string ImgeName;
-				ImgeName = temp.str() + "/" + furnImage;
 				FileName = temp.str() + "/" + tfile.str() + ".pdf";
-				int n = 1;
+				
+
+				int n = 0;
 				while(std::filesystem::exists(FileName))
 				{
-					std::string s1 = FileName;
-					std::vector <std::string>split1;
-					boost::split(split1, s1, boost::is_any_of("."));
-					if(split1.size() == 2)
-						FileName = split1[0] + "_" + std::to_string(n) + "." + split1[0];
-
-					std::string s2 = ImgeName;
-					std::vector <std::string> split2;
-					boost::split(split2, s2, boost::is_any_of("."));
-					if(split2.size() == 2)
-						ImgeName = split2[0] + "_" + std::to_string(n) + "." + split2[1];
 					n++;
+					std::string s = FileName;
+					std::vector <std::string>split;
+					boost::split(split, s, boost::is_any_of("."));
+					if(split.size() == 2)
+						FileName = split[0] + "_" + std::to_string(n) + "." + split[1];
 				}
-				std::filesystem::copy_file(furnImage, ImgeName, std::filesystem::copy_options::skip_existing | std::filesystem::copy_options::overwrite_existing);
+
+				if(n)
+				{
+					ImgeName = temp.str() + "/" + ifile.str() + "_" + std::to_string(n) + ".jpg";
+				}	
+				else 
+					ImgeName = temp.str() + "/" + ifile.str() + ".jpg";
+
+				//n = 1;
+				//while(std::filesystem::exists(ImgeName))
+				//{
+				//	std::string s = ImgeName;
+				//	std::vector <std::string> split;
+				//	boost::split(split, s, boost::is_any_of("."));
+				//	if(split.size() == 2)
+				//		ImgeName = split[0] + "_" + std::to_string(n) + "." + split[1];
+				//	n++;
+				//}
 
 	#pragma endregion
+
+				std::filesystem::copy_file(furnImage, ImgeName, std::filesystem::copy_options::skip_existing | std::filesystem::copy_options::overwrite_existing);
 
 				HPDF_SaveToFile (pdf, FileName.c_str());
 				HPDF_Free (pdf);
@@ -1134,10 +1154,11 @@ namespace PDF
 				//Рисуем график FURN
 				PaintGraff(FurnAct, FurnRef, furnImage);
 
-				for(auto a : AllPfdSheet | boost::adaptors::indexed(0))
+				int index = 0;
+				for(auto& a : AllPfdSheet/* | boost::adaptors::indexed(0)*/)
 				{
 					if(!isRun) break;
-					Sheet = a.value();
+					Sheet = a;
 				
 
 					std::stringstream sss;
@@ -1148,7 +1169,7 @@ namespace PDF
 						<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo
 						<< " Лист: "
 						<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
-						<< std::setw(3) << std::setfill('0') << Sheet.Slab << "-"
+						//<< std::setw(3) << std::setfill('0') << Sheet.Slab << "-"
 						<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
 						<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
 						<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
@@ -1191,9 +1212,9 @@ namespace PDF
 						//Рисуем PDF Отпуск
 						DrawFurnPDF();
 
-						auto index = a.index();
+						//auto index = a.index();
 						//Сохраняем PDF
-						SavePDF(index);
+						SavePDF(index++);
 					}
 				}
 				remove(furnImage);
@@ -1362,7 +1383,7 @@ namespace PDF
 				if(Petch == 2)
 					Furn = &ForBase_RelFurn_2;
 				if(Furn == NULL) 
-					throw std::exception(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
+					throw std::runtime_error(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
 
 				if(S107::IsCassette(P) && P.Run_at.size())
 				{
@@ -1423,7 +1444,7 @@ namespace PDF
 			try
 			{
 				std::stringstream com;
-				com << "SELECT id, tempref FROM cassette WHERE"
+				com << "SELECT * FROM cassette WHERE"
 					<< " day = " << it.Day
 					<< " AND month = " << it.Month
 					<< " AND year = " << it.Year
@@ -1496,9 +1517,29 @@ namespace PDF
 			try
 			{
 
-	#ifndef TESTPDF2
+	//#ifndef TESTPDF2
 				sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
 				SetWindowText(hWndDebug, sg2.str().c_str());
+
+				ct.Id = it.Id;
+				ct.Year = it.Year;
+				ct.Month =it.Month;
+				ct.Day = it.Day;
+				ct.CassetteNo = it.CassetteNo;
+
+				ct.Peth = it.Peth;
+				ct.Run_at = it.Run_at;
+				ct.Error_at = it.Error_at;
+				ct.End_at = it.End_at;
+				ct.PointTime_1 = it.PointTime_1;       //Время разгона
+				ct.PointRef_1 = it.PointRef_1;        //Уставка температуры
+				ct.TimeProcSet = it.TimeProcSet;       //Полное время процесса (уставка), мин
+				ct.PointDTime_2 =it.PointDTime_2;      //Время выдержки
+				ct.f_temper = it.f_temper;          //Факт температуры за 5 минут до конца отпуска
+				ct.Finish_at = it.Finish_at;         //Завершение процесса + 15 минут
+				ct.HeatAcc = it.HeatAcc;           //Факт время нагрева
+				ct.HeatWait = it.HeatWait;          //Факт время выдержки
+				ct.Total = it.Total;             //Факт общее время
 
 				std::stringstream sss;
 				sss << "UPDATE cassette SET ";
@@ -1547,8 +1588,8 @@ namespace PDF
 				std::string comand = sss.str();
 
 				SETUPDATESQL(PdfLogger, conn, sss);
-	#endif
-				Cassette::PrintCassettePdfAuto(ct);
+	//#endif
+				PrintCassettePdfAuto(ct);
 			}
 			CATCH(PdfLogger, "")
 		}
@@ -1652,7 +1693,7 @@ namespace PDF
 		void GetPdf::SaveFileCass()
 		{
 
-	#ifdef _DEBUG
+	//#ifdef _DEBUG
 			try
 			{
 	#pragma region Запись в файл Cass.csv заголовка
@@ -1710,7 +1751,7 @@ namespace PDF
 	#pragma endregion
 			}
 			CATCH(PdfLogger, "");
-	#endif
+	//#endif
 		}
 
 		void GetPdf::GetCassette(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
@@ -1783,7 +1824,7 @@ namespace PDF
 
 				int lin = 0;
 				auto size = CassetteTodos.size();
-				for(auto a : CassetteTodos)
+				for(auto& a : CassetteTodos)
 				{
 					if(!isRun)break;
 					lin++;
@@ -1957,7 +1998,7 @@ namespace PDF
 				SaveFileCass();
 
 				int lin = 0;
-				for(auto it : P0)
+				for(auto& it : P0)
 				{
 					if(!isRun)return;
 					TCassette ct;
@@ -1990,10 +2031,13 @@ namespace PDF
 				ssa << "SELECT DISTINCT ON (id) create_at FROM cassette WHERE";
 				//ssa << "(event = 2 OR event = 4) AND ";
 	#ifndef _DEBUG
-	#ifndef TESTPDF
+	//#ifndef TESTPDF
 				ssa << " correct IS NULL AND ";
-	#endif
-	#endif
+	//#endif
+#else
+				ssa << " create_at >= '2024-05-12' AND";
+
+#endif
 				ssa << " delete_at IS NULL";
 				ssa << " ORDER BY id ASC LIMIT 1";
 				std::string comand = ssa.str();
@@ -2006,9 +2050,13 @@ namespace PDF
 
 				if(!DateStart.length())
 				{
+#ifndef _DEBUG
+					return;
+#else
 					std::time_t st = time(NULL);
 					st = (std::time_t)difftime(st, 60 * 60 * 24 * 1); //за 1 суток
 					DateStart = GetDataTimeString(&st);
+#endif // !_DEBUG
 				}
 
 				remove("Cass.csv");
@@ -2084,12 +2132,13 @@ namespace PDF
 				conn_pdf.connection();
 				while(isRun)
 				{
-					PDF::SHEET::GetRawSheet(conn_pdf);
+					//PDF::SHEET::GetRawSheet(conn_pdf);
 
-					//PDF::Cassette::GetPdf getpdf(conn_pdf);
+					PDF::Cassette::GetPdf getpdf(conn_pdf);
 
 #ifdef _DEBUG
 					//В дебаге один прозод и выход из программы
+
 					isRun = false;
 #else
 					int TimeCount = 0;
