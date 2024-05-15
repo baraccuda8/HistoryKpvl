@@ -2106,17 +2106,12 @@ namespace PDF
 						if(ct.f_temper.length())	it.second.f_temper = ct.f_temper;
 						if(ct.Id.length())			it.second.Id = ct.Id;
 
-						if(it.second.End_at.length() && !it.second.Finish_at.length())
+						if(!it.second.Finish_at.length())
 						{
 							std::tm TM;
 							time_t tm = DataTimeOfString(it.second.End_at, FORMATTIME, TM);
-							tm += 60 * 15;
+							tm += (60 * 15);
 							it.second.Finish_at = GetDataTimeString(tm);
-							//localtime_s(&TM, &tm);
-							//TM.tm_year += 1900;
-							//TM.tm_mon += 1;
-
-
 						}
 						SaveDataBase(conn, ct, it.second);
 					}
@@ -2132,18 +2127,13 @@ namespace PDF
 		{
 			try
 			{
+#ifndef _DEBUG
 				DateStart = "";
 				std::stringstream ssa;
 				ssa << "SELECT DISTINCT ON (id) create_at FROM cassette WHERE";
 				//ssa << "(event = 2 OR event = 4) AND ";
-//#ifndef _DEBUG
-	//#ifndef TESTPDF
 				ssa << " correct IS NULL AND ";
-	//#endif
-//#else
-//				ssa << " create_at >= '2024-04-17' AND";
-//
-//#endif
+				//ssa << " create_at >= '2024-04-16' AND";
 				ssa << " delete_at IS NULL";
 				ssa << " ORDER BY id ASC LIMIT 1";
 				std::string comand = ssa.str();
@@ -2153,9 +2143,11 @@ namespace PDF
 					if(PQntuples(res))
 					{
 						DateStart = conn.PGgetvalue(res, 0, 0);
-
 					}
 				}
+#else
+				DateStart = "2024-04-16 00:00:00";
+#endif
 
 				if(!DateStart.length())
 				{
