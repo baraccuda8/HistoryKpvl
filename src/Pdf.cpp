@@ -126,8 +126,8 @@ namespace PDF
 
 	namespace Cassette
 	{
-		const char* tempImage = "t_kpvl.jpg";
-		const char* furnImage = "t_furn.jpg";
+		std::string tempImage = ".jpg";
+		std::string furnImage = ".jpg";
 
 		std::map <std::string, std::string> MonthName{
 			{"1", "January"},
@@ -823,7 +823,7 @@ namespace PDF
 		}
 
 
-		//Перечисление дирректорий. Возвращает только файлы формата "YYYY-MM-DD.xlsx"
+		//Перечисление дирректорий. Возвращает только файлы формата
 		std::vector<boost::filesystem::path> getDir (const std::string lpDir)
 		{
 			std::vector<boost::filesystem::path> paths = getDirContents (lpDir);
@@ -956,6 +956,15 @@ namespace PDF
 
 				HPDF_SaveToFile (pdf, FileName.c_str());
 				HPDF_Free (pdf);
+
+				std::stringstream ssd;
+				//UPDATE cassette SET pdf = now() WHERE year = '2024' AND month = '4' AND day = '21' AND cassetteno = 1
+				ssd << "UPDATE cassette SET pdf = now() WHERE";
+				ssd << " year = '" << Cassette.Year << "' AND";
+				ssd << " month = '" << Cassette.Month << "' AND";
+				ssd << " day = '" << Cassette.Day << "' AND";
+				ssd << " cassetteno = " << Cassette.CassetteNo;
+				SETUPDATESQL(PdfLogger, conn, ssd);
 			}
 			CATCH(PdfLogger, FUNCTION_LINE_NAME + " File1: " + FileName + " ");
 
@@ -980,7 +989,7 @@ namespace PDF
 				if(ifs.is_open())
 				{
 					ifs.close();
-					HPDF_Image image1 = HPDF_LoadJpegImageFromFile(pdf, tempImage);
+					HPDF_Image image1 = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
 					HPDF_Page_DrawImage (page, image1, 22, Height - 239, 370, 137);
 				}
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
@@ -1003,7 +1012,7 @@ namespace PDF
 				if(ifs.is_open())
 				{
 					ifs.close();
-					HPDF_Image image2 = HPDF_LoadJpegImageFromFile(pdf, furnImage);
+					HPDF_Image image2 = HPDF_LoadJpegImageFromFile(pdf, furnImage.c_str());
 					HPDF_Page_DrawImage (page, image2, 22, Height - 409, 370, 137);
 				}
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
@@ -1026,6 +1035,24 @@ namespace PDF
 				}
 
 				GetCassette(Cassette);
+
+				std::stringstream ssd;
+				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
+				furnImage = ssd.str();
+
+				std::stringstream ssh;
+				ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+				ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+
+
+
+
 				if(!Cassette.Run_at.length() || !Cassette.Finish_at.length())
 				{
 					//MessageBox(GlobalWindow, "Лист еще небыл на отпуске", "Ошибка", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1068,6 +1095,14 @@ namespace PDF
 				//return;
 			
 				//Рисуем график FURN
+
+				//ssd << "t_" << Cassette.Day <<  << Cassette
+				//tfile << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+				//tfile << std::setw(2) << std::setfill('0') << Sheet.SubSheet;
+
 				PaintGraff(FurnAct, FurnRef, furnImage);
 
 				//Закалка
@@ -1098,8 +1133,8 @@ namespace PDF
 					//Отображение PDF
 					if(view) std::system(("start " + FileName).c_str());
 				}
-				remove(furnImage);
-				remove(tempImage);
+				remove(furnImage.c_str());
+				remove(tempImage.c_str());
 			//}
 			//CATCH(PdfLogger, FUNCTION_LINE_NAME);
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
@@ -1111,6 +1146,13 @@ namespace PDF
 			{
 		#pragma region Готовим графики
 				Cassette = TC;
+
+				std::stringstream ssd;
+				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
+				furnImage = ssd.str();
 
 				//Sheet = sheet;
 
@@ -1152,6 +1194,7 @@ namespace PDF
 				}
 				else return;
 				//Рисуем график FURN
+				//tempImage 
 				PaintGraff(FurnAct, FurnRef, furnImage);
 
 				int index = 0;
@@ -1159,6 +1202,14 @@ namespace PDF
 				{
 					if(!isRun) break;
 					Sheet = a;
+
+					std::stringstream ssh;
+					ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+					ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+					ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+					ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+					ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+					tempImage = ssh.str();
 				
 
 					std::stringstream sss;
@@ -1216,9 +1267,9 @@ namespace PDF
 						//Сохраняем PDF
 						SavePDF(index++);
 					}
+					remove(tempImage.c_str());
 				}
-				remove(furnImage);
-				remove(tempImage);
+				remove(furnImage.c_str());
 			}
 			CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		};
@@ -1385,7 +1436,7 @@ namespace PDF
 				if(Furn == NULL) 
 					throw std::runtime_error(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
 
-				if(S107::IsCassette(P) && P.Run_at.size())
+				if(S107::IsCassette(P) && P.Run_at.length())
 				{
 					std::tm TM_Run, TM_End, TM_All, TM_Fin;
 					//struct tm TM_All;
@@ -1516,8 +1567,6 @@ namespace PDF
 			std::stringstream sg2;
 			try
 			{
-
-	//#ifndef TESTPDF2
 				sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
 				SetWindowText(hWndDebug, sg2.str().c_str());
 
@@ -1558,7 +1607,7 @@ namespace PDF
 				if(it.Finish_at.length())
 					sss << "finish_at = '" << it.Finish_at << "', correct = now(), pdf = DEFAULT";
 				else
-					sss << "finish_at = DEFAULT, correct = DEFAULT";
+					sss << "finish_at = DEFAULT, correct = now()";
 
 
 				if(Stof(it.PointRef_1))
@@ -1588,7 +1637,7 @@ namespace PDF
 				std::string comand = sss.str();
 
 				SETUPDATESQL(PdfLogger, conn, sss);
-	//#endif
+
 				PrintCassettePdfAuto(ct);
 			}
 			CATCH(PdfLogger, "")
@@ -1932,6 +1981,15 @@ namespace PDF
 								{
 									P.Run_at = a.second.create_at;
 								}
+								else
+								{
+									//P.End_at = a.second.create_at;
+									//EndCassette(conn, P, Petch, s1);
+									//P0[a.first] = P;
+									//P = TCassette();
+									//
+									//P.Run_at = a.second.create_at;
+								}
 							}
 						}
 					}
@@ -2001,6 +2059,42 @@ namespace PDF
 				for(auto& it : P0)
 				{
 					if(!isRun)return;
+
+					if(!S107::IsCassette(it.second))
+					{
+						//std::stringstream ssd;
+						//ssd << "UPDATE cassette SET correct = now() WHERE";
+						//ssd << " year = " << it.second.Year << ",";
+						//ssd << " month = " << it.second.Month << "-";
+						//ssd << " day = " << it.second.Day << "-";
+						//ssd << " cassetteno = " << it.second.CassetteNo;
+						continue;
+					}
+					
+					//TCassette P;
+					//std::stringstream ssd;
+					//ssd << "SELECT * FROM cassette ";
+					//ssd << "WHERE year = " << it.second.Year;
+					//ssd << " AND month = " << it.second.Month;
+					//ssd << " AND day = " << it.second.Day;
+					//ssd << " AND cassetteno = " << it.second.CassetteNo;
+					////ssd << " AND correct IS NULL";
+					//std::string comand = ssd.str();
+					//
+					//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+					//PGresult* res = conn.PGexec(comand);
+					//if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					//{
+					//	S107::GetColl(res);
+					//	if(conn.PQntuples(res))
+					//		S107::GetCassette(res, P, 0);
+					//}
+					//else
+					//	LOG_ERR_SQL(PdfLogger, res, comand);
+					//PQclear(res);
+					//
+					//if(P.Finish_at.length() && (P.Correct.length() || P.Pdf.length()))continue;
+
 					TCassette ct;
 					if(it.second.Run_at.length() && it.second.End_at.length() && S107::IsCassette(it.second))
 					{
@@ -2012,6 +2106,18 @@ namespace PDF
 						if(ct.f_temper.length())	it.second.f_temper = ct.f_temper;
 						if(ct.Id.length())			it.second.Id = ct.Id;
 
+						if(it.second.End_at.length() && !it.second.Finish_at.length())
+						{
+							std::tm TM;
+							time_t tm = DataTimeOfString(it.second.End_at, FORMATTIME, TM);
+							tm += 60 * 15;
+							it.second.Finish_at = GetDataTimeString(tm);
+							//localtime_s(&TM, &tm);
+							//TM.tm_year += 1900;
+							//TM.tm_mon += 1;
+
+
+						}
 						SaveDataBase(conn, ct, it.second);
 					}
 				}
@@ -2030,14 +2136,14 @@ namespace PDF
 				std::stringstream ssa;
 				ssa << "SELECT DISTINCT ON (id) create_at FROM cassette WHERE";
 				//ssa << "(event = 2 OR event = 4) AND ";
-	#ifndef _DEBUG
+//#ifndef _DEBUG
 	//#ifndef TESTPDF
 				ssa << " correct IS NULL AND ";
 	//#endif
-#else
-				ssa << " create_at >= '2024-05-12' AND";
-
-#endif
+//#else
+//				ssa << " create_at >= '2024-04-17' AND";
+//
+//#endif
 				ssa << " delete_at IS NULL";
 				ssa << " ORDER BY id ASC LIMIT 1";
 				std::string comand = ssa.str();
@@ -2045,7 +2151,10 @@ namespace PDF
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(PQntuples(res))
+					{
 						DateStart = conn.PGgetvalue(res, 0, 0);
+
+					}
 				}
 
 				if(!DateStart.length())

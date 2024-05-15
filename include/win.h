@@ -1283,6 +1283,8 @@ enum Cassete{
     HeatAcc,           //Факт время нагрева
     HeatWait,          //Факт время выдержки
     Total,             //Факт общее время
+    Correct,
+    Pdf,
 
 };
 
@@ -1311,6 +1313,8 @@ typedef struct TCassette{
     std::string HeatAcc = "";           //Факт время нагрева
     std::string HeatWait = "";          //Факт время выдержки
     std::string Total = "";             //Факт общее время
+    std::string Correct = "";           //
+    std::string Pdf = "";               //
 
     bool compare(const TCassette& rhs)
     {

@@ -44,13 +44,15 @@ namespace S107
         int HeatAcc = 0;           //Факт время нагрева
         int HeatWait = 0;          //Факт время выдержки
         int Total = 0;             //Факт общее время
+        int Correct = 0;           //
+        int Pdf = 0;               //
 
     };
 
     //Получение номера колонки
     void GetColl(PGresult* res)
     {
-        if(!Coll::Total)
+        if(!Coll::Pdf)
         {
             int nFields = PQnfields(res);
             for(int j = 0; j < nFields; j++)
@@ -80,6 +82,8 @@ namespace S107
                 else if(l == "heatacc")Coll::HeatAcc = j;
                 else if(l == "heatwait")Coll::HeatWait = j;
                 else if(l == "total")Coll::Total = j;
+                else if(l == "correct")Coll::Total = j;
+                else if(l == "pdf")Coll::Total = j;
 
             }
         }
@@ -112,6 +116,9 @@ namespace S107
         cassette.HeatAcc = conn_spis.PGgetvalue(res, line, Coll::HeatAcc); //Завершение процесса + 15 минут
         cassette.HeatWait = conn_spis.PGgetvalue(res, line, Coll::HeatWait); //Завершение процесса + 15 минут
         cassette.Total = conn_spis.PGgetvalue(res, line, Coll::Total); //Завершение процесса + 15 минут
+        cassette.Correct = conn_spis.PGgetvalue(res, line, Coll::Correct); //Завершение процесса + 15 минут
+        cassette.Pdf = conn_spis.PGgetvalue(res, line, Coll::Pdf); //Завершение процесса + 15 минут
+
     }
 
     std::string URI = "opc.tcp://192.168.9.40:4840";
