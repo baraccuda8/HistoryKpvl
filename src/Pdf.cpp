@@ -2127,7 +2127,7 @@ namespace PDF
 		{
 			try
 			{
-#ifndef _DEBUG
+//#ifndef _DEBUG
 				DateStart = "";
 				std::stringstream ssa;
 				ssa << "SELECT DISTINCT ON (id) create_at FROM cassette WHERE";
@@ -2145,9 +2145,9 @@ namespace PDF
 						DateStart = conn.PGgetvalue(res, 0, 0);
 					}
 				}
-#else
-				DateStart = "2024-04-16 00:00:00";
-#endif
+//#else
+//				DateStart = "2024-04-16 00:00:00";
+//#endif
 
 				if(!DateStart.length())
 				{
