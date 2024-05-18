@@ -45,14 +45,15 @@ namespace PDF
 		//Открывается по клику на лист
 		void PrintCassettePdfAuto(TSheet& Sheet);
 
-		//Поток автоматической корректировки
-		DWORD WINAPI RunCassettelPdf(LPVOID);
 	};
 	namespace SHEET
 	{
 		DWORD WINAPI RunAllPdf(LPVOID);
 		void GetRawSheet(PGConnection& conn);
 	};
+
+	//Поток автоматической корректировки
+	DWORD WINAPI RunCassettelPdf(LPVOID);
 
 };
 

@@ -831,9 +831,9 @@ void Open_KPVL()
 #ifndef TESTWIN
 #ifndef TESTGRAFF
     hKPVLURI = CreateThread(0, 0, Open_KPVL_RUN, (LPVOID)0, 0, 0);
-#endif
     hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
-    hRunAllPdf = CreateThread(0, 0, PDF::Cassette::RunCassettelPdf, (LPVOID)0, 0, 0);
+#endif
+    hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
 #endif
 #endif
 
