@@ -233,12 +233,12 @@ time_t DataTimeOfString(std::string str, std::string format, std::tm& TM)
     if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
     {
         size_t size = what.size();
-        if(size >= 1)TM.tm_year = atoi(what[1].str().c_str());
-        if(size >= 2)TM.tm_mon = atoi(what[2].str().c_str());
-        if(size >= 3)TM.tm_mday = atoi(what[3].str().c_str());
-        if(size >= 4)TM.tm_hour = atoi(what[4].str().c_str());
-        if(size >= 5)TM.tm_min = atoi(what[5].str().c_str());
-        if(size >= 6)TM.tm_sec = atoi(what[6].str().c_str());
+        if(size >= 1)TM.tm_year = Stoi(what[1].str());
+        if(size >= 2)TM.tm_mon = Stoi(what[2].str());
+        if(size >= 3)TM.tm_mday = Stoi(what[3].str());
+        if(size >= 4)TM.tm_hour = Stoi(what[4].str());
+        if(size >= 5)TM.tm_min = Stoi(what[5].str());
+        if(size >= 6)TM.tm_sec = Stoi(what[6].str());
 
         std::tm tm = TM;
         tm.tm_year -= 1900;

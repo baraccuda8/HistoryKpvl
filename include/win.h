@@ -996,6 +996,7 @@ namespace casSheet{
         DataTime = 2,
         Start_at,
         //Pos,
+        Correct,
         Pos,
         News,
         DataTime_End,
@@ -1118,6 +1119,7 @@ namespace cas{
         DataTime_All,
         TimeForPlateHeat, //Время сигнализации окончания нагрева, мин
         PresToStartComp,  //Уставка давления для запуска комперссора
+        Correct,
     };
 };
 
@@ -1185,6 +1187,7 @@ typedef struct _TSheet{
     std::string PresToStartComp = "";  //Уставка давления для запуска комперссора
     //std::string TempWatTankCool = "";  //Температура закалочной воды для вкл.охлаждения
     std::string Temperature = "";       //Средняя температура 2-части печи закалки
+    std::string Correct = "";
 
     _TSheet()
     {
@@ -1253,6 +1256,7 @@ typedef struct _TSheet{
         TimeForPlateHeat = ""; //Время сигнализации окончания нагрева, мин
         PresToStartComp = "";  //Уставка давления для запуска комперссора    }
         Temperature = "";
+        Correct = "";
     }
 
     //bool compare(TSheet& rhs)

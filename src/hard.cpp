@@ -112,13 +112,13 @@ std::deque<Value*> AllTagKpvl = {
     {Par_Gen.PresToStartComp    = new Value(AppPar_Gen + "PresToStartComp",     HWNDCLIENT::hPresToStartComp,     KPVL::An::fPresToStartComp, &conn_kpvl)},    //Уставка давления для запуска комперссора
 
 
-    {GenSeqFromHmi.TempSet1     = new Value(AppGenSeqFromHmi + "TempSet1",          HWNDCLIENT::hEditTempSet,         KPVL::An::TempSet1, &conn_kpvl)},       //Уставка температуры 
-    {AI_Hmi_210.LaminPressTop   = new Value(AppAI_Hmi_210 + "LaminPressTop.AI_eu",  HWNDCLIENT::hEditZakPressTopSet,  0, &conn_kpvl)},  //Давление воды закалка коллектор верх
-    {AI_Hmi_210.LaminPressBot   = new Value(AppAI_Hmi_210 + "LaminPressBot.AI_eu",  HWNDCLIENT::hEditZakPressBotSet,  0, &conn_kpvl)},  //Давление воды закалка коллектор низ
-    {AI_Hmi_210.LAM_TE1         = new Value(AppAI_Hmi_210 + "LAM_TE1.AI_eu",        HWNDCLIENT::hEditLAM_TE1Set,      0, &conn_kpvl)},        //Температура воды в поддоне
-    {AI_Hmi_210.Za_TE3          = new Value(AppAI_Hmi_210 + "Za_TE3.AI_eu",         HWNDCLIENT::hEditLAM_TE3Set,      0, &conn_kpvl)},         //Температура воды в баке
-    {AI_Hmi_210.Za_PT3          = new Value(AppAI_Hmi_210 + "Za_PT3.AI_eu",         HWNDCLIENT::hEditLAM_PT3Set,      0, &conn_kpvl)},         //Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-    {AI_Hmi_210.Za_TE4          = new Value(AppAI_Hmi_210 + "Za_TE4.AI_eu",         HWNDCLIENT::hEditTempPerometr,    0, &conn_kpvl)},                    //Пирометр
+    {GenSeqFromHmi.TempSet1     = new Value(AppGenSeqFromHmi + "TempSet1",          HWNDCLIENT::hEditTempSet,         KPVL::An::TempSet1, &conn_kpvl)}, //Уставка температуры 
+    {AI_Hmi_210.LaminPressTop   = new Value(AppAI_Hmi_210 + "LaminPressTop.AI_eu",  HWNDCLIENT::hEditZakPressTopSet,  0, &conn_kpvl)},                  //Давление воды закалка коллектор верх
+    {AI_Hmi_210.LaminPressBot   = new Value(AppAI_Hmi_210 + "LaminPressBot.AI_eu",  HWNDCLIENT::hEditZakPressBotSet,  0, &conn_kpvl)},                  //Давление воды закалка коллектор низ
+    {AI_Hmi_210.LAM_TE1         = new Value(AppAI_Hmi_210 + "LAM_TE1.AI_eu",        HWNDCLIENT::hEditLAM_TE1Set,      0, &conn_kpvl)},                  //Температура воды в поддоне
+    {AI_Hmi_210.Za_TE3          = new Value(AppAI_Hmi_210 + "Za_TE3.AI_eu",         HWNDCLIENT::hEditLAM_TE3Set,      0, &conn_kpvl)},                  //Температура воды в баке
+    {AI_Hmi_210.Za_PT3          = new Value(AppAI_Hmi_210 + "Za_PT3.AI_eu",         HWNDCLIENT::hEditLAM_PT3Set,      0, &conn_kpvl)},                  //Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+    {AI_Hmi_210.Za_TE4          = new Value(AppAI_Hmi_210 + "Za_TE4.AI_eu",         HWNDCLIENT::hEditTempPerometr,    0, &conn_kpvl)},                  //Пирометр
 #pragma endregion
 
 #pragma region Режим работы клапана
@@ -227,23 +227,23 @@ std::deque<Value*> AllTagKpvl = {
 
 
 #pragma region Отклонения листа на кантовке
-    {HMISheetData.Top_Side.h1 = new Value(AppHMISheetData + "Top_Side.h1",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h2 = new Value(AppHMISheetData + "Top_Side.h2",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h3 = new Value(AppHMISheetData + "Top_Side.h3",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h4 = new Value(AppHMISheetData + "Top_Side.h4",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h5 = new Value(AppHMISheetData + "Top_Side.h5",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h6 = new Value(AppHMISheetData + "Top_Side.h6",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h7 = new Value(AppHMISheetData + "Top_Side.h7",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
-    {HMISheetData.Top_Side.h8 = new Value(AppHMISheetData + "Top_Side.h8",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение до кантовки
+    {HMISheetData.Top_Side.h1 = new Value(AppHMISheetData + "Top_Side.h1",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h2 = new Value(AppHMISheetData + "Top_Side.h2",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h3 = new Value(AppHMISheetData + "Top_Side.h3",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h4 = new Value(AppHMISheetData + "Top_Side.h4",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h5 = new Value(AppHMISheetData + "Top_Side.h5",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h6 = new Value(AppHMISheetData + "Top_Side.h6",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h7 = new Value(AppHMISheetData + "Top_Side.h7",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
+    {HMISheetData.Top_Side.h8 = new Value(AppHMISheetData + "Top_Side.h8",     HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение до кантовки
 
-    {HMISheetData.Bot_Side.h1 = new Value(AppHMISheetData + "Bottom_Side.h1",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h2 = new Value(AppHMISheetData + "Bottom_Side.h2",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h3 = new Value(AppHMISheetData + "Bottom_Side.h3",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h4 = new Value(AppHMISheetData + "Bottom_Side.h4",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h5 = new Value(AppHMISheetData + "Bottom_Side.h5",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h6 = new Value(AppHMISheetData + "Bottom_Side.h6",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h7 = new Value(AppHMISheetData + "Bottom_Side.h7",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
-    {HMISheetData.Bot_Side.h8 = new Value(AppHMISheetData + "Bottom_Side.h8",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Откланение после кантовки
+    {HMISheetData.Bot_Side.h1 = new Value(AppHMISheetData + "Bottom_Side.h1",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h2 = new Value(AppHMISheetData + "Bottom_Side.h2",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h3 = new Value(AppHMISheetData + "Bottom_Side.h3",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h4 = new Value(AppHMISheetData + "Bottom_Side.h4",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h5 = new Value(AppHMISheetData + "Bottom_Side.h5",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h6 = new Value(AppHMISheetData + "Bottom_Side.h6",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h7 = new Value(AppHMISheetData + "Bottom_Side.h7",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
+    {HMISheetData.Bot_Side.h8 = new Value(AppHMISheetData + "Bottom_Side.h8",  HWNDCLIENT::hNull, KPVL::Side, &conn_kpvl)}, //Отклонение после кантовки
 #pragma endregion
 
 #pragma region Шаг прохождения листа

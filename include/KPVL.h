@@ -54,6 +54,7 @@ extern int Col_Sheet_cassetteno;
 extern int Col_Sheet_sheetincassette;
 extern int Col_Sheet_timeforplateheat;
 extern int Col_Sheet_prestostartcomp;
+extern int Col_Sheet_correct;
 //};
 #pragma endregion
 

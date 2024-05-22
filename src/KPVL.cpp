@@ -108,6 +108,7 @@ int Col_Sheet_sheetincassette = 0;
 int Col_Sheet_timeforplateheat = 0;
 int Col_Sheet_prestostartcomp = 0;
 int Col_Sheet_temperature = 0;
+int Col_Sheet_correct = 0;
 //};
 #pragma endregion
 
@@ -122,7 +123,7 @@ namespace KPVL {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res)
         {
-            if(!Col_Sheet_temperature)
+            if(!Col_Sheet_correct)
             {
                 int nFields = PQnfields(res);
                 for(int j = 0; j < nFields; j++)
@@ -181,6 +182,7 @@ namespace KPVL {
                     else if(l == "timeforplateheat") Col_Sheet_timeforplateheat = j;
                     else if(l == "prestostartcomp") Col_Sheet_prestostartcomp = j;
                     else if(l == "temperature") Col_Sheet_temperature = j;
+                    else if(l == "correct") Col_Sheet_correct = j;
                     
                 }
             }
@@ -253,7 +255,8 @@ namespace KPVL {
                 sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
                 sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
                 sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
-
+                sheet.Correct = conn.PGgetvalue(res, l, Col_Sheet_correct);
+                
 
                 Sheet.push_back(sheet);
             }

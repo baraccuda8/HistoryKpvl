@@ -73,7 +73,8 @@ public:
         }
         catch(...)
         {
-            MessageBox(NULL, "Неизвестная ошибка", "Error", 0);
+            LOG_ERROR(AllLogger, "{:90}| Unknown error conn_kpvl {}", FUNCTION_LINE_NAME);
+            //MessageBox(NULL, "Неизвестная ошибка", "Error", 0);
         }
         return connections;
     }

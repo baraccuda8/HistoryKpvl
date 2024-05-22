@@ -191,6 +191,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::Bot6, { "После\nкантовки\n6", L2 }},
     {casSheet::Bot7, { "После\nкантовки\n7", L2 }},
     {casSheet::Bot8, { "После\nкантовки\n8", L2 }},
+    {casSheet::Correct, { "Коррект", LL0 }},
 };
 
 //Заголовки колонок окна касет
@@ -1384,7 +1385,10 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         ELSEIF (casSheet::Start_at, p.Start_at);
                         ELSEIF (casSheet::DataTime_End, p.DataTime_End);
                         ELSEIF (casSheet::DataTime_All, p.DataTime_All);
-                        
+                        ELSEIF (casSheet::TimeForPlateHeat, p.TimeForPlateHeat); //Время сигнализации окончания нагрева, мин
+
+                        ELSEIF (casSheet::PresToStartComp, p.PresToStartComp);  //Уставка давления для запуска комперссора
+
                         ELSEIF (casSheet::Pos, (NamePos[p.Pos] + " (" + p.Pos + ")"));
                         
                         ELSEIF (casSheet::Alloy, p.Alloy);
@@ -1440,9 +1444,10 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         ELSEIF (casSheet::Year, p.Year);
                         ELSEIF (casSheet::CassetteNo, p.CassetteNo);
                         ELSEIF (casSheet::SheetInCassette, p.SheetInCassette);
-                        ELSEIF (casSheet::TimeForPlateHeat, p.TimeForPlateHeat); //Время сигнализации окончания нагрева, мин
-                        ELSEIF (casSheet::PresToStartComp, p.PresToStartComp);  //Уставка давления для запуска комперссора
                         //ELSEIF (casSheet::TempWatTankCool, p.TempWatTankCool);  //Температура закалочной воды для вкл.охлаждения
+                        ELSEIF (casSheet::Correct, p.Correct);
+
+                        
                     }
                     CATCH(AllLogger, FUNCTION_LINE_NAME + " : ");
                 }
