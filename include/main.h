@@ -201,6 +201,7 @@ std::string GetDataTimeString();
 std::string GetDataTimeString(std::time_t& st);
 std::string GetDataTimeString(std::time_t* st);
 std::string GetDataTimeString(std::tm& st);
+time_t DataTimeDiff(std::string str1, std::string str2, std::string format = FORMATTIME);
 
 
 time_t DataTimeOfString(std::string str, std::string format, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);

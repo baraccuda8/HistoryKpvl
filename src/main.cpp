@@ -248,6 +248,14 @@ time_t DataTimeOfString(std::string str, std::string format, std::tm& TM)
     return 0;
 }
 
+time_t DataTimeDiff(std::string str1, std::string str2, std::string format)
+{
+    std::tm TM;
+    time_t tm1 = DataTimeOfString(str1, format, TM);
+    time_t tm2 = DataTimeOfString(str2, format, TM);
+    return (time_t)difftime(tm1, tm2);
+}
+
 std::string GetStringData(std::string d)
 {
     if(!d.size())return "";

@@ -12,13 +12,28 @@ public:
 	HWND gHwnd;
 	bool full = false;
 	int64_t MaxSecCount = 0;
-	T_SqlTemp TempRef ={};
-	T_SqlTemp TempAct ={};
+	T_SqlTemp TempRef ={}; 	//Задание
+	T_SqlTemp TempAct ={};	//Актуальное
 	std::string Name;
+
+	double f_mint = 0.0;
+	double f_maxt = 0.0;
+
+	double mint = 0.0;
+	double maxt = 0.0;
+	double cstep = 0.0;
+	double fstep = 0.0;
+	int64_t mind = 0;
+	int64_t maxd = 0;
 	//std::map<std::string, float>Temper;
 	PGConnection* conn = NULL;
 	Graff(std::string n):Name(n){};
-	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt);
+
+	void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
+	void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
+
+	void Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
+	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
 	void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 
 	void DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
@@ -27,7 +42,6 @@ public:
 	//void SqlTemp(T_SqlTemp& st, Value* val);
 	//void GetGrTemp(T_ForBase_RelFurn& app);
 
-	void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
 };
 
 void InitGrafWindow(HWND hWnd);
