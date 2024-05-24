@@ -81,6 +81,56 @@ extern GUID guidPng;
 
 namespace PDF
 {
+	typedef struct T_IdSheet{
+		int id = 0;
+		std::string Start1 = "";		//Дата, время загрузки листа в закалочную печь
+		std::string Start2 = "";		//Дата, время загрузки листа во вторую зону
+		std::string DataTime_End = "";		//Дата, время выгрузки листа из печи 
+
+		std::string TimeTest = "";		//Для тестов
+		std::string DataTime = "";		//Старт нашрева
+
+		int Melt = 0;					//Плавка
+		int Pack = 0;					//Пачка
+		int PartNo = 0;					//Партия
+		int Sheet = 0;					//Номер листа
+		int SubSheet = 0;				//Номер подлиста
+		int Slab = 0;					//Сляб
+
+		std::string Alloy = "нет";		//Марка стали
+		std::string Thikness = "нет";	//Толщина листа, мм
+
+		//float HeatTime_Z2 = 0.0f;		//время нагрева в зоне 2
+		float TimeForPlateHeat = 0.0f;	//Задание Время нахождения листа в закалочной печи. мин
+		float DataTime_All = 0.0f;		//Факт Время нахождения листа в закалочной печи. мин
+		float PresToStartComp = 0.0f;	//Задание Давления воды
+
+		//Фиксируем на начало входа в печь State_1 = 3;
+		float Temper = 0.0f;			//Уставка температуры
+		float Speed = 0.0f;		//Скорость выгрузки
+		float SpeedTopSet = 0.0f;		//Клапан. Скоростная секция. Верх
+		float SpeedBotSet = 0.0f;		//Клапан. Скоростная секция. Низ
+		float Lam1PosClapanTop = 0.0f;		//Клапан. Ламинарная секция 1. Верх
+		float Lam1PosClapanBot = 0.0f;		//Клапан. Ламинарная секция 1. Низ
+		float Lam2PosClapanTop = 0.0f;		//Клапан. Ламинарная секция 2. Верх
+		float Lam2PosClapanBot = 0.0f;		//Клапан. Ламинарная секция 2. Низ
+		uint16_t Valve_1x = 0;			//Режим работы клапана 1
+		uint16_t Valve_2x = 0;			//Режим работы клапана 2
+		std::string Mask1 = "000000000";//Режим работы клапана 1
+		std::string Mask2 = "000000000";//Режим работы клапана 2
+		std::string Mask = "";			//Режим работы клапана
+		//Фиксируем на выходе из печи State_2 = 5;
+		float LAM_TE1 = 0.0f;			//Температура воды в поддоне
+		float Za_TE3 = 0.0f;			//Температура воды в баке
+		float Za_PT3 = 0.0f;			//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+
+		//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
+		float LaminPressTop = 0.0f;		//Давление в верхнем коллекторе 
+		float LaminPressBot = 0.0f;		//Давление в нижнем коллекторе
+
+		int Pos = 0;
+	}T_IdSheet;
+
 	bool Correct = FALSE;
 	typedef std::vector<T_Todos> V_Todos;
 	void TodosColumn(PGresult* res)
@@ -203,6 +253,7 @@ namespace PDF
 
 			CassettePdfClass(TCassette& TC);
 			CassettePdfClass(TSheet& sheet, bool view = true);
+			CassettePdfClass(T_IdSheet& sheet, bool view = false);
 			~CassettePdfClass()
 			{
 				//conn.PGDisConnection();
@@ -964,14 +1015,17 @@ namespace PDF
 
 	#pragma endregion
 
-				std::filesystem::copy_file(furnImage, ImgeName, std::filesystem::copy_options::skip_existing | std::filesystem::copy_options::overwrite_existing);
+				try
+				{
+					if(std::filesystem::exists(furnImage))
+						std::filesystem::copy_file(furnImage, ImgeName, std::filesystem::copy_options::skip_existing | std::filesystem::copy_options::overwrite_existing);
+				}
+				CATCH(PdfLogger, FUNCTION_LINE_NAME + " File1: " + FileName + " ");
 
 				HPDF_SaveToFile (pdf, FileName.c_str());
 				HPDF_Free (pdf);
 
-				
 				{
-
 					std::string PdfName;
 					if(n)	PdfName = urls.str() + "/" + tfile.str() + "_" + std::to_string(n) + ".pdf";
 					else	PdfName = urls.str() + "/" + tfile.str() + ".pdf";
@@ -980,12 +1034,15 @@ namespace PDF
 					std::stringstream ssd;
 					ssd << "UPDATE sheet SET pdf = '" << PdfName;
 					ssd << "' WHERE id = " << Sheet.id;
-					SETUPDATESQL(PdfLogger, conn, ssd);
+					std::string comand = ssd.str();
+					PGresult* res = conn.PGexec(comand); 
+					if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+						LOG_ERROR(PdfLogger, "{:89}| {}", (std::string(__FUNCTION__) + std::string(":") + std::to_string(1037)), comand);;
+					PQclear(res);
 				}
 				
 				{
 					std::stringstream ssd;
-					//UPDATE cassette SET pdf = now() WHERE year = '2024' AND month = '4' AND day = '21' AND cassetteno = 1
 					ssd << "UPDATE cassette SET pdf = now() WHERE";
 					ssd << " year = '" << Cassette.Year << "' AND";
 					ssd << " month = '" << Cassette.Month << "' AND";
@@ -1170,6 +1227,172 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
+		CassettePdfClass::CassettePdfClass(T_IdSheet& sheet, bool view)
+		{
+			try
+			{
+#pragma region Готовим графики
+				Sheet.Alloy = sheet.Alloy;
+				Sheet.DataTime = sheet.DataTime;
+				Sheet.DataTime_All = (boost::format("%.1f") % sheet.DataTime_All).str();
+				Sheet.DataTime_End = sheet.DataTime_End;
+
+				Sheet.id = (boost::format("%u") % sheet.id).str();
+				Sheet.Melt = (boost::format("%u") % sheet.Melt).str();
+				Sheet.Pack = (boost::format("%u") % sheet.Pack).str();
+				Sheet.PartNo = (boost::format("%u") % sheet.PartNo).str();
+				Sheet.Sheet = (boost::format("%u") % sheet.Sheet).str();
+				Sheet.SubSheet = (boost::format("%u") % sheet.SubSheet).str();
+				Sheet.Slab = (boost::format("%u") % sheet.Slab).str();
+
+				Sheet.Lam1PosClapanTop = (boost::format("%.1f") % sheet.Lam1PosClapanTop).str();
+				Sheet.Lam1PosClapanBot = (boost::format("%.1f") % sheet.Lam1PosClapanBot).str();
+				Sheet.Lam2PosClapanTop = (boost::format("%.1f") % sheet.Lam2PosClapanTop).str();
+				Sheet.Lam2PosClapanBot = (boost::format("%.1f") % sheet.Lam2PosClapanBot).str();
+				Sheet.LaminPressTop = (boost::format("%.1f") % sheet.LaminPressTop).str();
+				Sheet.LaminPressBot = (boost::format("%.1f") % sheet.LaminPressBot).str();
+
+				Sheet.LAM_TE1 = (boost::format("%.1f") % sheet.LAM_TE1).str();
+				Sheet.Mask = sheet.Mask;
+				Sheet.Pos = (boost::format("%u") % sheet.Pos).str();
+				Sheet.Speed = (boost::format("%.0f") % sheet.Speed).str();
+				Sheet.Start_at = sheet.DataTime;
+				Sheet.Temper = (boost::format("%.0f") % sheet.Temper).str();
+
+				Sheet.TimeForPlateHeat = (boost::format("%.1f") % sheet.TimeForPlateHeat).str();
+				Sheet.Za_PT3 = (boost::format("%.1f") % sheet.Za_PT3).str();
+				Sheet.Za_TE3 = (boost::format("%.1f") % sheet.Za_TE3).str();
+
+				if(!conn.connection())
+					return;// throw std::exception(__FUN(std::string("Error SQL conn connection to GraffKPVL")));
+				conn.Name = "test";
+
+				std::stringstream sss;
+				sss << "Кассета: "
+					<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
+					<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
+					<< std::setw(2) << std::setfill('0') << Cassette.Day << " № "
+					<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo
+					<< " Лист: "
+					<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
+					//<< std::setw(3) << std::setfill('0') << Sheet.Slab << "-"
+					<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
+					<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
+					<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
+					<< std::setw(2) << std::setfill('0') << Sheet.SubSheet;
+
+				SetWindowText(hWndDebug, sss.str().c_str());
+
+
+				if(!Sheet.Year.length() || !Sheet.Month.length() || !Sheet.Day.length() || !Sheet.CassetteNo.length())
+				{
+					//return;
+				}
+				else
+					GetCassette(Cassette);
+
+				std::stringstream ssd;
+				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
+				furnImage = ssd.str();
+
+				std::stringstream ssh;
+				ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+				ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+				ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+
+				if(!Cassette.Run_at.length() || !Cassette.Finish_at.length())
+				{
+					//MessageBox(GlobalWindow, "Лист еще небыл на отпуске", "Ошибка", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+					LOG_INFO(PdfLogger, "{:90}| Лист {:06}-{:03}-{:03}-{:03}-{:03}/{:03}, Касета {:04}-{:02}-{:02}-{:02} еще не была в отпускной печи",
+							 FUNCTION_LINE_NAME,
+							 Stoi(Sheet.Melt), Stoi(Sheet.Slab), Stoi(Sheet.PartNo), Stoi(Sheet.Pack), Stoi(Sheet.Sheet), Stoi(Sheet.SubSheet),
+							 Stoi(Cassette.Year), Stoi(Cassette.Month), Stoi(Cassette.Day), Stoi(Cassette.CassetteNo));
+					//return;
+				}
+
+				int P = atoi(Cassette.Peth.c_str());
+
+				FurnRef.erase(FurnRef.begin(), FurnRef.end());
+				FurnAct.erase(FurnAct.begin(), FurnAct.end());
+				TempAct.erase(TempAct.begin(), TempAct.end());
+				TempRef.erase(TempRef.begin(), TempRef.end());
+
+				if(Cassette.Run_at.length() && Cassette.Finish_at.length())
+				{
+					int Ref_ID = 0;
+					int Act_ID = 0;
+
+					//Первая отпускная печь
+					if(P == 1)
+					{
+						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
+						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+					}
+
+					//Вторая отпускная печь
+					if(P == 2)
+					{
+						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
+						Act_ID = ForBase_RelFurn_2.TempAct->ID;
+					}
+
+					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
+					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+				}
+				//return;
+
+				//Рисуем график FURN
+
+				//ssd << "t_" << Cassette.Day <<  << Cassette
+				//tfile << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+				//tfile << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+				//tfile << std::setw(2) << std::setfill('0') << Sheet.SubSheet;
+				//if(P)
+				PaintGraff(FurnAct, FurnRef, furnImage);
+
+				//Закалка
+				GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+				SqlTempActKPVL(TempAct);
+
+				//Рисуем график KPVL
+				PaintGraff(TempAct, TempRef, tempImage);
+
+
+#pragma endregion
+
+			//Создание PFD файла
+				if(NewPdf())
+				{
+					//Рисуем PDF заголовок
+					DrawHeder(0, Height);
+
+					//Рисуем PDF Закалка
+					DrawKpvlPDF();
+
+					//Рисуем PDF Отпуск
+					//if(P)
+					DrawFurnPDF();
+
+					//Сохраняем PDF
+					SavePDF(1);
+
+					//Отображение PDF
+					if(view) std::system(("start " + FileName).c_str());
+				}
+				remove(furnImage.c_str());
+				remove(tempImage.c_str());
+			//}
+			//CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+		}
+
 		CassettePdfClass::CassettePdfClass(TCassette& TC)
 		{
 			try
@@ -1303,7 +1526,6 @@ namespace PDF
 			}
 			CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		};
-
 
 		std::string GetPdf::GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at)
 		{
@@ -2221,54 +2443,6 @@ namespace PDF
 	};
 
 
-	typedef struct T_IdSheet{
-
-		std::string Start1 = "";		//Дата, время загрузки листа в закалочную печь
-		std::string Start2 = "";		//Дата, время загрузки листа во вторую зону
-		std::string Start3 = "";		//Дата, время выгрузки листа из печи 
-
-		std::string TimeTest = "";		//Для тестов
-		std::string TimeStart = "";		//Старт нашрева
-
-		int Melt = 0;					//Плавка
-		int Pack = 0;					//Пачка
-		int PartNo = 0;					//Партия
-		int Sheet = 0;					//Номер листа
-		int SubSheet = 0;				//Номер подлиста
-
-		std::string Alloy = "нет";		//Марка стали
-		std::string Thikness = "нет";	//Толщина листа, мм
-
-		//float HeatTime_Z2 = 0.0f;		//время нагрева в зоне 2
-		float TimeForPlateHeat = 0.0f;	//Задание Время нахождения листа в закалочной печи. мин
-		float DataTime_All = 0.0f;		//Факт Время нахождения листа в закалочной печи. мин
-
-
-		//Фиксируем на начало входа в печь State_1 = 3;
-		float TempSet1 = 0.0f;			//Уставка температуры
-		float UnloadSpeed = 0.0f;		//Скорость выгрузки
-		float SpeedTopSet = 0.0f;		//Клапан. Скоростная секция. Верх
-		float SpeedBotSet = 0.0f;		//Клапан. Скоростная секция. Низ
-		float LAM1_TopSet = 0.0f;		//Клапан. Ламинарная секция 1. Верх
-		float LAM1_BotSet = 0.0f;		//Клапан. Ламинарная секция 1. Низ
-		float LAM2_TopSet = 0.0f;		//Клапан. Ламинарная секция 2. Верх
-		float LAM2_BotSet = 0.0f;		//Клапан. Ламинарная секция 2. Низ
-		uint16_t Valve_1x = 0;			//Режим работы клапана 1
-		uint16_t Valve_2x = 0;			//Режим работы клапана 2
-		std::string Mask1 = "000000000";//Режим работы клапана 1
-		std::string Mask2 = "000000000";//Режим работы клапана 2
-		std::string Mask = "";			//Режим работы клапана
-		//Фиксируем на выходе из печи State_2 = 5;
-		float LAM_TE1 = 0.0f;			//Температура воды в поддоне
-		float Za_TE3 = 0.0f;			//Температура воды в баке
-		float Za_PT3 = 0.0f;			//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-
-		//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
-		float LaminPressTop = 0.0f;		//Давление в верхнем коллекторе 
-		float LaminPressBot = 0.0f;		//Давление в нижнем коллекторе
-
-	}T_IdSheet;
-
 	typedef std::vector<T_IdSheet>V_IdSheet;
 	//std::vector <T_IdSheet> IdSheet;
 	
@@ -2296,8 +2470,11 @@ namespace PDF
 		const int st3_3 = 3;	//Выдача заготовки
 		const int st3_4 = 4;	//Окончание цикла обработки
 
-		std::string StartSheet = "2024-05-13 00:00:00";
-		//std::string StopSheet = "2025-05-14 00:00:00";
+		int AllId;
+		int iAllId;
+
+		std::string StartSheet;
+		std::string StopSheet;
 
 		//const std::string StartSheet = "2024-05-13 14:40:00";
 		//const std::string StopSheet = "2024-05-13 16:00:00";
@@ -2343,12 +2520,12 @@ namespace PDF
 			std::stringstream ssd;
 
 			ssd << " " << GetStringData(ids.Start2) << ";";
-			ssd << " " << GetStringData(ids.Start3) << ";";
+			ssd << " " << GetStringData(ids.DataTime_End) << ";";
 			//ssd << " " << GetStringData(ids.Start4) << ";";
 
 			ssd << std::fixed << std::setprecision(1) << ids.DataTime_All << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.TimeForPlateHeat << ";";
-			ssd << " " << GetStringData(ids.TimeStart) << ";";
+			ssd << " " << GetStringData(ids.DataTime) << ";";
 			ssd << Error << ";";
 
 
@@ -2364,8 +2541,8 @@ namespace PDF
 			ssd << ids.SubSheet << ";";
 
 
-			ssd << std::fixed << std::setprecision(1) << ids.TempSet1 << ";";
-			ssd << std::fixed << std::setprecision(1) << ids.UnloadSpeed << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Temper << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Speed << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.Za_PT3 << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.Za_TE3 << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.LaminPressTop << ";";
@@ -2373,10 +2550,10 @@ namespace PDF
 			ssd << std::fixed << std::setprecision(1) << ids.SpeedTopSet << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.SpeedBotSet << ";";
 			ssd << "\'" << ids.Mask << "\';";
-			ssd << std::fixed << std::setprecision(1) << ids.LAM1_TopSet << ";";
-			ssd << std::fixed << std::setprecision(1) << ids.LAM1_BotSet << ";";
-			ssd << std::fixed << std::setprecision(1) << ids.LAM2_TopSet << ";";
-			ssd << std::fixed << std::setprecision(1) << ids.LAM2_BotSet << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanTop << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanBot << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanTop << ";";
+			ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanBot << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.LAM_TE1 << ";";
 			ssd << " " << GetStringData(ids.TimeTest) << ";";
 
@@ -2639,6 +2816,7 @@ namespace PDF
 			ssd << "FROM todos WHERE create_at < '" << ids.Start1 << "' AND (";
 			ssd << "id_name = " << GenSeqFromHmi.TempSet1->ID << " OR ";
 			ssd << "id_name = " << Par_Gen.UnloadSpeed->ID << " OR ";
+			ssd << "id_name = " << Par_Gen.PresToStartComp->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.SpeedSection.Top->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.SpeedSection.Bot->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.LaminarSection1.Top->ID << " OR ";
@@ -2654,14 +2832,15 @@ namespace PDF
 
 			for(auto a : DataSheetTodos)
 			{
-				if(a.id_name == GenSeqFromHmi.TempSet1->ID) ids.TempSet1 = a.content.As<float>();
-				if(a.id_name == Par_Gen.UnloadSpeed->ID) ids.UnloadSpeed = a.content.As<float>();
+				if(a.id_name == GenSeqFromHmi.TempSet1->ID) ids.Temper = a.content.As<float>();
+				if(a.id_name == Par_Gen.UnloadSpeed->ID) ids.Speed = a.content.As<float>();
+				if(a.id_name == Par_Gen.PresToStartComp->ID) ids.PresToStartComp = a.content.As<float>();
 				if(a.id_name == HMISheetData.SpeedSection.Top->ID) ids.SpeedTopSet = a.content.As<float>();
 				if(a.id_name == HMISheetData.SpeedSection.Bot->ID) ids.SpeedBotSet = a.content.As<float>();
-				if(a.id_name == HMISheetData.LaminarSection1.Top->ID) ids.LAM1_TopSet = a.content.As<float>();
-				if(a.id_name == HMISheetData.LaminarSection1.Bot->ID) ids.LAM1_BotSet = a.content.As<float>();
-				if(a.id_name == HMISheetData.LaminarSection2.Top->ID) ids.LAM2_TopSet = a.content.As<float>();
-				if(a.id_name == HMISheetData.LaminarSection2.Bot->ID) ids.LAM2_BotSet = a.content.As<float>();
+				if(a.id_name == HMISheetData.LaminarSection1.Top->ID) ids.Lam1PosClapanTop = a.content.As<float>();
+				if(a.id_name == HMISheetData.LaminarSection1.Bot->ID) ids.Lam1PosClapanBot = a.content.As<float>();
+				if(a.id_name == HMISheetData.LaminarSection2.Top->ID) ids.Lam2PosClapanTop = a.content.As<float>();
+				if(a.id_name == HMISheetData.LaminarSection2.Bot->ID) ids.Lam2PosClapanBot = a.content.As<float>();
 				if(a.id_name == HMISheetData.Valve_1x->ID)
 				{
 					ids.Valve_1x = a.content.As<uint16_t>();
@@ -2687,7 +2866,7 @@ namespace PDF
 			ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
 			ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
 			ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-			ssd << "FROM todos WHERE create_at < '" << ids.Start3 << "' AND (";
+			ssd << "FROM todos WHERE create_at < '" << ids.DataTime_End << "' AND (";
 			ssd << "id_name = " << AI_Hmi_210.Za_TE3->ID << " OR ";
 			ssd << "id_name = " << AI_Hmi_210.Za_PT3->ID << " OR ";
 			ssd << "id_name = " << AI_Hmi_210.LAM_TE1->ID;
@@ -2699,11 +2878,7 @@ namespace PDF
 			for(auto a : DataSheetTodos)
 			{
 				if(a.id_name == AI_Hmi_210.Za_TE3->ID) ids.Za_TE3 = a.content.As<float>();
-				if(a.id_name == AI_Hmi_210.Za_PT3->ID)
-				{
-					ids.TimeTest = a.create_at;
-					ids.Za_PT3 = a.content.As<float>();
-				}
+				if(a.id_name == AI_Hmi_210.Za_PT3->ID) ids.Za_PT3 = a.content.As<float>();
 				if(a.id_name == AI_Hmi_210.LAM_TE1->ID) ids.LAM_TE1 = a.content.As<float>();
 			}
 		}
@@ -2713,7 +2888,7 @@ namespace PDF
 		{
 			MapSheetTodos DataSheetTodos;
 			std::tm tmp;
-			time_t t1 = DataTimeOfString(ids.Start3, FORMATTIME, tmp) + 5;
+			time_t t1 = DataTimeOfString(ids.DataTime_End, FORMATTIME, tmp) + 5;
 			std::string Start = GetDataTimeString(&t1);
 
 			std::stringstream ssd;
@@ -2748,7 +2923,7 @@ namespace PDF
 			ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
 			//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
 			ssd << " AND create_at >= '" << StartSheet << "'";
-			//ssd << " AND create_at < '" << StopSheet << "'";
+			if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 			ssd << " ORDER BY id;";
 
 #pragma endregion
@@ -2770,7 +2945,7 @@ namespace PDF
 			ssd << " AND CAST(content AS integer) >= " << st2_3;
 			ssd << " AND CAST(content AS integer) <> " << st2_4;
 			ssd << " AND create_at >= '" << StartSheet << "'";
-			//ssd << " AND create_at < '" << StopSheet << "'";
+			if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 			ssd << " ORDER BY id;";
 
 #pragma endregion
@@ -2800,7 +2975,7 @@ namespace PDF
 
 				ids1 = ids;
 				ids1.Start1 = create_at;
-				ids1.TimeStart = create_at;
+				ids1.DataTime = create_at;
 			}
 			return true;
 		}
@@ -2827,10 +3002,10 @@ namespace PDF
 			if(isSheet(ids1))
 			{
 				T_IdSheet ids = ids1;
-				ids.Start3 = create_at;
+				ids.DataTime_End = create_at;
 				ids1 = T_IdSheet();
 
-				ids.DataTime_All = GetDataTime_All(ids.TimeStart, ids.Start3);
+				ids.DataTime_All = GetDataTime_All(ids.DataTime, ids.DataTime_End);
 				ids.TimeForPlateHeat = GetTime(ids.Start2, allTime);
 
 				GetDataSheet1(conn, ids);
@@ -2841,17 +3016,6 @@ namespace PDF
 
 				vids.push_back(ids);
 			}
-		}
-
-
-
-		void GetCasseteId()
-		{
-
-		}
-
-		void Get(PGConnection& conn)
-		{
 		}
 
 		bool cmpData(T_Todos& first, T_Todos& second)
@@ -2899,7 +3063,7 @@ namespace PDF
 		void SaveT_IdSheetBodyCsv(std::fstream& ss1, T_IdSheet& ids)
 		{
 			ss1 << " " << ids.Start1 << ";";
-			ss1 << " " << ids.TimeStart << ";";
+			ss1 << " " << ids.DataTime << ";";
 			ss1 << ids.Melt << ";";
 			ss1 << ids.PartNo << ";";
 			ss1 << ids.Pack << ";";
@@ -2909,7 +3073,7 @@ namespace PDF
 		}
 #pragma endregion
 
-		void Get_ID_S(PGConnection& conn, T_IdSheet& td, int &ID_S, int &day, int &month, int &year, int& cassetteno)
+		void Get_ID_S(PGConnection& conn, T_IdSheet& td, int &day, int &month, int &year, int& cassetteno)
 		{
 			{
 				std::stringstream ssd;
@@ -2925,7 +3089,7 @@ namespace PDF
 				PGresult* res = conn.PGexec(comand);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 				{
-					ID_S = Stoi(conn.PGgetvalue(res, 0, 0));
+					td.id = Stoi(conn.PGgetvalue(res, 0, 0));
 					day = Stoi(conn.PGgetvalue(res, 0, 1));
 					month = Stoi(conn.PGgetvalue(res, 0, 2));
 					year = Stoi(conn.PGgetvalue(res, 0, 3));
@@ -2955,35 +3119,34 @@ namespace PDF
 			return id;
 		}
 
-
-		void UpdateSheet(PGConnection& conn, T_IdSheet td)
+		void UpdateSheet(PGConnection& conn, T_IdSheet& td)
 		{
-			int ID_S = 0;
 			int day = 0;
 			int month = 0;
 			int year = 0;
 			int cassetteno = 0;
-			Get_ID_S(conn, td, ID_S, day, month, year, cassetteno);
-			if(ID_S)
+			Get_ID_S(conn, td, day, month, year, cassetteno);
+			if(td.id)
 			{
 				std::stringstream ssd;
 				ssd << "UPDATE sheet SET";
 				ssd << " start_at = '" << td.Start1 << "'";				//Дата, время загрузки листа в закалочную печь
-				ssd << ", datatime_end = '" << td.Start3 << "'";		//Дата, время выдачи листа из закалочной печи
+				ssd << ", datatime_end = '" << td.DataTime_End << "'";		//Дата, время выдачи листа из закалочной печи
 				ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
 				ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
 
 				ssd << ", timeforplateheat = " << td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
 				ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
 
-				ssd << ", temper = " << td.TempSet1;					//Уставка температуры
-				ssd << ", speed = " << td.UnloadSpeed;					//Скорость выгрузки
+				ssd << ", speed = " << td.Speed;					//Скорость выгрузки
+				ssd << ", temper = " << td.Temper;					//Уставка температуры
+				ssd << ", prestostartcomp = " << td.PresToStartComp;					//Скорость выгрузки
 				ssd << ", posclapantop = " << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
 				ssd << ", posclapanbot = " << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
-				ssd << ", lam1posclapantop = " << td.LAM1_TopSet;		//Клапан. Ламинарная секция 1. Верх
-				ssd << ", lam1posclapanbot = " << td.LAM1_BotSet;		//Клапан. Ламинарная секция 1. Низ
-				ssd << ", lam2posclapantop = " << td.LAM2_TopSet;		//Клапан. Ламинарная секция 2. Верх
-				ssd << ", lam2posclapanbot = " << td.LAM2_BotSet;		//Клапан. Ламинарная секция 2. Низ
+				ssd << ", lam1posclapantop = " << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
+				ssd << ", lam1posclapanbot = " << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
+				ssd << ", lam2posclapantop = " << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
+				ssd << ", lam2posclapanbot = " << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
 				ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
 				//Фиксируем на выходе из печи State_2 = 5;
 				ssd << ", lam_te1 = " << td.LAM_TE1;					//Температура воды в поддоне
@@ -2994,7 +3157,7 @@ namespace PDF
 				ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
 				ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
 
-				ssd << ", correct = now(), pdf = '' WHERE id = " << ID_S;
+				ssd << ", correct = now(), pdf = '' WHERE id = " << td.id;
 				SetWindowText(hWndDebug, ssd.str().c_str());
 
 				//LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
@@ -3010,18 +3173,116 @@ namespace PDF
 						SETUPDATESQL(PdfLogger, conn, ssd);
 					}
 				}
+
+				PDF::Cassette::CassettePdfClass pdf(td);
 			}
+			else
+			{
+				//Свободные id
+				//3394
+				//3428
+				//3669
+				//3928
+				//3952
+				//3954
+				//3955
+				//3973
+
+
+				td.id = iAllId++;
+				std::stringstream ssd;
+				ssd << "INSERT INTO sheet (";
+				ssd << "id, ";
+				ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
+				ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
+				ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
+				ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
+				ssd << "alloy, ";
+				ssd << "thikness, ";
+				ssd << "melt, ";
+				ssd << "slab, ";
+				ssd << "partno, ";
+				ssd << "pack, ";
+				ssd << "sheet, ";
+				ssd << "subsheet, ";
+				ssd << "temper, ";
+				ssd << "speed, ";
+				ssd << "timeforplateheat, ";
+				ssd << "prestostartcomp, ";
+				ssd << "posclapantop, ";
+				ssd << "posclapanbot, ";
+				ssd << "lam1posclapantop, ";
+				ssd << "lam1posclapanbot, ";
+				ssd << "lam2posclapantop, ";
+				ssd << "lam2posclapanbot, ";
+				ssd << "mask, ";
+
+				ssd << "lampresstop, ";									//Давление в верхнем коллекторе
+				ssd << "lampressbot, ";									//Давление в нижнем коллекторе
+				ssd << "lam_te1, ";					//Температура воды в поддоне
+				ssd << "za_te3, ";						//Температура воды в баке
+				ssd << "za_pt3, ";						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+				ssd << "correct, ";
+				ssd << "pdf, ";
+				ssd << " pos";
+
+				ssd << ") VALUES (";
+				ssd << td.id << ", ";
+				ssd << "'" << td.DataTime << "', ";
+				ssd << "'" << td.DataTime << "', ";
+				ssd << "'" << td.DataTime_End << "', ";
+				ssd << td.DataTime_All << ", ";
+				ssd << "'" << td.Alloy  << "', ";
+				ssd << "'" << td.Thikness << "', ";
+				ssd << td.Melt << ", ";
+				ssd << td.Slab << ", "; //Slab
+				ssd << td.PartNo << ", ";
+				ssd << td.Pack << ", ";
+				ssd << td.Sheet << ", ";
+				ssd << td.SubSheet << ", ";
+				ssd << td.Temper << ", ";
+				ssd << td.Speed << ", ";
+				ssd << td.TimeForPlateHeat << ", ";
+				ssd << td.PresToStartComp << ", ";
+				ssd << td.SpeedTopSet << ", ";
+				ssd << td.SpeedBotSet << ", ";
+				ssd << td.Lam1PosClapanTop<< ", ";
+				ssd << td.Lam1PosClapanBot << ", ";
+				ssd << td.Lam2PosClapanTop << ", ";
+				ssd << td.Lam2PosClapanBot << ", ";
+				ssd << "'" + td.Mask + "', ";
+
+				ssd << td.LaminPressTop << ", ";
+				ssd << td.LaminPressBot << ", ";
+
+				ssd << td.LAM_TE1 << ", ";
+				ssd << td.Za_TE3 << ", ";
+				ssd << td.Za_PT3 << ", ";
+
+				ssd << "now(), '', 7);";
+
+				SETUPDATESQL(SQLLogger, conn, ssd);
+				PDF::Cassette::CassettePdfClass pdf(td);
+
+				if(iAllId == AllId)
+				{
+					MessageBox(Global0, "Достигнуд придел ID", "Внимание", 0);
+					int tt = 0;
+				}
+
+			}
+
 		}
 
 		void GetRawSheet(PGConnection& conn)
 		{
 
-			std::stringstream ssd;
-			ssd << "SELECT datatime_end, id FROM sheet WHERE pdf <> '' ORDER BY id DESC LIMIT 1";
-			PGresult* res = conn.PGexec(ssd.str());
-			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					StartSheet = conn.PGgetvalue(res, 0, 0);
-			PQclear(res);
+			//std::stringstream ssd;
+			//ssd << "SELECT datatime_end, id FROM sheet WHERE pdf <> '' ORDER BY id DESC LIMIT 1";
+			//PGresult* res = conn.PGexec(ssd.str());
+			//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+			//		StartSheet = conn.PGgetvalue(res, 0, 0);
+			//PQclear(res);
 
 			MapSheetTodos allSheetTodos;
 
@@ -3072,24 +3333,24 @@ namespace PDF
 						InZone1(conn, ids1, ss1, td.create_at, count, i);
 						SaveT_IdSheetBodyCsv(ff2, ids1);
 					}
-					else if(st == st1_4 ||  st == st1_5 || st == st1_6) //"Загрузка в печь" || "Закрыть входную дверь" || "Нагрев листа"
+					else if(st == st1_4 || st == st1_5 || st == st1_6) //"Загрузка в печь" || "Закрыть входную дверь" || "Нагрев листа"
 					{
-						ids1.TimeStart = td.create_at;
+						ids1.DataTime = td.create_at;
 					}
-					else if(st == st1_7 || st == st1_8 ) 	//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
+					else if(st == st1_7 || st == st1_8) 	//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
 					{
 						if(!InZone2(conn, ids1, ids2, ss1, td.create_at))
 							InZone3(conn, ids1, ids4, allTime, ss1, td.create_at);
 					}
 				}
-				
+
 				else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID) //Выгрузка из печи
 				{
 					int16_t st = td.content.As<int16_t>();
 					if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
 					{
 						if(!InZone2(conn, ids1, ids2, ss1, td.create_at))
-							InZone3(conn, ids1, ids4, allTime, ss1, td.create_at); 
+							InZone3(conn, ids1, ids4, allTime, ss1, td.create_at);
 					}
 					else if(st == st2_5 || st == st2_6 || st == st2_7) //"Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
 					{
@@ -3103,13 +3364,119 @@ namespace PDF
 			ss1.close();
 
 			for(V_IdSheet::iterator it = ids4.begin(); isRun && it != ids4.end(); it++)
-				UpdateSheet(conn, *it);
-
+			{
+				T_IdSheet td = *it;
+				UpdateSheet(conn, td);
+			}
 			INT II = 0;
 		}
 
 	};
 
+
+	void TestInsetr(PGConnection& conn)
+	{
+
+		//T_IdSheet td;
+		//td.id = 2928;
+		//td.DataTime = "2024-05-14 11:26:45";
+		//td.DataTime_End = "2024-05-14 11:45:04";
+		//td.Alloy = "А3";
+		//td.Thikness = "4,2";
+		//td.DataTime_All = 18.3;
+		//td.TimeForPlateHeat = 18;
+		//td.Melt = 107235;
+		//td.Slab = 0;
+		//td.PartNo = 402;
+		//td.Pack = 3;
+		//td.Sheet = 65;
+		//td.SubSheet = 0;
+		//td.Temper = 900;
+		//td.Speed = 700;
+		//td.Za_PT3 = 4.1;
+		//td.Za_TE3 = 34.4;
+		//td.LaminPressTop = 3.7;
+		//td.LaminPressBot = 1.8;
+		//td.SpeedTopSet = 2;
+		//td.SpeedBotSet = 10;
+		//td.Mask = "001111111 001111111";
+		//td.Lam1PosClapanTop = 2.5;
+		//td.Lam1PosClapanBot = 10;
+		//td.Lam2PosClapanTop = 2.5;
+		//td.Lam2PosClapanBot = 10;
+		//td.LAM_TE1 = 34.3;
+		//std::stringstream ssd;
+		//ssd << "INSERT INTO sheet (";
+		//ssd << "id, ";
+		//ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
+		//ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
+		//ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
+		//ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
+		//ssd << "alloy, ";
+		//ssd << "thikness, ";
+		//ssd << "melt, ";
+		//ssd << "slab, ";
+		//ssd << "partno, ";
+		//ssd << "pack, ";
+		//ssd << "sheet, ";
+		//ssd << "subsheet, ";
+		//ssd << "temper, ";
+		//ssd << "speed, ";
+		//ssd << "timeforplateheat, ";
+		//ssd << "prestostartcomp, ";
+		//ssd << "posclapantop, ";
+		//ssd << "posclapanbot, ";
+		//ssd << "lam1posclapantop, ";
+		//ssd << "lam1posclapanbot, ";
+		//ssd << "lam2posclapantop, ";
+		//ssd << "lam2posclapanbot, ";
+		//ssd << "mask, ";
+		//ssd << "lampresstop, ";									//Давление в верхнем коллекторе
+		//ssd << "lampressbot, ";									//Давление в нижнем коллекторе
+		//ssd << "lam_te1, ";					//Температура воды в поддоне
+		//ssd << "za_te3, ";						//Температура воды в баке
+		//ssd << "za_pt3, ";						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+		//ssd << "correct, ";
+		//ssd << "pdf, ";
+		//ssd << " pos";
+		//
+		//ssd << ") VALUES (";
+		//ssd << td.id << ", ";
+		//ssd << "'" << td.DataTime << "', ";
+		//ssd << "'" << td.DataTime << "', ";
+		//ssd << "'" << td.DataTime_End << "', ";
+		//ssd << td.DataTime_All << ", ";
+		//ssd << "'" << td.Alloy << "', ";
+		//ssd << "'" << td.Thikness << "', ";
+		//ssd << td.Melt << ", ";
+		//ssd << td.Slab << ", "; //Slab
+		//ssd << td.PartNo << ", ";
+		//ssd << td.Pack << ", ";
+		//ssd << td.Sheet << ", ";
+		//ssd << td.SubSheet << ", ";
+		//ssd << td.Temper << ", ";
+		//ssd << td.Speed << ", ";
+		//ssd << td.TimeForPlateHeat << ", ";
+		//ssd << td.PresToStartComp << ", ";
+		//ssd << td.SpeedTopSet << ", ";
+		//ssd << td.SpeedBotSet << ", ";
+		//ssd << td.Lam1PosClapanTop << ", ";
+		//ssd << td.Lam1PosClapanBot << ", ";
+		//ssd << td.Lam2PosClapanTop << ", ";
+		//ssd << td.Lam2PosClapanBot << ", ";
+		//ssd << "'" + td.Mask + "', ";
+		//ssd << td.LaminPressTop << ", ";
+		//ssd << td.LaminPressBot << ", ";
+		//ssd << td.LAM_TE1 << ", ";
+		//ssd << td.Za_TE3 << ", ";
+		//ssd << td.Za_PT3 << ", ";
+		//ssd << "now(), '', 7);";
+		//
+		//SETUPDATESQL(SQLLogger, conn, ssd);
+		//PDF::Cassette::CassettePdfClass pdf(td);
+	}
+
+//#define Recovery
 		//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID)
 	{
@@ -3125,8 +3492,37 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
+#ifndef Recovery
+					//Для ручного добавления листа
+					//TestInsetr(conn_pdf);
+
+					std::string comand = "SELECT datatime_end, id FROM sheet WHERE pdf <> '' ORDER BY id DESC LIMIT 1";
+					PGresult* res = conn_pdf.PGexec(comand);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+						SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
+					PQclear(res);
 					PDF::SHEET::GetRawSheet(conn_pdf);
-					PDF::Cassette::GetPdf getpdf(conn_pdf);
+					//PDF::Cassette::GetPdf getpdf(conn_pdf);
+#else
+
+					SHEET::AllId = 0;
+					//SHEET::iAllId = 2761;
+					//SHEET::StartSheet = "2024-05-08 00:00:00";
+					//SHEET::StopSheet = "2024-05-09 00:00:00";
+
+					//PDF::SHEET::GetRawSheet(conn_pdf);
+
+					SHEET::iAllId = 1;
+					SHEET::StartSheet = "2024-05-01 00:00:00";
+					SHEET::StopSheet = "2024-05-13 18:52:00";
+					PDF::SHEET::GetRawSheet(conn_pdf);
+
+					//SHEET::iAllId = 2836;
+					//SHEET::StartSheet = "2024-05-13 00:00:00";
+					//SHEET::StopSheet = "2024-05-14 00:00:00";
+					//PDF::SHEET::GetRawSheet(conn_pdf);
+#endif
+
 					PDF::Correct = false;
 				}
 #ifdef _DEBUG
