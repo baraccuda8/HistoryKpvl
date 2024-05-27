@@ -175,6 +175,18 @@ std::string GetDataTimeString(std::time_t* st)
     return sdt.str();
 }
 
+std::wstring GetData(std::wstring str)
+{
+    std::wstring::const_iterator start = str.begin();
+    std::wstring::const_iterator end = str.end();
+    boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
+    boost::match_results<std::wstring::const_iterator> what;
+
+    boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size();
+    return what[1].str();
+}
+
+
 std::string GetDataTimeString()
 {
     std::time_t st = time(NULL);
@@ -432,16 +444,19 @@ void GetVersionProg()
     szTitle += rc;
 }
 
-std::string Formats(float f)
+std::string Formats(float f, int n)
 {
     std::stringstream s;
     //s << std::setw(4) << std::setfill('0') << f;
-    s << std::setprecision(1) << std::fixed << f;
+    s << 
+        std::setprecision(n) << std::fixed << f;
     //s << boost::format("%.1f") % f;
     std::string d = s.str();
     boost::replace_all(d, ".", ",");
     return d;
 }
+
+
 
 void WaitCloseTheread(HANDLE h, std::string hamd)
 {

@@ -270,22 +270,22 @@ void Graff::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 	f_maxt = fmaxt * fstep;
 	f_mint = fmint * fstep;
 
-	Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
-	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-	Gdiplus::StringFormat stringFormat;
-	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
-	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+	//Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
+	//Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
+	//Gdiplus::StringFormat stringFormat;
+	//stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
+
+	double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
 
 	for(double d = f_mint; d <= f_maxt; d += fstep)
 	{
-		double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
-
 		float mY = Rect.Y + float((f_maxt - d) * coeffH);
 		Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
 		Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
 		temp.DrawLine(&Gdi_L1, pt1, pt2);
 
-		Gdiplus::RectF Rect2 ={0, mY - 8, 50, 20};
+		Gdiplus::RectF Rect2 ={0, mY - 11, 40, 20};
 
 		std::wstringstream sdw;
 		sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << d;
@@ -301,42 +301,10 @@ void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::C
 	Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
 	Gdiplus::Pen Gdi_L2(clor, 1);
 	auto b = st.begin();
-	auto e = st.end();
-	e--;
+	auto e = st.rbegin();
+	//e--;
 	double coeffW = (double)(Rect.Width) / double(maxd);
 	double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
-
-
-	//Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-	//Gdiplus::StringFormat stringFormat;
-	//stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
-	//stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-
-	//{
-	//	float mY = Rect.Y + float((f_maxt - f_maxt) * coeffH);
-	//	Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
-	//	Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
-	//	temp.DrawLine(&Gdi_L1, pt1, pt2);
-	//
-	//	Gdiplus::RectF Rect2 ={0, mY - 8, 50, 20};
-	//
-	//	std::wstringstream sdw;
-	//	sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << f_maxt;
-	//	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
-	//}
-
-	//{
-	//	float iY = Rect.Y + float((f_maxt - f_mint) * coeffH);
-	//	Gdiplus::PointF pt1 ={Rect.X - 5,				iY};
-	//	Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	iY};
-	//	temp.DrawLine(&Gdi_L1, pt1, pt2);
-	//
-	//	Gdiplus::RectF Rect2 ={0, iY - 8, 50, 20};
-	//
-	//	std::wstringstream sdw;
-	//	sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << f_mint;
-	//	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
-	//}
 
 	Gdiplus::PointF p1 ={0, 0};
 	Gdiplus::PointF p2;;
@@ -368,56 +336,64 @@ void Graff::DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wst
 }
 
 
-std::wstring GetData(std::wstring str)
+void Graff::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
 {
-	std::wstring::const_iterator start = str.begin();
-	std::wstring::const_iterator end = str.end();
-	boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}):\\d{1,2}.*");
-	boost::match_results<std::wstring::const_iterator> what;
+	Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
+	Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
+	temp.DrawLine(&Gdi_L1, pt1, pt2);
 
-	boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size();
-	return what[1].str();
+	Gdiplus::RectF RectText(Rect);
+
+	Gdiplus::RectF boundRect;
+	temp.MeasureString(sDataBeg.c_str(), -1, &font1, RectText, &stringFormat, &boundRect);
+
+	boundRect.X = Rect.X + float(sd);
+	//boundRect.X -= 21;
+	boundRect.X -= boundRect.Width / 2;
+	boundRect.Height += 3;
+
+	//temp.DrawRectangle(&pen, boundRect);
+
+	Gdiplus::Pen p = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0), 0.1f);
+
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+	temp.DrawString(sDataBeg.c_str(), -1, &font1, boundRect, &stringFormat, &Gdi_brush);
 }
 
 void Graff::DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 {
-	Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-	Gdiplus::StringFormat stringFormat;
-	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
-	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-	Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
-
 	auto tb = TempAct.begin();
 	auto te = TempAct.rbegin();
 
-
 	std::string st1 = std::string (tb->first.begin(), tb->first.end());
 	std::string st2 = std::string (te->first.begin(), te->first.end());
-	time_t tm1 = DataTimeDiff(st2, st1) / 60;
 
-	//for(auto& e : TempAct)
-	size_t count = TempAct.size();
-	for(auto e = 0; e < count ; e++)
+	std::tm TM;
+	time_t tm1 = DataTimeOfString(st1, FORMATTIME, TM);
+	time_t tm2 = DataTimeOfString(st2, FORMATTIME, TM);
+
+	double tm = difftime(tm2, tm1);
+	double Step = 1.0;
+	double Count = 1.0;
+
+	Count = 6.0;
+	Step = tm / Count;
+
+	for(double e = 0; e <= Count; e++)
 	{
-		//auto r = TempAct[e];
-		std::wstring sDataBeg = GetData(std::wstring(tb->first.begin(), tb->first.end()));
+		double sd = round(Rect.Width / (Count) * e);
+		
+		double f = Step * e;
+		double tmf = tm1 + f;
+		time_t tms = time_t(tmf);
 
-		Gdiplus::PointF pt1 ={Rect.X, Rect.Y};
-		Gdiplus::PointF pt2 ={Rect.X, Rect.Height - 15};
-		temp.DrawLine(&Gdi_L1, pt1, pt2);
+		std::string s = GetDataTimeString(&tms);
+		std::wstring sDataBeg = GetData(std::wstring(s.begin(), s.end()));
 
-		Gdiplus::RectF RectText(Rect);
-		RectText.X -= 15;
-
-		Gdiplus::RectF boundRect;
-		temp.MeasureString(sDataBeg.c_str(), 5, &font1, RectText, &stringFormat, &boundRect);
-		boundRect.X -= 6;
-
-		Gdiplus::Pen p = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0), 0.1f);
-
-		stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-		temp.DrawString(sDataBeg.c_str(), 5, &font1, boundRect, &stringFormat, &Gdi_brush);
+		DrawT(temp, Rect, sd, sDataBeg);
 	}
+	
+	
 }
 
 void Graff::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
@@ -456,8 +432,6 @@ void Graff::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 
 void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 {
-	Gdiplus::Pen Gdi_Bar(Gdiplus::Color(0, 0, 0), 1);
-
 	maxt = 0;
 	mint = 9999;
 	mind = (std::min)(TempAct.begin()->second.first, TempRef.begin()->second.first);
@@ -482,19 +456,16 @@ void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 	RectG2.Height -= 25;
 	RectG2.X += 45;
 	RectG2.Width -= 70;
+	
+	Gdiplus::RectF RectG3(RectG2);
+	RectG3.Height += 17;
 
 	Grid(temp, RectG2);
+	DrawTime(temp, RectG3);
+
 	DrawBottom(temp, RectG2, Red, TempRef);	//Красный; Заданное значение температуры
 	DrawBottom(temp, RectG2, Blue, TempAct);	//Синий; Фактическое значение температуры
 
-	Gdiplus::RectF RectG3(RectG);
-	RectG3.X = 100;
-	RectG3.Y = RectG.Height - 15;
-	DrawInfo(temp, RectG3);
-
-	RectG2.Height += 17;
-
-	DrawTime(temp, RectG2);
 }
 
 void Graff::Paint(HWND hWnd)
@@ -853,7 +824,7 @@ DWORD WINAPI Open_GRAFF_KPVL(LPVOID)
 		if(!GraffKPVL.conn->connection()) 
 			throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffKPVL")));
 		GraffKPVL.MaxSecCount = SecCount2;
-
+		//GraffKPVL.MaxSecCount = 60 * 22.1;
 		while(isRun)
 		{
 			GetGrTempKPVLTempAct();
@@ -1074,8 +1045,8 @@ void InitGrafWindow(HWND hWnd)
 
 #ifdef TESTGRAFF
 	hGGraff1 = CreateThread(0, 0, Open_GRAFF_KPVL, (LPVOID)0, 0, 0);
-	//hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
-	//hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
+	hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
+	hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
 #endif
 
 	int t = 0;

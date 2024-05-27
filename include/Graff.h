@@ -16,6 +16,13 @@ public:
 	T_SqlTemp TempAct ={};	//Актуальное
 	std::string Name;
 
+	Gdiplus::StringFormat stringFormat;
+
+	Gdiplus::Pen pen = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0));
+	Gdiplus::SolidBrush Gdi_brush = Gdiplus::SolidBrush(Gdiplus::Color(0, 0, 0));
+	Gdiplus::Pen Gdi_L1 = Gdiplus::Pen(Gdiplus::Color(192, 192, 192), 0.5); //Черный
+
+
 	double f_mint = 0.0;
 	double f_maxt = 0.0;
 
@@ -27,7 +34,11 @@ public:
 	int64_t maxd = 0;
 	//std::map<std::string, float>Temper;
 	PGConnection* conn = NULL;
-	Graff(std::string n):Name(n){};
+	Graff(std::string n):Name(n)
+	{
+		stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+		stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+	};
 
 	void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
 	void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
@@ -36,6 +47,7 @@ public:
 	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
 	void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 
+	void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg);
 	void DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
 	void Paint(HWND hWnd);
 

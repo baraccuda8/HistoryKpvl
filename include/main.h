@@ -209,6 +209,7 @@ time_t DataTimeOfString(std::string str, std::string format, int& d1, int& d2, i
 time_t DataTimeOfString(std::string str, std::string format, std::tm& TM);
 
 std::string GetStringData(std::string d);
-std::string Formats(float f);
+std::string Formats(float f, int n = 1);
+std::wstring GetData(std::wstring str);
 
 void WaitCloseTheread(HANDLE h, std::string hamd);
