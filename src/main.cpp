@@ -179,7 +179,7 @@ std::wstring GetData(std::wstring str)
 {
     std::wstring::const_iterator start = str.begin();
     std::wstring::const_iterator end = str.end();
-    boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
+    boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}):\\d{1,2}.*");
     boost::match_results<std::wstring::const_iterator> what;
 
     boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size();

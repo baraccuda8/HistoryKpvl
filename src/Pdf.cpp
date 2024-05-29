@@ -129,6 +129,11 @@ namespace PDF
 		float LaminPressBot = 0.0f;		//Давление в нижнем коллекторе
 
 		int Pos = 0;
+
+		int day = 0;
+		int month = 0; 
+		int year = 0; 
+		int cassetteno = 0;
 	}T_IdSheet;
 
 	bool Correct = FALSE;
@@ -277,23 +282,27 @@ namespace PDF
 			void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID);
 			void SqlTempActKPVL(T_SqlTemp& tr);
 
-			void Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, T_SqlTemp& Ref);
 			void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
 			void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg);
 			//void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt);;
 			void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
 			void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
-			void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act);
+			void DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, T_SqlTemp& Ref);
+			void DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
+			void DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act);
+
 			//void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
 			void PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage);
-			void DrawHeder(HPDF_REAL left, HPDF_REAL top);
-			void DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
-			void DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
 
 			bool NewPdf();
-			void SavePDF(size_t index);
-			void DrawKpvlPDF();
-			void DrawFurnPDF();
+			void SavePDF();
+			HPDF_REAL DrawHeder(HPDF_REAL left, HPDF_REAL top);
+
+			HPDF_REAL DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
+			HPDF_REAL DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
+			HPDF_REAL DrawKpvlPDF(HPDF_REAL left, HPDF_REAL top);
+
+			HPDF_REAL DrawFurnPDF(HPDF_REAL left, HPDF_REAL top);
 
 			void GetSheet();
 			void GetCassette(TCassette& cassette);
@@ -527,67 +536,42 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
-		/*
-		void CassettePdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt)
+		void CassettePdfClass::DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat)
 		{
-			try
-			{
-				Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
-				Gdiplus::Pen Gdi_L2(clor, 1);
-				//auto b = st.begin();
-				//auto e = st.end();
-				//e--;
+			Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
 
-				double coeffW = (double)(Rect.Width) / double(maxd);
-				double coeffH = (double)(Rect.Height - Rect.Y) / (double)(maxt - mint);
+			std::wstring::const_iterator start = str.begin();
+			std::wstring::const_iterator end = str.end();
+			boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}):\\d{1,2}.*");
+			boost::match_results<std::wstring::const_iterator> what;
 
-
-				Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-				Gdiplus::StringFormat stringFormat;
-				stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
-				stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-
-
-				float mY = Rect.Y + float((maxt - maxt) * coeffH);
-				Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
-				Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
-				temp.DrawLine(&Gdi_L1, pt1, pt2);
-				Gdiplus::RectF Rect2 ={0, mY - 8, 50, 20};
-
-				std::wstringstream sdw;
-				sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << maxt;
-
-				temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
-
-				float iY = Rect.Y + float((maxt - mint) * coeffH);
-				pt1 ={Rect.X - 5,				iY};
-				pt2 ={Rect.X + Rect.Width + 5,	iY};
-				temp.DrawLine(&Gdi_L1, pt1, pt2);
-
-
-				Rect2 ={0, iY - 8, 50, 20};
-
-				sdw.str(std::wstring());
-				sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << mint;
-				temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
-
-				Gdiplus::PointF p1 ={0, 0};
-				Gdiplus::PointF p2;;
-				p1.X = Rect.X;
-				p1.Y = Rect.Y + float((maxt - st.begin()->second.second) * coeffH);
-
-				for(auto& a : st)
-				{
-					p2.X =  Rect.X + float((a.second.first - mind) * coeffW);
-					p2.Y =  Rect.Y + float((maxt - a.second.second) * coeffH);
-					temp.DrawLine(&Gdi_L2, p1, p2);
-
-					p1.X = p2.X;
-					p1.Y = p2.Y;
-				}
-			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 1)
+				temp.DrawString(what[1].str().c_str(), -1, &font1, Rect, &stringFormat, &Gdi_brush);
 		}
-		*/
+
+
+		void CassettePdfClass::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
+		{
+			Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
+			Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
+			temp.DrawLine(&Gdi_L1, pt1, pt2);
+
+			Gdiplus::RectF RectText(Rect);
+
+			Gdiplus::RectF boundRect;
+			temp.MeasureString(sDataBeg.c_str(), 5, &font1, RectText, &stringFormat, &boundRect);
+
+			boundRect.X = Rect.X + float(sd);
+			boundRect.X -= 21;
+			boundRect.Height += 3;
+
+			//temp.DrawRectangle(&pen, boundRect);
+
+			Gdiplus::Pen p = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0), 0.1f);
+
+			stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+			temp.DrawString(sDataBeg.c_str(), 5, &font1, boundRect, &stringFormat, &Gdi_brush);
+		}
 
 		void CassettePdfClass::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st)
 		{
@@ -680,7 +664,34 @@ namespace PDF
 			//}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
-		void CassettePdfClass::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, T_SqlTemp& Ref)
+		void CassettePdfClass::DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
+		{
+			stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
+			stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+
+			Gdiplus::RectF Rect1 = RectG;
+
+			temp.TranslateTransform(0, RectG.Height);
+			temp.RotateTransform(-90);
+
+			stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+			stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+
+			std::wstring theString = L"Температура С°";
+
+			Gdiplus::RectF boundRect ={0, 0, RectG.Height + 5, 20};
+			temp.DrawString(theString.c_str(), -1, &font1, boundRect, &stringFormat, &Gdi_brush);
+			temp.ResetTransform();
+
+			stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+			theString = L"Время час:мин";
+			temp.DrawString(theString.c_str(), -1, &font1, Rect1, &stringFormat, &Gdi_brush);
+
+			stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+			stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+		}
+
+		void CassettePdfClass::DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, T_SqlTemp& Ref)
 		{
 
 			for(auto a : Ref)
@@ -710,7 +721,7 @@ namespace PDF
 				fmint = floor(fmint);
 				//cstep = fmod((fmaxt - fmint), fstep);
 				cstep = (fmaxt - fmint);
-			} while(cstep > 5.0);
+			} while(cstep >= 6.0);
 
 			f_maxt = fmaxt * fstep;
 			f_mint = fmint * fstep;
@@ -731,7 +742,8 @@ namespace PDF
 				Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
 				temp.DrawLine(&Gdi_L1, pt1, pt2);
 
-				Gdiplus::RectF Rect2 ={0, mY - 11, 40, 20};
+				Gdiplus::RectF Rect2 ={Rect.X - 45, mY - 11, 40, 20};
+				//Gdiplus::RectF Rect2 ={0, mY - 11, 40, 20};
 
 				std::wstringstream sdw;
 				sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << d;
@@ -742,60 +754,7 @@ namespace PDF
 			int tt = 0;
 		}
 
-		//void CassettePdfClass::DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat)
-		//{
-		//	try
-		//	{
-		//		Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-		//
-		//		std::wstring::const_iterator start = str.begin();
-		//		std::wstring::const_iterator end = str.end();
-		//		boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
-		//		boost::match_results<std::wstring::const_iterator> what;
-		//
-		//		if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 1)
-		//			temp.DrawString(what[1].str().c_str(), -1, &font1, Rect, &stringFormat, &Gdi_brush);
-		//	}CATCH(PdfLogger, FUNCTION_LINE_NAME);
-		//}
-
-		void CassettePdfClass::DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat)
-		{
-			Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-
-			std::wstring::const_iterator start = str.begin();
-			std::wstring::const_iterator end = str.end();
-			boost::wregex xRegEx(L".* (\\d{1,2}:\\d{1,2}):\\d{1,2}.*");
-			boost::match_results<std::wstring::const_iterator> what;
-
-			if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 1)
-				temp.DrawString(what[1].str().c_str(), -1, &font1, Rect, &stringFormat, &Gdi_brush);
-		}
-
-
-		void CassettePdfClass::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
-		{
-			Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
-			Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
-			temp.DrawLine(&Gdi_L1, pt1, pt2);
-
-			Gdiplus::RectF RectText(Rect);
-
-			Gdiplus::RectF boundRect;
-			temp.MeasureString(sDataBeg.c_str(), 5, &font1, RectText, &stringFormat, &boundRect);
-
-			boundRect.X = Rect.X + float(sd);
-			boundRect.X -= 21;
-			boundRect.Height += 3;
-
-			//temp.DrawRectangle(&pen, boundRect);
-
-			Gdiplus::Pen p = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0), 0.1f);
-
-			stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-			temp.DrawString(sDataBeg.c_str(), 5, &font1, boundRect, &stringFormat, &Gdi_brush);
-		}
-
-		void CassettePdfClass::DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act)
+		void CassettePdfClass::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act)
 		{
 			auto tb = Act.begin();
 			auto te = Act.rbegin();
@@ -873,15 +832,19 @@ namespace PDF
 				Gdiplus::Color Red(255, 0, 0);
 
 				Gdiplus::RectF RectG2(RectG);
+
 				RectG2.Y += 5;
-				RectG2.Height -= 25;
-				RectG2.X += 45;
-				RectG2.Width -= 70;
+				RectG2.Height -= 40;
+
+				RectG2.X += 55;
+				RectG2.Width -= 75;
+
 				Gdiplus::RectF RectG3(RectG2);
 				RectG3.Height += 17;
 
-				Grid(temp, RectG2, Act, Ref);
-				DrawTime(temp, RectG3, Act);
+				DrawGridTemp(temp, RectG2, Act, Ref);
+				DrawGridTime(temp, RectG3, Act);
+				DrawGridOssi(temp, RectG);
 
 				DrawBottom(temp, RectG2, Red, Ref);	//Красный; Заданное значение температуры
 				DrawBottom(temp, RectG2, Blue, Act);	//Синий; Фактическое значение температуры
@@ -955,57 +918,17 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
-		void CassettePdfClass::DrawHeder(HPDF_REAL left, HPDF_REAL top)
+
+		HPDF_REAL CassettePdfClass::DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
 		{
-			try
-			{
-				HPDF_Page_SetFontAndSize (page, font, 14);
-				HPDF_REAL Y = top - 40;
-				//842 / 2 = 
-				draw_text (page, left + 380, Y, "ПАСПОРТ");
-
-
-				HPDF_Page_SetFontAndSize (page, font, 10);
-				Y -= 30;
-				draw_text (page, left + 20, Y, "Марка стали");
-				draw_text_rect (page, left + 100, Y, XP, YP, Sheet.Alloy);
-
-				draw_text (page, left + 220, Y, "Размер листа");
-				draw_text_rect (page, left + 300, Y, XP, YP, Sheet.Thikness);
-
-
-				Y -= 30;
-				draw_text (page, left + 20, Y, "Плавка");
-				draw_text_rect (page, left + 70, Y, XP, YP, Sheet.Melt);
-
-				draw_text (page, left + 180, Y, "Партия");
-				draw_text_rect (page, left + 230, Y, XP, YP, Sheet.PartNo);
-
-				draw_text (page, left + 350, Y, "Пачка");
-				draw_text_rect (page, left + 390, Y, XP, YP, Sheet.Pack);
-
-				draw_text (page, left + 510, Y, "Лист");
-				draw_text_rect (page, left + 550, Y, XP, YP, Sheet.Sheet + " / " + Sheet.SubSheet);
-
-				draw_text (page, left + 680, Y, "Сляб");
-				draw_text_rect (page, left + 720, Y, XP, YP, Sheet.Slab);
-
-				Y -= 10;
-				HPDF_Page_MoveTo (page, left + 15, Y);
-				HPDF_Page_LineTo (page, left + Width - 20, Y);
-				HPDF_Page_Stroke (page);
-			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
-		}
-
-		void CassettePdfClass::DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
-		{
+			HPDF_REAL Y = top - 0;
 			try
 			{
 				std::string ss = Sheet.Start_at;
 				std::vector <std::string>split;
 				boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
 
-				HPDF_REAL Y = top - 0;
+				
 
 				draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
 				if(split.size() >= 2)
@@ -1041,10 +964,13 @@ namespace PDF
 				HPDF_Page_MoveTo (page, 15, Y);
 				HPDF_Page_LineTo (page, Width - 20, Y);
 				HPDF_Page_Stroke (page);
+				Y -= 20;
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+
+			return Y;
 		}
 
-		void CassettePdfClass::DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
+		HPDF_REAL CassettePdfClass::DrawFurn(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
 		{
 			HPDF_REAL Y = top - 0;
 			try
@@ -1070,7 +996,14 @@ namespace PDF
 				if(split.size() >= 2)
 				{
 					draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
-					draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
+					std::string ss = split[1];
+					std::vector <std::string>split1;
+					boost::split(split1, ss, boost::is_any_of(" "), boost::token_compress_on);
+
+					if(split1.size())
+						draw_text_rect (page, left + 340, Y, XP, YP, split1[0]);  //Время
+					else
+						draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
 				}
 
 				Y -= 25;
@@ -1080,7 +1013,16 @@ namespace PDF
 
 				Y -= 20;
 				draw_text_rect (page, left + 0, Y, w, YP, "Время нагрева до температуры отпуска, мин");
-				draw_text_rect (page, left + 270, Y, XP, YP, Cassette.PointTime_1);						//Задание
+
+				float PointTime1 = Stof(Cassette.PointTime_1);
+				float PointTime2 = PointTime1 + 60;
+				std::stringstream sss;
+				sss << boost::format("%.1f - ") % PointTime1;
+				sss << boost::format("%.1f") % PointTime2;
+
+				
+
+				draw_text_rect (page, left + 270, Y, XP, YP, sss.str());								//Задание
 				draw_text_rect (page, left + 340, Y, XP, YP, Cassette.HeatAcc);							//Факт
 
 				Y -= 25;
@@ -1092,7 +1034,9 @@ namespace PDF
 				draw_text_rect (page, left + 0, Y, w, YP, "Температура отпуска, °С");
 				draw_text_rect (page, left + 270, Y, XP, YP, Cassette.PointRef_1);						//Задание
 				draw_text_rect (page, left + 340, Y, XP, YP, Cassette.f_temper);							//Факт
+				Y -= 20;
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			return Y;
 		}
 
 		//Создание нового листа PDF
@@ -1171,7 +1115,7 @@ namespace PDF
 
 
 		//Сохранение листа PDF
-		void CassettePdfClass::SavePDF(size_t index)
+		void CassettePdfClass::SavePDF()
 		{
 			std::stringstream urls;
 			//urls << "\\\\192.168.9.63\\";
@@ -1325,16 +1269,69 @@ namespace PDF
 
 		}
 
-		//Рисуем Закалка
-		void CassettePdfClass::DrawKpvlPDF()
+		HPDF_REAL CassettePdfClass::DrawHeder(HPDF_REAL left, HPDF_REAL top)
 		{
+			HPDF_REAL Y = top - 40;
 			try
 			{
-				DrawKpvl(410, Height - 150, Width - 432);
+				HPDF_Page_SetFontAndSize (page, font, 14);
+				
+				//842 / 2 = 
+				draw_text (page, left + 365, Y, "ПАСПОРТ");
 
+
+				HPDF_Page_SetFontAndSize (page, font, 10);
+				Y -= 30;
+				draw_text (page, left + 20, Y, "Марка стали");
+				draw_text_rect (page, left + 100, Y, XP, YP, Sheet.Alloy);
+
+				draw_text (page, left + 220, Y, "Толщина, мм");
+				draw_text_rect (page, left + 300, Y, XP, YP, Sheet.Thikness);
+
+
+				Y -= 30;
+				draw_text (page, left + 20, Y, "Плавка");
+				draw_text_rect (page, left + 70, Y, XP, YP, Sheet.Melt);
+
+				draw_text (page, left + 180, Y, "Партия");
+				draw_text_rect (page, left + 230, Y, XP, YP, Sheet.PartNo);
+
+				draw_text (page, left + 350, Y, "Пачка");
+				draw_text_rect (page, left + 390, Y, XP, YP, Sheet.Pack);
+
+				draw_text (page, left + 510, Y, "Лист");
+				draw_text_rect (page, left + 550, Y, XP, YP, Sheet.Sheet + " / " + Sheet.SubSheet);
+
+				draw_text (page, left + 680, Y, "Сляб");
+				draw_text_rect (page, left + 720, Y, XP, YP, Sheet.Slab);
+
+				Y -= 10;
+				HPDF_Page_MoveTo (page, left + 15, Y);
+				HPDF_Page_LineTo (page, left + Width - 20, Y);
+				HPDF_Page_Stroke (page);
+				Y -= 20;
+			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			return Y;
+		}
+
+		//Рисуем Закалка
+		HPDF_REAL CassettePdfClass::DrawKpvlPDF(HPDF_REAL left, HPDF_REAL top)
+		{
+			HPDF_REAL Y = top - 5;
+			try
+			{
 				//График температуры закалки
-				draw_text(page, 20, Height - 130, "Закалка");
-				HPDF_Page_Rectangle(page, 20, Height - 270, 374, 140);
+				HPDF_Page_SetFontAndSize (page, font, 12);
+				draw_text(page, 380, Y, "Закалка");
+				Y -= 25;
+
+				HPDF_Page_SetFontAndSize (page, font, 10);
+				HPDF_REAL Y1 = DrawKpvl(410, Y, Width - 432);
+
+				HPDF_REAL r1 = Y - Y1;
+				HPDF_REAL r3 = top - Y1 + (Y - Y1);
+
+				HPDF_Page_Rectangle(page, 20, r3 - 15/*Height - 270*/, 374, r1 - 10);
 				HPDF_Page_Stroke(page);
 
 				//std::ifstream ifs(tempImage);
@@ -1344,22 +1341,34 @@ namespace PDF
 				{
 					ifs.close();
 					HPDF_Image image1 = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
-					HPDF_Page_DrawImage (page, image1, 22, Height - 269, 370, 137);
+					HPDF_Page_DrawImage (page, image1, 22, r3 - 14/*Height - 269*/, 370, r1 - 13);
 				}
+				Y = r3 - 20;
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
-
+			return Y;
 		}
 
 		//Рисуем Отпуск
-		void CassettePdfClass::DrawFurnPDF()
+		HPDF_REAL CassettePdfClass::DrawFurnPDF(HPDF_REAL left, HPDF_REAL top)
 		{
+			HPDF_REAL Y = top - 5;
 			try
 			{
 		 //График температуры отпуска
-				DrawFurn(410, Height - 320, Width - 432);
-				draw_text(page, 20, Height - 300, "Отпуск");
+				HPDF_Page_SetFontAndSize (page, font, 12);
+				draw_text(page, 380, Y, "Отпуск");
+				Y -= 25;
 
-				HPDF_Page_Rectangle(page, 20, Height - 440, 374, 140);
+				HPDF_Page_SetFontAndSize (page, font, 10);
+				HPDF_REAL Y1 = DrawFurn(410, Y, Width - 432);
+
+				HPDF_REAL r0 = Height - 440 - (23 + 5);
+				HPDF_REAL r1 = Y - Y1;
+				HPDF_REAL r3 = top - Y1 + (Y - Y1);
+
+				HPDF_Page_Rectangle(page, 20, r0, 374, 140);
+				//HPDF_Page_Rectangle(page, 20, r3 - 15, 374, r1 - 10);
+
 				HPDF_Page_Stroke(page);
 				std::fstream ifs(furnImage, std::fstream::binary | std::fstream::in);
 				//std::ifstream ifs(furnImage);
@@ -1368,9 +1377,11 @@ namespace PDF
 				{
 					ifs.close();
 					HPDF_Image image2 = HPDF_LoadJpegImageFromFile(pdf, furnImage.c_str());
-					HPDF_Page_DrawImage (page, image2, 22, Height - 439, 370, 137);
+					HPDF_Page_DrawImage (page, image2, 22, r0 + 1, 370, 137);
+					//HPDF_Page_DrawImage (page, image2, 22, r3 - 14, 370, r1 - 13);
 				}
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			return Y;
 		}
 
 		CassettePdfClass::CassettePdfClass(TSheet& sheet, bool view)
@@ -1468,16 +1479,16 @@ namespace PDF
 				if(NewPdf())
 				{
 					//Рисуем PDF заголовок
-					DrawHeder(0, Height);
+					HPDF_REAL Y = DrawHeder(0, Height);
 
 					//Рисуем PDF Закалка
-					DrawKpvlPDF();
+					DrawKpvlPDF(0, Height);
 
 					//Рисуем PDF Отпуск
-					DrawFurnPDF();
+					DrawFurnPDF(0, Height);
 
 					//Сохраняем PDF
-					SavePDF(1);
+					SavePDF();
 
 					////Отображение PDF
 					//if(view) std::system(("start " + FileName).c_str());
@@ -1488,154 +1499,156 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
+		void OutDebugInfo(TCassette& Cassette, TSheet& Sheet)
+		{
+			std::stringstream sss;
+			sss << "Кассета: "
+				<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
+				<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
+				<< std::setw(2) << std::setfill('0') << Cassette.Day << " № "
+				<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo
+				<< " Лист: "
+				<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
+				//<< std::setw(3) << std::setfill('0') << Sheet.Slab << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
+				<< std::setw(2) << std::setfill('0') << Sheet.SubSheet;
+			SetWindowText(hWndDebug, sss.str().c_str());
+
+		}
+
 		CassettePdfClass::CassettePdfClass(TCassette& TC)
 		{
 			try
 			{
-				stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
-				stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-
-		#pragma region Готовим графики
 				Cassette = TC;
 
-				//try
-				//{
-				//	 //Удаление всех файлов в каталоге кассеты
-				//	 std::stringstream temp;
-				//	 temp << lpLogPdf;
-				//	 temp << "/" << Stoi(Cassette.Year);
-				//	 temp << "/" << MonthName[Stoi(Cassette.Month)];
-				//	 temp << "/" << std::setw(2) << std::setfill('0') << std::right << Stoi(Cassette.Day);
-				//	 std::Pathc patch = getDirContents (temp.str());
-				//	 for(auto p : patch)
-				//	 {
-				//	 	if(p.string().length())
-				//	 		remove(p.string().c_str());
-				//	 }
-				//}
-				//CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			#pragma region Готовим графики
 
-				std::stringstream ssd;
-				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
-				furnImage = ssd.str();
+				#pragma region общий stringFormat для графиков
+				{
+					stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+					stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+				}
+				#pragma endregion
 
-				//Sheet = sheet;
+				#pragma region furnImage.jpg
+				{
+					std::stringstream ssd;
+					ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+					ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+					ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+					ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
+					furnImage = ssd.str();
+				}
+				#pragma endregion
 
-				if(!conn.connection())
-					return;// throw std::exception(__FUN(std::string("Error SQL conn connection to GraffKPVL")));
-				conn.Name = "test";
+
+				if(!conn.connection()) return;
 				GetSheet();
 
-
-				FurnRef.erase(FurnRef.begin(), FurnRef.end());
-				FurnAct.erase(FurnAct.begin(), FurnAct.end());
-
-				//GetCassette(cassette);
-				int P = atoi(Cassette.Peth.c_str());
-
-				if(Cassette.Run_at.length() && Cassette.Finish_at.length())
+				#pragma region Номер печи для FurnRef и FurnAct
 				{
-			
-					int Ref_ID = 0;
-					int Act_ID = 0;
+					FurnRef.erase(FurnRef.begin(), FurnRef.end());
+					FurnAct.erase(FurnAct.begin(), FurnAct.end());
 
-					//Первая отпускная печь
-					if(P == 1)
+					int P = atoi(Cassette.Peth.c_str());
+					if(Cassette.Run_at.length() && Cassette.Finish_at.length())
 					{
-						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
-						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+
+						int Ref_ID = 0;
+						int Act_ID = 0;
+
+						//Первая отпускная печь
+						if(P == 1)
+						{
+							Ref_ID = ForBase_RelFurn_1.TempRef->ID;
+							Act_ID = ForBase_RelFurn_1.TempAct->ID;
+						}
+
+						//Вторая отпускная печь
+						if(P == 2)
+						{
+							Ref_ID = ForBase_RelFurn_2.TempRef->ID;
+							Act_ID = ForBase_RelFurn_2.TempAct->ID;
+						}
+
+						if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
+						if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+
 					}
+					else return;
 
-					//Вторая отпускная печь
-					if(P == 2)
-					{
-						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
-						Act_ID = ForBase_RelFurn_2.TempAct->ID;
-					}
-
-					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
-					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
-
+					//Рисуем график FURN
+					PaintGraff(FurnAct, FurnRef, furnImage);
 				}
-				else return;
-				//Рисуем график FURN
-				//tempImage 
-				PaintGraff(FurnAct, FurnRef, furnImage);
+				#pragma endregion
 
-				int index = 0;
-				for(auto& a : AllPfdSheet/* | boost::adaptors::indexed(0)*/)
+			#pragma endregion
+
+				for(auto& a : AllPfdSheet)
 				{
 					if(!isRun) break;
 					Sheet = a;
 
-					std::stringstream ssh;
-					ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
-					ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
-					tempImage = ssh.str();
-				
+					#pragma region tempImage.jpg
+					{
+						std::stringstream ssh;
+						ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+						ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+						tempImage = ssh.str();
+					}
+					#pragma endregion				
 
-					std::stringstream sss;
-					sss << "Кассета: "
-						<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
-						<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
-						<< std::setw(2) << std::setfill('0') << Cassette.Day << " № "
-						<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo
-						<< " Лист: "
-						<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
-						//<< std::setw(3) << std::setfill('0') << Sheet.Slab << "-"
-						<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
-						<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
-						<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
-						<< std::setw(2) << std::setfill('0') << Sheet.SubSheet;
+					OutDebugInfo(Cassette, Sheet);
 
+					#pragma region Графики закалки
+					{
+						TempRef.erase(TempRef.begin(), TempRef.end());
 
-					SetWindowText(hWndDebug, sss.str().c_str());
+						//Закалка
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+						SqlTempActKPVL(TempAct);
 
-					//Закалка
-					TempRef.erase(TempRef.begin(), TempRef.end());
+						//Рисуем график KPVL
+						PaintGraff(TempAct, TempRef, tempImage);
 
-				//Закалка
-					GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
-					SqlTempActKPVL(TempAct);
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
 
-					//Рисуем график KPVL
-					PaintGraff(TempAct, TempRef, tempImage);
+						//TempAct.erase(TempAct.begin(), TempAct.end());
+						SqlTempActKPVL(TempAct);
 
-					GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+						//Рисуем график KPVL
+						PaintGraff(TempAct, TempRef, tempImage);
+					}
+					#pragma endregion
 
-					//TempAct.erase(TempAct.begin(), TempAct.end());
-					SqlTempActKPVL(TempAct);
+					#pragma region Создание PFD файла
 
-					//Рисуем график KPVL
-					PaintGraff(TempAct, TempRef, tempImage);
-
-					//Рисуем PDF Отпуск
-
-		#pragma endregion
-
-				//Создание PFD файла
 					if(NewPdf())
 					{
 						//Рисуем PDF заголовок
-						DrawHeder(0, Height);
+						HPDF_REAL Y1 = DrawHeder(0, Height);
 
 						//Рисуем PDF Закалка
-						DrawKpvlPDF();
+						HPDF_REAL Y2 = DrawKpvlPDF(0, Y1) - 30;
 
 						//Рисуем PDF Отпуск
-						DrawFurnPDF();
+						HPDF_REAL Y3 = DrawFurnPDF(0, Y2);
 
 						//auto index = a.index();
 						//Сохраняем PDF
-						SavePDF(index++);
+						SavePDF();
 					}
+
+					#pragma endregion
+
 					remove(tempImage.c_str());
+					//return;
 				}
 				remove(furnImage.c_str());
 			}
@@ -1934,8 +1947,8 @@ namespace PDF
 			std::stringstream sg2;
 			try
 			{
-				sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
-				SetWindowText(hWndDebug, sg2.str().c_str());
+				//sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
+				//SetWindowText(hWndDebug, sg2.str().c_str());
 
 				ct.Id = it.Id;
 				ct.Year = it.Year;
@@ -2170,6 +2183,31 @@ namespace PDF
 	//#endif
 		}
 
+
+		int lin = 1;
+		void GetPdf::SaveBaseCassete(PGConnection& conn, TCassette& tc)
+		{
+			TCassette ct;
+			if(tc.Run_at.length() && tc.End_at.length() && S107::IsCassette(tc))
+			{
+				//std::string sg = std::string("Получение кассеты из базы ") + std::to_string(P0.size()) + std::string(" :") + std::to_string(lin++);
+				//SetWindowText(hWndDebug, sg.c_str());
+
+				GetCassetteData(conn, tc.Id, ct, tc);
+				if(ct.f_temper.length())	tc.f_temper = ct.f_temper;
+				if(ct.Id.length())			tc.Id = ct.Id;
+
+				if(!tc.Finish_at.length())
+				{
+					std::tm TM;
+					time_t tm = DataTimeOfString(tc.End_at, FORMATTIME, TM);
+					tm += (60 * 15);
+					tc.Finish_at = GetDataTimeString(tm);
+				}
+				SaveDataBase(conn, ct, tc);
+			}
+		}
+
 		void GetPdf::GetCassette(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
 		{
 			TCassette P;
@@ -2207,9 +2245,9 @@ namespace PDF
 					std::string old_value = "";
 					for(int l = 0; l < line && isRun; l++)
 					{
-						std::stringstream ssd;
-						ssd << "SaveCassette: " << line << ":" << l;
-						SetWindowText(hWndDebug, ssd.str().c_str());
+						//std::stringstream ssd;
+						//ssd << "SaveCassette: " << line << ":" << l;
+						//SetWindowText(hWndDebug, ssd.str().c_str());
 
 
 						T_Todos ct;
@@ -2245,9 +2283,9 @@ namespace PDF
 					if(!isRun)break;
 					lin++;
 
-					std::stringstream ssd;
-					ssd << "GetCassette:CassetteTodos " << Petch << ", " << size << ":" << lin;
-					SetWindowText(hWndDebug, ssd.str().c_str());
+					//std::stringstream ssd;
+					//ssd << "GetCassette:CassetteTodos " << Petch << ", " << size << ":" << lin;
+					//SetWindowText(hWndDebug, ssd.str().c_str());
 
 					//Furn->Cassette.Day->ID
 					try
@@ -2370,6 +2408,8 @@ namespace PDF
 							P.End_at = a.second.create_at;
 							EndCassette(conn, P, Petch, s1);
 							P0[a.first] = P;
+
+							SaveBaseCassete(conn, P);
 							P = TCassette();
 						}
 					}
@@ -2404,10 +2444,10 @@ namespace PDF
 				GetCassette(conn, CassetteTodos, 2);
 
 				SaveFileSdg(CassetteTodos);
-
 			}
 			CATCH(PdfLogger, "");
 		}
+
 
 		void GetPdf::CorrectSQL(PGConnection& conn)
 		{
@@ -2422,34 +2462,14 @@ namespace PDF
 
 				SaveFileCass();
 
-				int lin = 0;
-				for(auto& it : P0)
-				{
-					if(!isRun)return;
-
-					if(!S107::IsCassette(it.second)) continue;
-
-					TCassette ct;
-					if(it.second.Run_at.length() && it.second.End_at.length() && S107::IsCassette(it.second))
-					{
-						lin++;
-						std::string sg = std::string("Получение кассеты из базы ") + std::to_string(P0.size()) + std::string(" :") + std::to_string(lin);
-						SetWindowText(hWndDebug, sg.c_str());
-
-						GetCassetteData(conn, it.second.Id, ct, it.second);
-						if(ct.f_temper.length())	it.second.f_temper = ct.f_temper;
-						if(ct.Id.length())			it.second.Id = ct.Id;
-
-						if(!it.second.Finish_at.length())
-						{
-							std::tm TM;
-							time_t tm = DataTimeOfString(it.second.End_at, FORMATTIME, TM);
-							tm += (60 * 15);
-							it.second.Finish_at = GetDataTimeString(tm);
-						}
-						SaveDataBase(conn, ct, it.second);
-					}
-				}
+				//int lin = 0;
+				//for(auto& it : P0)
+				//{
+				//	if(!isRun)return;
+				//	lin++;
+				//
+				//	if(!S107::IsCassette(it.second)) continue;
+				//}
 
 			}
 			CATCH(PdfLogger, "");
@@ -2480,30 +2500,25 @@ namespace PDF
 				//SETUPDATESQL(PdfLogger, conn, ssa);
 				
 				std::string comand = "SELECT create_at FROM cassette WHERE correct IS NULL AND finish_at IS NOT NULL AND  delete_at IS NULL ORDER BY id ASC LIMIT 1";
-				//std::string comand = "SELECT create_at FROM cassette WHERE correct IS NULL AND finish_at IS NOT NULL AND  delete_at IS NULL ORDER BY id ASC LIMIT 1";
 				PGresult* res = conn.PGexec(comand);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					if(PQntuples(res))
-					{
-						DateStart = conn.PGgetvalue(res, 0, 0);
-					}
-				}
+				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+					DateStart = conn.PGgetvalue(res, 0, 0);
 				PQclear(res);
 				
+				//DateStart = "2024-05-25 04:30:00";
 //#else
 //				DateStart = "2024-04-16 00:00:00";
 //#endif
 
 				if(!DateStart.length())
 				{
-#ifndef _DEBUG
+//#ifndef _DEBUG
 					return;
-#else
-					std::time_t st = time(NULL);
-					st = (std::time_t)difftime(st, 60 * 60 * 24 * 1); //за 1 суток
-					DateStart = GetDataTimeString(&st);
-#endif // !_DEBUG
+//#else
+//					std::time_t st = time(NULL);
+//					st = (std::time_t)difftime(st, 60 * 60 * 24 * 1); //за 1 суток
+//					DateStart = GetDataTimeString(&st);
+//#endif // !_DEBUG
 				}
 
 				remove("Cass.csv");
@@ -2609,10 +2624,6 @@ namespace PDF
 
 		typedef std::vector<T_Todos> MapSheetTodos;
 
-#pragma region MyRegion
-
-#pragma endregion
-
 		void GetTodosSQL(PGConnection& conn, MapSheetTodos& mt, std::string& comand)
 		{
 
@@ -2649,6 +2660,9 @@ namespace PDF
 
 			std::stringstream ssd;
 
+			ssd << ids.id << ";";
+
+			ssd << " " << GetStringData(ids.Start1) << ";";
 			ssd << " " << GetStringData(ids.Start2) << ";";
 			ssd << " " << GetStringData(ids.DataTime_End) << ";";
 			//ssd << " " << GetStringData(ids.Start4) << ";";
@@ -2656,11 +2670,7 @@ namespace PDF
 			ssd << std::fixed << std::setprecision(1) << ids.DataTime_All << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.TimeForPlateHeat << ";";
 			ssd << " " << GetStringData(ids.DataTime) << ";";
-			ssd << Error << ";";
 
-
-
-			ssd << " " << GetStringData(ids.Start1) << ";";
 			ssd << ids.Alloy << ";";
 			ssd << ids.Thikness << ";";
 
@@ -2669,7 +2679,6 @@ namespace PDF
 			ssd << ids.Pack << ";";
 			ssd << ids.Sheet << ";";
 			ssd << ids.SubSheet << ";";
-
 
 			ssd << std::fixed << std::setprecision(1) << ids.Temper << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.Speed << ";";
@@ -2685,7 +2694,10 @@ namespace PDF
 			ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanTop << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanBot << ";";
 			ssd << std::fixed << std::setprecision(1) << ids.LAM_TE1 << ";";
+			ssd << Error << ";";
+
 			ssd << " " << GetStringData(ids.TimeTest) << ";";
+
 
 			//ssd << std::fixed << std::setprecision(1) << ids.TempSet1 << ";";
 			//ssd << std::fixed << std::setprecision(1) << ids.UnloadSpeed << ";";
@@ -2734,15 +2746,15 @@ namespace PDF
 			//Температура воды в поддоне
 
 			ss1 
+				<< "Id;"
+				<< "В зону 1;"
 				<< "В зону 2;"
 				//<< "В охлаждение;"
 				<< "В кантовку;"
 				<< "DataTime_All;"
 				<< "TimeForPlateHeat;"
 				<< "TimeStart;"
-				<< "Ошибка;"
 
-				<< "В зону 1;"
 				<< "Марка;"
 				<< "Толщина;"
 				<< "Плавка;"
@@ -2764,6 +2776,7 @@ namespace PDF
 				<< "LAM2_TopSet;"
 				<< "LAM2_BotSet;"
 				<< "LAM_TE1;"
+				<< "Ошибка;"
 				<< "TimeTest;"
 
 				<< std::endl;
@@ -2857,16 +2870,16 @@ namespace PDF
 			}
 
 			{
-				std::stringstream ssq;
-				ssq << count << ": " << i << " (";
-				ssq << GetStringData(Start) << ") ";
-				ssq << std::setw(6) << std::setfill('0') << ids.Melt << "-";
-				ssq << std::setw(3) << std::setfill('0') << ids.PartNo << "-";
-				ssq << std::setw(3) << std::setfill('0') << ids.Pack << "-";
-				ssq << std::setw(3) << std::setfill('0') << ids.Sheet << "/";
-				ssq << std::setw(1) << std::setfill('0') << ids.SubSheet;
-				//ssq << ids.DataTime_All;
-				SetWindowText(hWndDebug, ssq.str().c_str());
+				//std::stringstream ssq;
+				//ssq << count << ": " << i << " (";
+				//ssq << GetStringData(Start) << ") ";
+				//ssq << std::setw(6) << std::setfill('0') << ids.Melt << "-";
+				//ssq << std::setw(3) << std::setfill('0') << ids.PartNo << "-";
+				//ssq << std::setw(3) << std::setfill('0') << ids.Pack << "-";
+				//ssq << std::setw(3) << std::setfill('0') << ids.Sheet << "/";
+				//ssq << std::setw(1) << std::setfill('0') << ids.SubSheet;
+				////ssq << ids.DataTime_All;
+				//SetWindowText(hWndDebug, ssq.str().c_str());
 			}
 			return ids;
 		}
@@ -3093,6 +3106,234 @@ namespace PDF
 			return t1;
 		}
 
+		void Get_ID_S(PGConnection& conn, T_IdSheet& td)
+		{
+			{
+				std::stringstream ssd;
+				ssd << "SELECT id, day, month, year, cassetteno FROM sheet ";
+				ssd << "WHERE melt = " << td.Melt;
+				ssd << " AND partno = " << td.PartNo;
+				ssd << " AND pack = " << td.Pack;
+				ssd << " AND sheet = " << td.Sheet;
+				ssd << " AND subsheet = " << td.SubSheet;
+				ssd << " ORDER BY id LIMIT 1";
+				std::string comand = ssd.str();
+				if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+				PGresult* res = conn.PGexec(comand);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+				{
+					td.id = Stoi(conn.PGgetvalue(res, 0, 0));
+					td.day = Stoi(conn.PGgetvalue(res, 0, 1));
+					td.month = Stoi(conn.PGgetvalue(res, 0, 2));
+					td.year = Stoi(conn.PGgetvalue(res, 0, 3));
+					td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 4));
+				}
+				PQclear(res);
+			}
+		}
+
+		int Get_ID_C(PGConnection& conn, T_IdSheet& td)
+		{
+			int id = 0;
+			std::stringstream ssd;
+			ssd << "SELECT id FROM cassette ";
+			ssd << "WHERE day = " << td.day;
+			ssd << " AND month = " << td.month;
+			ssd << " AND year = " << td.year;
+			ssd << " AND cassetteno = " << td.cassetteno;
+			ssd << " ORDER BY id LIMIT 1";
+			std::string comand = ssd.str();
+
+			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+				id = Stoi(conn.PGgetvalue(res, 0, 0));
+			PQclear(res);
+			return id;
+		}
+
+		std::fstream fUpdateSheet;
+		void UpdateSheet(PGConnection& conn, T_IdSheet& td)
+		{
+			if(td.id)
+			{
+				std::stringstream ssd;
+				ssd << "UPDATE sheet SET";
+				ssd << " start_at = '" << td.Start1 << "'";				//Дата, время загрузки листа в закалочную печь
+				ssd << ", datatime_end = '" << td.DataTime_End << "'";		//Дата, время выдачи листа из закалочной печи
+				if(td.Start2.length()) ssd << ", secondpos_at = '" << td.Start2 << "'";		//Преход во вторую зону
+				ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
+				ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
+
+				ssd << ", timeforplateheat = " << td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
+				ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
+
+				ssd << ", speed = " << td.Speed;					//Скорость выгрузки
+				ssd << ", temper = " << td.Temper;					//Уставка температуры
+				ssd << ", prestostartcomp = " << td.PresToStartComp;					//Скорость выгрузки
+				ssd << ", posclapantop = " << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
+				ssd << ", posclapanbot = " << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
+				ssd << ", lam1posclapantop = " << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
+				ssd << ", lam1posclapanbot = " << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
+				ssd << ", lam2posclapantop = " << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
+				ssd << ", lam2posclapanbot = " << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
+				ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
+				//Фиксируем на выходе из печи State_2 = 5;
+				ssd << ", lam_te1 = " << td.LAM_TE1;					//Температура воды в поддоне
+				ssd << ", za_te3 = " << td.Za_TE3;						//Температура воды в баке
+				ssd << ", za_pt3 = " << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+
+				//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
+				ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
+				ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
+
+				ssd << ", correct = now(), pdf = '' WHERE id = " << td.id;
+				SetWindowText(hWndDebug, ssd.str().c_str());
+
+
+				fUpdateSheet << ssd.str() << std::endl;
+				fUpdateSheet.flush();
+				//LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+				SETUPDATESQL(PdfLogger, conn, ssd);
+
+				if(td.day && td.month && td.year && td.cassetteno)
+				{
+					int ID_C = Get_ID_C(conn, td);
+					if(ID_C)
+					{
+						std::stringstream ssd;
+						ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
+						SETUPDATESQL(PdfLogger, conn, ssd);
+					}
+				}
+
+				//TSheet Sheet;
+				//SetSheet(td, Sheet);
+				//PDF::Cassette::CassettePdfClass pdf(Sheet);
+			}
+			else
+			{
+				//Свободные id
+				//3394
+				//3428
+				//3669
+				//3928
+				//3952
+				//3954
+				//3955
+				//3973
+
+				if(iAllId) td.id = iAllId++;
+				std::stringstream ssd;
+				ssd << "INSERT INTO sheet (";
+				//if(td.id)
+				//	ssd << "id, ";
+				ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
+				ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
+				ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
+				ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
+				if(td.Start2.length()) ssd << "secondpos_at, ";		//Преход во вторую зону
+				ssd << "alloy, ";
+				ssd << "thikness, ";
+				ssd << "melt, ";
+				ssd << "slab, ";
+				ssd << "partno, ";
+				ssd << "pack, ";
+				ssd << "sheet, ";
+				ssd << "subsheet, ";
+				ssd << "temper, ";
+				ssd << "speed, ";
+				ssd << "timeforplateheat, ";
+				ssd << "prestostartcomp, ";
+				ssd << "posclapantop, ";
+				ssd << "posclapanbot, ";
+				ssd << "lam1posclapantop, ";
+				ssd << "lam1posclapanbot, ";
+				ssd << "lam2posclapantop, ";
+				ssd << "lam2posclapanbot, ";
+				ssd << "mask, ";
+
+				ssd << "lampresstop, ";									//Давление в верхнем коллекторе
+				ssd << "lampressbot, ";									//Давление в нижнем коллекторе
+				ssd << "lam_te1, ";					//Температура воды в поддоне
+				ssd << "za_te3, ";						//Температура воды в баке
+				ssd << "za_pt3, ";						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+				ssd << "correct, ";
+				ssd << "pdf, ";
+				ssd << " pos";
+
+				ssd << ") VALUES (";
+				//if(td.id)
+				//	ssd << td.id << ", ";
+				ssd << "'" << td.DataTime << "', ";
+				ssd << "'" << td.DataTime << "', ";
+				ssd << "'" << td.DataTime_End << "', ";
+				ssd << td.DataTime_All << ", ";
+				if(td.Start2.length()) ssd << "'" << td.Start2 << "', ";		//Преход во вторую зону
+				ssd << "'" << td.Alloy << "', ";
+				ssd << "'" << td.Thikness << "', ";
+				ssd << td.Melt << ", ";
+				ssd << td.Slab << ", "; //Slab
+				ssd << td.PartNo << ", ";
+				ssd << td.Pack << ", ";
+				ssd << td.Sheet << ", ";
+				ssd << td.SubSheet << ", ";
+				ssd << td.Temper << ", ";
+				ssd << td.Speed << ", ";
+				ssd << td.TimeForPlateHeat << ", ";
+				ssd << td.PresToStartComp << ", ";
+				ssd << td.SpeedTopSet << ", ";
+				ssd << td.SpeedBotSet << ", ";
+				ssd << td.Lam1PosClapanTop << ", ";
+				ssd << td.Lam1PosClapanBot << ", ";
+				ssd << td.Lam2PosClapanTop << ", ";
+				ssd << td.Lam2PosClapanBot << ", ";
+				ssd << "'" + td.Mask + "', ";
+
+				ssd << td.LaminPressTop << ", ";
+				ssd << td.LaminPressBot << ", ";
+
+				ssd << td.LAM_TE1 << ", ";
+				ssd << td.Za_TE3 << ", ";
+				ssd << td.Za_PT3 << ", ";
+
+				ssd << "now(), '', 7);";
+
+				SetWindowText(hWndDebug, ssd.str().c_str());
+
+				fUpdateSheet << ssd.str() << std::endl;
+				fUpdateSheet.flush();
+
+
+				SETUPDATESQL(SQLLogger, conn, ssd);
+
+				if(td.day && td.month && td.year && td.cassetteno)
+				{
+					int ID_C = Get_ID_C(conn, td);
+					if(ID_C)
+					{
+						std::stringstream ssd;
+						ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
+						SETUPDATESQL(PdfLogger, conn, ssd);
+					}
+				}
+
+				//TSheet Sheet;
+				//SetSheet(td, Sheet);
+				//PDF::Cassette::CassettePdfClass pdf(Sheet);
+
+				//if(iAllId == AllId)
+				//{
+				//	iAllId = 0;
+				//	MessageBox(Global0, "Достигнуд придел ID", "Внимание", 0);
+				//	int tt = 0;
+				//}
+
+			}
+
+		}
+
+
 		bool InZone1(PGConnection& conn, T_IdSheet& ids1, std::fstream& s1, std::string create_at, size_t count, size_t i)
 		{
 			T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
@@ -3146,9 +3387,11 @@ namespace PDF
 				float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
 				if(f > 2.0f)
 					ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
+				Get_ID_S(conn, ids);
 
 				SaveBodyCsv(s1, ids, "");
 
+				UpdateSheet(conn, ids);
 				vids.push_back(ids);
 			}
 		}
@@ -3208,52 +3451,7 @@ namespace PDF
 		}
 #pragma endregion
 
-		void Get_ID_S(PGConnection& conn, T_IdSheet& td, int &day, int &month, int &year, int& cassetteno)
-		{
-			{
-				std::stringstream ssd;
-				ssd << "SELECT id, day, month, year, cassetteno FROM sheet ";
-				ssd << "WHERE melt = " << td.Melt;
-				ssd << " AND partno = " << td.PartNo;
-				ssd << " AND pack = " << td.Pack;
-				ssd << " AND sheet = " << td.Sheet;
-				ssd << " AND subsheet = " << td.SubSheet;
-				ssd << " ORDER BY id LIMIT 1";
-				std::string comand = ssd.str();
-				if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-				{
-					td.id = Stoi(conn.PGgetvalue(res, 0, 0));
-					day = Stoi(conn.PGgetvalue(res, 0, 1));
-					month = Stoi(conn.PGgetvalue(res, 0, 2));
-					year = Stoi(conn.PGgetvalue(res, 0, 3));
-					cassetteno = Stoi(conn.PGgetvalue(res, 0, 4));
-				}
-				PQclear(res);
-			}
-		}
-
-		int Get_ID_C(PGConnection& conn, int day, int month, int year, int cassetteno)
-		{
-			int id = 0;
-			std::stringstream ssd;
-			ssd << "SELECT id FROM cassette ";
-			ssd << "WHERE day = " << day;
-			ssd << " AND month = " << month;
-			ssd << " AND year = " << year;
-			ssd << " AND cassetteno = " << cassetteno;
-			ssd << " ORDER BY id LIMIT 1";
-			std::string comand = ssd.str();
-
-			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			PGresult* res = conn.PGexec(comand);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-				id = Stoi(conn.PGgetvalue(res, 0, 0));
-			PQclear(res);
-			return id;
-		}
-
+		/*
 		void SetSheet(T_IdSheet& td, TSheet& Sheet)
 		{
 			Sheet.Alloy = td.Alloy;
@@ -3288,170 +3486,7 @@ namespace PDF
 			Sheet.Za_PT3 = (boost::format("%.1f") % td.Za_PT3).str();
 			Sheet.Za_TE3 = (boost::format("%.1f") % td.Za_TE3).str();
 		}
-
-		void UpdateSheet(PGConnection& conn, T_IdSheet& td)
-		{
-			int day = 0;
-			int month = 0;
-			int year = 0;
-			int cassetteno = 0;
-			Get_ID_S(conn, td, day, month, year, cassetteno);
-			if(td.id)
-			{
-				std::stringstream ssd;
-				ssd << "UPDATE sheet SET";
-				ssd << " start_at = '" << td.Start1 << "'";				//Дата, время загрузки листа в закалочную печь
-				ssd << ", datatime_end = '" << td.DataTime_End << "'";		//Дата, время выдачи листа из закалочной печи
-				ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
-				ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
-
-				ssd << ", timeforplateheat = " << td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
-				ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
-
-				ssd << ", speed = " << td.Speed;					//Скорость выгрузки
-				ssd << ", temper = " << td.Temper;					//Уставка температуры
-				ssd << ", prestostartcomp = " << td.PresToStartComp;					//Скорость выгрузки
-				ssd << ", posclapantop = " << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
-				ssd << ", posclapanbot = " << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
-				ssd << ", lam1posclapantop = " << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
-				ssd << ", lam1posclapanbot = " << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
-				ssd << ", lam2posclapantop = " << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
-				ssd << ", lam2posclapanbot = " << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
-				ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
-				//Фиксируем на выходе из печи State_2 = 5;
-				ssd << ", lam_te1 = " << td.LAM_TE1;					//Температура воды в поддоне
-				ssd << ", za_te3 = " << td.Za_TE3;						//Температура воды в баке
-				ssd << ", za_pt3 = " << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-
-				//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
-				ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
-				ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
-
-				ssd << ", correct = now(), pdf = '' WHERE id = " << td.id;
-				SetWindowText(hWndDebug, ssd.str().c_str());
-
-				//LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-				SETUPDATESQL(PdfLogger, conn, ssd);
-
-				if(day && month && year && cassetteno)
-				{
-					int ID_C = Get_ID_C(conn, day, month, year, cassetteno);
-					if(ID_C)
-					{
-						std::stringstream ssd;
-						ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
-						SETUPDATESQL(PdfLogger, conn, ssd);
-					}
-				}
-
-				TSheet Sheet;
-				SetSheet(td, Sheet);
-				PDF::Cassette::CassettePdfClass pdf(Sheet);
-			}
-			else
-			{
-				//Свободные id
-				//3394
-				//3428
-				//3669
-				//3928
-				//3952
-				//3954
-				//3955
-				//3973
-
-
-				if(iAllId) td.id = iAllId++;
-				std::stringstream ssd;
-				ssd << "INSERT INTO sheet (";
-				if(td.id)
-					ssd << "id, ";
-				ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
-				ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
-				ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
-				ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
-				ssd << "alloy, ";
-				ssd << "thikness, ";
-				ssd << "melt, ";
-				ssd << "slab, ";
-				ssd << "partno, ";
-				ssd << "pack, ";
-				ssd << "sheet, ";
-				ssd << "subsheet, ";
-				ssd << "temper, ";
-				ssd << "speed, ";
-				ssd << "timeforplateheat, ";
-				ssd << "prestostartcomp, ";
-				ssd << "posclapantop, ";
-				ssd << "posclapanbot, ";
-				ssd << "lam1posclapantop, ";
-				ssd << "lam1posclapanbot, ";
-				ssd << "lam2posclapantop, ";
-				ssd << "lam2posclapanbot, ";
-				ssd << "mask, ";
-
-				ssd << "lampresstop, ";									//Давление в верхнем коллекторе
-				ssd << "lampressbot, ";									//Давление в нижнем коллекторе
-				ssd << "lam_te1, ";					//Температура воды в поддоне
-				ssd << "za_te3, ";						//Температура воды в баке
-				ssd << "za_pt3, ";						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-				ssd << "correct, ";
-				ssd << "pdf, ";
-				ssd << " pos";
-
-				ssd << ") VALUES (";
-				if(td.id) 
-					ssd << td.id << ", ";
-				ssd << "'" << td.DataTime << "', ";
-				ssd << "'" << td.DataTime << "', ";
-				ssd << "'" << td.DataTime_End << "', ";
-				ssd << td.DataTime_All << ", ";
-				ssd << "'" << td.Alloy  << "', ";
-				ssd << "'" << td.Thikness << "', ";
-				ssd << td.Melt << ", ";
-				ssd << td.Slab << ", "; //Slab
-				ssd << td.PartNo << ", ";
-				ssd << td.Pack << ", ";
-				ssd << td.Sheet << ", ";
-				ssd << td.SubSheet << ", ";
-				ssd << td.Temper << ", ";
-				ssd << td.Speed << ", ";
-				ssd << td.TimeForPlateHeat << ", ";
-				ssd << td.PresToStartComp << ", ";
-				ssd << td.SpeedTopSet << ", ";
-				ssd << td.SpeedBotSet << ", ";
-				ssd << td.Lam1PosClapanTop<< ", ";
-				ssd << td.Lam1PosClapanBot << ", ";
-				ssd << td.Lam2PosClapanTop << ", ";
-				ssd << td.Lam2PosClapanBot << ", ";
-				ssd << "'" + td.Mask + "', ";
-
-				ssd << td.LaminPressTop << ", ";
-				ssd << td.LaminPressBot << ", ";
-
-				ssd << td.LAM_TE1 << ", ";
-				ssd << td.Za_TE3 << ", ";
-				ssd << td.Za_PT3 << ", ";
-
-				ssd << "now(), '', 7);";
-
-				SETUPDATESQL(SQLLogger, conn, ssd);
-
-				TSheet Sheet;
-				SetSheet(td, Sheet);
-				PDF::Cassette::CassettePdfClass pdf(Sheet);
-
-				//if(iAllId == AllId)
-				//{
-				//	iAllId = 0;
-				//	MessageBox(Global0, "Достигнуд придел ID", "Внимание", 0);
-				//	int tt = 0;
-				//}
-
-			}
-
-		}
-
+		*/
 		void GetRawSheet(PGConnection& conn)
 		{
 
@@ -3470,6 +3505,10 @@ namespace PDF
 			T_IdSheet ids2;
 
 			V_IdSheet ids4;
+
+			remove("UpdateSheet.txt");
+			fUpdateSheet = std::fstream("UpdateSheet.txt", std::fstream::binary | std::fstream::out | std::ios::app);
+
 
 			std::fstream ss1 = SaveHeadCsv("Sheet.csv");
 
@@ -3540,12 +3579,12 @@ namespace PDF
 			ff2.close();
 			ff1.close();
 			ss1.close();
-
-			for(V_IdSheet::iterator it = ids4.begin(); isRun && it != ids4.end(); it++)
-			{
-				T_IdSheet td = *it;
-				UpdateSheet(conn, td);
-			}
+			fUpdateSheet.close();
+			//for(V_IdSheet::iterator it = ids4.begin(); isRun && it != ids4.end(); it++)
+			//{
+			//	T_IdSheet td = *it;
+			//	UpdateSheet(conn, td);
+			//}
 			INT II = 0;
 		}
 
@@ -3555,15 +3594,25 @@ namespace PDF
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
-		//std::stringstream ssa;
-		//ssa << "SELECT * FROM cassette WHERE ";
-		//ssa << "correct IS NULL AND ";
-		//ssa << "finish_at IS NOT NULL AND ";
-		//ssa << " delete_at IS NULL";
-		//ssa << " ORDER BY id ASC LIMIT 1";
+		std::string comand = "";
 
-		std::string comand = "SELECT * FROM cassette WHERE id = 296";
+		std::vector<int> csId;
+
+		comand = "SELECT id FROM cassette ORDER BY create_at DESC;"; //Все кассеты
 		PGresult* res = conn.PGexec(comand);
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			int line = PQntuples(res);
+			for(int l = 0; l < line; l++)
+			{
+				int id = Stoi(conn.PGgetvalue(res, l, 0));
+				csId.push_back(id);
+			}
+		}
+		PQclear(res);
+
+		comand = "SELECT * FROM cassette WHERE id = 371"; //2024-05-25-06
+		res = conn.PGexec(comand);
 		TCassette Cassette;
 		if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		{
@@ -3575,11 +3624,32 @@ namespace PDF
 			LOG_ERR_SQL(PdfLogger, res, comand);
 		PQclear(res);
 		
-		Cassette.Peth = "1";
-		
-		//Cassette::CassettePdfClass cc = Cassette::CassettePdfClass(Cassette);
-		//Cassette::PrintCassettePdfAuto(Cassette);
+		try
+		{
+			 //Удаление всех файлов в каталоге кассеты
+			std::stringstream temp;
+			temp << lpLogPdf;
+			temp << "/" << Stoi(Cassette.Year);
+			temp << "/" << Cassette::MonthName[Stoi(Cassette.Month)];
+			temp << "/" << std::setw(2) << std::setfill('0') << std::right << Stoi(Cassette.Day);
+			std::Pathc patch = getDirContents (temp.str());
+			for(auto p : patch)
+			{
+				if(p.string().length())
+					remove(p.string().c_str());
+			}
+		}
+		CATCH(PdfLogger, FUNCTION_LINE_NAME);
+		//Cassette.Peth = "1";
+		Cassette::CassettePdfClass cc = Cassette::CassettePdfClass(Cassette);
 
+		//std::stringstream ssa;
+		//ssa << "SELECT * FROM cassette WHERE ";
+		//ssa << "correct IS NULL AND ";
+		//ssa << "finish_at IS NOT NULL AND ";
+		//ssa << " delete_at IS NULL";
+		//ssa << " ORDER BY id ASC LIMIT 1";
+		//
 		//T_IdSheet td;
 		//td.id = 2928;
 		//td.DataTime = "2024-05-14 11:26:45";
@@ -3692,7 +3762,7 @@ namespace PDF
 			PGConnection conn_pdf;
 			conn_pdf.connection();
 
-			////Для ручного добавления листа
+			////Для ручного тестирования
 			//HendInsetr(conn_pdf);
 			//isRun = false;
 			//return 0;
@@ -3704,21 +3774,26 @@ namespace PDF
 				if(PDF::Correct)
 				{
 					////Проверяем и востанавливаем все листы
-					//SHEET::StartSheet = "2024-01-01 00:00:00";
+					SHEET::StartSheet = "2024-01-01 00:00:00";
 					//SHEET::AllId = 1356;
 					//SHEET::iAllId = 1;
 					
+					//Найти Потерянные листы:
+					//SELECT * FROM sheet WHERE create_at > '2024-05-15 17:25:13.433' AND news <> 1 ORDER BY id DESC
 					//PDF::SHEET::GetRawSheet(conn_pdf);
 					
 
-					//Для автоматической коррекции
-					//std::string comand = "SELECT datatime_end, id FROM sheet WHERE pdf <> '' ORDER BY id DESC LIMIT 1";
+					//SHEET::StartSheet = "2024-05-25 04:30:00";
+
+					////Для автоматической коррекции
 					//std::string comand = "SELECT datatime_end, id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1";
-					//
 					//PGresult* res = conn_pdf.PGexec(comand);
 					//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
+					
+					//SHEET::StartSheet = "2024-05-28 23:49:25.833";
+					//PDF::SHEET::GetRawSheet(conn_pdf);
 
 					PDF::Cassette::GetPdf getpdf(conn_pdf);
 

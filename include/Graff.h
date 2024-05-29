@@ -18,7 +18,7 @@ public:
 
 	Gdiplus::StringFormat stringFormat;
 
-	Gdiplus::Pen pen = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0));
+	Gdiplus::Pen pen = Gdiplus::Pen(Gdiplus::Color(255, 0, 0), 1);
 	Gdiplus::SolidBrush Gdi_brush = Gdiplus::SolidBrush(Gdiplus::Color(0, 0, 0));
 	Gdiplus::Pen Gdi_L1 = Gdiplus::Pen(Gdiplus::Color(192, 192, 192), 0.5); //Черный
 
@@ -41,14 +41,16 @@ public:
 	};
 
 	void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
-	void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 
-	void Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
+	void DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
+	void DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
+	void DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
+
 	void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
 	void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 
 	void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg);
-	void DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
+	void DrawGraf(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
 	void Paint(HWND hWnd);
 
 	//void SqlTemp(T_SqlTemp& st, Value* val);

@@ -35,6 +35,7 @@ namespace PDF
 			void SaveFileCass();
 			void GetCassette(PGConnection& conn, MapRunn& CassetteTodos, int Petch);
 			void GetCassette(PGConnection& conn);
+			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
 			void CorrectSQL(PGConnection& conn);
 			GetPdf(PGConnection& conn);
 		};

@@ -211,6 +211,10 @@ MY_RGB rgb[9]{
 	{143, 73, 21},
 	{101, 101, 101},
 };
+
+
+Gdiplus::Font font0(L"Tahoma", 9, Gdiplus::FontStyleRegular);
+
 Gdiplus::Font font1(L"Tahoma", 10, Gdiplus::FontStyleBold);
 Gdiplus::Font font2(L"Tahoma", 10, Gdiplus::FontStyleRegular);
 
@@ -234,8 +238,36 @@ Graff GraffFurn("Furn");
 
 const float Mashtab = 1.5;
 
+void Graff::DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
+{
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
 
-void Graff::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
+	Gdiplus::RectF Rect1 = RectG;
+
+	temp.TranslateTransform(0, RectG.Height);
+	temp.RotateTransform(-90);
+
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+
+	std::wstring theString = L"Температура С°";
+
+	Gdiplus::RectF boundRect ={0, 0, RectG.Height + 35, 20};
+	temp.DrawString(theString.c_str(), -1, &font2, boundRect, &stringFormat, &Gdi_brush);
+	temp.ResetTransform();
+
+	Rect1.Height -= 2;
+
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+	theString = L"Время час:мин";
+	temp.DrawString(theString.c_str(), -1, &font2, Rect1, &stringFormat, &Gdi_brush);
+
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+}
+
+void Graff::DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 {
 
 	for(auto a : TempRef)
@@ -251,8 +283,6 @@ void Graff::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 
 	f_mint = mint;
 	f_maxt = maxt;
-
-
 	fstep = 0.0;
 	double fmaxt;
 	double fmint;
@@ -265,7 +295,7 @@ void Graff::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 		fmint = floor(fmint);
 		//cstep = fmod((fmaxt - fmint), fstep);
 		cstep = (fmaxt - fmint);
-	} while(cstep > 5.0);
+	} while(cstep > 6.0);
 
 	f_maxt = fmaxt * fstep;
 	f_mint = fmint * fstep;
@@ -274,26 +304,23 @@ void Graff::Grid(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 	//Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
 	//Gdiplus::StringFormat stringFormat;
 	//stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
-	stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
 
 	double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
 
+
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
 	for(double d = f_mint; d <= f_maxt; d += fstep)
 	{
 		float mY = Rect.Y + float((f_maxt - d) * coeffH);
 		Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
 		Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
 		temp.DrawLine(&Gdi_L1, pt1, pt2);
-
-		Gdiplus::RectF Rect2 ={0, mY - 11, 40, 20};
-
+		Gdiplus::RectF Rect2 ={Rect.X - 45, mY - 11, 40, 20};
 		std::wstringstream sdw;
 		sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << d;
-
 		temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
-
 	}
-	int tt = 0;
 }
 
 void Graff::DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st)
@@ -345,6 +372,9 @@ void Graff::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std:
 	Gdiplus::RectF RectText(Rect);
 
 	Gdiplus::RectF boundRect;
+	stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+	stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+
 	temp.MeasureString(sDataBeg.c_str(), -1, &font1, RectText, &stringFormat, &boundRect);
 
 	boundRect.X = Rect.X + float(sd);
@@ -360,7 +390,7 @@ void Graff::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std:
 	temp.DrawString(sDataBeg.c_str(), -1, &font1, boundRect, &stringFormat, &Gdi_brush);
 }
 
-void Graff::DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
+void Graff::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 {
 	auto tb = TempAct.begin();
 	auto te = TempAct.rbegin();
@@ -430,7 +460,7 @@ void Graff::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 }
 
 
-void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
+void Graff::DrawGraf(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 {
 	maxt = 0;
 	mint = 9999;
@@ -453,15 +483,17 @@ void Graff::DrawTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 
 	Gdiplus::RectF RectG2(RectG);
 	RectG2.Y += 5;
-	RectG2.Height -= 25;
-	RectG2.X += 45;
-	RectG2.Width -= 70;
-	
+	RectG2.Height -= 40;
+
+	RectG2.X += 50;
+	RectG2.Width -= 75;
+
 	Gdiplus::RectF RectG3(RectG2);
 	RectG3.Height += 17;
 
-	Grid(temp, RectG2);
-	DrawTime(temp, RectG3);
+	DrawGridTemp(temp, RectG2);
+	DrawGridTime(temp, RectG3);
+	DrawGridOssi(temp, RectG);
 
 	DrawBottom(temp, RectG2, Red, TempRef);	//Красный; Заданное значение температуры
 	DrawBottom(temp, RectG2, Blue, TempAct);	//Синий; Фактическое значение температуры
@@ -492,7 +524,7 @@ void Graff::Paint(HWND hWnd)
 	
 	if(TempRef.size() && TempAct.size() && full)
 	{
-		DrawTemp(temp, RectG);
+		DrawGraf(temp, RectG);
 
 		std::wstring SaveFile(Name.begin(), Name.end());
 		SaveFile += L".jpg";
