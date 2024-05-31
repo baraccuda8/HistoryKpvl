@@ -68,7 +68,7 @@ typedef struct T_cassette{
     //DINT Номер кассеты за день
     Value* CassetteNo;
 
-    std::string f_temper = "0";
+    std::string facttemper = "0";
 };
 
 typedef struct T_ForBase_RelFurn{
@@ -155,7 +155,7 @@ namespace casCassette{
     //        pointref_1,         //Уставка температуры
     //        timeprocset,        //Полное время процесса (уставка), мин
     //        pointdtime_2,       //Время выдержки
-    //        f_temper,           //Факт температуры за 5 минут до конца отпуска
+    //        facttemper,           //Факт температуры за 5 минут до конца отпуска
     //        finish_at,
     //    };
     //};
@@ -177,7 +177,7 @@ namespace casCassette{
         Delete_at,
         Peth,
         PointRef_1,         //Уставка температуры
-        f_temper,           //Факт температуры за 5 минут до конца отпуска
+        facttemper,           //Факт температуры за 5 минут до конца отпуска
         PointTime_1,        //Время разгона
         TimeProcSet,        //Полное время процесса (уставка), мин
         PointDTime_2,       //Время выдержки
@@ -210,7 +210,7 @@ namespace S107
 //    extern int PointRef_1;        //Уставка температуры
 //    extern int TimeProcSet;       //Полное время процесса (уставка), мин
 //    extern int PointDTime_2;      //Время выдержки
-//    extern int f_temper;          //Факт температуры за 5 минут до конца отпуска
+//    extern int facttemper;          //Факт температуры за 5 минут до конца отпуска
 //    extern int Finish_at;
 //#pragma endregion
 

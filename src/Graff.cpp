@@ -1075,11 +1075,11 @@ void InitGrafWindow(HWND hWnd)
 	UpdateWindow(GraffFurn.gHwnd);
 	//Open_GRAFF_FURN();
 
-#ifdef TESTGRAFF
+//#ifdef TESTGRAFF
 	hGGraff1 = CreateThread(0, 0, Open_GRAFF_KPVL, (LPVOID)0, 0, 0);
 	hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
 	hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
-#endif
+//#endif
 
 	int t = 0;
 }

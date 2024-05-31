@@ -995,6 +995,7 @@ namespace casSheet{
         ID = 1,
         DataTime = 2,
         Start_at,
+        SecondPos_at,
         //Pos,
         Correct,
         Pos,
@@ -1188,6 +1189,7 @@ typedef struct _TSheet{
     //std::string TempWatTankCool = "";  //Температура закалочной воды для вкл.охлаждения
     std::string Temperature = "";       //Средняя температура 2-части печи закалки
     std::string Correct = "";
+    std::string SecondPos_at = "";      //Время прехода во вторую зону
 
     _TSheet()
     {
@@ -1257,6 +1259,7 @@ typedef struct _TSheet{
         PresToStartComp = "";  //Уставка давления для запуска комперссора    }
         Temperature = "";
         Correct = "";
+        SecondPos_at = "";
     }
 
     //bool compare(TSheet& rhs)
@@ -1312,7 +1315,7 @@ typedef struct TCassette{
     std::string PointRef_1 = "";        //Уставка температуры
     std::string TimeProcSet = "";       //Полное время процесса (уставка), мин
     std::string PointDTime_2 = "";      //Время выдержки
-    std::string f_temper = "";          //Факт температуры за 5 минут до конца отпуска
+    std::string facttemper = "";          //Факт температуры за 5 минут до конца отпуска
     std::string Finish_at = "";         //Завершение процесса + 15 минут
     std::string HeatAcc = "";           //Факт время нагрева
     std::string HeatWait = "";          //Факт время выдержки

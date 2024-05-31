@@ -109,6 +109,7 @@ int Col_Sheet_timeforplateheat = 0;
 int Col_Sheet_prestostartcomp = 0;
 int Col_Sheet_temperature = 0;
 int Col_Sheet_correct = 0;
+int Col_Sheet_SecondPos_at = 0;
 //};
 #pragma endregion
 
@@ -123,7 +124,7 @@ namespace KPVL {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res)
         {
-            if(!Col_Sheet_correct)
+            if(!Col_Sheet_SecondPos_at)
             {
                 int nFields = PQnfields(res);
                 for(int j = 0; j < nFields; j++)
@@ -183,6 +184,8 @@ namespace KPVL {
                     else if(l == "prestostartcomp") Col_Sheet_prestostartcomp = j;
                     else if(l == "temperature") Col_Sheet_temperature = j;
                     else if(l == "correct") Col_Sheet_correct = j;
+                    else if(l == "secondpos_at") Col_Sheet_SecondPos_at = j;
+                    
                     
                 }
             }
@@ -256,7 +259,7 @@ namespace KPVL {
                 sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
                 sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
                 sheet.Correct = conn.PGgetvalue(res, l, Col_Sheet_correct);
-                
+                sheet.SecondPos_at = conn.PGgetvalue(res, l, Col_Sheet_SecondPos_at);
 
                 Sheet.push_back(sheet);
             }
@@ -1075,6 +1078,8 @@ namespace KPVL {
 
                 update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                 SetUpdateSheet(conn_kpvl, PD, update, "");
+
+                SetUpdateSheet(conn_kpvl, PD, " secondpos_at = now() ", " secondpos_at IS NULL AND ");
 
                 OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
                 DeleteNullSgeet(conn_kpvl, PD, Pos);

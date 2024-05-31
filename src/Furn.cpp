@@ -39,7 +39,7 @@ namespace S107
         int PointRef_1 = 0;        //Уставка температуры
         int TimeProcSet = 0;       //Полное время процесса (уставка), мин
         int PointDTime_2 = 0;      //Время выдержки
-        int f_temper = 0;          //Факт температуры за 5 минут до конца отпуска
+        int facttemper = 0;          //Факт температуры за 5 минут до конца отпуска
         int Finish_at = 0;
         int HeatAcc = 0;           //Факт время нагрева
         int HeatWait = 0;          //Факт время выдержки
@@ -77,7 +77,7 @@ namespace S107
                 else if(l == "pointref_1") Coll::PointRef_1 = j;
                 else if(l == "timeprocset") Coll::TimeProcSet = j;
                 else if(l == "pointdtime_2") Coll::PointDTime_2 = j;
-                else if(l == "facttemper") Coll::f_temper = j;
+                else if(l == "facttemper") Coll::facttemper = j;
                 else if(l == "finish_at") Coll::Finish_at = j;
                 else if(l == "heatacc")Coll::HeatAcc = j;
                 else if(l == "heatwait")Coll::HeatWait = j;
@@ -111,7 +111,7 @@ namespace S107
         cassette.PointRef_1 = conn_spis.PGgetvalue(res, line, Coll::PointRef_1);        //Уставка температуры
         cassette.TimeProcSet = conn_spis.PGgetvalue(res, line, Coll::TimeProcSet);       //Полное время процесса (уставка), мин
         cassette.PointDTime_2 = conn_spis.PGgetvalue(res, line, Coll::PointDTime_2);      //Время выдержки
-        cassette.f_temper = conn_spis.PGgetvalue(res, line, Coll::f_temper);          //Факт температуры за 5 минут до конца отпуска
+        cassette.facttemper = conn_spis.PGgetvalue(res, line, Coll::facttemper);          //Факт температуры за 5 минут до конца отпуска
         cassette.Finish_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Finish_at)); //Завершение процесса + 15 минут
         cassette.HeatAcc = conn_spis.PGgetvalue(res, line, Coll::HeatAcc); //Завершение процесса + 15 минут
         cassette.HeatWait = conn_spis.PGgetvalue(res, line, Coll::HeatWait); //Завершение процесса + 15 минут
@@ -214,7 +214,7 @@ namespace S107
 
                     if(line)
                     {
-                        if(!count)
+                        if(!count && !Stoi(CD.Peth))
                         {
                             std::stringstream ss;
                             ss << "DELETE FROM cassette WHERE";
@@ -225,7 +225,8 @@ namespace S107
                             SETUPDATESQL(SQLLogger, conn, ss);
                             return true;
                         }
-                        else if(Stoi(CD.SheetInCassette) != count)
+                        else
+                        if(Stoi(CD.SheetInCassette) != count)
                         {
                             std::stringstream ss;
                             ss << "UPDATE cassette SET";
@@ -627,10 +628,10 @@ namespace S107
 
     void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper)
     {
-        if(teper != CD.f_temper)
+        if(teper != CD.facttemper)
             if(IsCassete1(CD))
             {
-                CD.f_temper = teper;
+                CD.facttemper = teper;
                 std::stringstream sd;
                 //std::string comand = "UPDATE cassette SET";
                 sd << "UPDATE cassette SET";
@@ -842,7 +843,7 @@ namespace S107
             {
                 out = GetShortTimes();
                 UpdateCassetteProcEnd(conn_temp, AppFurn1, nPetch);
-                AppFurn1.Cassette.f_temper = "0";
+                AppFurn1.Cassette.facttemper = "0";
 
                 if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
                 {
@@ -921,8 +922,8 @@ namespace S107
         //    }
         //    else if(GetVal<float>(value) >= GetVal<float>(AppFurn1.TimeProcSet))
         //    {
-        //        AppFurn1.Cassette.f_temper = "0";
-        //        MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.f_temper.c_str());
+        //        AppFurn1.Cassette.facttemper = "0";
+        //        MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.facttemper.c_str());
         //    }
         //    return 0;
         //}
@@ -961,8 +962,8 @@ namespace S107
             }
             else if(f >= AppFurn1.TimeProcSet->Val.As<float>())
             {
-                AppFurn1.Cassette.f_temper = "0";
-                MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.f_temper.c_str());
+                AppFurn1.Cassette.facttemper = "0";
+                MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.facttemper.c_str());
 
             }
             return 0;
@@ -1045,7 +1046,7 @@ namespace S107
             {
                 out = GetShortTimes();
                 UpdateCassetteProcEnd(conn_temp, AppFurn2, nPetch);
-                AppFurn1.Cassette.f_temper = "0";
+                AppFurn1.Cassette.facttemper = "0";
 
                 if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
                 {
@@ -1122,8 +1123,8 @@ namespace S107
         //    }
         //    else if(GetVal<float>(value) >= GetVal<float>(AppFurn2.TimeProcSet))
         //    {
-        //        AppFurn2.Cassette.f_temper = "0";
-        //        MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.f_temper.c_str());
+        //        AppFurn2.Cassette.facttemper = "0";
+        //        MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.facttemper.c_str());
         //    }
         //    return 0;
         //}
@@ -1162,8 +1163,8 @@ namespace S107
             }
             else if(f >= AppFurn2.TimeProcSet->Val.As<float>())
             {
-                AppFurn2.Cassette.f_temper = "0";
-                MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.f_temper.c_str());
+                AppFurn2.Cassette.facttemper = "0";
+                MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.facttemper.c_str());
 
             }
             return 0;

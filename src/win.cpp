@@ -134,6 +134,8 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::ID, { "ID", 50 }},
     {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
+    {casSheet::SecondPos_at, { "Дата время\nво второй зоне", LL0 }},
+
     //{casSheet::Pos, { "Лист\nнайден в", 100 }},
     {casSheet::Pos, { "Текущая\nпозиция", 100 }},
     {casSheet::News, { "Кантовка", L2 }},
@@ -1383,6 +1385,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         ELSEIF (casSheet::ID, p.id);
                         ELSEIF (casSheet::DataTime, p.DataTime);
                         ELSEIF (casSheet::Start_at, p.Start_at);
+                        ELSEIF (casSheet::SecondPos_at, p.SecondPos_at);
                         ELSEIF (casSheet::DataTime_End, p.DataTime_End);
                         ELSEIF (casSheet::DataTime_All, p.DataTime_All);
                         ELSEIF (casSheet::TimeForPlateHeat, p.TimeForPlateHeat); //Время сигнализации окончания нагрева, мин

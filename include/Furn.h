@@ -36,7 +36,7 @@ namespace S107
         extern int PointRef_1;        //Уставка температуры
         extern int TimeProcSet;       //Полное время процесса (уставка), мин
         extern int PointDTime_2;      //Время выдержки
-        extern int f_temper;          //Факт температуры за 5 минут до конца отпуска
+        extern int facttemper;          //Факт температуры за 5 минут до конца отпуска
         extern int Finish_a;
     };
 
