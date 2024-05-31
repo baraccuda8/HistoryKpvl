@@ -37,7 +37,7 @@ namespace PDF
 			void GetCassette(PGConnection& conn);
 			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
 			void CorrectSQL(PGConnection& conn);
-			GetPdf(PGConnection& conn);
+			GetPdf(PGConnection& conn, std::string);
 		};
 
 		//Автоматическое создание по кассете

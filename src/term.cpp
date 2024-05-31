@@ -957,6 +957,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             {
                 std::stringstream sdf;
                 sdf << "UPDATE cassette SET event = 5 WHERE id = " << TC.Id;
+                TC.Event = 5;
                 SETUPDATESQL(SQLLogger, conn_spic, sdf);
             }
 
@@ -972,7 +973,71 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         //for(std::deque<TCassette>::iterator it = AllCassette.begin(); (int)CIl.size() < CountCaseteInRel && it != AllCassette.end(); it++)
         for(auto& it : AllCassette)
         {
-            //if(it->Event != "1")
+            if(it.Event == "1")
+            {
+                if(HMISheetData.Cassette.CassetteNo->Val.As<int32_t>() != Stoi(it.CassetteNo) ||
+                   HMISheetData.Cassette.Day->Val.As<int32_t>() != Stoi(it.Day) ||
+                   HMISheetData.Cassette.Month->Val.As<int32_t>() != Stoi(it.Month) ||
+                   HMISheetData.Cassette.Year->Val.As<int32_t>() != Stoi(it.Year)
+                   )
+                {
+                    if(Stoi(it.SheetInCassette))
+                    {
+                        it.Event = "2";
+                        std::stringstream sd;
+                        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
+                        //sd << "WHERE cassetteno = " << Stoi(it.CassetteNo);
+                        //sd << " AND day = " << Stoi(it.Day);
+                        //sd << " AND month = " << Stoi(it.Month);
+                        //sd << " AND year = " << Stoi(it.Year);
+                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                    }
+                    else
+                    {
+                        it.Event = "7";
+                        std::time_t st;
+                        it.Delete_at = GetDataTimeString(st);
+                        std::stringstream sd;
+                        sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << it.Id;
+                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                    }
+                }
+            }
+            if(it.Event == "3")
+            {
+                if(
+                    !(
+                    AppFurn1.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
+                    AppFurn1.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
+                    AppFurn1.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
+                    AppFurn1.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
+                    )
+                    &&
+                    !(
+                    AppFurn2.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
+                    AppFurn2.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
+                    AppFurn2.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
+                    AppFurn2.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
+                    )
+                    )
+                {
+                    if(it.End_at.length())
+                    {
+                        it.Event = "5";
+                        std::stringstream sd;
+                        sd << "UPDATE cassette SET event = 5 WHERE id = " << it.Id;
+                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                    }
+                    else
+                    {
+                        it.Event = "2";
+                        std::stringstream sd;
+                        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
+                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                    }
+                }
+            }
+
             //if(/*it->Close_at.size() &&*/
             //   !it->End_at.size() &&
             //   (!it->Run_at.size() || (it->Run_at.size() && it->Error_at.size()))

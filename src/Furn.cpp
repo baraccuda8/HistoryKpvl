@@ -216,12 +216,15 @@ namespace S107
                     {
                         if(!count && !Stoi(CD.Peth))
                         {
-                            std::stringstream ss;
-                            ss << "DELETE FROM cassette WHERE";
-                            ss << " day = " << CD.Day;
-                            ss << " AND month = " << CD.Month;
-                            ss << " AND year = " << CD.Year;
-                            ss << " AND cassetteno = " << CD.CassetteNo;
+                            CD.Event = "7";
+                            std::time_t st;
+                            CD.Delete_at = GetDataTimeString(st);
+                            std::stringstream sd;
+                            sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE ";
+                            sd << " day = " << CD.Day;
+                            sd << " AND month = " << CD.Month;
+                            sd << " AND year = " << CD.Year;
+                            sd << " AND cassetteno = " << CD.CassetteNo;
                             SETUPDATESQL(SQLLogger, conn, ss);
                             return true;
                         }
@@ -1185,6 +1188,7 @@ void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string updat
         sd << " WHERE " + where;
         sd << " id = " << cassette.Id;
         sd << ";";
+        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
         SETUPDATESQL(SQLLogger, conn, sd);
     }
 }

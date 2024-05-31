@@ -1474,7 +1474,7 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             TCassette& cassette = AllCassette[lvi.iItem];
             if(cassette.Event == "7")
                 DisplayContextMenu(hWnd, IDR_MENU2);
-            else
+            else if(cassette.Event == "2" || cassette.Event == "5")
                 DisplayContextMenu(hWnd, IDR_MENU1);
         }
         break;
@@ -1523,7 +1523,7 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         {
                             if(plvdi->item.iSubItem == Cassete::NN)                lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                             if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
-                            if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, EventCassette[Stoi(p.Event)].c_str());
+                            if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, (EventCassette[Stoi(p.Event)] + "(" + p.Event + ")").c_str());
                             if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, p.Create_at.c_str());
                             if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                             if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());
@@ -1755,6 +1755,8 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     int command = LOWORD(wParam);
     // Разобрать выбор в меню:
     //if(command == IDM_ABOUT) return MessageBox(hWnd, "IDM_ABOUT", "IDM_ABOUT", 0);
+
+    //Удаление кассеты из списка
     if(command == ID_POP_40001)
     {
         LV_ITEM lvi;
@@ -1764,9 +1766,20 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if(lvi.iItem < AllCassette.size())
         {
             TCassette& cassette = AllCassette[lvi.iItem];
-            PGConnection conn;
-            conn.connection();
-            SetUpdateCassete(conn, cassette, "delete_at = now(), event = 7 ", "");
+            if(cassette.Event == "2" || cassette.Event == "5")
+            {
+                PGConnection conn;
+                conn.connection();
+                std::time_t st;
+                cassette.Event = "7";
+                cassette.Delete_at = GetDataTimeString(st);
+                std::stringstream sd;
+                sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << cassette.Id;
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                SETUPDATESQL(SQLLogger, conn, sd);
+            }
+
+            //SetUpdateCassete(conn, cassette, "event = 7, delete_at = now(), event = 7 ", "");
             //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
         }
     }
@@ -1779,9 +1792,28 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if(lvi.iItem < AllCassette.size())
         {
             TCassette& cassette = AllCassette[lvi.iItem];
-            PGConnection conn;
-            conn.connection();
-            SetUpdateCassete(conn, cassette, "delete_at = DEFAULT ", "");
+            if(cassette.Event == "7")
+            {
+                PGConnection conn;
+                conn.connection();
+                std::stringstream sd;
+                if(cassette.Finish_at.length())
+                {
+                    cassette.Event = "5";
+                    cassette.Delete_at = "";
+                    sd << "UPDATE cassette SET event = 5, delete_at = DEFAULT WHERE id = " << cassette.Id;
+                }
+                else
+                {
+                    cassette.Event = "2";
+                    cassette.Delete_at = "";
+                    sd << "UPDATE cassette SET event = 2, delete_at = DEFAULT WHERE id = " << cassette.Id;
+                }
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                SETUPDATESQL(SQLLogger, conn, sd);
+            }
+
+            //SetUpdateCassete(conn, cassette, "event = 2, delete_at = DEFAULT ", "");
             //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
         }
     }

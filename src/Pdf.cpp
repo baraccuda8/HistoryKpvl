@@ -2553,12 +2553,12 @@ namespace PDF
 			SetWindowText(hWndDebug, "Закончили коррекцию");
 		}
 
-		GetPdf::GetPdf(PGConnection& conn)
+		GetPdf::GetPdf(PGConnection& conn, std::string datestart)
 		{
 			try
 			{
 //#ifndef _DEBUG
-				DateStart = "";
+				DateStart = datestart;
 				//SELECT create_at FROM cassette WHERE correct IS NULL AND finish_at IS NOT NULL AND  delete_at IS NULL ORDER BY id ASC LIMIT 1
 				//std::stringstream ssa;
 				//ssa << "SELECT create_at FROM cassette WHERE ";
@@ -2583,7 +2583,7 @@ namespace PDF
 				//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 				//	DateStart = conn.PGgetvalue(res, 0, 0);
 				//PQclear(res);
-				DateStart = "2024-05-30";
+				//DateStart = "2024-05-31";
 				
 				//DateStart = "2024-05-25 04:30:00";
 //#else
@@ -3890,10 +3890,10 @@ namespace PDF
 					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 					
-					//SHEET::StartSheet = "2024-05-27 23:00:00.00";
+					SHEET::StartSheet = "2024-05-31 00:00:00.00";
 					//PDF::SHEET::GetRawSheet(conn_pdf);
 
-					PDF::Cassette::GetPdf getpdf(conn_pdf);
+					PDF::Cassette::GetPdf getpdf(conn_pdf, SHEET::StartSheet);
 
 					PDF::Correct = false;
 				}
