@@ -365,10 +365,6 @@ void Graff::DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wst
 
 void Graff::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
 {
-	Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
-	Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
-	temp.DrawLine(&Gdi_L1, pt1, pt2);
-
 	Gdiplus::RectF RectText(Rect);
 
 	Gdiplus::RectF boundRect;
@@ -403,24 +399,28 @@ void Graff::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 	time_t tm2 = DataTimeOfString(st2, FORMATTIME, TM);
 
 	double tm = difftime(tm2, tm1);
-	double Step = 1.0;
-	double Count = 1.0;
-
-	Count = 6.0;
-	Step = tm / Count;
+	double Count = 12.0;
+	double Step = tm / Count;;
 
 	for(double e = 0; e <= Count; e++)
 	{
-		double sd = round(Rect.Width / (Count) * e);
-		
-		double f = Step * e;
-		double tmf = tm1 + f;
-		time_t tms = time_t(tmf);
+		double sd = round(Rect.Width / Count * e);
+		bool b = (bool)std::fmod(e, 2);
 
-		std::string s = GetDataTimeString(&tms);
-		std::wstring sDataBeg = GetData(std::wstring(s.begin(), s.end()));
+		Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
+		Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - (b ? 18 : 10) };
+		temp.DrawLine(&Gdi_L1, pt1, pt2);
 
-		DrawT(temp, Rect, sd, sDataBeg);
+		if(!b)
+		{
+			double f = Step * e;
+			double tmf = tm1 + f;
+			time_t tms = time_t(tmf);
+
+			std::string s = GetDataTimeString(&tms);
+			std::wstring sDataBeg = GetData(std::wstring(s.begin(), s.end()));
+			DrawT(temp, Rect, sd, sDataBeg);
+		}
 	}
 	
 	

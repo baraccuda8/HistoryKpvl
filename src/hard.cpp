@@ -716,19 +716,23 @@ void GetEndData(TSheet& sheet)
 
 void UpdateSheetPos()
 {
-    std::string comand = "DELETE FROM sheet WHERE pos = 10 OR pos = 20 OR pos = 30";
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    PGresult* res = conn_spis.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(SQLLogger, res, comand);
-   PQclear(res);
-
-    comand = "UPDATE sheet SET pos = 7 WHERE news = 1;";
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    res = conn_spis.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
+    {
+        //std::
+        //std::string comand = "UPDATE FROM sheet WHERE pos >= 10";
+        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        //PGresult* res = conn_spis.PGexec(comand);
+        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+        //     LOG_ERR_SQL(SQLLogger, res, comand);
+        //PQclear(res);
+    }
+    {
+        std::string comand = "UPDATE sheet SET pos = 7 WHERE news = 1;";
+        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        PGresult* res = conn_spis.PGexec(comand);
+        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+            LOG_ERR_SQL(SQLLogger, res, comand);
+        PQclear(res);
+    }
 }
 
 DWORD WINAPI Open_KPVL_SQL(LPVOID)
@@ -761,6 +765,17 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
         KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
         for(auto& TS : AllSheet)
         {
+            int Pos = Stoi(TS.Pos);
+            if(Pos >= 20)
+            {
+                int pos1 = Pos % 10;
+                int pos2 = Pos / 10;
+                TS.Pos = std::to_string(pos1 + pos2);
+                std::stringstream sss;
+                sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE id = " << TS.id;
+                LOG_INFO(HardLogger, "{:90}| {}", sss.str());
+                SETUPDATESQL(HardLogger, conn_spis, sss);
+            }
             KPVL::SQL::GetDataTime_All(conn_spis, TS);
         }
 

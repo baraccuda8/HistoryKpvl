@@ -897,7 +897,6 @@ void SetCassetteToBase(int i)
     int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
     int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
     int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
-    
 
     if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
     if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
@@ -911,6 +910,8 @@ bool cmpCasete(TCassette& first, TCassette& second)
     return first.Create_at < second.Create_at;
 }
 
+int32_t SCassett[CountCaseteInRel];
+int32_t OldSCassett[CountCaseteInRel];
 
 DWORD WINAPI Open_FURN_SQL(LPVOID)
 {
@@ -970,7 +971,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
 #ifndef _DEBUG
         std::deque<TCassette> CIl;
-        //for(std::deque<TCassette>::iterator it = AllCassette.begin(); (int)CIl.size() < CountCaseteInRel && it != AllCassette.end(); it++)
+        
         for(auto& it : AllCassette)
         {
             if(it.Event == "1")
@@ -1048,60 +1049,56 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 CIl.push_back(it);
             }
         }
-        std::sort(CIl.begin(), CIl.end(), cmpCasete);
 
+        std::sort(CIl.begin(), CIl.end(), cmpCasete);
         for(int i = 0; i < CountCaseteInRel; i++)
         {
             if((int)CIl.size() > i)
             {
-
-                //if(!CIl[i].compare(CassetteInRel[i]))
-                {
-                    CassetteInRel[i] = CIl[i];
-                    SetCassetteToBase(i);
-                    //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)Stoi(CassetteInRel[i].Year));
-                    //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)Stoi(CassetteInRel[i].Month));
-                    //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)Stoi(CassetteInRel[i].Day));
-                    //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)Stoi(CassetteInRel[i].CassetteNo));
-                }
+                CassetteInRel[i] = CIl[i];
+                //Отбравляем в печь
+                SetCassetteToBase(i);
+                SCassett[i] = Stoi(CassetteInRel[i].Id);
             }
             else
             {
                 CassetteInRel[i] = TCassette();
-                //if(!CassetteInRel[i].compare(NullCasete))
-                //Stoi(CassetteInRel[i].Year;
-                //Stoi(CassetteInRel[i].Month;
-                //Stoi(CassetteInRel[i].Day;
-                //int32_t CassetteNo  = Stoi(CassetteInRel[i].CassetteNo;
                 if(AppCassette[i].Year->Val.As<int32_t>() != 0
                    || AppCassette[i].Month->Val.As<int32_t>() != 0
                    || AppCassette[i].Day->Val.As<int32_t>() != 0
                    || AppCassette[i].CassetteNo->Val.As<int32_t>() != 0
                    )
                 {
-                    //LOG_INFO(AllLogger, "{:90}| --> Обнуление катеты", FUNCTION_LINE_NAME);
+                    //Отбравляем в печь
                     AppCassette[i].Year->Set_Value(int32_t(0));
                     AppCassette[i].Month->Set_Value(int32_t(0));
                     AppCassette[i].Day->Set_Value(int32_t(0));
                     AppCassette[i].CassetteNo->Set_Value(int32_t(0));
-                    //LOG_INFO(AllLogger, "{:90}| <-- Обнуление катеты", FUNCTION_LINE_NAME);
-                    //if(run)
-                    {
-
-                        //SendDebug5("Обнуление крссеты", i + 1, CassetteInRel[i]);
-                        //if(!MyServer)
-                        {
-                            //SetCassetteToBase(i);
-                            //if(cassetteArray.cassette[i].Year->GetString() != CassetteInRel[i].Year)            cassetteArray.cassette[i].Year->Set_Value((int32_t)Stoi(CassetteInRel[i].Year));
-                            //if(cassetteArray.cassette[i].Month->GetString() != CassetteInRel[i].Month)          cassetteArray.cassette[i].Month->Set_Value((int32_t)Stoi(CassetteInRel[i].Month));
-                            //if(cassetteArray.cassette[i].Day->GetString() != CassetteInRel[i].Day)              cassetteArray.cassette[i].Day->Set_Value((int32_t)Stoi(CassetteInRel[i].Day));
-                            //if(cassetteArray.cassette[i].CassetteNo->GetString() != CassetteInRel[i].CassetteNo)  cassetteArray.cassette[i].CassetteNo->Set_Value((int32_t)Stoi(CassetteInRel[i].CassetteNo));
-                        }
-                    }
-                    //Отбравляем в печь
+                    SCassett[i] = 0;
                 }
             }
         }
+
+        bool b = false;
+        for(int i = 0; i< CountCaseteInRel; i++)
+        {
+            if(OldSCassett[i] != SCassett[i]) b = true;
+            OldSCassett[i] = SCassett[i];
+        }
+
+        if(b)
+        {
+            std::time_t st;
+            std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
+            fSpCassette << " " << GetDataTimeString(st) << ";";
+
+            for(auto a : SCassett | boost::adaptors::indexed(0))
+                fSpCassette << a.value() << ";";
+
+            fSpCassette << std::endl;
+            fSpCassette.close();
+        }
+        
 #endif
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));

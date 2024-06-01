@@ -552,9 +552,9 @@ namespace PDF
 
 		void CassettePdfClass::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
 		{
-			Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
-			Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
-			temp.DrawLine(&Gdi_L1, pt1, pt2);
+			//Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
+			//Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
+			//temp.DrawLine(&Gdi_L1, pt1, pt2);
 
 			Gdiplus::RectF RectText(Rect);
 
@@ -767,24 +767,28 @@ namespace PDF
 			time_t tm2 = DataTimeOfString(st2, FORMATTIME, TM);
 
 			double tm = difftime(tm2, tm1);
-			double Step = 1.0;
-			double Count = 1.0;
-
-			Count = 6.0;
-			Step = tm / Count;
+			double Count = 12.0;
+			double Step = tm / Count;
 
 			for(double e = 0; e <= Count; e++)
 			{
 				double sd = round(Rect.Width / (Count)*e);
+				bool b = (bool)std::fmod(e, 2);
 
-				double f = Step * e;
-				double tmf = tm1 + f;
-				time_t tms = time_t(tmf);
+				Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
+				Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - (b ? 18 : 10)};
+				temp.DrawLine(&Gdi_L1, pt1, pt2);
 
-				std::string s = GetDataTimeString(&tms);
-				std::wstring sDataBeg = GetData(std::wstring(s.begin(), s.end()));
+				if(!b)
+				{
+					double f = Step * e;
+					double tmf = tm1 + f;
+					time_t tms = time_t(tmf);
 
-				DrawT(temp, Rect, sd, sDataBeg);
+					std::string s = GetDataTimeString(&tms);
+					std::wstring sDataBeg = GetData(std::wstring(s.begin(), s.end()));
+					DrawT(temp, Rect, sd, sDataBeg);
+				}
 			}
 		}
 
@@ -987,23 +991,37 @@ namespace PDF
 				Y -= 25;
 #endif // _DEBUG
 
-
-				std::string ss = Cassette.Run_at;
-				std::vector <std::string>split;
-				boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
-
-				draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
-				if(split.size() >= 2)
+				std::string str = Cassette.Run_at;
+				//std::string::const_iterator start = str.begin();
+				//std::string::const_iterator end = str.end();
+				boost::regex xRegEx(".*(\\d{1,4}-\\d{1,2}-\\d{1,2}) (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
+				boost::match_results<std::string::const_iterator>what;
+				boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+				if(what.size() > 2)
 				{
-					draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
-					std::string ss = split[1];
-					std::vector <std::string>split1;
-					boost::split(split1, ss, boost::is_any_of(" "), boost::token_compress_on);
+					what[1].str();
+					draw_text_rect (page, left + 270, Y, XP, YP, what[1].str());  //Дата
+					draw_text_rect (page, left + 340, Y, XP, YP, what[2].str());  //Время
+				}
+				else
+				{
+					std::string ss = Cassette.Run_at;
+					std::vector <std::string>split;
+					boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
 
-					if(split1.size())
-						draw_text_rect (page, left + 340, Y, XP, YP, split1[0]);  //Время
-					else
-						draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
+					draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
+					if(split.size() >= 2)
+					{
+						draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
+						std::string ss = split[1];
+						std::vector <std::string>split1;
+						boost::split(split1, ss, boost::is_any_of("."), boost::token_compress_on);
+
+						if(split1.size())
+							draw_text_rect (page, left + 340, Y, XP, YP, split1[0]);  //Время
+						else
+							draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
+					}
 				}
 
 				Y -= 25;
@@ -1655,6 +1673,48 @@ namespace PDF
 			CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		};
 
+
+
+
+		//Автоматическое создание по кассете
+		void PrintCassettePdfAuto(TCassette& TC)
+		{
+			try
+			{
+				if(TC.Run_at.length() && TC.Finish_at.length())
+				{
+					std::stringstream sss;
+					sss << "PrintPdfAuto ";
+					sss << boost::format("%|04|-") % TC.Year;
+					sss << boost::format("%|02|-") % TC.Month;
+					sss << boost::format("%|02| ") % TC.Day;
+					sss << " № " << TC.CassetteNo;
+					SetWindowText(hWndDebug, sss.str().c_str());
+					PDF::Cassette::CassettePdfClass pdf(TC);
+				}
+			}
+			CATCH(PdfLogger, FUNCTION_LINE_NAME);
+		}
+
+		//Открывается по клику на лист
+		void PrintCassettePdfAuto(TSheet& Sheet)
+		{
+			try
+			{
+				PDF::Cassette::CassettePdfClass* pdf  = new PDF::Cassette::CassettePdfClass(Sheet);
+			}
+			CATCH(PdfLogger, std::string("PrintPdf: "));
+		}
+
+		//Автоматическое создание по листам
+		void RunAlCassettelPdfAuto(TSheet& Sheet, bool view)
+		{
+			try
+			{
+				PDF::Cassette::CassettePdfClass pdf(Sheet, view);
+			}
+			CATCH(PdfLogger, std::string("PrintPdf: "));
+		}
 
 
 
@@ -2616,51 +2676,6 @@ namespace PDF
 			}
 			CATCH(PdfLogger, "");
 
-		}
-
-
-
-
-
-
-		//Автоматическое создание по кассете
-		void PrintCassettePdfAuto(TCassette& TC)
-		{
-			try
-			{
-				if(TC.Run_at.length() && TC.Finish_at.length())
-				{
-					std::stringstream sss;
-					sss << "PrintPdfAuto ";
-					sss << boost::format("%|04|-") % TC.Year;
-					sss << boost::format("%|02|-") % TC.Month;
-					sss << boost::format("%|02| ") % TC.Day;
-					sss << " № " << TC.CassetteNo;
-					SetWindowText(hWndDebug, sss.str().c_str());
-					PDF::Cassette::CassettePdfClass pdf(TC);
-				}
-			}
-			CATCH(PdfLogger, FUNCTION_LINE_NAME);
-		}
-
-		//Открывается по клику на лист
-		void PrintCassettePdfAuto(TSheet& Sheet)
-		{
-			try
-			{
-				PDF::Cassette::CassettePdfClass* pdf  = new PDF::Cassette::CassettePdfClass(Sheet);
-			}
-			CATCH(PdfLogger, std::string("PrintPdf: "));
-		}
-
-		//Автоматическое создание по листам
-		void RunAlCassettelPdfAuto(TSheet& Sheet, bool view)
-		{
-			try
-			{
-				PDF::Cassette::CassettePdfClass pdf(Sheet, view);
-			}
-			CATCH(PdfLogger, std::string("PrintPdf: "));
 		}
 
 //Отключаем поиск кассет
@@ -3838,6 +3853,7 @@ namespace PDF
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID)
 	{
+		//return 0;
 #ifndef _DEBUG
 		return 0;
 #endif
@@ -3890,8 +3906,8 @@ namespace PDF
 					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 					
-					SHEET::StartSheet = "2024-05-31 00:00:00.00";
-					//PDF::SHEET::GetRawSheet(conn_pdf);
+					SHEET::StartSheet = "2024-03-01 00:00:00.00";
+					PDF::SHEET::GetRawSheet(conn_pdf);
 
 					PDF::Cassette::GetPdf getpdf(conn_pdf, SHEET::StartSheet);
 
