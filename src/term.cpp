@@ -1080,10 +1080,10 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         }
 
         bool b = false;
-        for(auto a : SCassett | boost::adaptors::indexed(0))
+        for(int i = 0; i < CountCaseteInRel; i++)
         {
-            if(OldSCassett[a.index()] != a.value()) b = true;
-            OldSCassett[a.index()] = a.value();
+            if(OldSCassett[i] != SCassett[i]) b = true;
+            OldSCassett[i] = SCassett[i];
         }
 
         if(b)
@@ -1092,8 +1092,8 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
             fSpCassette << " " << GetDataTimeString(st) << ";";
 
-            for(auto a : SCassett)
-                fSpCassette << a << ";";
+            for(int i = 0; i < CountCaseteInRel; i++)
+                fSpCassette << SCassett[i] << ";";
 
             fSpCassette << std::endl;
             fSpCassette.close();
