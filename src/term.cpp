@@ -893,6 +893,11 @@ void SetCassetteToBase(int i)
     int32_t Day = Stoi(CassetteInRel[i].Day);
     int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
+    //int32_t aYear = AppCassette[i].Year->GetValue().As<int32_t>();
+    //int32_t aMonth = AppCassette[i].Month->GetValue().As<int32_t>();
+    //int32_t aDay = AppCassette[i].Day->GetValue().As<int32_t>();
+    //int32_t aCassetteNo = AppCassette[i].CassetteNo->GetValue().As<int32_t>();
+
     int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
     int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
     int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
@@ -1063,10 +1068,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             else
             {
                 CassetteInRel[i] = TCassette();
-                if(AppCassette[i].Year->Val.As<int32_t>() != 0
-                   || AppCassette[i].Month->Val.As<int32_t>() != 0
-                   || AppCassette[i].Day->Val.As<int32_t>() != 0
-                   || AppCassette[i].CassetteNo->Val.As<int32_t>() != 0
+                if(
+                    AppCassette[i].CassetteNo->Val.As<int32_t>() != 0 ||
+                    AppCassette[i].Day->Val.As<int32_t>() != 0 ||
+                    AppCassette[i].Month->Val.As<int32_t>() != 0 ||
+                    AppCassette[i].Year->Val.As<int32_t>() != 0
                    )
                 {
                     //Отбравляем в печь
