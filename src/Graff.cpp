@@ -395,8 +395,8 @@ void Graff::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 	std::string st2 = std::string (te->first.begin(), te->first.end());
 
 	std::tm TM;
-	time_t tm1 = DataTimeOfString(st1, FORMATTIME, TM);
-	time_t tm2 = DataTimeOfString(st2, FORMATTIME, TM);
+	time_t tm1 = DataTimeOfString(st1, TM);
+	time_t tm2 = DataTimeOfString(st2, TM);
 
 	double tm = difftime(tm2, tm1);
 	double Count = 12.0;
@@ -614,7 +614,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 			int64_t t = 0;
 
 			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
-			DataTimeOfString(sBegTime, FORMATTIME, TM_Temp);
+			DataTimeOfString(sBegTime, TM_Temp);
 			TM_Temp.tm_year -= 1900;
 			TM_Temp.tm_mon -= 1;
 
@@ -629,7 +629,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 				if(sBegTime <= sData)
 				{
 					std::string sTemp = conn->PGgetvalue(res, l, 1);
-					DataTimeOfString(sData, FORMATTIME, TM_Temp);
+					DataTimeOfString(sData, TM_Temp);
 					TM_Temp.tm_year -= 1900;
 					TM_Temp.tm_mon -= 1;
 
@@ -764,7 +764,7 @@ void GetGrTempKPVLTempAct()
 						{
 							if(f != 0)
 							{
-								DataTimeOfString(sData, FORMATTIME, TM_Temp);
+								DataTimeOfString(sData, TM_Temp);
 								TM_Temp.tm_year -= 1900;
 								TM_Temp.tm_mon -= 1;
 								GraffKPVL.TempAct[sData] = std::pair(mktime(&TM_Temp), f);
@@ -916,7 +916,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			//sdd << "UPDATE cassette SET "
 		}
 
-		DataTimeOfString(sTempTime, FORMATTIME, TM_Temp);
+		DataTimeOfString(sTempTime, TM_Temp);
 		TM_Temp.tm_year -= 1900;
 		TM_Temp.tm_mon -= 1;
 
@@ -935,7 +935,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 	}
 	else
 	{
-		DataTimeOfString(sEndTime, FORMATTIME, TM_Temp);
+		DataTimeOfString(sEndTime, TM_Temp);
 		TM_Temp.tm_year -= 1900;
 		TM_Temp.tm_mon -= 1;
 
@@ -998,7 +998,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			int64_t t = 0;
 
 			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
-			DataTimeOfString(sBegTime, FORMATTIME, TM_Temp);
+			DataTimeOfString(sBegTime, TM_Temp);
 			TM_Temp.tm_year -= 1900;
 			TM_Temp.tm_mon -= 1;
 
@@ -1013,7 +1013,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 				if(sBegTime <= sData)
 				{
 					std::string sTemp = conn->PGgetvalue(res, l, 1);
-					DataTimeOfString(sData, FORMATTIME, TM_Temp);
+					DataTimeOfString(sData, TM_Temp);
 					TM_Temp.tm_year -= 1900;
 					TM_Temp.tm_mon -= 1;
 

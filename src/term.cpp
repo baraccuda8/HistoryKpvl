@@ -640,7 +640,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     if(tmp_at.length())
     {
         std::tm TM_Temp ={0};
-        DataTimeOfString(tmp_at, FORMATTIME, TM_Temp);
+        DataTimeOfString(tmp_at, TM_Temp);
         TM_Temp.tm_year -= 1900;
         TM_Temp.tm_mon -= 1;
 

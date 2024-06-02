@@ -350,7 +350,7 @@ namespace S107
                             #pragma region —читае Finish_at  по End_at
                                 time_t tt1, tt2;
                                 std::tm TM;
-                                DataTimeOfString(CD.End_at, FORMATTIME, TM);
+                                DataTimeOfString(CD.End_at, TM);
                                 TM.tm_year -= 1900;
                                 TM.tm_mon -= 1;
                                 tt1 = mktime(&TM);

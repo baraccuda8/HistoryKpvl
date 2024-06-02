@@ -225,6 +225,16 @@ namespace PDF
 			HPDF_Page_Stroke (page);
 		}
 
+		typedef struct PFS{
+			int sec = 0;
+			float temper = 0.f;
+			std::string data = "";
+			int count = 0;
+			int oldStep = 0;
+		}PFS;
+
+		typedef std::vector<PFS> VPFS;
+
 		class CassettePdfClass{
 		public:
 
@@ -266,7 +276,7 @@ namespace PDF
 
 
 			CassettePdfClass(TCassette& TC);
-			CassettePdfClass(TSheet& sheet, bool view = true);
+			//CassettePdfClass(TSheet& sheet, bool view = true);
 			//CassettePdfClass(T_IdSheet& sheet, bool view = false);
 			~CassettePdfClass()
 			{
@@ -280,6 +290,9 @@ namespace PDF
 			Gdiplus::Pen Gdi_L1 = Gdiplus::Pen(Gdiplus::Color(192, 192, 192), 0.5); //Черный
 
 			void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID);
+			void SqlTempActKPVL1(std::string Start, std::string Stop, VPFS& pfs1);
+			void SqlTempActKPVL2(std::string Start, std::string Stop, VPFS& pfs2);
+			void SqlTempActKPVL3(std::string Start, std::string Stop, VPFS& pfs);
 			void SqlTempActKPVL(T_SqlTemp& tr);
 
 			void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
@@ -408,7 +421,7 @@ namespace PDF
 						int64_t t = 0;
 
 						float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-						DataTimeOfString(Start, FORMATTIME, TM_Temp);
+						DataTimeOfString(Start, TM_Temp);
 						TM_Temp.tm_year -= 1900;
 						TM_Temp.tm_mon -= 1;
 						tr[Start] = std::pair(mktime(&TM_Temp), f);
@@ -421,7 +434,7 @@ namespace PDF
 							if(Start <= sData)
 							{
 								std::string sTemp = conn.PGgetvalue(res, l, 1);
-								DataTimeOfString(sData, FORMATTIME, TM_Temp);
+								DataTimeOfString(sData, TM_Temp);
 								TM_Temp.tm_year -= 1900;
 								TM_Temp.tm_mon -= 1;
 
@@ -432,7 +445,7 @@ namespace PDF
 						}
 
 
-						DataTimeOfString(Stop, FORMATTIME, TM_Temp);
+						DataTimeOfString(Stop, TM_Temp);
 						TM_Temp.tm_year -= 1900;
 						TM_Temp.tm_mon -= 1;
 						tr[Stop] = std::pair(mktime(&TM_Temp), f);
@@ -445,94 +458,346 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
+
+
+		void CassettePdfClass::SqlTempActKPVL1(std::string Start, std::string Stop, VPFS& pF1)
+		{
+			std::stringstream sdt;
+			sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
+			sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
+
+			sdt << ") AND create_at >= '" << Start;
+			sdt << "' AND create_at <= '" << Stop;
+			sdt << "' ORDER BY id ASC;";
+
+
+			std::string comand = sdt.str();
+			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				int line = PQntuples(res);
+				if(line)
+				{
+					if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
+
+					for(int l = 0; l < line; l++)
+					{
+						PFS pfs;
+						int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
+						pfs.data		= conn.PGgetvalue(res, l, 1);
+						pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
+
+						if(id_name == Hmi210_1.Htr2_1->ID) pF1.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_2->ID) pF1.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_3->ID) pF1.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_4->ID) pF1.push_back(pfs);
+
+						//int t = 0;
+						//std::tm TM_Temp ={0};
+						//float f =  atoi_t(float, atof, sTemp);
+						//
+						//if(Sheet.Start_at <= sData)
+						//{
+						//	auto a = tr.find(sData);
+						//
+						//	if(a != tr.end() && a._Ptr != NULL)
+						//	{
+						//		a->second.second = (f + a->second.second) / 2.0f;
+						//	}
+						//	else
+						//	{
+						//		if(f != 0.0)
+						//		{
+						//			if(!Stoi(Sheet.Temperature))
+						//			{
+						//				if(SrTemp == 0.0f)SrTemp = f;
+						//				else SrTemp = (SrTemp + f) / 2.0f;
+						//			}
+						//			DataTimeOfString(sData, FORMATTIME, TM_Temp);
+						//			TM_Temp.tm_year -= 1900;
+						//			TM_Temp.tm_mon -= 1;
+						//			tr[sData] = std::pair(mktime(&TM_Temp), f);
+						//		}
+						//	}
+						//}
+					}
+				}
+			}
+			else
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			PQclear(res);
+
+		}
+
+		void CassettePdfClass::SqlTempActKPVL2(std::string Start, std::string Stop, VPFS& pF2)
+		{
+			std::stringstream sdt;
+			sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
+
+			sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_4->ID;
+
+			sdt << ")  AND create_at >= '" << Start;
+			sdt << "' AND create_at <= '" << Stop;
+			sdt << "' ORDER BY id ASC;";
+
+
+			std::string comand = sdt.str();
+			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				int line = PQntuples(res);
+				if(line)
+				{
+					if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
+
+					for(int l = 0; l < line; l++)
+					{
+						PFS pfs;
+						int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
+						pfs.data		= conn.PGgetvalue(res, l, 1);
+						pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
+
+						if(id_name == Hmi210_1.Htr1_1->ID) pF2.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_2->ID) pF2.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_3->ID) pF2.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_4->ID) pF2.push_back(pfs);
+
+						//int t = 0;
+						//std::tm TM_Temp ={0};
+						//float f =  atoi_t(float, atof, sTemp);
+						//
+						//if(Sheet.Start_at <= sData)
+						//{
+						//	auto a = tr.find(sData);
+						//
+						//	if(a != tr.end() && a._Ptr != NULL)
+						//	{
+						//		a->second.second = (f + a->second.second) / 2.0f;
+						//	}
+						//	else
+						//	{
+						//		if(f != 0.0)
+						//		{
+						//			if(!Stoi(Sheet.Temperature))
+						//			{
+						//				if(SrTemp == 0.0f)SrTemp = f;
+						//				else SrTemp = (SrTemp + f) / 2.0f;
+						//			}
+						//			DataTimeOfString(sData, FORMATTIME, TM_Temp);
+						//			TM_Temp.tm_year -= 1900;
+						//			TM_Temp.tm_mon -= 1;
+						//			tr[sData] = std::pair(mktime(&TM_Temp), f);
+						//		}
+						//	}
+						//}
+					}
+				}
+			}
+			else
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			PQclear(res);
+
+		}
+
+		void CassettePdfClass::SqlTempActKPVL3(std::string Start, std::string Stop, VPFS& pF)
+		{
+			std::stringstream sdt;
+			sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
+
+			sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
+			sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
+
+			sdt << ")  AND create_at >= '" << Start;
+			sdt << "' AND create_at <= '" << Stop;
+			sdt << "' ORDER BY id ASC;";
+
+
+			std::string comand = sdt.str();
+			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				int line = PQntuples(res);
+				if(line)
+				{
+					if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
+
+					for(int l = 0; l < line; l++)
+					{
+						PFS pfs;
+						int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
+						pfs.data		= conn.PGgetvalue(res, l, 1);
+						pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
+
+						if(id_name == Hmi210_1.Htr1_1->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_3->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr1_4->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_1->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_2->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_3->ID) pF.push_back(pfs);
+						else if(id_name == Hmi210_1.Htr2_4->ID) pF.push_back(pfs);
+					}
+				}
+			}
+			else
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			PQclear(res);
+
+		}
+		void GetSrTemper(std::vector<PFS>& pF, std::map<int, PFS>&mF)
+		{
+			std::tm TM;
+			int Step = 5;
+			if(pF.size())
+			{
+				time_t tS2 = DataTimeOfString(pF.begin()->data, TM);
+
+				int oldStep = 0;
+				for(auto& a : pF)
+				{
+					time_t tS = DataTimeOfString(a.data, TM);
+					a.sec = int(difftime(tS, tS2));
+
+					int st = a.sec / Step;
+					if(oldStep == st)
+					{
+						if(a.temper > 0)
+						{
+							mF[st].temper += a.temper;
+							mF[st].data = a.data;
+							mF[st].count++;
+						}
+					}
+					else
+					{
+						if(a.temper > 0)
+						{
+							oldStep = st;
+							mF[st].temper += a.temper;
+							mF[st].data = a.data;
+							mF[st].count = 1;
+						}
+					}
+				}
+				for(auto& a : mF)
+					if(a.second.count)
+						a.second.temper /= a.second.count;
+
+			}
+		}
+
 		void CassettePdfClass::SqlTempActKPVL(T_SqlTemp& tr)
 		{
 			try
 			{
 				tr.erase(tr.begin(), tr.end());
 				std::string Start = Sheet.Start_at;
-				std::string Stop = Sheet.DataTime_End;
-				int t = 0;
-				std::tm TM_Temp ={0};
+				std::string Stop  = Sheet.DataTime_End;
+				std::string Pos2  = Sheet.SecondPos_at;
+				std::tm TM;
 
 				if(Stop.length() < 1) return;
 				if(Start.length() < 1)return;
 
-				std::stringstream sdt;
-				sdt << "SELECT create_at, content FROM todos WHERE (";
-				sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
-				sdt << "id_name = " << Hmi210_1.Htr2_4->ID << " ) ";
 
-				sdt << " AND create_at >= '" << Start;
-				sdt << "' AND create_at <= '" << Stop;
-				sdt << "' ORDER BY create_at ASC ;";
+				time_t tStart = DataTimeOfString(Start, TM);
+				time_t tStop  = DataTimeOfString(Stop, TM);
+				time_t tPos2  = DataTimeOfString(Pos2, TM);
+
+				std::vector<PFS>pF1;
+				std::vector<PFS>pF2;
+
+				std::map<int, PFS>mF1;
+				std::map<int, PFS>mF2;
 
 
-				std::string comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				if(tPos2)
 				{
-					int line = PQntuples(res);
-					if(line)
-					{
-						if(!Stoi(Sheet.Temperature))
-							SrTemp = 0.0f;
-						for(int l = 0; l < line; l++)
-						{
-							std::string sData = conn.PGgetvalue(res, l, 0);
-							std::string sTemp = conn.PGgetvalue(res, l, 1);
-							float f =  atoi_t(float, atof, sTemp);
-
-							if(Sheet.Start_at <= sData)
-							{
-								auto a = tr.find(sData);
-
-								if(a != tr.end() && a._Ptr != NULL)
-								{
-									a->second.second = (f + a->second.second) / 2.0f;
-								}
-								else
-								{
-									if(f != 0.0)
-									{
-										if(!Stoi(Sheet.Temperature))
-										{
-											if(SrTemp == 0.0f)SrTemp = f;
-											else SrTemp = (SrTemp + f) / 2.0f;
-										}
-										DataTimeOfString(sData, FORMATTIME, TM_Temp);
-										TM_Temp.tm_year -= 1900;
-										TM_Temp.tm_mon -= 1;
-										tr[sData] = std::pair(mktime(&TM_Temp), f);
-									}
-								}
-							}
-						}
-					}
+					SqlTempActKPVL1(Start, Pos2, pF1);
+					SqlTempActKPVL2(Pos2, Stop, pF2);
 				}
 				else
-					LOG_ERR_SQL(PdfLogger, res, comand);
-				PQclear(res);
-
-				if(!Stoi(Sheet.Temperature))
 				{
-					std::ostringstream oss;
-
-					oss << std::setprecision(0) << std::fixed << SrTemp;
-
-					std::string update = " temperature = " + oss.str();
-					KPVL::Sheet::SetUpdateSheet(conn, Sheet, update, "");
-
-					strSrTemp = oss.str();
+					SqlTempActKPVL3(Start, Stop, pF1);
 				}
-				else strSrTemp = Sheet.Temperature;
+
+				GetSrTemper(pF1, mF1);
+				//int Step = 5; //Шаг 5 секунд
+				//if(pF1.size())
+				//{
+				//	time_t tS1 = DataTimeOfString(pF1.begin()->data, FORMATTIME, TM);
+				//
+				//	int oldStep = 0;
+				//	for(auto& a : pF1)
+				//	{
+				//		time_t tS = DataTimeOfString(a.data, FORMATTIME, TM);
+				//		a.sec = int(difftime(tS, tS1));
+				//
+				//		int st = a.sec / Step;
+				//		if(oldStep == st)
+				//		{
+				//			mF1[st].temper += a.temper;
+				//			mF1[st].count++;
+				//		}
+				//		else
+				//		{
+				//			if(mF1[oldStep].count)
+				//				mF1[oldStep].temper /= mF1[oldStep].count;
+				//			oldStep = st;
+				//
+				//			mF1[st].temper += a.temper;
+				//			mF1[st].count = 1;
+				//		}
+				//	}
+				//}
+
+				GetSrTemper(pF2, mF2);
+
+				std::tm TM_Temp;
+				for(auto a : mF1)
+				{
+					DataTimeOfString(a.second.data, TM_Temp);
+					TM_Temp.tm_year -= 1900;
+					TM_Temp.tm_mon -= 1;
+					tr[a.second.data] = std::pair(mktime(&TM_Temp), a.second.temper);
+				}
+
+				for(auto a : mF2)
+				{
+					DataTimeOfString(a.second.data, TM_Temp);
+					TM_Temp.tm_year -= 1900;
+					TM_Temp.tm_mon -= 1;
+					tr[a.second.data] = std::pair(mktime(&TM_Temp), a.second.temper);
+				}
+
+				SrTemp = tr.rbegin()->second.second;
+				Sheet.Temperature = std::to_string(SrTemp);
+				std::ostringstream oss;
+
+				oss << std::setprecision(0) << std::fixed << SrTemp;
+				std::string update = " temperature = " + oss.str();
+				KPVL::Sheet::SetUpdateSheet(conn, Sheet, update, "");
+
+				strSrTemp = oss.str();
+				
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
@@ -588,7 +853,7 @@ namespace PDF
 			//Gdiplus::StringFormat stringFormat;
 			//stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
 			//stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-
+			//
 			//{
 			//	float mY = Rect.Y + float((f_maxt - f_maxt) * coeffH);
 			//	Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
@@ -601,7 +866,7 @@ namespace PDF
 			//	sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << f_maxt;
 			//	temp.DrawString(sdw.str().c_str(), -1, &font1, Rect2, &stringFormat, &Gdi_brush);
 			//}
-
+			//
 			//{
 			//	float iY = Rect.Y + float((f_maxt - f_mint) * coeffH);
 			//	Gdiplus::PointF pt1 ={Rect.X - 5,				iY};
@@ -620,15 +885,18 @@ namespace PDF
 			p1.X = Rect.X;
 			p1.Y = Rect.Y + float((f_maxt - b->second.second) * coeffH);
 
+			Gdiplus::GraphicsPath path;
+			path.StartFigure();
 			for(auto& a : st)
 			{
 				p2.X =  Rect.X + float((a.second.first - mind) * coeffW);
 				p2.Y =  Rect.Y + float((f_maxt - a.second.second) * coeffH);
-				temp.DrawLine(&Gdi_L2, p1, p2);
-
+				path.AddLine(p1, p2);
 				p1.X = p2.X;
 				p1.Y = p2.Y;
 			}
+			temp.DrawPath(&Gdi_L2, &path);
+			path.Reset();
 		}
 
 		void CassettePdfClass::DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
@@ -763,8 +1031,8 @@ namespace PDF
 			std::string st2 = std::string (te->first.begin(), te->first.end());
 
 			std::tm TM;
-			time_t tm1 = DataTimeOfString(st1, FORMATTIME, TM);
-			time_t tm2 = DataTimeOfString(st2, FORMATTIME, TM);
+			time_t tm1 = DataTimeOfString(st1, TM);
+			time_t tm2 = DataTimeOfString(st2, TM);
 
 			double tm = difftime(tm2, tm1);
 			double Count = 12.0;
@@ -1146,7 +1414,7 @@ namespace PDF
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME + " File: " + temp.str() + " ");
 
 			std::tm TM;
-			DataTimeOfString(Sheet.Start_at, FORMATTIME, TM);
+			DataTimeOfString(Sheet.Start_at, TM);
 			
 			try
 			{
@@ -1391,6 +1659,7 @@ namespace PDF
 			return Y;
 		}
 
+		/*
 		CassettePdfClass::CassettePdfClass(TSheet& sheet, bool view)
 		{
 			try
@@ -1505,6 +1774,7 @@ namespace PDF
 
 			}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
+		*/
 
 		void OutDebugInfo(TCassette& Cassette, TSheet& Sheet)
 		{
@@ -1696,6 +1966,7 @@ namespace PDF
 			CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		}
 
+		/*
 		//Открывается по клику на лист
 		void PrintCassettePdfAuto(TSheet& Sheet)
 		{
@@ -1705,7 +1976,7 @@ namespace PDF
 			}
 			CATCH(PdfLogger, std::string("PrintPdf: "));
 		}
-
+		
 		//Автоматическое создание по листам
 		void RunAlCassettelPdfAuto(TSheet& Sheet, bool view)
 		{
@@ -1715,7 +1986,7 @@ namespace PDF
 			}
 			CATCH(PdfLogger, std::string("PrintPdf: "));
 		}
-
+		*/
 
 
 
@@ -1859,7 +2130,7 @@ namespace PDF
 			try
 			{
 				std::tm TM;
-				time_t temp = DataTimeOfString(P.End_at, FORMATTIME, TM);
+				time_t temp = DataTimeOfString(P.End_at, TM);
 				temp  = (time_t)difftime(temp, 5 * 60); //Вычисть 5 минут до конца отпуска
 				localtime_s(&TM, &temp);
 				std::string End_at  = GetDataTimeString(TM);
@@ -1887,15 +2158,15 @@ namespace PDF
 					//struct tm TM_All;
 					std::time_t tm_Fin;
 
-					std::time_t tm_Run = DataTimeOfString(P.Run_at, FORMATTIME, TM_Run);
-					std::time_t tm_End = DataTimeOfString(P.End_at, FORMATTIME, TM_End);
+					std::time_t tm_Run = DataTimeOfString(P.Run_at, TM_Run);
+					std::time_t tm_End = DataTimeOfString(P.End_at, TM_End);
 					std::time_t tm_All = (time_t)difftime(tm_End, tm_Run);
 
 					gmtime_s(&TM_All, &tm_All);
 					TM_All.tm_year -= 1900;
 					TM_All.tm_mday -= 1;
 
-					tm_Fin = DataTimeOfString(P.End_at, FORMATTIME, TM_Fin);
+					tm_Fin = DataTimeOfString(P.End_at, TM_Fin);
 					tm_Fin = tm_End + (15 * 60);
 					localtime_s(&TM_Fin, &tm_Fin);
 
@@ -2336,7 +2607,7 @@ namespace PDF
 				if(!tc.Finish_at.length())
 				{
 					std::tm TM;
-					time_t tm = DataTimeOfString(tc.End_at, FORMATTIME, TM);
+					time_t tm = DataTimeOfString(tc.End_at, TM);
 					tm += (60 * 15);
 					tc.Finish_at = GetDataTimeString(tm);
 				}
@@ -3131,7 +3402,7 @@ namespace PDF
 		{
 			MapSheetTodos DataSheetTodos;
 			std::tm tmp;
-			time_t t1 = DataTimeOfString(ids.DataTime_End, FORMATTIME, tmp) + 5;
+			time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
 			std::string Start = GetDataTimeString(&t1);
 
 			std::stringstream ssd;
@@ -3694,55 +3965,55 @@ namespace PDF
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
-		std::string comand = "";
+		//{
+		//	std::vector<int> csId;
+		//	std::string comand = comand = "SELECT id FROM cassette ORDER BY create_at DESC;"; //Все кассеты
+		//	PGresult* res = conn.PGexec(comand);
+		//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		//	{
+		//		int line = PQntuples(res);
+		//		for(int l = 0; l < line; l++)
+		//		{
+		//			int id = Stoi(conn.PGgetvalue(res, l, 0));
+		//			csId.push_back(id);
+		//		}
+		//	}
+		//	PQclear(res);
+		//}
 
-		std::vector<int> csId;
-
-		comand = "SELECT id FROM cassette ORDER BY create_at DESC;"; //Все кассеты
-		PGresult* res = conn.PGexec(comand);
-		if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		{
-			int line = PQntuples(res);
-			for(int l = 0; l < line; l++)
+			std::string comand = "SELECT * FROM cassette WHERE id = 371"; //2024-05-25-06
+			PGresult* res = conn.PGexec(comand);
+			TCassette Cassette;
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
-				int id = Stoi(conn.PGgetvalue(res, l, 0));
-				csId.push_back(id);
+				S107::GetColl(res);
+				if(conn.PQntuples(res))
+					S107::GetCassette(res, Cassette, 0);
 			}
-		}
-		PQclear(res);
+			else
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			PQclear(res);
 
-		comand = "SELECT * FROM cassette WHERE id = 371"; //2024-05-25-06
-		res = conn.PGexec(comand);
-		TCassette Cassette;
-		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		{
-			S107::GetColl(res);
-			if(conn.PQntuples(res))
-				S107::GetCassette(res, Cassette, 0);
-		}
-		else
-			LOG_ERR_SQL(PdfLogger, res, comand);
-		PQclear(res);
-		
-		try
-		{
-			 //Удаление всех файлов в каталоге кассеты
-			std::stringstream temp;
-			temp << lpLogPdf;
-			temp << "/" << Stoi(Cassette.Year);
-			temp << "/" << Cassette::MonthName[Stoi(Cassette.Month)];
-			temp << "/" << std::setw(2) << std::setfill('0') << std::right << Stoi(Cassette.Day);
-			std::Pathc patch = getDirContents (temp.str());
-			for(auto p : patch)
+			try
 			{
-				if(p.string().length())
-					remove(p.string().c_str());
+				 //Удаление всех файлов в каталоге кассеты
+				std::stringstream temp;
+				temp << lpLogPdf;
+				temp << "/" << Stoi(Cassette.Year);
+				temp << "/" << Cassette::MonthName[Stoi(Cassette.Month)];
+				temp << "/" << std::setw(2) << std::setfill('0') << std::right << Stoi(Cassette.Day);
+				std::Pathc patch = getDirContents (temp.str());
+				for(auto p : patch)
+				{
+					if(p.string().length())
+						remove(p.string().c_str());
+				}
 			}
+			CATCH(PdfLogger, FUNCTION_LINE_NAME);
+			//Cassette.Peth = "1";
+			Cassette::CassettePdfClass cc = Cassette::CassettePdfClass(Cassette);
 		}
-		CATCH(PdfLogger, FUNCTION_LINE_NAME);
-		//Cassette.Peth = "1";
-		Cassette::CassettePdfClass cc = Cassette::CassettePdfClass(Cassette);
-
 		//std::stringstream ssa;
 		//ssa << "SELECT * FROM cassette WHERE ";
 		//ssa << "correct IS NULL AND ";
@@ -3877,7 +4148,7 @@ namespace PDF
 				if(PDF::Correct)
 				{
 					////Проверяем и востанавливаем все листы
-					SHEET::StartSheet = "2024-01-01 00:00:00";
+					//SHEET::StartSheet = "2024-01-01 00:00:00";
 					//SHEET::AllId = 1356;
 					//SHEET::iAllId = 1;
 					
@@ -3889,7 +4160,7 @@ namespace PDF
 					//SHEET::StartSheet = "2024-05-25 04:30:00";
 
 					////Для автоматической коррекции
-					int id = 0;
+					//int id = 0;
 					//std::string comand = "SELECT create_at, id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1";
 					//std::string comand = "SELECT create_at, id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1";
 					//PGresult* res = conn_pdf.PGexec(comand);
@@ -3906,10 +4177,12 @@ namespace PDF
 					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 					
-					SHEET::StartSheet = "2024-03-01 00:00:00.00";
+					SHEET::StartSheet = "2024-05-31 00:00:00.00";
+					//SHEET::StopSheet  = "2024-05-31 11:00:00.00";
+					
 					PDF::SHEET::GetRawSheet(conn_pdf);
 
-					PDF::Cassette::GetPdf getpdf(conn_pdf, SHEET::StartSheet);
+					PDF::Cassette::GetPdf getpdf(conn_pdf, "2024-05-31 00:00:00.00");
 
 					PDF::Correct = false;
 				}

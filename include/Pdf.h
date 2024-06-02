@@ -44,7 +44,7 @@ namespace PDF
 		void PrintCassettePdfAuto(TCassette& TC);
 
 		//Открывается по клику на лист
-		void PrintCassettePdfAuto(TSheet& Sheet);
+		//void PrintCassettePdfAuto(TSheet& Sheet);
 
 	};
 	namespace SHEET
