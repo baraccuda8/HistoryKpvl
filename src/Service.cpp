@@ -225,10 +225,10 @@ DWORD LaunchProcess(const char* process_path, const char* path)
     if(SessionId != oldSessionId)
         addLogMessage("GetCurrentSessionId == " + std::to_string(SessionId) + ", StartInteractiveClientProcess User");
 
-    if(SessionId == 0)
-        StartInteractiveClientProcess(user, domm, pass, process_path, path);
-    else
+    if(SessionId != 0)
         StartInteractiveClientProcess(SessionId, process_path, path);
+    //else
+    //    StartInteractiveClientProcess(user, domm, pass, process_path, path);
 
     oldSessionId = SessionId;
 
