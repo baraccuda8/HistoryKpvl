@@ -391,16 +391,19 @@ void Graff::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 	auto tb = TempAct.begin();
 	auto te = TempAct.rbegin();
 
-	std::string st1 = std::string (tb->first.begin(), tb->first.end());
-	std::string st2 = std::string (te->first.begin(), te->first.end());
+	//std::tm TM;
+	//std::string st1 = std::string (tb->first.begin(), tb->first.end());
+	//std::string st2 = std::string (te->first.begin(), te->first.end());
+	//time_t tm1 = DataTimeOfString(st1, TM);
+	//time_t tm2 = DataTimeOfString(st2, TM);
 
-	std::tm TM;
-	time_t tm1 = DataTimeOfString(st1, TM);
-	time_t tm2 = DataTimeOfString(st2, TM);
+	time_t tm1 = tb->second.first;
+	time_t tm2 = te->second.first;
+
 
 	double tm = difftime(tm2, tm1);
 	double Count = 12.0;
-	double Step = tm / Count;;
+	double Step = tm / Count;
 
 	for(double e = 0; e <= Count; e++)
 	{
@@ -856,7 +859,7 @@ DWORD WINAPI Open_GRAFF_KPVL(LPVOID)
 		if(!GraffKPVL.conn->connection()) 
 			throw std::exception(__FUN(std::string("Error SQL conn_temp connection to GraffKPVL")));
 		GraffKPVL.MaxSecCount = SecCount2;
-		//GraffKPVL.MaxSecCount = 60 * 22.1;
+		///GraffKPVL.MaxSecCount = 60 * 22.1;
 		while(isRun)
 		{
 			GetGrTempKPVLTempAct();

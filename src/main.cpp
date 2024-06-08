@@ -268,6 +268,35 @@ time_t DataTimeOfString(std::string str, std::tm& TM, std::string format)
     return 0;
 }
 
+time_t DataTimeOfString(std::string str, std::string format)
+{
+    try
+    {
+        std::tm TM;
+        TM.tm_year = 0; TM.tm_mon = 0; TM.tm_mday = 0; TM.tm_hour = 0; TM.tm_min = 0; TM.tm_sec = 0;
+        std::string::const_iterator start = str.begin();
+        std::string::const_iterator end = str.end();
+        boost::regex xRegEx(format);
+        boost::match_results<std::string::const_iterator> what;
+
+        if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
+        {
+            size_t size = what.size();
+            if(size >= 1)TM.tm_year = Stoi(what[1].str());
+            if(size >= 2)TM.tm_mon = Stoi(what[2].str());
+            if(size >= 3)TM.tm_mday = Stoi(what[3].str());
+            if(size >= 4)TM.tm_hour = Stoi(what[4].str());
+            if(size >= 5)TM.tm_min = Stoi(what[5].str());
+            if(size >= 6)TM.tm_sec = Stoi(what[6].str());
+            TM.tm_year -= 1900;
+            TM.tm_mon -= 1;
+            return mktime(&TM);
+        }
+    }
+    catch(...) {}
+
+    return 0;
+}
 time_t DataTimeDiff(std::string str1, std::string str2, std::string format)
 {
     std::tm TM;

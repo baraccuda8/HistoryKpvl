@@ -207,6 +207,7 @@ time_t DataTimeDiff(std::string str1, std::string str2, std::string format = FOR
 
 time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6, std::string format = FORMATTIME);
 time_t DataTimeOfString(std::string str, std::tm& TM, std::string format = FORMATTIME);
+time_t DataTimeOfString(std::string str, std::string format = FORMATTIME);
 
 std::string GetStringData(std::string d);
 std::string Formats(float f, int n = 1);
