@@ -135,6 +135,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
     {casSheet::SecondPos_at, { "Дата время\nво второй зоне", LL0 }},
+    {casSheet::Correct, { "Коррекция", LL0 }},
 
     //{casSheet::Pos, { "Лист\nнайден в", 100 }},
     {casSheet::Pos, { "Текущая\nпозиция", 100 }},
@@ -143,16 +144,23 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::DataTime_End, { "Дата время\nвыгрузки из печи", LL0 }},
     {casSheet::DataTime_All, { "Время закалки\nмин", L1 }},
     {casSheet::TimeForPlateHeat, { "Задание Время\nокончания нагрева", L2 }},
+
+    {casSheet::Day, { "ID листа\nДень", L1 }},
+    {casSheet::Month, { "ID листа\nМесяц", L1 }},
+    {casSheet::Year, { "ID листа\nГод", L1 }},
+    {casSheet::CassetteNo, { "ID листа\nКасета", L1 }},
+    {casSheet::SheetInCassette, { "Id листа\nНомер", L1 }},
+
     {casSheet::PresToStartComp, { "Задание\nДавления воды", L2 }},
 
     {casSheet::Alloy, { "Марка стали", L1 }},
     {casSheet::Thikness, { "Толщина\nлиста\nмм", L2 }},
     {casSheet::Melt, { "Плавка", L1 }},
     {casSheet::PartNo, { "Партия", L0 }},
-    {casSheet::Slab, { "Сляб", L0 }},
+    //{casSheet::Slab, { "Сляб", L0 }},
     {casSheet::Pack, { "Пачка", L0 }},
     {casSheet::Sheet, { "Номер\nлиста", L0 }},
-    {casSheet::SubSheet, { "Номер\nдодлиста", L0 }},
+    //{casSheet::SubSheet, { "Номер\nдодлиста", L0 }},
     {casSheet::Temper, { "Заданная\nтемпература\nС°", LL2 }},
     {casSheet::Temperature, { "Факт\nтемпературы\nС°", LL2 }},
     {casSheet::Speed, { "Скорость\nвыдачи\nмм/с", 80 }},
@@ -170,30 +178,23 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
 
     {casSheet::Lam_TE1, { "Температура\nводы\nв поддоне. С°", LL1 }},
 
-    {casSheet::Day, { "ID листа\nДень", L1 }},
-    {casSheet::Month, { "ID листа\nМесяц", L1 }},
-    {casSheet::Year, { "ID листа\nГод", L1 }},
-    {casSheet::CassetteNo, { "ID листа\nКасета", L1 }},
-    {casSheet::SheetInCassette, { "Id листа\nНомер", L1 }},
+    //{casSheet::Top1, { "До\nкантовки\n1", L2 }},
+    //{casSheet::Top2, { "До\nкантовки\n2", L2 }},
+    //{casSheet::Top3, { "До\nкантовки\n3", L2 }},
+    //{casSheet::Top4, { "До\nкантовки\n4", L2 }},
+    //{casSheet::Top5, { "До\nкантовки\n5", L2 }},
+    //{casSheet::Top6, { "До\nкантовки\n6", L2 }},
+    //{casSheet::Top7, { "До\nкантовки\n7", L2 }},
+    //{casSheet::Top8, { "До\nкантовки\n8", L2 }},
 
-    {casSheet::Top1, { "До\nкантовки\n1", L2 }},
-    {casSheet::Top2, { "До\nкантовки\n2", L2 }},
-    {casSheet::Top3, { "До\nкантовки\n3", L2 }},
-    {casSheet::Top4, { "До\nкантовки\n4", L2 }},
-    {casSheet::Top5, { "До\nкантовки\n5", L2 }},
-    {casSheet::Top6, { "До\nкантовки\n6", L2 }},
-    {casSheet::Top7, { "До\nкантовки\n7", L2 }},
-    {casSheet::Top8, { "До\nкантовки\n8", L2 }},
-
-    {casSheet::Bot1, { "После\nкантовки\n1", L2 }},
-    {casSheet::Bot2, { "После\nкантовки\n2", L2 }},
-    {casSheet::Bot3, { "После\nкантовки\n3", L2 }},
-    {casSheet::Bot4, { "После\nкантовки\n4", L2 }},
-    {casSheet::Bot5, { "После\nкантовки\n5", L2 }},
-    {casSheet::Bot6, { "После\nкантовки\n6", L2 }},
-    {casSheet::Bot7, { "После\nкантовки\n7", L2 }},
-    {casSheet::Bot8, { "После\nкантовки\n8", L2 }},
-    {casSheet::Correct, { "Коррект", LL0 }},
+    //{casSheet::Bot1, { "После\nкантовки\n1", L2 }},
+    //{casSheet::Bot2, { "После\nкантовки\n2", L2 }},
+    //{casSheet::Bot3, { "После\nкантовки\n3", L2 }},
+    //{casSheet::Bot4, { "После\nкантовки\n4", L2 }},
+    //{casSheet::Bot5, { "После\nкантовки\n5", L2 }},
+    //{casSheet::Bot6, { "После\nкантовки\n6", L2 }},
+    //{casSheet::Bot7, { "После\nкантовки\n7", L2 }},
+    //{casSheet::Bot8, { "После\nкантовки\n8", L2 }},
 };
 
 //Заголовки колонок окна касет
@@ -1383,26 +1384,35 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         if(subItem == casSheet::NN)         lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                         ELSEIF (casSheet::ID, p.id);
-                        ELSEIF (casSheet::DataTime, p.DataTime);
-                        ELSEIF (casSheet::Start_at, p.Start_at);
-                        ELSEIF (casSheet::SecondPos_at, p.SecondPos_at);
-                        ELSEIF (casSheet::DataTime_End, p.DataTime_End);
+                        ELSEIF (casSheet::DataTime, GetDataTimeStr(p.DataTime));
+                        ELSEIF (casSheet::Start_at, GetDataTimeStr(p.Start_at));
+                        ELSEIF (casSheet::SecondPos_at, GetDataTimeStr(p.SecondPos_at));
+                        ELSEIF (casSheet::DataTime_End, GetDataTimeStr(p.DataTime_End));
+                        ELSEIF (casSheet::Correct, GetDataTimeStr(p.Correct));
+
+                        ELSEIF (casSheet::Pos, (NamePos[p.Pos] + " (" + p.Pos + ")"));
+                        ELSEIF (casSheet::News, p.News);
+                        ELSEIF (casSheet::Day, p.Day);
+                        ELSEIF (casSheet::Month, p.Month);
+                        ELSEIF (casSheet::Year, p.Year);
+                        ELSEIF (casSheet::CassetteNo, p.CassetteNo);
+                        ELSEIF (casSheet::SheetInCassette, p.SheetInCassette);
+
                         ELSEIF (casSheet::DataTime_All, p.DataTime_All);
                         ELSEIF (casSheet::TimeForPlateHeat, p.TimeForPlateHeat); //Время сигнализации окончания нагрева, мин
 
                         ELSEIF (casSheet::PresToStartComp, p.PresToStartComp);  //Уставка давления для запуска комперссора
 
-                        ELSEIF (casSheet::Pos, (NamePos[p.Pos] + " (" + p.Pos + ")"));
-                        
+
                         ELSEIF (casSheet::Alloy, p.Alloy);
                         ELSEIF (casSheet::Thikness, p.Thikness);
                         
                         ELSEIF (casSheet::Melt, p.Melt);
-                        ELSEIF (casSheet::Slab, p.Slab);
+                        //ELSEIF (casSheet::Slab, p.Slab);
                         ELSEIF (casSheet::PartNo, p.PartNo);
                         ELSEIF (casSheet::Pack, p.Pack);
-                        ELSEIF (casSheet::Sheet, p.Sheet);
-                        ELSEIF (casSheet::SubSheet, p.SubSheet);
+                        ELSEIF (casSheet::Sheet, (p.Sheet + "/" + p.SubSheet));
+                        //ELSEIF (casSheet::SubSheet, p.SubSheet);
                         ELSEIF (casSheet::Temper, p.Temper);
                         ELSEIF (casSheet::Temperature, p.Temperature);
                         ELSEIF (casSheet::Speed, p.Speed);
@@ -1422,35 +1432,24 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         
                         ELSEIF (casSheet::Lam_TE1, p.LAM_TE1);
                         
-                        ELSEIF (casSheet::News, p.News);
                         
-                        ELSEIF (casSheet::Top1, p.Top1);
-                        ELSEIF (casSheet::Top2, p.Top2);
-                        ELSEIF (casSheet::Top3, p.Top3);
-                        ELSEIF (casSheet::Top4, p.Top4);
-                        ELSEIF (casSheet::Top5, p.Top5);
-                        ELSEIF (casSheet::Top6, p.Top6);
-                        ELSEIF (casSheet::Top7, p.Top7);
-                        ELSEIF (casSheet::Top8, p.Top8);
+                        //ELSEIF (casSheet::Top1, p.Top1);
+                        //ELSEIF (casSheet::Top2, p.Top2);
+                        //ELSEIF (casSheet::Top3, p.Top3);
+                        //ELSEIF (casSheet::Top4, p.Top4);
+                        //ELSEIF (casSheet::Top5, p.Top5);
+                        //ELSEIF (casSheet::Top6, p.Top6);
+                        //ELSEIF (casSheet::Top7, p.Top7);
+                        //ELSEIF (casSheet::Top8, p.Top8);
                         
-                        ELSEIF (casSheet::Bot1, p.Bot1);
-                        ELSEIF (casSheet::Bot2, p.Bot2);
-                        ELSEIF (casSheet::Bot3, p.Bot3);
-                        ELSEIF (casSheet::Bot4, p.Bot4);
-                        ELSEIF (casSheet::Bot5, p.Bot5);
-                        ELSEIF (casSheet::Bot6, p.Bot6);
-                        ELSEIF (casSheet::Bot7, p.Bot7);
-                        ELSEIF (casSheet::Bot8, p.Bot8);
-                        
-                        ELSEIF (casSheet::Day, p.Day);
-                        ELSEIF (casSheet::Month, p.Month);
-                        ELSEIF (casSheet::Year, p.Year);
-                        ELSEIF (casSheet::CassetteNo, p.CassetteNo);
-                        ELSEIF (casSheet::SheetInCassette, p.SheetInCassette);
-                        //ELSEIF (casSheet::TempWatTankCool, p.TempWatTankCool);  //Температура закалочной воды для вкл.охлаждения
-                        ELSEIF (casSheet::Correct, p.Correct);
-
-                        
+                        //ELSEIF (casSheet::Bot1, p.Bot1);
+                        //ELSEIF (casSheet::Bot2, p.Bot2);
+                        //ELSEIF (casSheet::Bot3, p.Bot3);
+                        //ELSEIF (casSheet::Bot4, p.Bot4);
+                        //ELSEIF (casSheet::Bot5, p.Bot5);
+                        //ELSEIF (casSheet::Bot6, p.Bot6);
+                        //ELSEIF (casSheet::Bot7, p.Bot7);
+                        //ELSEIF (casSheet::Bot8, p.Bot8);
                     }
                     CATCH(AllLogger, FUNCTION_LINE_NAME + " : ");
                 }
@@ -1524,17 +1523,17 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             if(plvdi->item.iSubItem == Cassete::NN)                lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                             if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
                             if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, (EventCassette[Stoi(p.Event)] + "(" + p.Event + ")").c_str());
-                            if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, p.Create_at.c_str());
+                            if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Create_at).c_str());
                             if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                             if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());
                             if(plvdi->item.iSubItem == Cassete::Day)               lstrcpy(plvdi->item.pszText, p.Day.c_str());
                             if(plvdi->item.iSubItem == Cassete::CassetteNo)        lstrcpy(plvdi->item.pszText, p.CassetteNo.c_str());
                             if(plvdi->item.iSubItem == Cassete::SheetInCassette)   lstrcpy(plvdi->item.pszText, p.SheetInCassette.c_str());
                             //if(plvdi->item.iSubItem == Cassete::Close)             lstrcpy(plvdi->item.pszText, p.Close_at.c_str());  //Закрытие касеты
-                            if(plvdi->item.iSubItem == Cassete::Run_at)            lstrcpy(plvdi->item.pszText, p.Run_at.c_str());      //Начало отпуска
-                            if(plvdi->item.iSubItem == Cassete::Error_at)          lstrcpy(plvdi->item.pszText, p.Error_at.c_str());    //Ошибка отпуска
-                            if(plvdi->item.iSubItem == Cassete::End_at)            lstrcpy(plvdi->item.pszText, p.End_at.c_str());      //Конец отпуска
-                            if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, p.Finish_at.c_str());//Конец процесса
+                            if(plvdi->item.iSubItem == Cassete::Run_at)            lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Run_at).c_str());      //Начало отпуска
+                            if(plvdi->item.iSubItem == Cassete::Error_at)          lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Error_at).c_str());    //Ошибка отпуска
+                            if(plvdi->item.iSubItem == Cassete::End_at)            lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.End_at).c_str());      //Конец отпуска
+                            if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Finish_at).c_str());//Конец процесса
                             if(plvdi->item.iSubItem == Cassete::Peth)              lstrcpy(plvdi->item.pszText, p.Peth.c_str());       //Печь
                             if(plvdi->item.iSubItem == Cassete::HeatAcc)           lstrcpy(plvdi->item.pszText, p.HeatAcc.c_str());           //Факт время нагрева
                             if(plvdi->item.iSubItem == Cassete::HeatWait)          lstrcpy(plvdi->item.pszText, p.HeatWait.c_str());          //Факт время выдержки

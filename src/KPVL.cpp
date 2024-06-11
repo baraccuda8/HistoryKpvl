@@ -258,8 +258,8 @@ namespace KPVL {
                 sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
                 sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
                 sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
-                sheet.Correct = conn.PGgetvalue(res, l, Col_Sheet_correct);
-                sheet.SecondPos_at = conn.PGgetvalue(res, l, Col_Sheet_SecondPos_at);
+                sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_correct));
+                sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_SecondPos_at));
 
                 Sheet.push_back(sheet);
             }

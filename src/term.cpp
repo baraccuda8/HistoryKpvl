@@ -928,6 +928,13 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
     while(isRun)
     {
+
+#pragma region Удаляем ложные кассеты
+        std::stringstream com;
+        com << "DELETE FROM cassette WHERE event = 1 AND id <> (SELECT id FROM cassette WHERE event = 1 ORDER BY id DESC LIMIT 1)";
+        SETUPDATESQL(PethLogger, conn_spic, com);
+#pragma endregion
+
 #pragma region Выводим список кассет
 
         S107::SQL::FURN_SQL(conn_spic, AllCassette);

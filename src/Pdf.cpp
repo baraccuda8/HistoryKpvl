@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <optional>
 #include <setjmp.h>
-#include <codecvt>
+//#include <codecvt>
 
 #include "win.h"
 #include "main.h"
@@ -91,6 +91,9 @@ namespace PDF
 		int id = 0;
 		std::string Start1 = "";		//Дата, время загрузки листа в закалочную печь
 		std::string Start2 = "";		//Дата, время загрузки листа во вторую зону
+		std::string Nagrev = "";		//Дата, время начала нагрева
+		std::string CloseInDor = "";	//Закрыть входную дверь
+		
 		std::string InCant = "";		//Дата, время загрузки листа на кантовку
 		std::string Cant = "";			//Дата, время кантовки
 		std::string DataTime_End = "";	//Дата, время выгрузки листа из печи 
@@ -143,6 +146,7 @@ namespace PDF
 		int year = 0;
 		int cassetteno = 0;
 		int sheetincassette = 0;
+		int news = 0;
 	}T_IdSheet;
 	typedef std::vector<T_IdSheet>V_IdSheet;
 	typedef struct T_fTemp{
@@ -257,7 +261,7 @@ namespace PDF
 		HPDF_REAL Height = 0;
 		HPDF_REAL Width = 0;
 		HPDF_REAL coeff = 0;
-		float SrTemp = 0;
+		float SrTemp = 0.0f;
 		std::string strSrTemp = "";
 		std::string FileName;
 		int StepSec = 5;
@@ -268,7 +272,7 @@ namespace PDF
 		std::deque<TSheet>AllPfdSheet;
 		TCassette Cassette;
 
-		int MaxSecCount = 0;
+		int64_t MaxSecCount = 0LL;
 		const int XP = 70;
 		const int YP = 18;
 
@@ -278,15 +282,15 @@ namespace PDF
 		T_SqlTemp TempRef ={};	//Задание
 		T_SqlTemp TempAct ={};	//Актуальное
 
-		double f_mint = 0.0;
-		double f_maxt = 0.0;
+		float f_mint = 0.0f;
+		float f_maxt = 0.0f;
+		float fstep = 0.0f;
 
-		double mint = 0.0;
-		double maxt = 0.0;
-		double cstep = 0.0;
-		double fstep = 0.0;
-		int64_t mind = 0;
-		int64_t maxd = 0;
+		float mint = 0.0f;
+		float maxt = 0.0f;
+		float cstep = 0.0f;
+		int64_t mind = 0LL;
+		int64_t maxd = 0LL;
 
 
 		PdfClass(TCassette& TC);
@@ -315,16 +319,15 @@ namespace PDF
 		void SqlTempActKPVL(T_SqlTemp& tr);
 
 		void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
-		void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg);
-		//void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st, int64_t mind, int64_t maxd, double mint, double maxt);;
+		void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, float sd, std::wstring sDataBeg);
 		void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
 		void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect);
 		void DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, T_SqlTemp& Ref);
 		void DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG, std::wstring s1, std::wstring s2);
-		void DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, int64_t msec);
+		void DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, int msec);
 
 		//void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
-		void PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage, int64_t msec, std::wstring s1, std::wstring s2);
+		void PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage, int msec, std::wstring s1, std::wstring s2);
 
 		bool NewPdf();
 		void SavePDF();
@@ -438,13 +441,9 @@ namespace PDF
 				if(line)
 				{
 					int i = 0;
-					int64_t t = 0;
 
 					float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-					time_t t1 = DataTimeOfString(Start, TM_Temp);
-					//TM_Temp.tm_year -= 1900;
-					//TM_Temp.tm_mon -= 1;
-					//mktime(&TM_Temp);
+					time_t t1 = DataTimeOfString(Start);
 					tr[Start] = std::pair(0, f);
 
 
@@ -455,21 +454,17 @@ namespace PDF
 						if(Start <= sData)
 						{
 							std::string sTemp = conn.PGgetvalue(res, l, 1);
-							time_t t2 = DataTimeOfString(sData, TM_Temp);
-							//TM_Temp.tm_year -= 1900;
-							//TM_Temp.tm_mon -= 1;
+							time_t t2 = DataTimeOfString(sData);
 
 							f = static_cast<float>(atof(sTemp.c_str()));
 							if(f != 0)
-								tr[sData] = std::pair(difftime(t2, t1), f);
+								tr[sData] = std::pair(int(difftime(t2, t1)), f);
 						}
 					}
 
 
-					time_t t3 = DataTimeOfString(Stop, TM_Temp);
-					//TM_Temp.tm_year -= 1900;
-					//TM_Temp.tm_mon -= 1;
-					tr[Stop] = std::pair(difftime(t3, t1), f);
+					time_t t3 = DataTimeOfString(Stop);
+					tr[Stop] = std::pair(int(difftime(t3, t1)), f);
 				}
 			}
 			else
@@ -685,56 +680,56 @@ namespace PDF
 
 	void PdfClass::SqlTempActKPVL3(std::string Start, std::string Stop, VPFS& pF)
 	{
-		std::stringstream sdt;
-		sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
+		//std::stringstream sdt;
+		//sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
 
-		sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
-		sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
+		//sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr1_4->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr2_1->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
+		//sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
 
-		sdt << ")  AND create_at >= '" << Start;
-		sdt << "' AND create_at <= '" << Stop;
-		sdt << "' ORDER BY id ASC;";
+		//sdt << ")  AND create_at >= '" << Start;
+		//sdt << "' AND create_at <= '" << Stop;
+		//sdt << "' ORDER BY id ASC;";
 
 
-		std::string comand = sdt.str();
-		if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-		PGresult* res = conn.PGexec(comand);
+		//std::string comand = sdt.str();
+		//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+		//PGresult* res = conn.PGexec(comand);
 
-		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		{
-			int line = PQntuples(res);
-			if(line)
-			{
-				if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
+		//if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		//{
+		//	int line = PQntuples(res);
+		//	if(line)
+		//	{
+		//		if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
 
-				for(int l = 0; l < line; l++)
-				{
-					PFS pfs;
-					int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
-					pfs.data		= conn.PGgetvalue(res, l, 1);
-					pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
+		//		for(int l = 0; l < line; l++)
+		//		{
+		//			PFS pfs;
+		//			int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
+		//			pfs.data		= conn.PGgetvalue(res, l, 1);
+		//			pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
 
-					if(id_name == Hmi210_1.Htr1_1->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr1_3->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr1_4->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr2_1->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr2_2->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr2_3->ID) pF.push_back(pfs); else
-					if(id_name == Hmi210_1.Htr2_4->ID) pF.push_back(pfs);
-				}
-			}
-		}
-		else
-			LOG_ERR_SQL(PdfLogger, res, comand);
-		PQclear(res);
+		//			if(id_name == Hmi210_1.Htr1_1->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr1_3->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr1_4->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr2_1->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr2_2->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr2_3->ID) pF.push_back(pfs); else
+		//			if(id_name == Hmi210_1.Htr2_4->ID) pF.push_back(pfs);
+		//		}
+		//	}
+		//}
+		//else
+		//	LOG_ERR_SQL(PdfLogger, res, comand);
+		//PQclear(res);
 
 	}
 	void PdfClass::GetSrTemper(std::vector<PFS>& pF, std::map<int, PFS>& mF)
@@ -829,17 +824,16 @@ namespace PDF
 			GetSrTemper(pF1, mF1);
 			GetSrTemper(pF2, mF2);
 
-			time_t t0 = DataTimeOfString(mF1.begin()->second.data);
-			//std::tm TM_Temp;
+			int64_t t0 = int64_t(DataTimeOfString(mF1.begin()->second.data));
 			for(auto a : mF1)
 			{
-				time_t t = DataTimeOfString(a.second.data) - t0;
+				int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
 				tr[a.second.data] = std::pair(t, a.second.temper);
 			}
 
 			for(auto a : mF2)
 			{
-				time_t t = DataTimeOfString(a.second.data) - t0;
+				int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
 				tr[a.second.data] = std::pair(t, a.second.temper);
 			}
 			
@@ -861,7 +855,7 @@ namespace PDF
 	}
 
 
-	void PdfClass::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, double sd, std::wstring sDataBeg)
+	void PdfClass::DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, float sd, std::wstring sDataBeg)
 	{
 		Gdiplus::RectF RectText(Rect);
 
@@ -888,8 +882,10 @@ namespace PDF
 		double coeffW = (double)(Rect.Width) / double(maxd);
 		double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
 
-		Gdiplus::PointF p1 ={Rect.X, Rect.Y + float((f_maxt - b->second.second) * coeffH)};
-		Gdiplus::PointF p2 ={0, 0};
+		Gdiplus::PointF p1;
+		Gdiplus::PointF p2;
+		p1.X = Rect.X;
+		p1.Y = Rect.Y + float((f_maxt - b->second.second) * coeffH);
 
 		Gdiplus::GraphicsPath path;
 		path.StartFigure();
@@ -969,13 +965,13 @@ namespace PDF
 
 		for(auto a : Ref)
 		{
-			maxt = std::fmaxl(maxt, a.second.second);
-			mint = std::fminl(mint, a.second.second);
+			maxt = std::fmaxf(maxt, a.second.second);
+			mint = std::fminf(mint, a.second.second); 
 		}
 		for(auto a : Act)
 		{
-			maxt = std::fmaxl(maxt, a.second.second);
-			mint = std::fminl(mint, a.second.second);
+			maxt = std::fmaxf(maxt, a.second.second);
+			mint = std::fminf(mint, a.second.second);
 		}
 
 		f_mint = mint;
@@ -983,8 +979,8 @@ namespace PDF
 
 
 		fstep = 0.0;
-		double fmaxt;
-		double fmint;
+		float fmaxt;
+		float fmint;
 		do
 		{
 			fstep += 50.0;
@@ -999,11 +995,6 @@ namespace PDF
 		f_maxt = fmaxt * fstep;
 		f_mint = fmint * fstep;
 
-		//Gdiplus::Pen Gdi_L1(Gdiplus::Color(192, 192, 192), 0.5); //Черный
-		//Gdiplus::SolidBrush Gdi_brush(Gdiplus::Color(0, 0, 0));
-		//Gdiplus::StringFormat stringFormat;
-		//stringFormat.SetLineAlignment(Gdiplus::StringAlignmentNear);
-		//stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
 		stringFormat.SetAlignment(Gdiplus::StringAlignmentFar);
 
 		double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
@@ -1016,7 +1007,6 @@ namespace PDF
 			temp.DrawLine(&Gdi_L1, pt1, pt2);
 
 			Gdiplus::RectF Rect2 ={Rect.X - 45, mY - 11, 40, 20};
-			//Gdiplus::RectF Rect2 ={0, mY - 11, 40, 20};
 
 			std::wstringstream sdw;
 			sdw << std::setprecision(0) << std::setiosflags(std::ios::fixed) << d;
@@ -1027,236 +1017,70 @@ namespace PDF
 		int tt = 0;
 	}
 
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter_utf8_utf16;
-
-	void PdfClass::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, T_SqlTemp& Act, int64_t msec)
+	void PdfClass::DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, int msec)
 	{
-		bool m = (bool)std::fmod(msec, 60);
+		float W = float(msec) / Rect.Width;
+
+		float h1 = 60.0f;
+		float h2 = 60.0f * 5.0f;
+		float h3 = 60.0f;
 
 		if((msec / 60) > 60)
 		{
+			h1 = 60.0f * 15.0f;
+			h2 = 60.0f * 60.0f;
+			h3 = 60.0f * 60.0f;
+		}
 
-			double Count = (msec / 60 / 60) + 1;
-			double W = msec / Rect.Width;
-			int E = int(Rect.Width / Count);
+		for(float e = 0; e < Rect.Width; e++)
+		{
+			float sd = W * e;
+			bool b1 = std::fmod(sd, h1) < W;
+			bool b2 = std::fmod(sd, h2) < W;
 
-			int T = int(W * Rect.Width);
-			//double Step = msec / 5;
-			//double E = Rect.Width / Step;
-
-			for(double e = 0; e < Rect.Width; e++)
+			if(b1 && (e + 15) < Rect.Width)
 			{
-				double sd = (W * e);
-				bool b1 = std::fmod(sd, 60 * 15) < W;
-				bool b2 = std::fmod(sd, 60 * 60) < W;
-
-				if(b1 && (e + 15) < Rect.Width)
-				{
-					if(b2)
-					{
-						Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
-						Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
-						temp.DrawLine(&Gdi_D1, pt1, pt2);
-					}
-					else
-					{
-						Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
-						Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
-						temp.DrawLine(&Gdi_L1, pt1, pt2);
-					}
-
-				}
 				if(b2)
 				{
-					float X = float(e) + 5;
-					if(X + 20 < Rect.Width)
-					{
-						time_t tms = time_t(sd);
-
-						std::tm curr_tm;
-						gmtime_s(&curr_tm, &tms);
-
-						//std::wstring sDataBeg = std::to_wstring(curr_tm.tm_hour);
-						//std::wstring sDataBeg = (boost::wformat(L"%.0f") % (sd / 60.0 / 60.0)).str();
-
-						std::wstringstream sdw;
-						sdw << std::fixed << std::setprecision(1) << (sd / 60.0 / 60.0);
-						std::wstring sDataBeg = sdw.str();
-						DrawT(temp, Rect, e, sDataBeg);
-					}
+					Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
+					Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
+					temp.DrawLine(&Gdi_D1, pt1, pt2);
 				}
+				else
+				{
+					Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
+					Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
+					temp.DrawLine(&Gdi_L1, pt1, pt2);
+				}
+
 			}
-
-			int sd = int(W * Rect.Width);
-			Gdiplus::PointF pt1 ={Rect.X + float(Rect.Width), Rect.Y};
-			Gdiplus::PointF pt2 ={Rect.X + float(Rect.Width), Rect.Height - 10};
-
-			temp.DrawLine(&Gdi_D1, pt1, pt2);
-
-#ifdef DRAWSEC
-			time_t tms = time_t(sd);
-			std::tm curr_tm;
-			gmtime_s(&curr_tm, &tms);
-			std::wstringstream sdt;
-			sdt << boost::wformat(L"%|02|:") % curr_tm.tm_min;
-			sdt << boost::wformat(L"%|02|") % curr_tm.tm_sec;
-			std::wstring sDataBeg = sdt.str();
-#else
-			//std::wstring sDataBeg = (boost::wformat(L"%.1f") % (sd / 60.0 / 60.0)).str();
-			std::wstringstream sdw;
-			sdw << std::fixed << std::setprecision(1) << (sd / 60.0 / 60.0);
-			std::wstring sDataBeg = sdw.str();
-#endif
-			DrawT(temp, Rect, Rect.Width, sDataBeg);
-		}
-		else
-		{
-			double Count = (msec / 60 / 5) + 1;
-			double W = msec / Rect.Width;
-			int E = int(Rect.Width / Count);
-
-			int T = int(W * Rect.Width);
-			//double Step = msec / 5;
-			//double E = Rect.Width / Step;
-
-			for(double e = 0; e < Rect.Width; e++)
+			if(b2)
 			{
-				double sd = (W * e);
-				bool b1 = std::fmod(sd, 60) < W;
-				bool b2 = std::fmod(sd, 300) < W;
-
-				if(b1 && (e + 15) < Rect.Width)
+				float X = float(e) + 20;
+				if(X < Rect.Width)
 				{
-					if(b2)
-					{
-						Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
-						Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
-						temp.DrawLine(&Gdi_D1, pt1, pt2);
-					}
-					else
-					{
-						Gdiplus::PointF pt1 ={Rect.X + float(e), Rect.Y};
-						Gdiplus::PointF pt2 ={Rect.X + float(e), Rect.Height - (b2 ? 10 : 18)};
-						temp.DrawLine(&Gdi_L1, pt1, pt2);
-					}
-
-				}
-				if(b2)
-				{
-					float X = float(e) + 5;
-					if(X + 20 < Rect.Width)
-					{
-						time_t tms = time_t(sd);
-
-						std::tm curr_tm;
-						gmtime_s(&curr_tm, &tms);
-
-						//std::wstring sDataBeg = std::to_wstring(curr_tm.tm_min);
-						//std::wstring sDataBeg = (boost::wformat(L"%.0f") % (sd / 60.0)).str();
-
-						std::wstringstream sdw;
-						sdw << std::fixed << std::setprecision(1) << (sd / 60.0);
-						std::wstring sDataBeg = sdw.str();
-
-						DrawT(temp, Rect, e, sDataBeg);
-					}
+					std::wstringstream sdw;
+					sdw << std::fixed << std::setprecision(0) << (sd / h3);
+					std::wstring sDataBeg = sdw.str();
+					DrawT(temp, Rect, e, sDataBeg);
 				}
 			}
-
-			int sd = int(W * Rect.Width);
-			Gdiplus::PointF pt1 ={Rect.X + float(Rect.Width), Rect.Y};
-			Gdiplus::PointF pt2 ={Rect.X + float(Rect.Width), Rect.Height - 10};
-
-			temp.DrawLine(&Gdi_D1, pt1, pt2);
-
-#ifdef DRAWSEC
-			time_t tms = time_t(sd);
-			std::tm curr_tm;
-			gmtime_s(&curr_tm, &tms);
-			std::wstringstream sdt;
-			sdt << boost::wformat(L"%|02|:") % curr_tm.tm_min;
-			sdt << boost::wformat(L"%|02|") % curr_tm.tm_sec;
-			std::wstring sDataBeg = sdt.str();
-#else
-			//std::wstring sDataBeg = (boost::wformat(L"%.1f") % (sd / 60.0)).str();
-			std::wstringstream sdw;
-			sdw << std::fixed << std::setprecision(1) << (sd / 60.0);
-			std::wstring sDataBeg = sdw.str();
-
-#endif
-			DrawT(temp, Rect, Rect.Width, sDataBeg);
-
-
 		}
-		//auto tb = Act.begin();
-		//auto te = Act.rbegin();
 
-		//std::advance(tb, 1);
+		int sd = int(W * Rect.Width);
+		Gdiplus::PointF pt1 ={Rect.X + Rect.Width, Rect.Y};
+		Gdiplus::PointF pt2 ={Rect.X + Rect.Width, Rect.Height - 10};
 
-		//double tm = double(te->second.first);
+		temp.DrawLine(&Gdi_D1, pt1, pt2);
 
-		//if(t)
-		//{
-		//	if(t < Count)
-		//	{
-		//		Count = t;// +(!m && !s) ? 0 : 1);
-		//		Step = t / Count;
-		//		Step1 = 60;
-		//	}
-		//}
-		//else if(m)
-		//{
-		//	if((m / 5) < Count)
-		//	{
-		//		Count = (m / 5);// +(s ? 1 : 0);
-		//		Step = m / Count;
-		//		Step1 = 1;
-		//	}
-		//}
-		//tm = Count * Step;
-
-
-		//int e = 0;
-		/*
-		for(auto& aa : Act)
-		{
-			double r = double(aa.second.first);
-			if(std::fmod(r, 300) == 0) //5 минут * 60
-			{
-				double sd = W * r;
-				//bool b = (bool)std::fmod(e, 2);
-
-				Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
-				Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
-				temp.DrawLine(&Gdi_L1, pt1, pt2);
-
-				//if(!b)
-				{
-					time_t tms = time_t(aa.second.first);
-
-					std::tm curr_tm;
-					gmtime_s(&curr_tm, &tms);
-
-					std::wstring sDataBeg = converter_utf8_utf16.from_bytes(std::to_string(curr_tm.tm_min) + ":" + std::to_string(curr_tm.tm_sec)); //std::wstring(s.begin(), s.end());
-					DrawT(temp, Rect, sd, sDataBeg);
-				}
-				e++;
-			}
-			
-		}
-	*/
-
-		//double r = double(te->second.first);
-		//double sd = W * r;
-		//
-		//Gdiplus::PointF pt1 ={Rect.X + float(sd), Rect.Y};
-		//Gdiplus::PointF pt2 ={Rect.X + float(sd), Rect.Height - 10};
-		//temp.DrawLine(&Gdi_L1, pt1, pt2);
+		std::wstringstream sdw;
+		sdw << std::fixed << std::setprecision(1) << (sd / h3);
+		std::wstring sDataBeg = sdw.str();
+		DrawT(temp, Rect, Rect.Width, sDataBeg);
 
 	}
 
-
-	void PdfClass::PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage, int64_t msec, std::wstring s1, std::wstring s2)
+	void PdfClass::PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage, int msec, std::wstring s1, std::wstring s2)
 	{
 		try
 		{
@@ -1282,13 +1106,12 @@ namespace PDF
 			auto e = Act.rbegin();
 
 			int64_t MaxSecCount = 0;
-			maxd = (std::max)(MaxSecCount, e->second.first - b->second.first);
+			maxd = std::max<int64_t>(MaxSecCount, e->second.first - b->second.first);
 
 
 			b = Ref.begin();
 			e = Ref.rbegin();
-			//e--;
-			maxd = (std::max)(maxd, e->second.first - b->second.first);
+			maxd = std::max<int64_t>(maxd, e->second.first - b->second.first);
 
 
 			Gdiplus::Color Blue(0, 0, 255);
@@ -1306,7 +1129,7 @@ namespace PDF
 			RectG3.Height += 17;
 
 			DrawGridTemp(temp, RectG2, Act, Ref);
-			DrawGridTime(temp, RectG3, Act, msec);
+			DrawGridTime(temp, RectG3, msec);
 			DrawGridOssi(temp, RectG, s1, s2);
 
 			//DrawBottom(temp, RectG2, Red, Ref);	//Красный; Заданное значение температуры
@@ -1327,33 +1150,39 @@ namespace PDF
 		try
 		{
 			draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
+			std::string outDate = "";
+			std::string outTime = "";
+			GetDataTimeStr(Sheet.Start_at, outDate, outTime);
+			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата
+			draw_text_rect (page, left + 340, Y, XP, YP, outTime);  //Время
 
-			std::string str = Sheet.Start_at;
-			boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
-			boost::match_results<std::string::const_iterator>what;
-			boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
-			if(what.size() > 4)
-			{
-				std::string year = what[1].str();
-				std::string month = what[2].str();
-				std::string day = what[3].str();
-				std::string time = what[4].str();
-				std::string data = day + "-" + month + "-" + year;
 
-				draw_text_rect (page, left + 270, Y, XP, YP, data);  //Дата
-				draw_text_rect (page, left + 340, Y, XP, YP, time);  //Время
-			}
-			else
-			{
-				std::string ss = Sheet.Start_at;
-				std::vector <std::string>split;
-				boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
-				if(split.size() >= 2)
-				{
-					draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
-					draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
-				}
-			}
+			//std::string str = Sheet.Start_at;
+			//boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
+			//boost::match_results<std::string::const_iterator>what;
+			//boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+			//if(what.size() > 4)
+			//{
+			//	std::string year = what[1].str();
+			//	std::string month = what[2].str();
+			//	std::string day = what[3].str();
+			//	std::string time = what[4].str();
+			//	std::string data = day + "-" + month + "-" + year;
+			//
+			//	draw_text_rect (page, left + 270, Y, XP, YP, data);  //Дата
+			//	draw_text_rect (page, left + 340, Y, XP, YP, time);  //Время
+			//}
+			//else
+			//{
+			//	std::string ss = Sheet.Start_at;
+			//	std::vector <std::string>split;
+			//	boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
+			//	if(split.size() >= 2)
+			//	{
+			//		draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
+			//		draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
+			//	}
+			//}
 			Y -= 25;
 			draw_text (page, left + 10, Y, "Параметры");
 			draw_text (page, left + 280, Y, "Задание");
@@ -1401,50 +1230,55 @@ namespace PDF
 
 			std::stringstream ssd;
 			ssd << "Печь № " << Cassette.Peth << " Кассета № ";
-			ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
-			ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+			ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
+			ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo;
 			draw_text_rect (page, left, Y, w, YP, ssd.str().c_str());
 			Y -= 25;
 #endif // _DEBUG
 
 			draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
+			std::string outDate = "";
+			std::string outTime = "";
+			GetDataTimeStr(Cassette.Run_at, outDate, outTime);
+			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата
+			draw_text_rect (page, left + 340, Y, XP, YP, outTime);  //Время
 
-			std::string str = Cassette.Run_at;
-			boost::regex xRegEx("^(\\d{1,4})-(\\d{1,2})-(\\d{1,2}) (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
-			boost::match_results<std::string::const_iterator>what;
-			boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
-			if(what.size() > 4)
-			{
-				std::string year = what[1].str();
-				std::string month = what[2].str();
-				std::string day = what[3].str();
-				std::string time = what[4].str();
-				std::string data = day + "-" + month + "-" + year;
-
-				draw_text_rect (page, left + 270, Y, XP, YP, data);  //Дата
-				draw_text_rect (page, left + 340, Y, XP, YP, time);  //Время
-			}
-			else
-			{
-				std::string ss = Cassette.Run_at;
-				std::vector <std::string>split;
-				boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
-
-				if(split.size() >= 2)
-				{
-					draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
-					std::string ss = split[1];
-					std::vector <std::string>split1;
-					boost::split(split1, ss, boost::is_any_of("."), boost::token_compress_on);
-
-					if(split1.size())
-						draw_text_rect (page, left + 340, Y, XP, YP, split1[0]);  //Время
-					else
-						draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
-				}
-			}
+			//std::string str = Cassette.Run_at;
+			//boost::regex xRegEx("^(\\d{1,4})-(\\d{1,2})-(\\d{1,2}) (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
+			//boost::match_results<std::string::const_iterator>what;
+			//boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+			//if(what.size() > 4)
+			//{
+			//	std::string year = what[1].str();
+			//	std::string month = what[2].str();
+			//	std::string day = what[3].str();
+			//	std::string time = what[4].str();
+			//	std::string data = day + "-" + month + "-" + year;
+			//
+			//	draw_text_rect (page, left + 270, Y, XP, YP, data);  //Дата
+			//	draw_text_rect (page, left + 340, Y, XP, YP, time);  //Время
+			//}
+			//else
+			//{
+			//	std::string ss = Cassette.Run_at;
+			//	std::vector <std::string>split;
+			//	boost::split(split, ss, boost::is_any_of(" "), boost::token_compress_on);
+			//
+			//	if(split.size() >= 2)
+			//	{
+			//		draw_text_rect (page, left + 270, Y, XP, YP, split[0]);  //Дата
+			//		std::string ss = split[1];
+			//		std::vector <std::string>split1;
+			//		boost::split(split1, ss, boost::is_any_of("."), boost::token_compress_on);
+			//
+			//		if(split1.size())
+			//			draw_text_rect (page, left + 340, Y, XP, YP, split1[0]);  //Время
+			//		else
+			//			draw_text_rect (page, left + 340, Y, XP, YP, split[1]);  //Время
+			//	}
+			//}
 
 			Y -= 25;
 			draw_text (page, left + 10, Y, "Параметры");
@@ -1654,6 +1488,8 @@ namespace PDF
 			HPDF_SaveToFile (pdf, FileName.c_str());
 			HPDF_Free (pdf);
 
+			
+			boost::replace_all(PdfName, lpLogPdf2, lpLogPdf);
 			std::stringstream ssd;
 			ssd << "UPDATE sheet SET pdf = '" << PdfName;
 			ssd << "' WHERE id = " << Sheet.id;
@@ -1869,7 +1705,7 @@ namespace PDF
 				//Рисуем график FURN
 				time_t t1 = DataTimeOfString(Cassette.Run_at);
 				time_t t2 = DataTimeOfString(Cassette.End_at);
-				int64_t t = int64_t(difftime(t2, t1));
+				int t = int(difftime(t2, t1));
 
 				PaintGraff(FurnAct, FurnRef, furnImage, t, L"Температура С°", L"Время час");
 			}
@@ -1912,7 +1748,7 @@ namespace PDF
 				
 					time_t t1 = DataTimeOfString(Sheet.Start_at);
 					time_t t2 = DataTimeOfString(Sheet.DataTime_End);
-					int64_t t = int64_t(difftime(t2, t1));
+					int t = int(difftime(t2, t1));
 		//std::wstring theString = L"Температура С°";
 		//theString = L"Время час:мин";
 					PaintGraff(TempAct, TempRef, tempImage, t, L"Температура С°", L"Время мин");
@@ -3514,7 +3350,7 @@ namespace PDF
 		void GetSheets::Get_ID_S(PGConnection& conn, T_IdSheet& td)
 		{
 			std::stringstream ssd;
-			ssd << "SELECT id, day, month, year, cassetteno, sheetincassette, pos FROM sheet ";
+			ssd << "SELECT id, day, month, year, cassetteno, sheetincassette, pos, news FROM sheet ";
 			ssd << "WHERE melt = " << td.Melt;
 			ssd << " AND partno = " << td.PartNo;
 			ssd << " AND pack = " << td.Pack;
@@ -3533,6 +3369,7 @@ namespace PDF
 				td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 4));
 				td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 5));
 				td.Pos = Stoi(conn.PGgetvalue(res, 0, 6));
+				td.news = Stoi(conn.PGgetvalue(res, 0, 7));
 
 			}
 			PQclear(res);
@@ -3605,6 +3442,8 @@ namespace PDF
 				ssd << ", cassetteno = " << td.cassetteno;
 				ssd << ", sheetincassette = " << td.sheetincassette;
 				ssd << ", pos = " << td.Pos;
+				ssd << ", news = " << td.news;
+				
 				
 
 				ssd << ", correct = now(), pdf = '' WHERE id = " << td.id;
@@ -3676,7 +3515,9 @@ namespace PDF
 
 				ssd << "correct, ";
 				ssd << "pdf, ";
-				ssd << " pos";
+				ssd << "pos, ";
+				ssd << "news";
+
 
 				ssd << ") VALUES (";
 				ssd << "'" << td.DataTime << "', ";
@@ -3721,7 +3562,9 @@ namespace PDF
 				ssd << td.cassetteno << ", ";
 				ssd << td.sheetincassette << ", ";
 
-				ssd << "now(), '', 7);";
+				ssd << "now(), '', ";
+				ssd << td.Pos << ", ";
+				ssd << td.news << ");";
 
 				SetWindowText(hWndDebug, ssd.str().c_str());
 
@@ -3752,8 +3595,8 @@ namespace PDF
 				if(isSheet(ids1)) return false;
 
 				ids1 = ids;
-				ids1.Start1 = create_at;
 				ids1.DataTime = create_at;
+				ids1.Start1 = create_at;
 			}
 			return true;
 		}
@@ -3829,9 +3672,15 @@ namespace PDF
 			}
 
 			if(ids.day && ids.month && ids.year && ids.cassetteno)
+			{
+				ids.news = 1;
 				ids.Pos = 7;
+			}
 			else
+			{
+				ids.news = 0;
 				ids.Pos = 16;
+			}
 		}
 		void GetSheets::InZone6(PGConnection& conn, T_IdSheet& ids1, V_IdSheet& vids, V_Todos& allTime, std::fstream& s1, std::string create_at)
 		{
@@ -3995,9 +3844,37 @@ namespace PDF
 						}
 						SaveT_IdSheetBodyCsv(ff2, ids1);
 					}
-					else if(st == st1_4 || st == st1_5 || st == st1_6) //"Загрузка в печь" || "Закрыть входную дверь" || "Нагрев листа"
+					else if(st == st1_4 || st == st1_5) //"Загрузка в печь" || "Закрыть входную дверь"
 					{
-						ids1.DataTime = td.create_at;
+						if(ids1.CloseInDor.length())
+						{
+							if(!isSheet(ids1))
+							{
+								InZone1(conn, ids1, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, ids1);
+							}
+							if(isSheet(ids1))
+							{
+								ids1.CloseInDor = td.create_at;
+								ids1.Start1 = td.create_at;
+							}
+						}
+					}
+					else if(st == st1_6) //"Нагрев листа"
+					{
+						if(!ids1.Nagrev.length())
+						{
+							if(!isSheet(ids1))
+							{
+								InZone1(conn, ids1, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, ids1);
+							}
+							if(isSheet(ids1))
+							{
+								ids1.Nagrev = td.create_at;
+								ids1.Start1 = td.create_at;
+							}
+						}
 					}
 					else if(st == st1_7 || st == st1_8) 	//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
 					{
@@ -4010,7 +3887,7 @@ namespace PDF
 					}
 				}
 
-				else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID) //Выгрузка из печи
+				else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID) //Вторая зона печи
 				{
 					int16_t st = td.content.As<int16_t>();
 					if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
@@ -4023,7 +3900,7 @@ namespace PDF
 							InZone2(conn, ids1, ids2, td.create_at);
 						}
 					}
-					else if(st == st2_5 || st == st2_6 || st == st2_7) //"Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
+					else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
 					{
 						if(!InZone3(conn, ids2, ids3, td.create_at))
 						{
@@ -4061,7 +3938,21 @@ namespace PDF
 		return paths;
 	}
 
+	void CopyAllFile()
+	{
+		//namespace fs = std::filesystem;
+		const char* dir1 = lpLogPdf2.c_str();
+		const char* dir2 = lpLogPdf.c_str();
 
+		try
+		{
+			std::filesystem::copy(dir1, dir2,
+						std::filesystem::copy_options::update_existing
+					 //|  std::filesystem::copy_options::overwrite_existing
+					 |  std::filesystem::copy_options::recursive);
+		}
+		CATCH(PdfLogger, "");;
+	}
 	void DelAllPdf(std::filesystem::path dir)
 	{
 		boost::system::error_code ec;
@@ -4078,6 +3969,7 @@ namespace PDF
 		//}
 	}
 
+//#define HENDINSERT
 #ifdef HENDINSERT
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
@@ -4098,7 +3990,7 @@ namespace PDF
 		//	PQclear(res);
 		//}
 		{
-			std::string comand = "SELECT * FROM cassette WHERE id = 371"; //2024-05-25-06
+			std::string comand = "SELECT * FROM cassette WHERE id = 617"; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			TCassette Cassette;
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4244,7 +4136,7 @@ namespace PDF
 #ifndef _DEBUG
 		return 0;
 #endif
-		DelAllPdf(lpLogPdf2);
+		
 
 		try
 		{
@@ -4255,6 +4147,7 @@ namespace PDF
 
 #ifdef HENDINSERT
 			//Для ручного тестирования
+			DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
 			isRun = false;
 			return 0;
@@ -4305,11 +4198,14 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					SHEET::GetSheets getsheet(conn_pdf, "2024-06-08 00:00:00.00"); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					//std::string start = "2024-06-09 03:00:00";
+					std::string stop = "";
+					SHEET::GetSheets getsheet(conn_pdf, "2024-06-10 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
-					//DelAllPdf(lpLogPdf2);
-					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-08 00:00:00.00"); // , "2024-03-30 00:00:00.00");
+					DelAllPdf(lpLogPdf2);
+					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-10 00:00:00", stop); // , "2024-03-30 00:00:00.00");
 
+					CopyAllFile();
 					Correct = false;
 				}
 #ifdef _DEBUG

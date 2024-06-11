@@ -323,6 +323,77 @@ std::string GetStringData(std::string d)
 }
 
 
+std::string GetDataTimeStr(std::string str, std::string& outDate, std::string& outTime)
+{
+    outDate = "";
+    outTime = "";
+    boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
+    boost::match_results<std::string::const_iterator>what;
+    boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+    if(what.size() > 4)
+    {
+        std::string year = what[1].str();
+        std::string month = what[2].str();
+        std::string day = what[3].str();
+        if(what[4].length())
+            outTime = what[4].str();
+        if(day.length() && month.length() && year.length())
+            outDate = day + "-" + month + "-" + year;
+    }
+    if(outDate.length() && outTime.length())
+        return outDate + " " + outTime;
+    else
+    {
+        if(outDate.length())
+        {
+            return outDate;
+        }
+        else
+        {
+            if(outTime.length())
+            {
+                outTime;
+            }
+        }
+    }
+    return "";
+}
+
+std::string GetDataTimeStr(std::string str)
+{
+    std::string outDate = "";
+    std::string outTime = "";
+    boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
+    boost::match_results<std::string::const_iterator>what;
+    boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+    if(what.size() > 4)
+    {
+        std::string year = what[1].str();
+        std::string month = what[2].str();
+        std::string day = what[3].str();
+        if(what[4].length())
+            outTime = what[4].str();
+        if(day.length() && month.length() && year.length())
+            outDate = day + "-" + month + "-" + year;
+    }
+    if(outDate.length() && outTime.length())
+        return outDate + " " + outTime;
+    else
+    {
+        if(outDate.length())
+        {
+            return outDate;
+        }
+        else
+        {
+            if(outTime.length())
+            {
+                outTime;
+            }
+        }
+    }
+    return "";
+}
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction)
 {

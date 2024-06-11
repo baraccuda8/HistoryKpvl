@@ -11,7 +11,7 @@ class Graff{
 public:
 	HWND gHwnd;
 	bool full = false;
-	int64_t MaxSecCount = 0;
+	int64_t MaxSecCount = 0LL;
 	T_SqlTemp TempRef ={}; 	//Задание
 	T_SqlTemp TempAct ={};	//Актуальное
 	std::string Name;
@@ -23,15 +23,15 @@ public:
 	Gdiplus::Pen Gdi_L1 = Gdiplus::Pen(Gdiplus::Color(192, 192, 192), 0.5); //Черный
 
 
-	double f_mint = 0.0;
-	double f_maxt = 0.0;
+	float f_mint = 0.0;
+	float f_maxt = 0.0;
 
-	double mint = 0.0;
-	double maxt = 0.0;
-	double cstep = 0.0;
-	double fstep = 0.0;
-	int64_t mind = 0;
-	int64_t maxd = 0;
+	float mint = 0.0;
+	float maxt = 0.0;
+	float cstep = 0.0;
+	float fstep = 0.0;
+	int64_t mind = 0LL;
+	int64_t maxd = 0LL;
 	//std::map<std::string, float>Temper;
 	PGConnection* conn = NULL;
 	Graff(std::string n):Name(n)

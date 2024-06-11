@@ -272,20 +272,20 @@ void Graff::DrawGridTemp(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
 
 	for(auto a : TempRef)
 	{
-		maxt = std::fmaxl(maxt, a.second.second);
-		mint = std::fminl(mint, a.second.second);
+		maxt = std::fmaxf(maxt, a.second.second);
+		mint = std::fminf(mint, a.second.second);
 	}
 	for(auto a : TempAct)
 	{
-		maxt = std::fmaxl(maxt, a.second.second);
-		mint = std::fminl(mint, a.second.second);
+		maxt = std::fmaxf(maxt, a.second.second);
+		mint = std::fminf(mint, a.second.second);
 	}
 
 	f_mint = mint;
 	f_maxt = maxt;
 	fstep = 0.0;
-	double fmaxt;
-	double fmint;
+	float fmaxt;
+	float fmint;
 	do
 	{
 		fstep += 50.0;
@@ -467,12 +467,12 @@ void Graff::DrawGraf(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG)
 {
 	maxt = 0;
 	mint = 9999;
-	mind = (std::min)(TempAct.begin()->second.first, TempRef.begin()->second.first);
+	mind = std::min<int64_t>(TempAct.begin()->second.first, TempRef.begin()->second.first);
 
 	auto b = TempAct.begin();
 	auto e = TempAct.rbegin();
 	//e--;
-	maxd = (std::max)(MaxSecCount, e->second.first - b->second.first);
+	maxd = std::max<int64_t>(MaxSecCount, e->second.first - b->second.first);
 	//int64_t maxd = 0;// e->second.first - b->second.first;
 
 	b = TempRef.begin();

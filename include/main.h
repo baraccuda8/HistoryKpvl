@@ -1,5 +1,5 @@
 #pragma once
-
+#include <filesystem>
 
 
 //Глобальный Run
@@ -26,7 +26,9 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 //#define TESTWIN
 #endif
 
+
 #define CATCH(_l, _s) \
+    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
     catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
     catch(std::exception& exc){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
     catch(...){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + "Unknown error")}
@@ -212,5 +214,8 @@ time_t DataTimeOfString(std::string str, std::string format = FORMATTIME);
 std::string GetStringData(std::string d);
 std::string Formats(float f, int n = 1);
 std::wstring GetData(std::wstring str);
+
+std::string GetDataTimeStr(std::string str);
+std::string GetDataTimeStr(std::string str, std::string& outDate, std::string& outTime);
 
 void WaitCloseTheread(HANDLE h, std::string hamd);

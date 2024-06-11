@@ -996,12 +996,17 @@ namespace casSheet{
         DataTime = 2,
         Start_at,
         SecondPos_at,
-        //Pos,
         Correct,
         Pos,
-        News,
         DataTime_End,
         DataTime_All,
+
+        News,
+        Year,
+        Month,
+        Day,
+        CassetteNo,
+        SheetInCassette,
 
         TimeForPlateHeat, //Время сигнализации окончания нагрева, мин
         PresToStartComp,  //Уставка давления для запуска комперссора
@@ -1009,12 +1014,11 @@ namespace casSheet{
         Alloy,
         Thikness,
         Melt,
-        Slab,
+        //Slab,
         PartNo,
         Pack,
         Sheet,
-        SubSheet,
-
+        //SubSheet,
 
         Temper,
         Temperature,
@@ -1036,29 +1040,24 @@ namespace casSheet{
 
         Lam_TE1,
 
-        Year,
-        Month,
-        Day,
-        CassetteNo,
-        SheetInCassette,
 
-        Top1,
-        Top2,
-        Top3,
-        Top4,
-        Top5,
-        Top6,
-        Top7,
-        Top8,
+        //Top1,
+        //Top2,
+        //Top3,
+        //Top4,
+        //Top5,
+        //Top6,
+        //Top7,
+        //Top8,
 
-        Bot1,
-        Bot2,
-        Bot3,
-        Bot4,
-        Bot5,
-        Bot6,
-        Bot7,
-        Bot8,
+        //Bot1,
+        //Bot2,
+        //Bot3,
+        //Bot4,
+        //Bot5,
+        //Bot6,
+        //Bot7,
+        //Bot8,
     };
 };
 
