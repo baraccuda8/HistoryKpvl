@@ -387,7 +387,7 @@ namespace PDF
 			AllPfdSheet.erase(AllPfdSheet.begin(), AllPfdSheet.end());
 			std::stringstream sd;
 			sd << "SELECT * FROM sheet WHERE ";
-			sd << "hour = '" << Cassette.Hour << "' AND ";
+			//sd << "hour = '" << Cassette.Hour << "' AND ";
 			sd << "day = '" << Cassette.Day << "' AND ";
 			sd << "month = '" << Cassette.Month << "' AND ";
 			sd << "year = '" << Cassette.Year << "' AND ";
@@ -2326,10 +2326,27 @@ namespace PDF
 				ssd << Stoi(ct.Day) << ", ";
 				ssd << Stoi(ct.Hour) << ", ";
 				ssd << Stoi(ct.CassetteNo) << ", ";
+
+				int count = -1;
 				if(Stoi(ct.SheetInCassette))
 					ssd << Stoi(ct.SheetInCassette) << ", ";
 				else
-					ssd << "-1 , ";
+				{
+					std::stringstream set;
+					set << "SELECT COUNT(*) FROM sheet WHERE ";
+					set << "year = '" << Stoi(ct.Year) << "' ";
+					set << "month = '" << Stoi(ct.Month) << "' ";
+					set << "AND day = '" << Stoi(ct.Day) << "' ";
+					set << "AND hour = '" << Stoi(ct.Hour) << "' ";
+					set << "AND cassetteno = " << Stoi(ct.CassetteNo);;
+					std::string comand = set.str();
+					PGresult* res = conn.PGexec(comand);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+						count = Stoi(conn.PGgetvalue(res, 0, 0));
+					PQclear(res);
+
+				}
+					ssd << count << ", ";
 
 				ssd << Stoi(ct.Peth) << ", ";
 
@@ -2372,8 +2389,8 @@ namespace PDF
 				std::stringstream ssg;
 				ssg << "SELECT id FROM cassette ";
 				ssg << "WHERE";
-				ssg << " hour = " << ct.Hour;
-				ssg << " AND day = " << ct.Day;
+				//ssg << " hour = " << ct.Hour << " AND";
+				ssg << " day = " << ct.Day;
 				ssg << " AND month = " << ct.Month;
 				ssg << " AND year = " << ct.Year;
 				ssg << " AND cassetteno = " << ct.CassetteNo;
@@ -2403,8 +2420,8 @@ namespace PDF
 			std::stringstream ssg;
 			ssg << "SELECT id FROM cassette ";
 			ssg << "WHERE ";
-			ssg << " hour = " << it.Hour;
-			ssg << " AND day = " << it.Day;
+			//ssg << " hour = " << it.Hour << " AND";
+			ssg << " day = " << it.Day;
 			ssg << " AND month = " << it.Month;
 			ssg << " AND year = " << it.Year;
 			ssg << " AND cassetteno = " << it.CassetteNo;
@@ -3478,6 +3495,7 @@ namespace PDF
 				ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
 				ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
 
+				ssd << ", hour = '" << td.hour << "'";
 				ssd << ", day = '" << td.day << "'";
 				ssd << ", month = '" << td.month << "'";
 				ssd << ", year = '" << td.year << "'";
@@ -4015,7 +4033,7 @@ namespace PDF
 		//}
 	}
 
-#define HENDINSERT
+//#define HENDINSERT
 #ifdef HENDINSERT
 
 
@@ -4027,7 +4045,6 @@ namespace PDF
 		int Month = 0;
 		int Year = 0;
 		int CassetteNo = 0;
-
 	}T_casset;
 
 	typedef std::vector<T_casset>VT_casset;
@@ -4073,88 +4090,86 @@ namespace PDF
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
-		MapTodos allCassetTodos;
-		//MapTodos allTodos;
-		std::vector <T_casset> all_casset;
-		GetSeq1(conn, allCassetTodos);
-
-
-		for(auto a : allCassetTodos)
-		{
-			if(a.content.As<bool>())
-			{
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-				ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-				ssd << "FROM todos WHERE (";
-				ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
-				ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
-				ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
-				ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
-				ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
-				ssd << ") AND create_at <= '" << a.create_at << "'";
-				ssd << " ORDER BY id_name DESC, id DESC;";
-				std::string comand = ssd.str();
-				SetWindowText(hWndDebug, comand.c_str());
-				PGresult* res = conn.PGexec(comand); 
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					int nFields = PQnfields(res);
-					int line = PQntuples(res);
-					if(line)
-					{
-						//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-						T_casset tc;
-						for(int l = 0; l < line; l++)
-						{
-							T_Todos td;
-							td.create_at = conn.PGgetvalue(res, l, 0);
-							td.id = Stoi(conn.PGgetvalue(res, l, 1));
-							td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
-							td.value = conn.PGgetvalue(res, l, 3);
-							int type = Stoi(conn.PGgetvalue(res, l, 4));
-							td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
-							if(nFields >= 6)
-								td.id_name_at = conn.PGgetvalue(res, l, 5);
-
-							if(td.id_name == HMISheetData.Cassette.Hour->ID)tc.Hour = Stoi(td.value);
-							if(td.id_name == HMISheetData.Cassette.Day->ID)tc.Day = Stoi(td.value);
-							if(td.id_name == HMISheetData.Cassette.Month->ID)tc.Month = Stoi(td.value);
-							if(td.id_name == HMISheetData.Cassette.Year->ID)tc.Year = Stoi(td.value);
-							if(td.id_name == HMISheetData.Cassette.CassetteNo->ID)tc.CassetteNo = Stoi(td.value);
-						}
-						if(tc.Day && tc.Month && tc.Year && tc.CassetteNo)
-						{
-							tc.Create = a.create_at;
-							all_casset.push_back(tc);
-						}
-					}
-				}
-				PQclear(res);
-				//GetSeq2(conn, allTodos, a.create_at);
-				//T_casset tc;
-				//std::stringstream ssd;
-				//ssd << "SELECT create_at, hour, day, month, year, cassetteno, WHERE create_at <=" << a.create_at << " ORDER BY id DESC id LIMIT 1";
-			}
-		}
-
-		int tt = 0;
+		//MapTodos allCassetTodos;
+		////MapTodos allTodos;
+		//std::vector <T_casset> all_casset;
+		//GetSeq1(conn, allCassetTodos);
+		//
+		//for(auto a : allCassetTodos)
 		//{
-		//	std::string comand = "SELECT * FROM cassette WHERE id = 617"; //2024-05-25-06
-		//	PGresult* res = conn.PGexec(comand);
-		//	TCassette Cassette;
-		//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		//	if(a.content.As<bool>())
 		//	{
-		//		S107::GetColl(res);
-		//		if(conn.PQntuples(res))
-		//			S107::GetCassette(res, Cassette, 0);
+		//		std::stringstream ssd;
+		//		ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
+		//		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+		//		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
+		//		ssd << "FROM todos WHERE (";
+		//		ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
+		//		ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
+		//		ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
+		//		ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
+		//		ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
+		//		ssd << ") AND create_at <= '" << a.create_at << "'";
+		//		ssd << " ORDER BY id_name DESC, id DESC;";
+		//		std::string comand = ssd.str();
+		//		SetWindowText(hWndDebug, comand.c_str());
+		//		PGresult* res = conn.PGexec(comand); 
+		//		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		//		{
+		//			int nFields = PQnfields(res);
+		//			int line = PQntuples(res);
+		//			if(line)
+		//			{
+		//				//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
+		//				T_casset tc;
+		//				for(int l = 0; l < line; l++)
+		//				{
+		//					T_Todos td;
+		//					td.create_at = conn.PGgetvalue(res, l, 0);
+		//					td.id = Stoi(conn.PGgetvalue(res, l, 1));
+		//					td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
+		//					td.value = conn.PGgetvalue(res, l, 3);
+		//					int type = Stoi(conn.PGgetvalue(res, l, 4));
+		//					td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+		//					if(nFields >= 6)
+		//						td.id_name_at = conn.PGgetvalue(res, l, 5);
+		//
+		//					if(td.id_name == HMISheetData.Cassette.Hour->ID)tc.Hour = Stoi(td.value);
+		//					if(td.id_name == HMISheetData.Cassette.Day->ID)tc.Day = Stoi(td.value);
+		//					if(td.id_name == HMISheetData.Cassette.Month->ID)tc.Month = Stoi(td.value);
+		//					if(td.id_name == HMISheetData.Cassette.Year->ID)tc.Year = Stoi(td.value);
+		//					if(td.id_name == HMISheetData.Cassette.CassetteNo->ID)tc.CassetteNo = Stoi(td.value);
+		//				}
+		//				if(tc.Day && tc.Month && tc.Year && tc.CassetteNo)
+		//				{
+		//					tc.Create = a.create_at;
+		//					all_casset.push_back(tc);
+		//				}
+		//			}
+		//		}
+		//		PQclear(res);
+		//		//GetSeq2(conn, allTodos, a.create_at);
+		//		//T_casset tc;
+		//		//std::stringstream ssd;
+		//		//ssd << "SELECT create_at, hour, day, month, year, cassetteno, WHERE create_at <=" << a.create_at << " ORDER BY id DESC id LIMIT 1";
 		//	}
-		//	else
-		//		LOG_ERR_SQL(PdfLogger, res, comand);
-		//	PQclear(res);
-		//	PdfClass sdc(Cassette);
 		//}
+		//
+		//int tt = 0;
+		//{
+			std::string comand = "SELECT * FROM cassette WHERE id = 664"; //2024-05-25-06
+			PGresult* res = conn.PGexec(comand);
+			TCassette Cassette;
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				S107::GetColl(res);
+				if(conn.PQntuples(res))
+					S107::GetCassette(res, Cassette, 0);
+			}
+			else
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			PQclear(res);
+			PdfClass sdc(Cassette);
 	}
 #endif // HENDINSERT
 
@@ -4175,7 +4190,7 @@ namespace PDF
 
 #ifdef HENDINSERT
 			//Для ручного тестирования
-			//DelAllPdf(lpLogPdf2);
+			DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
 			isRun = false;
 			return 0;
@@ -4228,7 +4243,7 @@ namespace PDF
 
 					//std::string start = "2024-06-09 03:00:00";
 					std::string stop = "";
-					SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					//SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 					DelAllPdf(lpLogPdf2);
 					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");
@@ -4254,7 +4269,6 @@ namespace PDF
 
 		return 0;
 	}
-
 }
 
 

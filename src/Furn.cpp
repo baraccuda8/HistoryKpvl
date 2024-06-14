@@ -228,7 +228,7 @@ namespace S107
                             std::stringstream sd;
                             sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE ";
                             sd << " hour = " << CD.Hour;
-                            sd << " day = " << CD.Day;
+                            sd << " AND day = " << CD.Day;
                             sd << " AND month = " << CD.Month;
                             sd << " AND year = " << CD.Year;
                             sd << " AND cassetteno = " << CD.CassetteNo;
@@ -243,7 +243,7 @@ namespace S107
                             ss << " sheetincassette = " << count;
                             ss << " WHERE";
                             ss << " hour = " << CD.Hour;
-                            ss << " day = " << CD.Day;
+                            ss << " AND day = " << CD.Day;
                             ss << " AND month = " << CD.Month;
                             ss << " AND year = " << CD.Year;
                             ss << " AND cassetteno = " << CD.CassetteNo;
@@ -270,11 +270,11 @@ namespace S107
         {
             if(IsCassette(CD))
             {
-                int32_t FHour = Cassette.Hour->Val.As<int32_t>();
-                int32_t FDay = Cassette.Day->Val.As<int32_t>();
-                int32_t FMonth = Cassette.Month->Val.As<int32_t>();
-                int32_t FYear = Cassette.Year->Val.As<int32_t>();
-                int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
+                int32_t FHour = Stoi(Cassette.Hour->GetString());// ->Val.As<int32_t>();
+                int32_t FDay = Stoi(Cassette.Day->GetString());// ->Val.As<int32_t>();
+                int32_t FMonth = Stoi(Cassette.Month->GetString());// ->Val.As<int32_t>();
+                int32_t FYear = Stoi(Cassette.Year->GetString());// ->Val.As<int32_t>();
+                int32_t FCassetteNo = Stoi(Cassette.CassetteNo->GetString());// ->Val.As<int32_t>();
                 int32_t CHour = Stoi(CD.Hour);
                 int32_t CDay = Stoi(CD.Day);
                 int32_t CMonth = Stoi(CD.Month);
@@ -289,11 +289,11 @@ namespace S107
         {
             if(KPVL::Cassette::IsCassette(HMISheetData.Cassette))
             {
-                int32_t FHour = Cassette.Hour->Val.As<int32_t>();
-                int32_t FDay = Cassette.Day->Val.As<int32_t>();
-                int32_t FMonth = Cassette.Month->Val.As<int32_t>();
-                int32_t FYear = Cassette.Year->Val.As<int32_t>();
-                int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
+                int32_t FHour = Stoi(Cassette.Hour->GetString());//Cassette.Hour->Val.As<int32_t>();
+                int32_t FDay = Stoi(Cassette.Day->GetString());// ->Val.As<int32_t>();
+                int32_t FMonth = Stoi(Cassette.Month->GetString());// ->Val.As<int32_t>();
+                int32_t FYear = Stoi(Cassette.Year->GetString());// ->Val.As<int32_t>();
+                int32_t FCassetteNo = Stoi(Cassette.CassetteNo->GetString());// ->Val.As<int32_t>();
                 int32_t CHour = Stoi(CD.Hour);
                 int32_t CDay = Stoi(CD.Day);
                 int32_t CMonth = Stoi(CD.Month);
@@ -310,7 +310,7 @@ namespace S107
             std::stringstream ss;
             ss << "SELECT id FROM cassette WHERE";
             ss << " hour = " << CD.Hour;
-            ss << " day = " << CD.Day;
+            ss << " AND day = " << CD.Day;
             ss << " AND month = " << CD.Month;
             ss << " AND year = " << CD.Year;
             ss << " AND cassetteno = " << CD.CassetteNo;
@@ -538,7 +538,7 @@ namespace S107
 
     bool IsCassete1(T_cassette& CD)
     {
-        int32_t Hour = CD.Hour->Val.As<int32_t>();
+        int32_t Hour = Stoi(CD.Hour->GetString());//CD.Hour->Val.As<int32_t>();
         int32_t Day = CD.Day->Val.As<int32_t>();
         int32_t Month = CD.Month->Val.As<int32_t>();
         int32_t Year = CD.Year->Val.As<int32_t>();
@@ -547,7 +547,7 @@ namespace S107
     }
     bool IsCassete2(T_cassette& CD)
     {
-        int32_t Hour = GetVal<int32_t>(CD.Hour);
+        int32_t Hour = Stoi(CD.Hour->GetString());//GetVal<int32_t>(CD.Hour);
         int32_t Day = GetVal<int32_t>(CD.Day);
         int32_t Month = GetVal<int32_t>(CD.Month);
         int32_t Year = GetVal<int32_t>(CD.Year);
@@ -575,7 +575,7 @@ namespace S107
 
             sd << " WHERE";
             //sd << " run_at IS NULL";
-            sd << " hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " hour = " << Stoi(Furn.Cassette.Hour->GetString());//Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
@@ -588,7 +588,7 @@ namespace S107
             sd << "error_at = DEFAULT, ";
             sd << "end_at = DEFAULT";
             sd << " WHERE";
-            sd << " hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " hour = " << Stoi(Furn.Cassette.Hour->GetString());//Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
@@ -640,7 +640,7 @@ namespace S107
             sd << " WHERE";
             //sd << " error_at IS NULL";
             sd << " peth = " << Peth;
-            sd << " AND hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " AND hour = " << Stoi(Furn.Cassette.Hour->GetString());//Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
@@ -667,7 +667,7 @@ namespace S107
                 sd << " facttemper = " << teper;
                 sd << " WHERE ";
                 //comand += " facttemper = 0.0 AND";
-                sd << " hour = " << CD.Hour->Val.As<int32_t>();
+                sd << " hour = " << Stoi(CD.Hour->GetString());//CD.Hour->Val.As<int32_t>();
                 sd << " AND day = " << CD.Day->Val.As<int32_t>();
                 sd << " AND month = " << CD.Month->Val.As<int32_t>();
                 sd << " AND year = " << CD.Year->Val.As<int32_t>();
@@ -709,7 +709,7 @@ namespace S107
             sd << "UPDATE cassette SET ";
             sd << update;
             sd << " WHERE error_at IS NULL";
-            sd << " AND hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " AND hour = " << Stoi(Furn.Cassette.Hour->GetString());//Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
@@ -918,7 +918,7 @@ namespace S107
         DWORD Hour(Value* value)
         {
             MySetWindowText(value);
-            Petch.Hour = value->Val.As<int32_t>();
+            Petch.Hour = Stoi(value->GetString());//value->Val.As<int32_t>();
             return 0;
         }
 
@@ -1125,7 +1125,7 @@ namespace S107
         DWORD Hour(Value* value)
         {
             MySetWindowText(value);
-            Petch.Hour = value->Val.As<int32_t>();
+            Petch.Hour = Stoi(value->GetString());//->Val.As<int32_t>();
             return 0;
         }
 

@@ -104,7 +104,7 @@ public:
         //DINT День ID листа
         Value* Day;
 
-        //DINT Час ID листа
+        //UINT Час ID листа
         Value* Hour;
 
         //DINT Номер кассеты за день

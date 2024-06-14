@@ -181,7 +181,7 @@ namespace KPVL {
         bool IsCassette(T_CassetteData& CD);
 
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        void CassettePos(PGConnection& conn, T_CassetteData& CD);
+        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD);
 
         //Вывод Номер листа в касете
         DWORD Sheet_InCassette(Value* value);

@@ -117,7 +117,7 @@ void SetValue(OpcUa::VariantType type, Value* val, std::string value)
     else if(type == OpcUa::VariantType::INT16)     val->Val = atoi_t(int16_t, atoi, value) / (int16_t)val->coeff;
     else if(type == OpcUa::VariantType::UINT16)    val->Val = atoi_t(uint16_t, atoi, value) / (uint16_t)val->coeff;
     else if(type == OpcUa::VariantType::INT32)     val->Val = atoi_t(int32_t, atol, value) / (int32_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT32)    val->Val = atoi_t(int32_t, atol, value) / (int32_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT32)    val->Val = atoi_t(uint32_t, atol, value) / (uint32_t)val->coeff;
     else if(type == OpcUa::VariantType::INT64)     val->Val = atoi_t(int64_t, atoll, value) / (int64_t)val->coeff;
     else if(type == OpcUa::VariantType::UINT64)    val->Val = atoi_t(uint64_t, atoll, value) / (uint64_t)val->coeff;
     else if(type == OpcUa::VariantType::FLOAT)     val->Val = atoi_t(float, atof, value) / (float)val->coeff;
