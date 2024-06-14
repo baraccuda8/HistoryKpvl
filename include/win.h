@@ -239,6 +239,7 @@ enum HWNDCLIENT{
     hStatState_Year,
     hStatState_Month,
     hStatState_Day,
+    hStatState_Hour,
     hStatState_Cassette,
 
     hStatState_NN,
@@ -253,36 +254,43 @@ enum HWNDCLIENT{
     hEditState1_Year,
     hEditState1_Month,
     hEditState1_Day,
+    hEditState1_Hour,
     hEditState1_Cassette,
 
     hEditState2_Year,
     hEditState2_Month,
     hEditState2_Day,
+    hEditState2_Hour,
     hEditState2_Cassette,
 
     hEditState3_Year,
     hEditState3_Month,
     hEditState3_Day,
+    hEditState3_Hour,
     hEditState3_Cassette,
 
     hEditState4_Year,
     hEditState4_Month,
     hEditState4_Day,
+    hEditState4_Hour,
     hEditState4_Cassette,
 
     hEditState5_Year,
     hEditState5_Month,
     hEditState5_Day,
+    hEditState5_Hour,
     hEditState5_Cassette,
 
     hEditState6_Year,
     hEditState6_Month,
     hEditState6_Day,
+    hEditState6_Hour,
     hEditState6_Cassette,
 
     hEditState7_Year,
     hEditState7_Month,
     hEditState7_Day,
+    hEditState7_Hour,
     hEditState7_Cassette,
 
 
@@ -557,8 +565,12 @@ enum HWNDCLIENT{
     hEdit_Sheet_DataTime,
 
     hStatSheet_Cassette_Data,
+
     hStatSheet_Cassette_Day,
     hEdit_Sheet_Cassette_Day,
+
+    hStatSheet_Cassette_Hour,
+    hEdit_Sheet_Cassette_Hour,
 
     hStatSheet_Cassette_Month,
     hEdit_Sheet_Cassette_Month,
@@ -739,6 +751,8 @@ enum HWNDCLIENT{
     #if 201
     hGroup201,
     RelF1_Stat_Cassette_ID,
+    RelF1_Stat_Cassette_Hour,
+    RelF1_Edit_Cassette_Hour,
     RelF1_Stat_Cassette_Day,
     RelF1_Edit_Cassette_Day,
     RelF1_Stat_Cassette_Month,
@@ -841,6 +855,8 @@ enum HWNDCLIENT{
     #if 301
     hGroup301,
     RelF2_Stat_Cassette_ID,
+    RelF2_Stat_Cassette_Hour,
+    RelF2_Edit_Cassette_Hour,
     RelF2_Stat_Cassette_Day,
     RelF2_Edit_Cassette_Day,
     RelF2_Stat_Cassette_Month,
@@ -1005,6 +1021,7 @@ namespace casSheet{
         Year,
         Month,
         Day,
+        Hour,
         CassetteNo,
         SheetInCassette,
 
@@ -1179,6 +1196,7 @@ typedef struct _TSheet{
     std::string Year = "";
     std::string Month = "";
     std::string Day = "";
+    std::string Hour = "";
     std::string CassetteNo = "";
     std::string SheetInCassette = "";
     std::string Pos = "";
@@ -1250,6 +1268,7 @@ typedef struct _TSheet{
         Year = "";
         Month = "";
         Day = "";
+        Hour = "";
         CassetteNo = "";
         SheetInCassette = "";
         Pos = "";
@@ -1278,6 +1297,7 @@ enum Cassete{
     Year,
     Month,
     Day,
+    Hour,
     CassetteNo,
     SheetInCassette,
     //Close,
@@ -1298,6 +1318,7 @@ typedef struct TCassette{
     std::string Create_at = "";
     std::string Id = "";
     std::string Event = "";
+    std::string Hour = "";
     std::string Day = "";
     std::string Month = "";
     std::string Year = "";
@@ -1326,6 +1347,7 @@ typedef struct TCassette{
     {
         return
             CassetteNo == rhs.CassetteNo
+            && Hour == rhs.Hour
             && Day == rhs.Day
             && Month == rhs.Month
             && Year == rhs.Year;

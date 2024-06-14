@@ -141,6 +141,7 @@ namespace PDF
 
 		int Pos = 0;
 
+		int hour = 0;
 		int day = 0;
 		int month = 0;
 		int year = 0;
@@ -352,6 +353,7 @@ namespace PDF
 			if(Sheet.Year.empty() || !Sheet.Year.length()) return;
 			if(Sheet.Month.empty() || !Sheet.Month.length()) return;
 			if(Sheet.Day.empty() || !Sheet.Day.length()) return;
+			if(Sheet.Hour.empty() || !Sheet.Hour.length()) return;
 			if(Sheet.CassetteNo.empty() || !Sheet.CassetteNo.length()) return;
 
 			std::string comand = "SELECT * FROM cassette ";
@@ -359,6 +361,7 @@ namespace PDF
 			comand += "year = " + Sheet.Year + " AND ";
 			comand += "month = " + Sheet.Month + " AND ";
 			comand += "day = " + Sheet.Day + " AND ";
+			comand += "hour = " + Sheet.Hour + " AND ";
 			comand += "cassetteno = " + Sheet.CassetteNo + " ";
 			comand += "ORDER BY create_at DESC";
 			comand += ";";
@@ -384,6 +387,7 @@ namespace PDF
 			AllPfdSheet.erase(AllPfdSheet.begin(), AllPfdSheet.end());
 			std::stringstream sd;
 			sd << "SELECT * FROM sheet WHERE ";
+			sd << "hour = '" << Cassette.Hour << "' AND ";
 			sd << "day = '" << Cassette.Day << "' AND ";
 			sd << "month = '" << Cassette.Month << "' AND ";
 			sd << "year = '" << Cassette.Year << "' AND ";
@@ -1132,7 +1136,7 @@ namespace PDF
 			DrawGridTime(temp, RectG3, msec);
 			DrawGridOssi(temp, RectG, s1, s2);
 
-			//DrawBottom(temp, RectG2, Red, Ref);	//Красный; Заданное значение температуры
+			DrawBottom(temp, RectG2, Red, Ref);	//Красный; Заданное значение температуры
 			DrawBottom(temp, RectG2, Blue, Act);	//Синий; Фактическое значение температуры
 			
 			std::wstring SaveFile(fImage.begin(), fImage.end());
@@ -1230,6 +1234,7 @@ namespace PDF
 
 			std::stringstream ssd;
 			ssd << "Печь № " << Cassette.Peth << " Кассета № ";
+			ssd << std::setw(2) << std::setfill('0') << Cassette.Hour << "-";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
 			ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
@@ -1452,6 +1457,7 @@ namespace PDF
 			ifile << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
 			ifile << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
 			ifile << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+			ifile << std::setw(2) << std::setfill('0') << Cassette.Hour << "-";
 			ifile << std::setw(2) << std::setfill('0') << Cassette.CassetteNo;
 		}CATCH(PdfLogger, FUNCTION_LINE_NAME + " File1: " + temp.str() + "/" + tfile.str());
 
@@ -1627,7 +1633,8 @@ namespace PDF
 		sss << "Кассета: "
 			<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
 			<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
-			<< std::setw(2) << std::setfill('0') << Cassette.Day << " № "
+			<< std::setw(2) << std::setfill('0') << Cassette.Day << "-"
+			<< std::setw(2) << std::setfill('0') << Cassette.Hour << "№ "
 			<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo
 			<< " Лист: "
 			<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
@@ -1661,6 +1668,7 @@ namespace PDF
 				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
 				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
 				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
+				ssd << std::setw(2) << std::setfill('0') << Cassette.Hour << "-";
 				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
 				furnImage = ssd.str();
 			}
@@ -1791,6 +1799,7 @@ namespace PDF
 				ssd << " year = '" << Cassette.Year << "' AND";
 				ssd << " month = '" << Cassette.Month << "' AND";
 				ssd << " day = '" << Cassette.Day << "' AND";
+				ssd << " hour = '" << Cassette.Hour << "' AND";
 				ssd << " cassetteno = " << Cassette.CassetteNo;
 				SETUPDATESQL(PdfLogger, conn, ssd);
 			}
@@ -1812,7 +1821,8 @@ namespace PDF
 				sss << "PrintPdfAuto ";
 				sss << boost::format("%|04|-") % TC.Year;
 				sss << boost::format("%|02|-") % TC.Month;
-				sss << boost::format("%|02| ") % TC.Day;
+				sss << boost::format("%|02|-") % TC.Day;
+				sss << boost::format("%|02| ") % TC.Hour;
 				sss << " № " << TC.CassetteNo;
 				SetWindowText(hWndDebug, sss.str().c_str());
 				PdfClass pdf(TC);
@@ -2064,6 +2074,7 @@ namespace PDF
 						<< P.Year << ";"
 						<< P.Month << ";"
 						<< P.Day << ";"
+						<< P.Hour << ";"
 						<< P.CassetteNo << ";"
 						<< " " << P.Error_at << ";"
 
@@ -2094,7 +2105,8 @@ namespace PDF
 			{
 				std::stringstream com;
 				com << "SELECT * FROM cassette WHERE"
-					<< " day = " << it.Day
+					<< " hour = " << it.Hour
+					<< " AND day = " << it.Day
 					<< " AND month = " << it.Month
 					<< " AND year = " << it.Year
 					<< " AND cassetteno = " << it.CassetteNo
@@ -2172,6 +2184,7 @@ namespace PDF
 				if(it.Year.length())ct.Year = it.Year;
 				if(it.Month.length())ct.Month =it.Month;
 				if(it.Day.length())ct.Day = it.Day;
+				if(it.Hour.length())ct.Hour = it.Hour;
 				if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
 
 				if(it.Peth.length())ct.Peth = it.Peth;
@@ -2254,6 +2267,7 @@ namespace PDF
 				if(it.Year.length())ct.Year = it.Year;
 				if(it.Month.length())ct.Month =it.Month;
 				if(it.Day.length())ct.Day = it.Day;
+				if(it.Hour.length())ct.Hour = it.Hour;
 				if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
 
 				if(it.Peth.length())ct.Peth = it.Peth;
@@ -2280,6 +2294,7 @@ namespace PDF
 					"year, "
 					"month, "
 					"day, "
+					"hour, "
 					"cassetteno, "
 					"sheetincassette, "
 					"peth, "
@@ -2309,6 +2324,7 @@ namespace PDF
 				ssd << Stoi(ct.Year) << ", ";
 				ssd << Stoi(ct.Month) << ", ";
 				ssd << Stoi(ct.Day) << ", ";
+				ssd << Stoi(ct.Hour) << ", ";
 				ssd << Stoi(ct.CassetteNo) << ", ";
 				if(Stoi(ct.SheetInCassette))
 					ssd << Stoi(ct.SheetInCassette) << ", ";
@@ -2355,7 +2371,9 @@ namespace PDF
 
 				std::stringstream ssg;
 				ssg << "SELECT id FROM cassette ";
-				ssg << "WHERE day = " << ct.Day;
+				ssg << "WHERE";
+				ssg << " hour = " << ct.Hour;
+				ssg << " AND day = " << ct.Day;
 				ssg << " AND month = " << ct.Month;
 				ssg << " AND year = " << ct.Year;
 				ssg << " AND cassetteno = " << ct.CassetteNo;
@@ -2384,7 +2402,9 @@ namespace PDF
 			//Запись в базу
 			std::stringstream ssg;
 			ssg << "SELECT id FROM cassette ";
-			ssg << "WHERE day = " << it.Day;
+			ssg << "WHERE ";
+			ssg << " hour = " << it.Hour;
+			ssg << " AND day = " << it.Day;
 			ssg << " AND month = " << it.Month;
 			ssg << " AND year = " << it.Year;
 			ssg << " AND cassetteno = " << it.CassetteNo;
@@ -2449,6 +2469,7 @@ namespace PDF
 							<< it.second.Year << ";"
 							<< it.second.Month << ";"
 							<< it.second.Day << ";"
+							<< it.second.Hour << ";"
 							<< it.second.CassetteNo << ";"
 							<< " " << it.second.Error_at << ";"
 							<< it.second.Peth << ";"
@@ -2521,6 +2542,7 @@ namespace PDF
 				ssd << " OR id_name = " << Furn->ProcRun->ID;
 				ssd << " OR id_name = " << Furn->ProcFault->ID;
 
+				ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
 				ssd << " OR id_name = " << Furn->Cassette.Day->ID;
 				ssd << " OR id_name = " << Furn->Cassette.Month->ID;
 				ssd << " OR id_name = " << Furn->Cassette.Year->ID;
@@ -2579,6 +2601,27 @@ namespace PDF
 					//ssd << "GetCassette:CassetteTodos " << Petch << ", " << size << ":" << lin;
 					//SetWindowText(hWndDebug, ssd.str().c_str());
 
+					//Furn->Cassette.Hour->ID
+					try
+					{
+						if(a.second.id_name == Furn->Cassette.Hour->ID)
+						{
+							if(!P.Run_at.size())
+								P.Hour = a.second.value;
+							else if(P.Hour != a.second.value)
+							{
+								P.End_at = a.second.create_at;
+								//EndCassette(conn, P, Petch, s1);
+								P0[a.first] = P;
+
+								P.Run_at = "";
+								P.End_at = "";
+								P.Error_at = "";
+								P.Hour = a.second.value;
+							}
+						}
+					}
+					CATCH(PdfLogger, "");
 					//Furn->Cassette.Day->ID
 					try
 					{
@@ -2787,11 +2830,43 @@ namespace PDF
 
 	};
 		
+	typedef std::vector<T_Todos> MapTodos;
 
+
+	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& comand)
+	{
+
+		if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+		PGresult* res = conn.PGexec(comand);
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			int nFields = PQnfields(res);
+			int line = PQntuples(res);
+			if(line)
+			{
+				//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
+				for(int l = 0; l < line; l++)
+				{
+					T_Todos td;
+					td.create_at = conn.PGgetvalue(res, l, 0);
+					td.id = Stoi(conn.PGgetvalue(res, l, 1));
+					td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
+					td.value = conn.PGgetvalue(res, l, 3);
+					int type = Stoi(conn.PGgetvalue(res, l, 4));
+					td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+					if(nFields >= 6)
+						td.id_name_at = conn.PGgetvalue(res, l, 5);
+
+					mt.push_back(td);
+				}
+			}
+		}
+		PQclear(res);
+	}
 
 	namespace SHEET
 	{
-		typedef std::vector<T_Todos> MapSheetTodos;
+
 
 		class GetSheets
 		{
@@ -2821,9 +2896,6 @@ namespace PDF
 			std::string StartSheet;
 			std::string StopSheet;
 
-
-			void GetTodosSQL(PGConnection& conn, MapSheetTodos& mt, std::string& comand);
-
 			void SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error);
 			std::fstream SaveHeadCsv(std::string name);
 			bool isSheet(T_IdSheet& t);
@@ -2845,9 +2917,9 @@ namespace PDF
 			//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
 			void GetDataSheet3(PGConnection& conn, T_IdSheet& ids);
 
-			void GetSeq_1(PGConnection& conn, MapSheetTodos& allSheetTodos);
-			void GetSeq_2(PGConnection& conn, MapSheetTodos& allSheetTodos);
-			void GetSeq_3(PGConnection& conn, MapSheetTodos& allSheetTodos);
+			void GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos);
+			void GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos);
+			void GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos);
 
 			float GetDataTime_All(std::string TimeStart, std::string Start3);
 
@@ -2874,36 +2946,6 @@ namespace PDF
 		};
 
 
-		void GetSheets::GetTodosSQL(PGConnection& conn, MapSheetTodos& mt, std::string& comand)
-		{
-
-			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			PGresult* res = conn.PGexec(comand);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				int nFields = PQnfields(res);
-				int line = PQntuples(res);
-				if(line)
-				{
-					//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-					for(int l = 0; l < line; l++)
-					{
-						T_Todos td;
-						td.create_at = conn.PGgetvalue(res, l, 0);
-						td.id = Stoi(conn.PGgetvalue(res, l, 1));
-						td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
-						td.value = conn.PGgetvalue(res, l, 3);
-						int type = Stoi(conn.PGgetvalue(res, l, 4));
-						td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
-						if(nFields >= 6)
-							td.id_name_at = conn.PGgetvalue(res, l, 5);
-
-						mt.push_back(td);
-					}
-				}
-			}
-			PQclear(res);
-		}
 
 		void GetSheets::SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error)
 		{
@@ -3083,7 +3125,7 @@ namespace PDF
 
 				std::string comand1 = ssd.str();
 
-				MapSheetTodos idSheet1;
+				MapTodos idSheet1;
 				GetTodosSQL(conn, idSheet1, comand1);
 				for(auto t : idSheet1)
 				{
@@ -3111,7 +3153,7 @@ namespace PDF
 
 				std::string comand = ssd.str();
 
-				MapSheetTodos idSheet;
+				MapTodos idSheet;
 				GetTodosSQL(conn, idSheet, comand);
 				for(auto t : idSheet)
 				{
@@ -3187,7 +3229,7 @@ namespace PDF
 		//Фиксируем на начало входа в печь State_1 = 3;
 		void GetSheets::GetDataSheet1(PGConnection& conn, T_IdSheet& ids)
 		{
-			MapSheetTodos DataSheetTodos;
+			MapTodos DataSheetTodos;
 
 			std::stringstream ssd;
 			ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
@@ -3240,7 +3282,7 @@ namespace PDF
 		//Фиксируем на начало входа в печь State_2 = 5;
 		void GetSheets::GetDataSheet2(PGConnection& conn, T_IdSheet& ids)
 		{
-			MapSheetTodos DataSheetTodos;
+			MapTodos DataSheetTodos;
 
 			std::stringstream ssd;
 			ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
@@ -3266,7 +3308,7 @@ namespace PDF
 		//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
 		void GetSheets::GetDataSheet3(PGConnection& conn, T_IdSheet& ids)
 		{
-			MapSheetTodos DataSheetTodos;
+			MapTodos DataSheetTodos;
 			std::tm tmp;
 			time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
 			std::string Start = GetDataTimeString(&t1);
@@ -3290,7 +3332,7 @@ namespace PDF
 			}
 		}
 
-		void GetSheets::GetSeq_1(PGConnection& conn, MapSheetTodos& allSheetTodos)
+		void GetSheets::GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos)
 		{
 			std::stringstream ssd;
 
@@ -3308,7 +3350,7 @@ namespace PDF
 			GetTodosSQL(conn, allSheetTodos, comand);
 
 		}
-		void GetSheets::GetSeq_2(PGConnection& conn, MapSheetTodos& allSheetTodos)
+		void GetSheets::GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos)
 		{
 			std::stringstream ssd;
 			ssd << "SELECT create_at, id, id_name, content ";
@@ -3325,7 +3367,7 @@ namespace PDF
 			std::string comand = ssd.str();
 			GetTodosSQL(conn, allSheetTodos, comand);
 		}
-		void GetSheets::GetSeq_3(PGConnection& conn, MapSheetTodos& allSheetTodos)
+		void GetSheets::GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos)
 		{
 			std::stringstream ssd;
 			ssd << "SELECT create_at, id, id_name, content ";
@@ -3629,13 +3671,14 @@ namespace PDF
 
 		void GetSheets::GetSheetCassette(PGConnection& conn, T_IdSheet& ids)
 		{
+			int Hour = 0;
 			int Day = 0;
 			int Month = 0;
 			int Year = 0;
 			int CassetteNo = 0;
 			int SheetInCassette = 0;
 
-			MapSheetTodos DataSheetTodos;
+			MapTodos DataSheetTodos;
 			std::stringstream ssd;
 			ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
 			ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
@@ -3643,6 +3686,7 @@ namespace PDF
 			ssd << "FROM todos WHERE ";
 			//ssd << "create_at >= '" << ids.Start3 << "' AND ";
 			ssd << "create_at < '" << ids.Cant << "' AND (";
+			ssd << "id_name = " << HMISheetData.Cassette.Hour->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.Cassette.Day->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.Cassette.Month->ID << " OR ";
 			ssd << "id_name = " << HMISheetData.Cassette.Year->ID << " OR ";
@@ -3655,6 +3699,7 @@ namespace PDF
 
 			for(auto a : DataSheetTodos)
 			{
+				if(a.id_name == HMISheetData.Cassette.Hour->ID) Hour = Stoi(a.value);
 				if(a.id_name == HMISheetData.Cassette.Day->ID) Day = Stoi(a.value);
 				if(a.id_name == HMISheetData.Cassette.Month->ID) Month = Stoi(a.value);
 				if(a.id_name == HMISheetData.Cassette.Year->ID) Year = Stoi(a.value);
@@ -3664,6 +3709,7 @@ namespace PDF
 
 			if(Day && Month && Year && CassetteNo)
 			{
+				ids.hour = Hour;
 				ids.day = Day;
 				ids.month = Month;
 				ids.year = Year;
@@ -3783,7 +3829,7 @@ namespace PDF
 			StartSheet = datestart;
 			StopSheet = datestop;
 
-			MapSheetTodos allSheetTodos;
+			MapTodos allSheetTodos;
 
 			V_Todos allTime;
 
@@ -3823,7 +3869,7 @@ namespace PDF
 			std::fstream ff2 = SaveT_IdSheetHeadCsv("T_IdSheet.csv");
 
 
-			for(MapSheetTodos::iterator it = allSheetTodos.begin(); isRun && it != allSheetTodos.end(); it++)
+			for(MapTodos::iterator it = allSheetTodos.begin(); isRun && it != allSheetTodos.end(); it++)
 			{
 				T_Todos& td = *it;
 
@@ -3969,163 +4015,146 @@ namespace PDF
 		//}
 	}
 
-//#define HENDINSERT
+#define HENDINSERT
 #ifdef HENDINSERT
+
+
+	typedef struct T_casset{
+		std::string Create;
+		std::string End;
+		int Hour = 0;
+		int Day = 0;
+		int Month = 0;
+		int Year = 0;
+		int CassetteNo = 0;
+
+	}T_casset;
+
+	typedef std::vector<T_casset>VT_casset;
+
+	void GetSeq1(PGConnection& conn, MapTodos& allTodos)
+	{
+		std::stringstream ssd;
+		ssd << "SELECT create_at, id, id_name, content ";
+		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
+		ssd << "FROM todos WHERE";
+		ssd << " id_name = " << HMISheetData.CasseteIsFill->ID;
+		//ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
+		//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
+		//ssd << " AND create_at >= '" << StartSheet << "'";
+		//if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+		ssd << " ORDER BY id;";
+		std::string comand = ssd.str();
+		GetTodosSQL(conn, allTodos, comand);
+
+	}
+	void GetSeq2(PGConnection& conn, MapTodos& allTodos, std::string Start)
+	{
+		std::stringstream ssd;
+		ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
+		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
+		ssd << "FROM todos WHERE (";
+		ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
+		ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
+		ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
+		ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
+		ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
+		//ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
+		//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
+		ssd << ") AND create_at <= '" << Start << "'";
+		//if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+		ssd << " ORDER BY id_name DESC, id;";
+		std::string comand = ssd.str();
+		GetTodosSQL(conn, allTodos, comand);
+	}
+
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
+		MapTodos allCassetTodos;
+		//MapTodos allTodos;
+		std::vector <T_casset> all_casset;
+		GetSeq1(conn, allCassetTodos);
+
+
+		for(auto a : allCassetTodos)
+		{
+			if(a.content.As<bool>())
+			{
+				std::stringstream ssd;
+				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
+				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
+				ssd << "FROM todos WHERE (";
+				ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
+				ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
+				ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
+				ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
+				ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
+				ssd << ") AND create_at <= '" << a.create_at << "'";
+				ssd << " ORDER BY id_name DESC, id DESC;";
+				std::string comand = ssd.str();
+				SetWindowText(hWndDebug, comand.c_str());
+				PGresult* res = conn.PGexec(comand); 
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				{
+					int nFields = PQnfields(res);
+					int line = PQntuples(res);
+					if(line)
+					{
+						//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
+						T_casset tc;
+						for(int l = 0; l < line; l++)
+						{
+							T_Todos td;
+							td.create_at = conn.PGgetvalue(res, l, 0);
+							td.id = Stoi(conn.PGgetvalue(res, l, 1));
+							td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
+							td.value = conn.PGgetvalue(res, l, 3);
+							int type = Stoi(conn.PGgetvalue(res, l, 4));
+							td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+							if(nFields >= 6)
+								td.id_name_at = conn.PGgetvalue(res, l, 5);
+
+							if(td.id_name == HMISheetData.Cassette.Hour->ID)tc.Hour = Stoi(td.value);
+							if(td.id_name == HMISheetData.Cassette.Day->ID)tc.Day = Stoi(td.value);
+							if(td.id_name == HMISheetData.Cassette.Month->ID)tc.Month = Stoi(td.value);
+							if(td.id_name == HMISheetData.Cassette.Year->ID)tc.Year = Stoi(td.value);
+							if(td.id_name == HMISheetData.Cassette.CassetteNo->ID)tc.CassetteNo = Stoi(td.value);
+						}
+						if(tc.Day && tc.Month && tc.Year && tc.CassetteNo)
+						{
+							tc.Create = a.create_at;
+							all_casset.push_back(tc);
+						}
+					}
+				}
+				PQclear(res);
+				//GetSeq2(conn, allTodos, a.create_at);
+				//T_casset tc;
+				//std::stringstream ssd;
+				//ssd << "SELECT create_at, hour, day, month, year, cassetteno, WHERE create_at <=" << a.create_at << " ORDER BY id DESC id LIMIT 1";
+			}
+		}
+
+		int tt = 0;
 		//{
-		//	std::vector<int> csId;
-		//	std::string comand = comand = "SELECT id FROM cassette ORDER BY create_at DESC;"; //Все кассеты
+		//	std::string comand = "SELECT * FROM cassette WHERE id = 617"; //2024-05-25-06
 		//	PGresult* res = conn.PGexec(comand);
+		//	TCassette Cassette;
 		//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		//	{
-		//		int line = PQntuples(res);
-		//		for(int l = 0; l < line; l++)
-		//		{
-		//			int id = Stoi(conn.PGgetvalue(res, l, 0));
-		//			csId.push_back(id);
-		//		}
+		//		S107::GetColl(res);
+		//		if(conn.PQntuples(res))
+		//			S107::GetCassette(res, Cassette, 0);
 		//	}
+		//	else
+		//		LOG_ERR_SQL(PdfLogger, res, comand);
 		//	PQclear(res);
+		//	PdfClass sdc(Cassette);
 		//}
-		{
-			std::string comand = "SELECT * FROM cassette WHERE id = 617"; //2024-05-25-06
-			PGresult* res = conn.PGexec(comand);
-			TCassette Cassette;
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				S107::GetColl(res);
-				if(conn.PQntuples(res))
-					S107::GetCassette(res, Cassette, 0);
-			}
-			else
-				LOG_ERR_SQL(PdfLogger, res, comand);
-			PQclear(res);
-
-			//try
-			//{
-			//	 //Удаление всех файлов в каталоге кассеты
-			//	std::stringstream temp;
-			//	temp << lpLogPdf2;
-			//	temp << "/" << Stoi(Cassette.Year);
-			//	temp << "/" << MonthName[Stoi(Cassette.Month)];
-			//	temp << "/" << std::setw(2) << std::setfill('0') << std::right << Stoi(Cassette.Day);
-			//	std::Pathc patch = getDirContents (temp.str());
-			//	for(auto p : patch)
-			//	{
-			//		if(p.string().length())
-			//			remove(p.string().c_str());
-			//	}
-			//}
-			//CATCH(PdfLogger, FUNCTION_LINE_NAME);
-			//Cassette.Peth = "1";
-			PdfClass sdc(Cassette);
-		}
-		//std::stringstream ssa;
-		//ssa << "SELECT * FROM cassette WHERE ";
-		//ssa << "correct IS NULL AND ";
-		//ssa << "finish_at IS NOT NULL AND ";
-		//ssa << " delete_at IS NULL";
-		//ssa << " ORDER BY id ASC LIMIT 1";
-		//
-		//T_IdSheet td;
-		//td.id = 2928;
-		//td.DataTime = "2024-05-14 11:26:45";
-		//td.DataTime_End = "2024-05-14 11:45:04";
-		//td.Alloy = "А3";
-		//td.Thikness = "4,2";
-		//td.DataTime_All = 18.3;
-		//td.TimeForPlateHeat = 18;
-		//td.Melt = 107235;
-		//td.Slab = 0;
-		//td.PartNo = 402;
-		//td.Pack = 3;
-		//td.Sheet = 65;
-		//td.SubSheet = 0;
-		//td.Temper = 900;
-		//td.Speed = 700;
-		//td.Za_PT3 = 4.1;
-		//td.Za_TE3 = 34.4;
-		//td.LaminPressTop = 3.7;
-		//td.LaminPressBot = 1.8;
-		//td.SpeedTopSet = 2;
-		//td.SpeedBotSet = 10;
-		//td.Mask = "001111111 001111111";
-		//td.Lam1PosClapanTop = 2.5;
-		//td.Lam1PosClapanBot = 10;
-		//td.Lam2PosClapanTop = 2.5;
-		//td.Lam2PosClapanBot = 10;
-		//td.LAM_TE1 = 34.3;
-		//std::stringstream ssd;
-		//ssd << "INSERT INTO sheet (";
-		//ssd << "id, ";
-		//ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
-		//ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
-		//ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
-		//ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
-		//ssd << "alloy, ";
-		//ssd << "thikness, ";
-		//ssd << "melt, ";
-		//ssd << "slab, ";
-		//ssd << "partno, ";
-		//ssd << "pack, ";
-		//ssd << "sheet, ";
-		//ssd << "subsheet, ";
-		//ssd << "temper, ";
-		//ssd << "speed, ";
-		//ssd << "timeforplateheat, ";
-		//ssd << "prestostartcomp, ";
-		//ssd << "posclapantop, ";
-		//ssd << "posclapanbot, ";
-		//ssd << "lam1posclapantop, ";
-		//ssd << "lam1posclapanbot, ";
-		//ssd << "lam2posclapantop, ";
-		//ssd << "lam2posclapanbot, ";
-		//ssd << "mask, ";
-		//ssd << "lampresstop, ";									//Давление в верхнем коллекторе
-		//ssd << "lampressbot, ";									//Давление в нижнем коллекторе
-		//ssd << "lam_te1, ";					//Температура воды в поддоне
-		//ssd << "za_te3, ";						//Температура воды в баке
-		//ssd << "za_pt3, ";						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-		//ssd << "correct, ";
-		//ssd << "pdf, ";
-		//ssd << " pos";
-		//
-		//ssd << ") VALUES (";
-		//ssd << td.id << ", ";
-		//ssd << "'" << td.DataTime << "', ";
-		//ssd << "'" << td.DataTime << "', ";
-		//ssd << "'" << td.DataTime_End << "', ";
-		//ssd << td.DataTime_All << ", ";
-		//ssd << "'" << td.Alloy << "', ";
-		//ssd << "'" << td.Thikness << "', ";
-		//ssd << td.Melt << ", ";
-		//ssd << td.Slab << ", "; //Slab
-		//ssd << td.PartNo << ", ";
-		//ssd << td.Pack << ", ";
-		//ssd << td.Sheet << ", ";
-		//ssd << td.SubSheet << ", ";
-		//ssd << td.Temper << ", ";
-		//ssd << td.Speed << ", ";
-		//ssd << td.TimeForPlateHeat << ", ";
-		//ssd << td.PresToStartComp << ", ";
-		//ssd << td.SpeedTopSet << ", ";
-		//ssd << td.SpeedBotSet << ", ";
-		//ssd << td.Lam1PosClapanTop << ", ";
-		//ssd << td.Lam1PosClapanBot << ", ";
-		//ssd << td.Lam2PosClapanTop << ", ";
-		//ssd << td.Lam2PosClapanBot << ", ";
-		//ssd << "'" + td.Mask + "', ";
-		//ssd << td.LaminPressTop << ", ";
-		//ssd << td.LaminPressBot << ", ";
-		//ssd << td.LAM_TE1 << ", ";
-		//ssd << td.Za_TE3 << ", ";
-		//ssd << td.Za_PT3 << ", ";
-		//ssd << "now(), '', 7);";
-		//
-		//SETUPDATESQL(SQLLogger, conn, ssd);
-		//PDF::Cassette::CassettePdfClass pdf(td);
 	}
 #endif // HENDINSERT
 
@@ -4134,9 +4163,8 @@ namespace PDF
 	{
 		//return 0;
 #ifndef _DEBUG
-		return 0;
-#endif
 		
+#else
 
 		try
 		{
@@ -4147,11 +4175,11 @@ namespace PDF
 
 #ifdef HENDINSERT
 			//Для ручного тестирования
-			DelAllPdf(lpLogPdf2);
+			//DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
 			isRun = false;
 			return 0;
-#endif // HENDINSERT
+#else
 
 			while(isRun)
 			{
@@ -4200,10 +4228,10 @@ namespace PDF
 
 					//std::string start = "2024-06-09 03:00:00";
 					std::string stop = "";
-					SHEET::GetSheets getsheet(conn_pdf, "2024-06-10 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 					DelAllPdf(lpLogPdf2);
-					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-10 00:00:00", stop); // , "2024-03-30 00:00:00.00");
+					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");
 
 					CopyAllFile();
 					Correct = false;
@@ -4218,8 +4246,10 @@ namespace PDF
 #endif
 				LOG_INFO(PdfLogger, "{:90}| Stop Pdf Debug", FUNCTION_LINE_NAME);
 			}
+#endif // HENDINSERT
 		}
 		CATCH(PdfLogger, "");;
+#endif
 
 
 		return 0;

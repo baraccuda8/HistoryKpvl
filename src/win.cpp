@@ -145,6 +145,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::DataTime_All, { "Время закалки\nмин", L1 }},
     {casSheet::TimeForPlateHeat, { "Задание Время\nокончания нагрева", L2 }},
 
+    {casSheet::Hour, { "ID листа\nЧас", L1 }},
     {casSheet::Day, { "ID листа\nДень", L1 }},
     {casSheet::Month, { "ID листа\nМесяц", L1 }},
     {casSheet::Year, { "ID листа\nГод", L1 }},
@@ -217,6 +218,7 @@ std::vector <ListTitle> Cassette_Collumn ={
     { "Год", XL_CX3 },
     { "Месяц", XL_CX4 },
     { "День", XL_CX5 },
+    { "Час", XL_CX5 },
     { "Касета", XL_CX6 },
     { "Листов", XL_CX6 },
     //{ "Кассета закрыта", XL_CX8 },
@@ -288,7 +290,7 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 #pragma endregion
 
 #pragma region Список кассет 7 штук, для печей отпуска
-    {hGroup11,{szTem1, Temp1Flag,{1100, 530, 259 , 160}, ""}},
+    {hGroup11,{szTem1, Temp1Flag,{1100, 530, 314 , 160}, ""}},
         {hEditState_selected_cassetN, {szStat, Stat10Flag, {0,   0, 19, 19}, ""}},
         {hEditState_selected_casset1, {szStat, Stat10Flag, {0,  20, 19, 19}, "*"}},
         {hEditState_selected_casset2, {szStat, Stat10Flag, {0,  40, 19, 19}, "*"}},
@@ -301,7 +303,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {hStatState_Year,       {szStat, Stat10Flag, {55 * 0 + 40,   0, 54, 19}, "Год"}},
         {hStatState_Month,      {szStat, Stat10Flag, {55 * 1 + 40,   0, 54, 19}, "Месяц"}},
         {hStatState_Day,        {szStat, Stat10Flag, {55 * 2 + 40,   0, 54, 19}, "День"}},
-        {hStatState_Cassette,   {szStat, Stat10Flag, {55 * 3 + 40,   0, 54, 19}, "Кассета"}},
+        {hStatState_Hour,       {szStat, Stat10Flag, {55 * 3 + 40,   0, 54, 19}, "Час"}},
+        {hStatState_Cassette,   {szStat, Stat10Flag, {55 * 4 + 40,   0, 54, 19}, "Кассета"}},
 
         {hStatState_NN,         {szStat, Stat10Flag, {20,   0, 19, 19}, "№"}},
         {hStatState_N1,         {szStat, Stat10Flag, {20,  20, 19, 19}, "1"}},
@@ -316,38 +319,45 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {hEditState1_Year,      {szStat, Stat04Flag, {55 * 0 + 40,  20, 54, 19}, ""}},
         {hEditState1_Month,     {szStat, Stat04Flag, {55 * 1 + 40,  20, 54, 19}, ""}},
         {hEditState1_Day,       {szStat, Stat04Flag, {55 * 2 + 40,  20, 54, 19}, ""}},
-        {hEditState1_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40,  20, 54, 19}, ""}},
+        {hEditState1_Hour,      {szStat, Stat04Flag, {55 * 3 + 40,  20, 54, 19}, ""}},
+        {hEditState1_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40,  20, 54, 19}, ""}},
 
         {hEditState2_Year,      {szStat, Stat04Flag, {55 * 0 + 40,  40, 54, 19}, ""}},
         {hEditState2_Month,     {szStat, Stat04Flag, {55 * 1 + 40,  40, 54, 19}, ""}},
         {hEditState2_Day,       {szStat, Stat04Flag, {55 * 2 + 40,  40, 54, 19}, ""}},
-        {hEditState2_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40,  40, 54, 19}, ""}},
+        {hEditState2_Hour,      {szStat, Stat04Flag, {55 * 3 + 40,  40, 54, 19}, ""}},
+        {hEditState2_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40,  40, 54, 19}, ""}},
 
         {hEditState3_Year,      {szStat, Stat04Flag, {55 * 0 + 40,  60, 54, 19}, ""}},
         {hEditState3_Month,     {szStat, Stat04Flag, {55 * 1 + 40,  60, 54, 19}, ""}},
         {hEditState3_Day,       {szStat, Stat04Flag, {55 * 2 + 40,  60, 54, 19}, ""}},
-        {hEditState3_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40,  60, 54, 19}, ""}},
+        {hEditState3_Hour,      {szStat, Stat04Flag, {55 * 3 + 40,  60, 54, 19}, ""}},
+        {hEditState3_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40,  60, 54, 19}, ""}},
 
 
         {hEditState4_Year,      {szStat, Stat04Flag, {55 * 0 + 40,  80, 54, 19}, ""}},
         {hEditState4_Month,     {szStat, Stat04Flag, {55 * 1 + 40,  80, 54, 19}, ""}},
         {hEditState4_Day,       {szStat, Stat04Flag, {55 * 2 + 40,  80, 54, 19}, ""}},
-        {hEditState4_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40,  80, 54, 19}, ""}},
+        {hEditState4_Hour,      {szStat, Stat04Flag, {55 * 3 + 40,  80, 54, 19}, ""}},
+        {hEditState4_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40,  80, 54, 19}, ""}},
 
         {hEditState5_Year,      {szStat, Stat04Flag, {55 * 0 + 40, 100, 54, 19}, ""}},
         {hEditState5_Month,     {szStat, Stat04Flag, {55 * 1 + 40, 100, 54, 19}, ""}},
         {hEditState5_Day,       {szStat, Stat04Flag, {55 * 2 + 40, 100, 54, 19}, ""}},
-        {hEditState5_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40, 100, 54, 19}, ""}},
+        {hEditState5_Hour,      {szStat, Stat04Flag, {55 * 3 + 40, 100, 54, 19}, ""}},
+        {hEditState5_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40, 100, 54, 19}, ""}},
 
         {hEditState6_Year,      {szStat, Stat04Flag, {55 * 0 + 40, 120, 54, 19}, ""}},
         {hEditState6_Month,     {szStat, Stat04Flag, {55 * 1 + 40, 120, 54, 19}, ""}},
         {hEditState6_Day,       {szStat, Stat04Flag, {55 * 2 + 40, 120, 54, 19}, ""}},
-        {hEditState6_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40, 120, 54, 19}, ""}},
+        {hEditState6_Hour,      {szStat, Stat04Flag, {55 * 3 + 40, 120, 54, 19}, ""}},
+        {hEditState6_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40, 120, 54, 19}, ""}},
 
         {hEditState7_Year,      {szStat, Stat04Flag, {55 * 0 + 40, 140, 54, 19}, ""}},
         {hEditState7_Month,     {szStat, Stat04Flag, {55 * 1 + 40, 140, 54, 19}, ""}},
         {hEditState7_Day,       {szStat, Stat04Flag, {55 * 2 + 40, 140, 54, 19}, ""}},
-        {hEditState7_Cassette,  {szStat, Stat04Flag, {55 * 3 + 40, 140, 54, 19}, ""}},
+        {hEditState7_Hour,      {szStat, Stat04Flag, {55 * 3 + 40, 140, 54, 19}, ""}},
+        {hEditState7_Cassette,  {szStat, Stat04Flag, {55 * 4 + 40, 140, 54, 19}, ""}},
 
         {hEndGroup11, {}},
 #pragma endregion
@@ -667,20 +677,23 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
     #pragma endregion
 
     #pragma region Лист в касету
-        {hGroup053, {szTem1,   Temp4Flag, {5, 95, 479, 60}, ""}},
+        {hGroup053, {szTem1,   Temp4Flag, {5, 95, 550, 60}, ""}},
         {hStatSheet_DataTime,       {szStat, Stat10Flag, {   0,  0, 129, 39}, "Время загрузки\nв закалочную печь"}},
-        {hStatSheet_Cassette_Data,  {szStat, Stat10Flag, { 130,  0, 349, 19}, "ID листа"}},
+        {hStatSheet_Cassette_Data,  {szStat, Stat10Flag, { 130,  0, 419, 19}, "ID листа"}},
         {hStatSheet_Cassette_Year,  {szStat, Stat10Flag, { 130, 20,  69, 19}, "Год"}},
         {hStatSheet_Cassette_Month, {szStat, Stat10Flag, { 200, 20,  69, 19}, "Месяц"}},
         {hStatSheet_Cassette_Day,   {szStat, Stat10Flag, { 270, 20,  69, 19}, "День"}},
-        {hStatSheet_CassetteNo,     {szStat, Stat10Flag, { 340, 20,  69, 19}, "Кассета"}},
-        {hStatSheet_InCassette,     {szStat, Stat10Flag, { 410, 20,  69, 19}, "Лист"}},
-        {hEdit_Sheet_DataTime,       {szStat, Stat05Flag, {   0, 40, 129, 19}, "2023-06-11 23:56:40"}},
-        {hEdit_Sheet_Cassette_Year,  {szStat, Stat04Flag, { 130, 40,  69, 19}, ""}},
-        {hEdit_Sheet_Cassette_Month, {szStat, Stat04Flag, { 200, 40,  69, 19}, ""}},
-        {hEdit_Sheet_Cassette_Day,   {szStat, Stat04Flag, { 270, 40,  69, 19}, ""}},
-        {hEdit_Sheet_CassetteNo,     {szStat, Stat04Flag, { 340, 40,  69, 19}, ""}},
-        {hEdit_Sheet_InCassette,     {szStat, Stat04Flag, { 410, 40,  69, 19}, ""}},
+        {hStatSheet_Cassette_Hour,  {szStat, Stat10Flag, { 340, 20,  69, 19}, "Час"}},
+        {hStatSheet_CassetteNo,     {szStat, Stat10Flag, { 410, 20,  69, 19}, "Кассета"}},
+        {hStatSheet_InCassette,     {szStat, Stat10Flag, { 480, 20,  69, 19}, "Лист"}},
+
+        {hEdit_Sheet_DataTime,      {szStat, Stat05Flag, {   0, 40, 129, 19}, "2023-06-11 23:56:40"}},
+        {hEdit_Sheet_Cassette_Year, {szStat, Stat04Flag, { 130, 40,  69, 19}, ""}},
+        {hEdit_Sheet_Cassette_Month,{szStat, Stat04Flag, { 200, 40,  69, 19}, ""}},
+        {hEdit_Sheet_Cassette_Day,  {szStat, Stat04Flag, { 270, 40,  69, 19}, ""}},
+        {hEdit_Sheet_Cassette_Hour, {szStat, Stat04Flag, { 340, 40,  69, 19}, ""}},
+        {hEdit_Sheet_CassetteNo,    {szStat, Stat04Flag, { 410, 40,  69, 19}, ""}},
+        {hEdit_Sheet_InCassette,    {szStat, Stat04Flag, { 480, 40,  69, 19}, ""}},
         {hEndGroup053, {}},
     #pragma endregion
     {hEndGroup05, {}},
@@ -716,8 +729,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {RelF1_Stat_Cassette_Year,  {szStat, Stat10Flag, {55 * 0 + 2, 20, 54, 19}, "Год"}},
         {RelF1_Stat_Cassette_Month, {szStat, Stat10Flag, {55 * 1 + 2, 20, 54, 19}, "Месяц"}},
         {RelF1_Stat_Cassette_Day,   {szStat, Stat10Flag, {55 * 2 + 2, 20, 54, 19}, "День"}},
-        {RelF1_Stat_CassetteNo,     {szStat, Stat10Flag, {55 * 3 + 2, 20, 54, 19}, "Кассета"}},
-        {RelF1_Stat_SheetInCassette,{szStat, Stat10Flag, {55 * 4 + 2, 20, 54, 19}, "Листов"}},
+        {RelF1_Stat_Cassette_Hour,  {szStat, Stat10Flag, {55 * 3 + 2, 20, 54, 19}, "Час"}},
+        {RelF1_Stat_CassetteNo,     {szStat, Stat10Flag, {55 * 4 + 2, 20, 54, 19}, "Кассета"}},
 
         {RelF1_Edit_Cassette_Year,  {szStat, Stat04Flag, {55 * 0 + 2, 40, 54, 19}, ""}},
         {RelF1_Edit_Cassette_Month, {szStat, Stat04Flag, {55 * 1 + 2, 40, 54, 19}, ""}},
@@ -803,8 +816,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
             {RelF2_Stat_Cassette_Year,  {szStat, Stat10Flag, {55 * 0 + 2, 20, 54, 19}, "Год"}},
             {RelF2_Stat_Cassette_Month, {szStat, Stat10Flag, {55 * 1 + 2, 20, 54, 19}, "Месяц"}},
             {RelF2_Stat_Cassette_Day,   {szStat, Stat10Flag, {55 * 2 + 2, 20, 54, 19}, "День"}},
-            {RelF2_Stat_CassetteNo,     {szStat, Stat10Flag, {55 * 3 + 2, 20, 54, 19}, "Кассета"}},
-            {RelF2_Stat_SheetInCassette,{szStat, Stat10Flag, {55 * 4 + 2, 20, 54, 19}, "Листов"}},
+            {RelF2_Stat_Cassette_Hour,  {szStat, Stat10Flag, {55 * 3 + 2, 20, 54, 19}, "Час"}},
+            {RelF2_Stat_CassetteNo,     {szStat, Stat10Flag, {55 * 4 + 2, 20, 54, 19}, "Кассета"}},
 
             {RelF2_Edit_Cassette_Year,  {szStat, Stat04Flag, {55 * 0 + 2, 40, 54, 19}, ""}},
             {RelF2_Edit_Cassette_Month, {szStat, Stat04Flag, {55 * 1 + 2, 40, 54, 19}, ""}},
@@ -1392,6 +1405,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                         ELSEIF (casSheet::Pos, (NamePos[p.Pos] + " (" + p.Pos + ")"));
                         ELSEIF (casSheet::News, p.News);
+                        ELSEIF (casSheet::Hour, p.Hour);
                         ELSEIF (casSheet::Day, p.Day);
                         ELSEIF (casSheet::Month, p.Month);
                         ELSEIF (casSheet::Year, p.Year);
@@ -1527,6 +1541,8 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                             if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());
                             if(plvdi->item.iSubItem == Cassete::Day)               lstrcpy(plvdi->item.pszText, p.Day.c_str());
+                            if(plvdi->item.iSubItem == Cassete::Hour)               lstrcpy(plvdi->item.pszText, p.Hour.c_str());
+                            
                             if(plvdi->item.iSubItem == Cassete::CassetteNo)        lstrcpy(plvdi->item.pszText, p.CassetteNo.c_str());
                             if(plvdi->item.iSubItem == Cassete::SheetInCassette)   lstrcpy(plvdi->item.pszText, p.SheetInCassette.c_str());
                             //if(plvdi->item.iSubItem == Cassete::Close)             lstrcpy(plvdi->item.pszText, p.Close_at.c_str());  //Закрытие касеты

@@ -7,6 +7,7 @@ namespace S107
         std::string Run_at = "";
         std::string End_at = "";
         std::string Err_at = "";
+        int Hour = 0;
         int Day = 0;
         int Month = 0;
         int Year = 0;
@@ -20,6 +21,7 @@ namespace S107
         extern int Create_at;
         extern int Id;
         extern int Event;
+        extern int Hour;
         extern int Day;
         extern int Month;
         extern int Year;
@@ -74,6 +76,7 @@ namespace S107
         //Обнуление температуры для сравнения
         //DWORD SetNull_Temper(Value* value);
 
+        DWORD Hour(Value* value);
         DWORD Day(Value* value);
         DWORD Month(Value* value);
         DWORD Year(Value* value);
@@ -148,6 +151,7 @@ namespace S107
         //Обнуление температуры для сравнения
         //DWORD SetNull_Temper(Value* value);
 
+        DWORD Hour(Value* value);
         DWORD Day(Value* value);
         DWORD Month(Value* value);
         DWORD Year(Value* value);

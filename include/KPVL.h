@@ -189,6 +189,9 @@ namespace KPVL {
         //Вывод Номер кассеты за день
         DWORD CassetteNo(Value* value);
 
+        //Вывод Час ID листа
+        DWORD CassetteHour(Value* value);
+
         //Вывод День ID листа
         DWORD CassetteDay(Value* value);
 

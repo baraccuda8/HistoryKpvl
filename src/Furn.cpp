@@ -23,6 +23,7 @@ namespace S107
         int Create_at = 0;
         int Id = 0;
         int Event = 0;
+        int Hour = 0;
         int Day = 0;
         int Month = 0;
         int Year = 0;
@@ -52,7 +53,7 @@ namespace S107
     //Получение номера колонки
     void GetColl(PGresult* res)
     {
-        if(!Coll::Pdf)
+        if(!Coll::Hour)
         {
             int nFields = PQnfields(res);
             for(int j = 0; j < nFields; j++)
@@ -84,6 +85,7 @@ namespace S107
                 else if(l == "total")Coll::Total = j;
                 else if(l == "correct")Coll::Total = j;
                 else if(l == "pdf")Coll::Total = j;
+                else if(l == "hour")Coll::Hour = j;
 
             }
         }
@@ -95,6 +97,7 @@ namespace S107
         cassette.Create_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Create_at));
         cassette.Id = conn_spis.PGgetvalue(res, line, Coll::Id);
         cassette.Event = conn_spis.PGgetvalue(res, line, Coll::Event);
+        cassette.Hour = conn_spis.PGgetvalue(res, line, Coll::Hour);
         cassette.Day = conn_spis.PGgetvalue(res, line, Coll::Day);
         cassette.Month = conn_spis.PGgetvalue(res, line, Coll::Month);
         cassette.Year = conn_spis.PGgetvalue(res, line, Coll::Year);
@@ -127,10 +130,12 @@ namespace S107
     namespace SQL{
         void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette)
         {
+            AppFurn1.Cassette.Hour->GetValue();
             AppFurn1.Cassette.Day->GetValue();
             AppFurn1.Cassette.Month->GetValue();
             AppFurn1.Cassette.Year->GetValue();
             AppFurn1.Cassette.CassetteNo->GetValue();
+            AppFurn2.Cassette.Hour->GetValue();
             AppFurn2.Cassette.Day->GetValue();
             AppFurn2.Cassette.Month->GetValue();
             AppFurn2.Cassette.Year->GetValue();
@@ -193,7 +198,8 @@ namespace S107
             {
                 std::stringstream ss;
                 ss << "SELECT count(*) FROM sheet WHERE";
-                ss << " day = '" << CD.Day << "'";
+                ss << " hour = '" << CD.Hour << "'";
+                ss << " AND day = '" << CD.Day << "'";
                 ss << " AND month = '" << CD.Month << "'";
                 ss << " AND year = '" << CD.Year << "'";
                 ss << " AND cassetteno = " << CD.CassetteNo;
@@ -221,6 +227,7 @@ namespace S107
                             CD.Delete_at = GetDataTimeString(st);
                             std::stringstream sd;
                             sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE ";
+                            sd << " hour = " << CD.Hour;
                             sd << " day = " << CD.Day;
                             sd << " AND month = " << CD.Month;
                             sd << " AND year = " << CD.Year;
@@ -235,6 +242,7 @@ namespace S107
                             ss << "UPDATE cassette SET";
                             ss << " sheetincassette = " << count;
                             ss << " WHERE";
+                            ss << " hour = " << CD.Hour;
                             ss << " day = " << CD.Day;
                             ss << " AND month = " << CD.Month;
                             ss << " AND year = " << CD.Year;
@@ -262,15 +270,17 @@ namespace S107
         {
             if(IsCassette(CD))
             {
+                int32_t FHour = Cassette.Hour->Val.As<int32_t>();
                 int32_t FDay = Cassette.Day->Val.As<int32_t>();
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
                 int32_t FYear = Cassette.Year->Val.As<int32_t>();
                 int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
+                int32_t CHour = Stoi(CD.Hour);
                 int32_t CDay = Stoi(CD.Day);
                 int32_t CMonth = Stoi(CD.Month);
                 int32_t CYear = Stoi(CD.Year);
                 int32_t CCassetteNo = Stoi(CD.CassetteNo);
-                return (FDay && FMonth && FYear && FCassetteNo && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
+                return (FDay && FMonth && FYear && FCassetteNo && FHour == CHour && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
             }
             return false;
         }
@@ -279,15 +289,17 @@ namespace S107
         {
             if(KPVL::Cassette::IsCassette(HMISheetData.Cassette))
             {
+                int32_t FHour = Cassette.Hour->Val.As<int32_t>();
                 int32_t FDay = Cassette.Day->Val.As<int32_t>();
                 int32_t FMonth = Cassette.Month->Val.As<int32_t>();
                 int32_t FYear = Cassette.Year->Val.As<int32_t>();
                 int32_t FCassetteNo = Cassette.CassetteNo->Val.As<int32_t>();
+                int32_t CHour = Stoi(CD.Hour);
                 int32_t CDay = Stoi(CD.Day);
                 int32_t CMonth = Stoi(CD.Month);
                 int32_t CYear = Stoi(CD.Year);
                 int32_t CCassetteNo = Stoi(CD.CassetteNo);
-                return (FDay && FMonth && FYear && FCassetteNo && FDay == CDay && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
+                return (FDay && FMonth && FYear && FCassetteNo && FHour == CHour && FDay == CDay && FDay == CDay && FMonth == CMonth && FYear == CYear && FCassetteNo == CCassetteNo);
             }
             return false;
         }
@@ -297,6 +309,7 @@ namespace S107
             int id = 0;
             std::stringstream ss;
             ss << "SELECT id FROM cassette WHERE";
+            ss << " hour = " << CD.Hour;
             ss << " day = " << CD.Day;
             ss << " AND month = " << CD.Month;
             ss << " AND year = " << CD.Year;
@@ -515,6 +528,7 @@ namespace S107
 
     bool IsCassette(TCassette& CD)
     {
+        int32_t Hour = Stoi(CD.Hour);
         int32_t Day = Stoi(CD.Day);
         int32_t Month = Stoi(CD.Month);
         int32_t Year = Stoi(CD.Year);
@@ -524,6 +538,7 @@ namespace S107
 
     bool IsCassete1(T_cassette& CD)
     {
+        int32_t Hour = CD.Hour->Val.As<int32_t>();
         int32_t Day = CD.Day->Val.As<int32_t>();
         int32_t Month = CD.Month->Val.As<int32_t>();
         int32_t Year = CD.Year->Val.As<int32_t>();
@@ -532,6 +547,7 @@ namespace S107
     }
     bool IsCassete2(T_cassette& CD)
     {
+        int32_t Hour = GetVal<int32_t>(CD.Hour);
         int32_t Day = GetVal<int32_t>(CD.Day);
         int32_t Month = GetVal<int32_t>(CD.Month);
         int32_t Year = GetVal<int32_t>(CD.Year);
@@ -559,7 +575,8 @@ namespace S107
 
             sd << " WHERE";
             //sd << " run_at IS NULL";
-            sd << " day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
@@ -571,16 +588,19 @@ namespace S107
             sd << "error_at = DEFAULT, ";
             sd << "end_at = DEFAULT";
             sd << " WHERE";
-            sd << " day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
+            sd << " hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
+            sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(SQLLogger, conn, sd);
-            LOG_INFO(PethLogger, "{:90}| run_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
-            LOG_INFO(PethLogger, "{:90}| Not run_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
 
     }
     void UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
@@ -594,16 +614,19 @@ namespace S107
             sd << " WHERE";
             //sd << " end_at IS NULL";
             sd << " peth = " << Peth;
+            sd << " AND hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(SQLLogger, conn, sd);
-            LOG_INFO(PethLogger, "{:90}| end_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
-            LOG_INFO(PethLogger, "{:90}| Not end_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
     void UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
     {
@@ -617,16 +640,19 @@ namespace S107
             sd << " WHERE";
             //sd << " error_at IS NULL";
             sd << " peth = " << Peth;
+            sd << " AND hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
             sd << " AND cassetteno = " << Furn.Cassette.CassetteNo->Val.As<int32_t>(); //GetString();
             sd << ";";
             SETUPDATESQL(SQLLogger, conn, sd);
-            LOG_INFO(PethLogger, "{:90}| error_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else
-            LOG_INFO(PethLogger, "{:90}| Not error_at, Peth = {}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.CassetteNo->GetString());
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
 
     void SetTemperCassette(PGConnection& conn, T_cassette& CD, std::string teper)
@@ -641,7 +667,8 @@ namespace S107
                 sd << " facttemper = " << teper;
                 sd << " WHERE ";
                 //comand += " facttemper = 0.0 AND";
-                sd << " day = " << CD.Day->Val.As<int32_t>();
+                sd << " hour = " << CD.Hour->Val.As<int32_t>();
+                sd << " AND day = " << CD.Day->Val.As<int32_t>();
                 sd << " AND month = " << CD.Month->Val.As<int32_t>();
                 sd << " AND year = " << CD.Year->Val.As<int32_t>();
                 sd << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
@@ -682,6 +709,7 @@ namespace S107
             sd << "UPDATE cassette SET ";
             sd << update;
             sd << " WHERE error_at IS NULL";
+            sd << " AND hour = " << Furn.Cassette.Hour->Val.As<int32_t>(); //GetString();
             sd << " AND day = " << Furn.Cassette.Day->Val.As<int32_t>(); //GetString();
             sd << " AND month = " << Furn.Cassette.Month->Val.As<int32_t>(); //GetString();
             sd << " AND year = " << Furn.Cassette.Year->Val.As<int32_t>(); //GetString();
@@ -699,6 +727,7 @@ namespace S107
             std::stringstream sd;
             sd << "SELECT id FROM cassette2 WHERE";
             sd << " cassetteno = " << tc.CassetteNo;
+            sd << " AND hour = " << tc.Hour;
             sd << " AND day = " << tc.Day;
             sd << " AND month = " << tc.Month;
             sd << " AND year = " << tc.Year;
@@ -734,6 +763,7 @@ namespace S107
                 << P1.Year << ";"
                 << P1.Month << ";"
                 << P1.Day << ";"
+                << P1.Hour << ";"
                 << P1.CassetteNo << ";"
                 << " " << P1.Err_at << ";";
             s   << std::endl;
@@ -757,12 +787,12 @@ namespace S107
         {
             std::stringstream sd;
             sd << "INSERT INTO cassette2 (";
-            sd << "day, month, year, cassetteno, peth" ;
+            sd << "hour, day, month, year, cassetteno, peth" ;
             if(tc.Run_at.length()) sd << ", run_at";
             if(tc.Err_at.length()) sd << ", error_at";
             if(tc.End_at.length()) sd << ", end_at";
             sd << ") VALUES (";
-            sd << tc.Day << ", " << tc.Month << ", " << tc.Year << ", " << tc.CassetteNo << ", " << nPetch;
+            sd << tc.Hour << ", " << tc.Day << ", " << tc.Month << ", " << tc.Year << ", " << tc.CassetteNo << ", " << nPetch;
             sd << ", '" << tc.Run_at << "'";
             sd << "', '" << tc.Err_at << "'";
             sd << "', '" << tc.End_at << "'";
@@ -826,9 +856,9 @@ namespace S107
                     //UpdateCassette(conn_temp, Petch, nPetch);
                     std::stringstream sd;
                     sd << "INSERT INTO cassette2 (";
-                    sd << "day, month, year, cassetteno, peth, run_at";
+                    sd << "hour, day, month, year, cassetteno, peth, run_at";
                     sd << ") VALUES (";
-                    sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
+                    sd << Petch.Hour << ", " << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
                     SETUPDATESQL(SQLLogger, conn_temp, sd);
                 }
             }
@@ -882,6 +912,13 @@ namespace S107
             }
             MySetWindowText(winmap(value->winId), out.c_str());
 
+            return 0;
+        }
+
+        DWORD Hour(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Hour = value->Val.As<int32_t>();
             return 0;
         }
 
@@ -1028,9 +1065,9 @@ namespace S107
                     //UpdateCassette(conn_temp, Petch, nPetch);
                     std::stringstream sd;
                     sd << "INSERT INTO cassette2 (";
-                    sd << "day, month, year, cassetteno, peth, run_at";
+                    sd << "hour, day, month, year, cassetteno, peth, run_at";
                     sd << ") VALUES (";
-                    sd << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
+                    sd << Petch.Hour << ", " << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
                     SETUPDATESQL(SQLLogger, conn_temp, sd);
 
                 }
@@ -1082,6 +1119,13 @@ namespace S107
             MySetWindowText(winmap(value->winId), out.c_str());
 
 
+            return 0;
+        }
+
+        DWORD Hour(Value* value)
+        {
+            MySetWindowText(value);
+            Petch.Hour = value->Val.As<int32_t>();
             return 0;
         }
 

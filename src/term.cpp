@@ -72,6 +72,7 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.ActTimeHeatWait       = new Value(StrFurn1 + "ActTimeHeatWait",       HWNDCLIENT::RelF1_Edit_TimeHeatWait,    S107::Furn1::TimeHeatWait, &conn_temp)}, //: REAL; // ‘акт врем€ выдержки
     {AppFurn1.ActTimeTotal          = new Value(StrFurn1 + "ActTimeTotal",          HWNDCLIENT::RelF1_Edit_TimeTotal,       S107::Furn1::TimeTotal, &conn_temp)}, //: REAL; // ‘акт общее врем€
 
+    {AppFurn1.Cassette.Hour         = new Value(StrFurn1 + "Cassette.Hour",         HWNDCLIENT::RelF1_Edit_Cassette_Hour,                      S107::Furn1::Hour, &conn_temp)}, ///ID касеты час
     {AppFurn1.Cassette.Day          = new Value(StrFurn1 + "Cassette.Day",          HWNDCLIENT::RelF1_Edit_Cassette_Day,    S107::Furn1::Day, &conn_temp)}, //ID касеты день
     {AppFurn1.Cassette.Month        = new Value(StrFurn1 + "Cassette.Month",        HWNDCLIENT::RelF1_Edit_Cassette_Month,  S107::Furn1::Month, &conn_temp)}, //ID касеты мес€ц
     {AppFurn1.Cassette.Year         = new Value(StrFurn1 + "Cassette.Year",         HWNDCLIENT::RelF1_Edit_Cassette_Year,   S107::Furn1::Year, &conn_temp)}, //ID касеты год
@@ -79,7 +80,7 @@ std::deque<Value*> AllTagPeth = {
 
     //¬тора€ печь
     {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false,  "¬ачдог")}, //вачдог
-    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "¬ачдог дл€ обратной св€зи")}, //вачдог дл€ обратной св€зи 
+    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::RelF2_Edit_Cassette_Hour,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "¬ачдог дл€ обратной св€зи")}, //вачдог дл€ обратной св€зи 
 
     {AppFurn2.PointTime_1           = new Value(StrFurn2 + "PointTime_1",           HWNDCLIENT::RelF2_Edit_PointTime_1,     0, &conn_temp)}, //: REAL;//¬рем€ разгона
     {AppFurn2.PointRef_1            = new Value(StrFurn2 + "PointRef_1",            HWNDCLIENT::RelF2_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;//”ставка температуры
@@ -101,6 +102,7 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn2.ActTimeHeatWait       = new Value(StrFurn2 + "ActTimeHeatWait",       HWNDCLIENT::RelF2_Edit_TimeHeatWait,    S107::Furn2::TimeHeatWait, &conn_temp)}, //: REAL; // ‘акт врем€ выдержки
     {AppFurn2.ActTimeTotal          = new Value(StrFurn2 + "ActTimeTotal",          HWNDCLIENT::RelF2_Edit_TimeTotal,       S107::Furn2::TimeTotal, &conn_temp)}, //: REAL; // ‘акт общее врем€
 
+    {AppFurn2.Cassette.Hour         = new Value(StrFurn2 + "Cassette.Hour",         HWNDCLIENT::hNull,   S107::Furn2::Hour, &conn_temp)}, ///ID касеты час
     {AppFurn2.Cassette.Day          = new Value(StrFurn2 + "Cassette.Day",          HWNDCLIENT::RelF2_Edit_Cassette_Day,    S107::Furn2::Day, &conn_temp)}, ///ID касеты день
     {AppFurn2.Cassette.Month        = new Value(StrFurn2 + "Cassette.Month",        HWNDCLIENT::RelF2_Edit_Cassette_Month,  S107::Furn2::Month, &conn_temp)}, //ID касеты мес€ц
     {AppFurn2.Cassette.Year         = new Value(StrFurn2 + "Cassette.Year",         HWNDCLIENT::RelF2_Edit_Cassette_Year,   S107::Furn2::Year, &conn_temp)},  //ID касеты год
@@ -110,36 +112,43 @@ std::deque<Value*> AllTagPeth = {
     {AppCassette1.Year         = new Value(StrCassette1 + "Year",       HWNDCLIENT::hEditState1_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette1.Month        = new Value(StrCassette1 + "Month",      HWNDCLIENT::hEditState1_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette1.Day          = new Value(StrCassette1 + "Day",        HWNDCLIENT::hEditState1_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette1.Hour         = new Value(StrCassette1 + "Hour",       HWNDCLIENT::hEditState1_Hour,      0, &conn_temp)}, //ID касеты час
     {AppCassette1.CassetteNo   = new Value(StrCassette1 + "CaasetteNo", HWNDCLIENT::hEditState1_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette2.Year         = new Value(StrCassette2 + "Year",       HWNDCLIENT::hEditState2_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette2.Month        = new Value(StrCassette2 + "Month",      HWNDCLIENT::hEditState2_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette2.Day          = new Value(StrCassette2 + "Day",        HWNDCLIENT::hEditState2_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette2.Hour         = new Value(StrCassette2 + "Hour",       HWNDCLIENT::hEditState2_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette2.CassetteNo   = new Value(StrCassette2 + "CaasetteNo", HWNDCLIENT::hEditState2_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette3.Year         = new Value(StrCassette3 + "Year",       HWNDCLIENT::hEditState3_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette3.Month        = new Value(StrCassette3 + "Month",      HWNDCLIENT::hEditState3_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette3.Day          = new Value(StrCassette3 + "Day",        HWNDCLIENT::hEditState3_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette3.Hour         = new Value(StrCassette3 + "Hour",       HWNDCLIENT::hEditState3_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette3.CassetteNo   = new Value(StrCassette3 + "CaasetteNo", HWNDCLIENT::hEditState3_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette4.Year         = new Value(StrCassette4 + "Year",       HWNDCLIENT::hEditState4_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette4.Month        = new Value(StrCassette4 + "Month",      HWNDCLIENT::hEditState4_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette4.Day          = new Value(StrCassette4 + "Day",        HWNDCLIENT::hEditState4_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette4.Hour         = new Value(StrCassette4 + "Hour",       HWNDCLIENT::hEditState4_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette4.CassetteNo   = new Value(StrCassette4 + "CaasetteNo", HWNDCLIENT::hEditState4_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette5.Year         = new Value(StrCassette5 + "Year",       HWNDCLIENT::hEditState5_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette5.Month        = new Value(StrCassette5 + "Month",      HWNDCLIENT::hEditState5_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette5.Day          = new Value(StrCassette5 + "Day",        HWNDCLIENT::hEditState5_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette5.Hour         = new Value(StrCassette5 + "Hour",       HWNDCLIENT::hEditState5_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette5.CassetteNo   = new Value(StrCassette5 + "CaasetteNo", HWNDCLIENT::hEditState5_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette6.Year         = new Value(StrCassette6 + "Year",       HWNDCLIENT::hEditState6_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette6.Month        = new Value(StrCassette6 + "Month",      HWNDCLIENT::hEditState6_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette6.Day          = new Value(StrCassette6 + "Day",        HWNDCLIENT::hEditState6_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette6.Hour         = new Value(StrCassette6 + "Hour",       HWNDCLIENT::hEditState6_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette6.CassetteNo   = new Value(StrCassette6 + "CaasetteNo", HWNDCLIENT::hEditState6_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette7.Year         = new Value(StrCassette7 + "Year",       HWNDCLIENT::hEditState7_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette7.Month        = new Value(StrCassette7 + "Month",      HWNDCLIENT::hEditState7_Month,    0, &conn_temp)}, //ID касеты мес€ц
     {AppCassette7.Day          = new Value(StrCassette7 + "Day",        HWNDCLIENT::hEditState7_Day,      0, &conn_temp)}, //ID касеты день
+    {AppCassette7.Hour         = new Value(StrCassette7 + "Hour",       HWNDCLIENT::hEditState7_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette7.CassetteNo   = new Value(StrCassette7 + "CaasetteNo", HWNDCLIENT::hEditState7_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppSelected1 = new Value(StrSelected1,  hEditState_selected_casset1, 0, &conn_temp)}, //¬ыбор кассеты в 1-й печи
@@ -599,6 +608,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         std::stringstream sde;
         sde << "UPDATE cassette SET end_at = '" << TC.End_at << "' WHERE ";
         sde << "end_at IS NULL AND ";
+        sde << "hour = " << TC.Hour << " AND ";
         sde << "day = " << TC.Day << " AND ";
         sde << "month = " << TC.Month << " AND ";
         sde << "year = " << TC.Year << " AND ";
@@ -618,6 +628,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         std::stringstream sde;
         sde << "UPDATE cassette SET err_at = '" << err_at << "' WHERE ";
         sde << "err_at IS NULL AND ";
+        sde << "hour = " << TC.Hour << " AND ";
         sde << "day = " << TC.Day << " AND ";
         sde << "month = " << TC.Month << " AND ";
         sde << "year = " << TC.Year << " AND ";
@@ -660,6 +671,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         {
             std::stringstream sdf;
             sdf << "UPDATE cassette SET finish_at = '" << finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
+            sdf << "hour = " << TC.Hour << " AND ";
             sdf << "day = " << TC.Day << " AND ";
             sdf << "month = " << TC.Month << " AND ";
             sdf << "year = " << TC.Year << " AND ";
@@ -754,6 +766,7 @@ void FURN_SQL()
     sd << " id_name = " << AppFurn1.ProcRun->ID;
     sd << " OR id_name = " << AppFurn1.ProcEnd->ID;
     sd << " OR id_name = " << AppFurn1.ProcFault->ID;
+    sd << " OR id_name = " << AppFurn1.Cassette.Hour->ID;
     sd << " OR id_name = " << AppFurn1.Cassette.Day->ID;
     sd << " OR id_name = " << AppFurn1.Cassette.Month->ID;
     sd << " OR id_name = " << AppFurn1.Cassette.Year->ID;
@@ -762,6 +775,7 @@ void FURN_SQL()
     sd << " OR id_name = " << AppFurn2.ProcRun->ID;
     sd << " OR id_name = " << AppFurn2.ProcEnd->ID;
     sd << " OR id_name = " << AppFurn2.ProcFault->ID;
+    sd << " OR id_name = " << AppFurn2.Cassette.Hour->ID;
     sd << " OR id_name = " << AppFurn2.Cassette.Day->ID;
     sd << " OR id_name = " << AppFurn2.Cassette.Month->ID;
     sd << " OR id_name = " << AppFurn2.Cassette.Year->ID;
@@ -794,6 +808,7 @@ void FURN_SQL()
     IR2.peth = 2;
     for(auto& R : ISRUN)
     { 
+        if(R.id_name == AppFurn1.Cassette.Hour->ID)IR1.hour = Stoi(R.content);
         if(R.id_name == AppFurn1.Cassette.Day->ID)IR1.day = Stoi(R.content);
         if(R.id_name == AppFurn1.Cassette.Month->ID)IR1.month = Stoi(R.content);
         if(R.id_name == AppFurn1.Cassette.Year->ID)IR1.year = Stoi(R.content);
@@ -832,6 +847,7 @@ void FURN_SQL()
         }
 
 
+        if(R.id_name == AppFurn2.Cassette.Hour->ID)IR2.hour = Stoi(R.content);
         if(R.id_name == AppFurn2.Cassette.Day->ID)IR2.day = Stoi(R.content);
         if(R.id_name == AppFurn2.Cassette.Month->ID)IR2.month = Stoi(R.content);
         if(R.id_name == AppFurn2.Cassette.Year->ID)IR2.year = Stoi(R.content);
@@ -891,21 +907,25 @@ void SetCassetteToBase(int i)
     int32_t Year = Stoi(CassetteInRel[i].Year);
     int32_t Month = Stoi(CassetteInRel[i].Month);
     int32_t Day = Stoi(CassetteInRel[i].Day);
+    int32_t Hour = Stoi(CassetteInRel[i].Hour);
     int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
     //int32_t aYear = AppCassette[i].Year->GetValue().As<int32_t>();
     //int32_t aMonth = AppCassette[i].Month->GetValue().As<int32_t>();
     //int32_t aDay = AppCassette[i].Day->GetValue().As<int32_t>();
+    //int32_t aHour = AppCassette[i].Hour->GetValue().As<int32_t>();
     //int32_t aCassetteNo = AppCassette[i].CassetteNo->GetValue().As<int32_t>();
 
     int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
     int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
     int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
+    int32_t aHour = AppCassette[i].Hour->Val.As<int32_t>();
     int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
 
     if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
     if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
     if(aDay != Day)              AppCassette[i].Day->Set_Value(Day);
+    if(aHour != Hour)            AppCassette[i].Hour->Set_Value(Hour);
     if(aCassetteNo != CassetteNo)AppCassette[i].CassetteNo->Set_Value(CassetteNo);
 
 }
@@ -930,9 +950,9 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
     {
 
 #pragma region ”дал€ем ложные кассеты
-        std::stringstream com;
-        com << "DELETE FROM cassette WHERE event = 1 AND id <> (SELECT id FROM cassette WHERE event = 1 ORDER BY id DESC LIMIT 1)";
-        SETUPDATESQL(PethLogger, conn_spic, com);
+        //std::stringstream com;
+        //com << "DELETE FROM cassette WHERE event = 1 AND id <> (SELECT id FROM cassette WHERE event = 1 ORDER BY id DESC LIMIT 1)";
+        //SETUPDATESQL(PethLogger, conn_spic, com);
 #pragma endregion
 
 #pragma region ¬ыводим список кассет
@@ -989,6 +1009,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             if(it.Event == "1")
             {
                 if(HMISheetData.Cassette.CassetteNo->Val.As<int32_t>() != Stoi(it.CassetteNo) ||
+                   HMISheetData.Cassette.Hour->Val.As<int32_t>() != Stoi(it.Hour) ||
                    HMISheetData.Cassette.Day->Val.As<int32_t>() != Stoi(it.Day) ||
                    HMISheetData.Cassette.Month->Val.As<int32_t>() != Stoi(it.Month) ||
                    HMISheetData.Cassette.Year->Val.As<int32_t>() != Stoi(it.Year)
@@ -999,10 +1020,6 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                         it.Event = "2";
                         std::stringstream sd;
                         sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
-                        //sd << "WHERE cassetteno = " << Stoi(it.CassetteNo);
-                        //sd << " AND day = " << Stoi(it.Day);
-                        //sd << " AND month = " << Stoi(it.Month);
-                        //sd << " AND year = " << Stoi(it.Year);
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
                     else
@@ -1021,6 +1038,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 if(
                     !(
                     AppFurn1.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
+                    AppFurn1.Cassette.Hour->Val.As<int32_t>() == Stoi(it.Hour) &&
                     AppFurn1.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
                     AppFurn1.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
                     AppFurn1.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
@@ -1028,6 +1046,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                     &&
                     !(
                     AppFurn2.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
+                    AppFurn2.Cassette.Hour->Val.As<int32_t>() == Stoi(it.Hour) &&
                     AppFurn2.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
                     AppFurn2.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
                     AppFurn2.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
@@ -1077,6 +1096,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 CassetteInRel[i] = TCassette();
                 if(
                     AppCassette[i].CassetteNo->Val.As<int32_t>() != 0 ||
+                    //AppCassette[i].Hour->Val.As<int32_t>() != 0 ||
                     AppCassette[i].Day->Val.As<int32_t>() != 0 ||
                     AppCassette[i].Month->Val.As<int32_t>() != 0 ||
                     AppCassette[i].Year->Val.As<int32_t>() != 0
@@ -1086,6 +1106,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                     AppCassette[i].Year->Set_Value(int32_t(0));
                     AppCassette[i].Month->Set_Value(int32_t(0));
                     AppCassette[i].Day->Set_Value(int32_t(0));
+                    AppCassette[i].Hour->Set_Value(int32_t(0));
                     AppCassette[i].CassetteNo->Set_Value(int32_t(0));
                     SCassett[i] = 0;
                 }

@@ -104,6 +104,9 @@ public:
         //DINT День ID листа
         Value* Day;
 
+        //DINT Час ID листа
+        Value* Hour;
+
         //DINT Номер кассеты за день
         Value* CassetteNo;
 
@@ -123,6 +126,10 @@ public:
 
         //DINT День ID листа
         int32_t Day = 0;
+
+        //DINT Час ID листа
+        int32_t Hour = 0;
+
 
         //DINT Номер кассеты за день
         int32_t CassetteNo = 0;

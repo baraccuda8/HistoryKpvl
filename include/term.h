@@ -56,6 +56,9 @@ public:
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
 typedef struct T_cassette{
+    //DINT Час ID листа
+    Value* Hour;
+
     //DINT День
     Value* Day;
 
@@ -167,6 +170,7 @@ namespace casCassette{
         Year,
         Month,
         Day,
+        Hour,
         CassetteNo,
         SheetInCassette,
         Close_at,

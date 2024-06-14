@@ -219,6 +219,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},                            //Номер подлиста
 
     {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNew,      KPVL::Cassette::CassetteNo, &conn_kpvl)},       //Номер кассеты за день
+    {HMISheetData.Cassette.Hour             = new Value(AppHMISheetData2 + "Hour",                HWNDCLIENT::hEdit_Sheet_Cassette_Hour,    KPVL::Cassette::CassetteHour, &conn_kpvl)},       //Час ID листа
     {HMISheetData.Cassette.Day              = new Value(AppHMISheetData2 + "Day",                 HWNDCLIENT::hEdit_Sheet_Cassette_Day,     KPVL::Cassette::CassetteDay, &conn_kpvl)},      //День ID листа
     {HMISheetData.Cassette.Month            = new Value(AppHMISheetData2 + "Month",               HWNDCLIENT::hEdit_Sheet_Cassette_Month,   KPVL::Cassette::CassetteMonth, &conn_kpvl)},    //Месяц ID листа
     {HMISheetData.Cassette.Year             = new Value(AppHMISheetData2 + "Year",                HWNDCLIENT::hEdit_Sheet_Cassette_Year,    KPVL::Cassette::CassetteYear, &conn_kpvl)},     //Год ID листа
@@ -739,29 +740,11 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
 {
     size_t old_count = 0;
     int f = 5;
-    //int64_t Next = 1;
     
     LOG_INFO(SQLLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
-#ifdef IS_PDF
-    //KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
-    //for(auto& TS : AllSheet)
-    //{
-    //    KPVL::SQL::GetDataTime_All(conn_spis, TS);
-    //}
-
-    //UpdateSheetPos();
-#endif
-
-    //for(auto& TS : AllSheet)
-    //{
-    //    KPVL::SQL::GetDataTime_All(conn_spis, TS);
-    //    PrintPdfAuto(TS, false);
-    //}
-
     while(isRun)
     {
-        //SepState_2();
         KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
         for(auto& TS : AllSheet)
         {

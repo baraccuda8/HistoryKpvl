@@ -1058,7 +1058,7 @@ void InitGrafWindow(HWND hWnd)
 	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
 	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
 
-	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1370, 530, 523, 160, hWnd, (HMENU)5104, hInstance, 0);
+	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1424, 530, 469, 160, hWnd, (HMENU)5104, hInstance, 0);
 
 	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
 	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);

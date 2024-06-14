@@ -248,6 +248,7 @@ namespace KPVL {
                 sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
                 sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
 
+                sheet.Hour = conn.PGgetvalue(res, l, Col_Sheet_day);
                 sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
                 sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
                 sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
@@ -930,7 +931,7 @@ namespace KPVL {
 
 #pragma region Зоны печи закалки
 
-
+    //Зоны
     namespace Sheet{
     //Зона 0: На входе в печь
         namespace Z0{
@@ -1334,6 +1335,7 @@ namespace KPVL {
                             co << ", bot6 = " << Bot_Side.h6->Val.As<float>();
                             co << ", bot7 = " << Bot_Side.h7->Val.As<float>();
                             co << ", bot8 = " << Bot_Side.h8->Val.As<float>();
+                            co << ", hour = " << Cassette.Hour->Val.As<int32_t>();
                             co << ", day = " << Cassette.Day->Val.As<int32_t>();
                             co << ", month = " << Cassette.Month->Val.As<int32_t>();
                             co << ", year = " << Cassette.Year->Val.As<int32_t>();
@@ -1389,6 +1391,7 @@ namespace KPVL {
             OldCassette.Id = id;
             OldCassette.Year = CD.Year->Val.As<int32_t>();
             OldCassette.Month = CD.Month->Val.As<int32_t>();
+            OldCassette.Hour = CD.Hour->Val.As<int32_t>();
             OldCassette.Day = CD.Day->Val.As<int32_t>();
             OldCassette.CassetteNo = CD.CassetteNo->Val.As<int32_t>();
             OldCassette.SheetInCassette = CD.SheetInCassette->Val.As<int16_t>();
@@ -1409,7 +1412,8 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
-                co << " day = " << CD.Day;
+                co << " hour = " << CD.Hour;
+                co << " AND day = " << CD.Day;
                 co << " AND month = " << CD.Month;
                 co << " AND year = " << CD.Year;
                 co << " AND cassetteno = " << CD.CassetteNo;
@@ -1435,6 +1439,7 @@ namespace KPVL {
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD)
         {
+            int32_t Hour = GetVal<int32_t>(CD.Hour);
             int32_t Day = GetVal<int32_t>(CD.Day);
             int32_t Month = GetVal<int32_t>(CD.Month);
             int32_t Year = GetVal<int32_t>(CD.Year);
@@ -1458,10 +1463,12 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
+                co << " hour = " << CD.Hour->Val.As<int32_t>();
                 co << " day = " << CD.Day->Val.As<int32_t>();
                 co << " AND month = " << CD.Month->Val.As<int32_t>();
                 co << " AND year = " << CD.Year->Val.As<int32_t>();
                 co << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
+                co << " AND hour <> -1";
                 co << ";";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -1487,10 +1494,11 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "INSERT INTO cassette ";
-                co << "(event, year, month, day, cassetteno, sheetincassette) VALUES (1, ";
+                co << "(event, year, month, day, hour, cassetteno, sheetincassette) VALUES (1, ";
                 co << CD.Year->Val.As<int32_t>() << ", ";
                 co << CD.Month->Val.As<int32_t>() << ", ";
                 co << CD.Day->Val.As<int32_t>() << ", ";
+                co << CD.Hour->Val.As<int32_t>() << ", ";
                 co << CD.CassetteNo->Val.As<int32_t>() << ", ";
                 co << CD.SheetInCassette->Val.As<int16_t>() << ");";
                 std::string comand = co.str();
@@ -1516,6 +1524,7 @@ namespace KPVL {
             co << " year = " << CD.Year->Val.As<int32_t>() << ", ";
             co << " month = " << CD.Month->Val.As<int32_t>() << ", ";
             co << " day = " << CD.Day->Val.As<int32_t>() << ", ";
+            co << " hour = " << CD.Hour->Val.As<int32_t>() << ", ";
             co << " cassetteno = " << CD.CassetteNo->Val.As<int32_t>() << ", ";
             co << " sheetincassette = " << CD.SheetInCassette->Val.As<int16_t>() << ",";
             co << " close_at = DEFAULT, event = 1";
@@ -1540,7 +1549,7 @@ namespace KPVL {
             {
                 int32_t id = GetIdCassette(conn, CD);
                 if(id)
-                    UpdateCassette(conn, CD, id);
+                    ;//UpdateCassette(conn, CD, id);
                 else
                     InsertCassette(conn, CD);
             }
@@ -1572,7 +1581,8 @@ namespace KPVL {
             char ss[256];
             sprintf_s(ss, 256, "%d", value->Val.As<int16_t>() + 1);
             MySetWindowText(winmap(value->winId), ss);
-            CassettePos(conn_kpvl, HMISheetData.Cassette);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
             LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int16_t>(), OldCassette.Id);
             return 0;
         }
@@ -1583,8 +1593,23 @@ namespace KPVL {
             MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
             MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
             MySetWindowText(value);
-            CassettePos(conn_kpvl, HMISheetData.Cassette);
-            LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            {
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
+                LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            }
+            return 0;
+        }
+
+        //Вывод Час ID листа
+        DWORD CassetteHour(Value* value)
+        {
+            MySetWindowText(value);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            {
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
+                LOG_INFO(HardLogger, "{:90}| CassetteHour = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            }
             return 0;
         }
 
@@ -1592,8 +1617,11 @@ namespace KPVL {
         DWORD CassetteDay(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(conn_kpvl, HMISheetData.Cassette);
-            LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            {
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
+                LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            }
             return 0;
         }
 
@@ -1601,8 +1629,11 @@ namespace KPVL {
         DWORD CassetteMonth(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(conn_kpvl, HMISheetData.Cassette);
-            LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            {
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
+                LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            }
             return 0;
         }
 
@@ -1610,8 +1641,11 @@ namespace KPVL {
         DWORD CassetteYear(Value* value)
         {
             MySetWindowText(value);
-            CassettePos(conn_kpvl, HMISheetData.Cassette);
-            LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            {
+                CassettePos(conn_kpvl, HMISheetData.Cassette);
+                LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id);
+            }
             return 0;
         }
 
@@ -1634,8 +1668,8 @@ namespace KPVL {
             }
             else
             {
-                LOG_INFO(HardLogger, "{:90}| Id = {}, Year = {}, Month = {}, Day = {}, CassetteNo = {}, SheetInCassette = {}", FUNCTION_LINE_NAME,
-                         OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.CassetteNo, OldCassette.SheetInCassette);
+                LOG_INFO(HardLogger, "{:90}| Id = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, SheetInCassette = {}", FUNCTION_LINE_NAME,
+                         OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.Hour, OldCassette.CassetteNo, OldCassette.SheetInCassette);
                 CloseCassete(conn_kpvl, OldCassette);
                 OldCassette = O_CassetteData();
             }
