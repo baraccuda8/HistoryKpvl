@@ -11,6 +11,46 @@
 
 extern std::shared_ptr<spdlog::logger> SQLLogger;
 
+std::string GetValString(OpcUa::Variant& Val, float coeff, std::string format = "")
+{
+    std::string strVal = "";
+    try
+    {
+        if(isRun)
+        {
+            if(Val.IsNul()) return "";
+
+            OpcUa::VariantType type = Val.Type();
+            if(format.length())
+            {
+                char ss[256] = "";
+
+                if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
+                else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
+                else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
+                else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
+                else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
+                else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
+                else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
+                else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
+                else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
+                else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
+                else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
+                else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
+                strVal = ss;
+            }
+            else
+            {
+                if(type == OpcUa::VariantType::STRING)  strVal = utf8_to_cp1251(Val.ToString());
+                else                                    strVal = Val.ToString();
+            }
+        }
+    }
+    CATCH(AllLogger, "");
+    return strVal;
+}
+
+
 void Value::InsertVal()
 {
     char comand[1024];
@@ -157,8 +197,9 @@ void Value::SaveSQL()
     bool ifval = OldVal.IsNul();
     if(GetType() == OpcUa::VariantType::FLOAT)
     {
-        float f1 = Val.As<float>() * coeff;
-        float f2 = float(ifval ? 0 : (OldVal.As<float>() * coeff));
+        float f1 = GetFloat() * coeff;
+        std::string s = OldVal.ToString();
+        float f2 = float(ifval ? 0 : (Stof(s) * coeff));
         float f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
@@ -181,8 +222,9 @@ void Value::SaveSQL()
     }
     else if(GetType() == OpcUa::VariantType::DOUBLE)
     {
-        double f1 = Val.As<double>() * coeff;
-        double f2 = double(ifval ? 0 : (OldVal.As<double>() * coeff));
+        double f1 = GetDouble() * coeff;
+        std::string s = OldVal.ToString();
+        double f2 = double(ifval ? 0 : (Stod(s) * coeff));
         double f3 = std::abs(f1 - f2);
         if(f3 > hist || ifval)
         {
@@ -203,14 +245,29 @@ void Value::SaveSQL()
             OldVal = Val;
         }
     }
+    else if(GetType() == OpcUa::VariantType::STRING)
+    {
+        //std::string s1 = GetString();
+        std::string s1 = GetValString(Val, coeff, format);
+        std::string s2 = GetValString(OldVal, coeff, format);
+        if(ifval || s1 != s2)
+        {
+            
+            std::stringstream sd;
+            sd << "UPDATE tag SET content_at = now(), content = ";
+            sd << "'" << s1 << "'";
+            sd << " WHERE id = " << ID;
+            SETUPDATESQL(SQLLogger, (*Conn), sd);
+            InsertValue();
+            OldVal = Val;
+        }
+    }
+
     else if(ifval || OldVal != Val)
     {
         std::stringstream sd;
         sd << "UPDATE tag SET content_at = now(), content = ";
-        if(GetType() == OpcUa::VariantType::STRING)
-            sd << "'" << GetString() << "'";
-        else
-            sd << GetString();
+        sd << GetString();
         sd << " WHERE id = " << ID;
         SETUPDATESQL(SQLLogger, (*Conn), sd);
 
@@ -384,77 +441,100 @@ void Value::Set_Value(){
 
 std::string Value::GetString(std::string patch)
 {
-    if(isRun)
-    {
-        if(Val.IsNul()) return "";
-
-        OpcUa::VariantType type = Val.Type();
-        if(format.length())
-        {
-            char ss[256] = "";
-
-            if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
-            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
-            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
-            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
-            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
-            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
-            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
-            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
-            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
-            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
-            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
-            else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
-
-            strVal = ss;
-        }
-        else
-        {
-            if(type == OpcUa::VariantType::STRING)  strVal = utf8_to_cp1251(Val.ToString());
-            else                                    strVal = Val.ToString();
-        }
-    }
+    strVal = GetValString(Val, coeff, format);
     return strVal;
+
+    //if(isRun)
+    //{
+    //    if(Val.IsNul()) return "";
+    //
+    //    OpcUa::VariantType type = Val.Type();
+    //    if(format.length())
+    //    {
+    //        char ss[256] = "";
+    //
+    //        if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
+    //        else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
+    //        else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
+    //        else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
+    //        else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
+    //        else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
+    //        strVal = ss;
+    //    }
+    //    else
+    //    {
+    //        if(type == OpcUa::VariantType::STRING)  strVal = utf8_to_cp1251(Val.ToString());
+    //        else                                    strVal = Val.ToString();
+    //    }
+    //}
+    //return strVal;
 }
 
 
 std::string Value::GetString()
 {
-    if(isRun)
-    {
-        std::string pp = Patch;
-        if(Val.IsNul()) return "0";
-
-        OpcUa::VariantType type = Val.Type();
-        if(format.length())
-        {
-            char ss[256] = "0";
-
-            if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
-            else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
-            else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
-            else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
-            else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
-            else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
-            else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
-            else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
-            else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
-            else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
-            else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
-            else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
-
-            strVal = ss;
-        }
-        else
-        {
-            if(type == OpcUa::VariantType::STRING)
-                strVal = utf8_to_cp1251(Val.ToString());
-            else
-                strVal = Val.ToString();
-        }
-    }
+    strVal = GetValString(Val, coeff, format);
     return strVal;
+
+    //if(isRun)
+    //{
+    //    //std::string pp = Patch;
+    //    if(Val.IsNul()) return "0";
+    //    OpcUa::VariantType type = Val.Type();
+    //    if(format.length())
+    //    {
+    //        char ss[256] = "0";
+    //        if(type == OpcUa::VariantType::BOOLEAN)        sprintf_s(ss, 255, format.c_str(), Val.As<bool>());
+    //        else if(type == OpcUa::VariantType::SBYTE)     sprintf_s(ss, 255, format.c_str(), Val.As<int8_t>() * (int8_t)coeff);
+    //        else if(type == OpcUa::VariantType::BYTE)      sprintf_s(ss, 255, format.c_str(), Val.As<uint8_t>() * (uint8_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT16)     sprintf_s(ss, 255, format.c_str(), Val.As<int16_t>() * (int16_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT16)    sprintf_s(ss, 255, format.c_str(), Val.As<uint16_t>() * (uint16_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT32)     sprintf_s(ss, 255, format.c_str(), Val.As<int32_t>() * (int32_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT32)    sprintf_s(ss, 255, format.c_str(), Val.As<uint32_t>() * (uint32_t)coeff);
+    //        else if(type == OpcUa::VariantType::INT64)     sprintf_s(ss, 255, format.c_str(), Val.As<int64_t>() * (int64_t)coeff);
+    //        else if(type == OpcUa::VariantType::UINT64)    sprintf_s(ss, 255, format.c_str(), Val.As<uint64_t>() * (uint64_t)coeff);
+    //        else if(type == OpcUa::VariantType::FLOAT)     sprintf_s(ss, 255, format.c_str(), Val.As<float>() * (float)coeff);
+    //        else if(type == OpcUa::VariantType::DOUBLE)    sprintf_s(ss, 255, format.c_str(), Val.As<double>() * (double)coeff);
+    //        else if(type == OpcUa::VariantType::STRING)    sprintf_s(ss, 255, format.c_str(), utf8_to_cp1251(Val.ToString()));
+    //        strVal = ss;
+    //    }
+    //    else
+    //    {
+    //        if(type == OpcUa::VariantType::STRING)
+    //            strVal = utf8_to_cp1251(Val.ToString());
+    //        else
+    //            strVal = Val.ToString();
+    //    }
+    //}
+    //return strVal;
 }
+
+bool Value::GetBool()
+{
+    std::string ss = Val.ToString();
+    return ss == "true";
+}
+int Value::GetInt()
+{
+    return Stoi(GetString());
+}
+float Value::GetFloat()
+{
+    return Stof(GetString());
+}
+double Value::GetDouble()
+{
+    return Stod(GetString());
+}
+
+
+
 
 void Value::SetVariant(HWNDCLIENT id)
 {

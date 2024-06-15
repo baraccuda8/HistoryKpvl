@@ -28,9 +28,9 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 
 
 #define CATCH(_l, _s) \
-    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
-    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
-    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
+    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
+    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
+    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
     catch(...){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + "Unknown error")}
 
 #define CATCH_RUN(_l) \
@@ -100,9 +100,7 @@ inline int Stoi(std::string input)
     {
         return std::stoi(input);
     }
-    catch(...)
-    {
-    }
+    catch(...) { }
     return 0;
 }
 
@@ -112,12 +110,19 @@ inline int Stoi(std::string input)
     {
         return std::stof(input);
     }
-    catch(...)
-    {
-    }
+    catch(...) { }
     return 0.0f;
 }
 
+ inline double Stod(std::string input)
+ {
+     try
+     {
+         return std::stod(input);
+     }
+     catch(...) { }
+     return 0.0;
+ }
 //extern std::map<HWNDCLIENT, structWindow>mapWindow;
 
 

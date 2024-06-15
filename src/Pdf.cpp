@@ -2733,7 +2733,7 @@ namespace PDF
 						if(a.second.id_name == Furn->ProcRun->ID && a.second.content.As<bool>())
 						{
 							if(S107::IsCassette(P))
-							{
+							{  
 								if(!P.Run_at.size())
 								{
 									P.Run_at = a.second.create_at;

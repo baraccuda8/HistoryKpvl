@@ -910,17 +910,11 @@ void SetCassetteToBase(int i)
     int32_t Hour = Stoi(CassetteInRel[i].Hour);
     int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
-    //int32_t aYear = AppCassette[i].Year->GetValue().As<int32_t>();
-    //int32_t aMonth = AppCassette[i].Month->GetValue().As<int32_t>();
-    //int32_t aDay = AppCassette[i].Day->GetValue().As<int32_t>();
-    //int32_t aHour = AppCassette[i].Hour->GetValue().As<int32_t>();
-    //int32_t aCassetteNo = AppCassette[i].CassetteNo->GetValue().As<int32_t>();
-
-    int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
-    int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
-    int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
-    int32_t aHour = AppCassette[i].Hour->Val.As<int32_t>();
-    int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
+    int32_t aYear = AppCassette[i].Year->GetInt();
+    int32_t aMonth = AppCassette[i].Month->GetInt();
+    int32_t aDay = AppCassette[i].Day->GetInt();
+    int32_t aHour = AppCassette[i].Hour->GetInt();
+    int32_t aCassetteNo = AppCassette[i].CassetteNo->GetInt();
 
     if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
     if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
@@ -1008,11 +1002,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         {
             if(it.Event == "1")
             {
-                if(HMISheetData.Cassette.CassetteNo->Val.As<int32_t>() != Stoi(it.CassetteNo) ||
-                   HMISheetData.Cassette.Hour->Val.As<int32_t>() != Stoi(it.Hour) ||
-                   HMISheetData.Cassette.Day->Val.As<int32_t>() != Stoi(it.Day) ||
-                   HMISheetData.Cassette.Month->Val.As<int32_t>() != Stoi(it.Month) ||
-                   HMISheetData.Cassette.Year->Val.As<int32_t>() != Stoi(it.Year)
+                if(HMISheetData.Cassette.CassetteNo->GetInt() != Stoi(it.CassetteNo) ||
+                   HMISheetData.Cassette.Hour->GetInt() != Stoi(it.Hour) ||
+                   HMISheetData.Cassette.Day->GetInt() != Stoi(it.Day) ||
+                   HMISheetData.Cassette.Month->GetInt() != Stoi(it.Month) ||
+                   HMISheetData.Cassette.Year->GetInt() != Stoi(it.Year)
                    )
                 {
                     if(Stoi(it.SheetInCassette))
@@ -1037,19 +1031,19 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             {
                 if(
                     !(
-                    AppFurn1.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
-                    AppFurn1.Cassette.Hour->Val.As<int32_t>() == Stoi(it.Hour) &&
-                    AppFurn1.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
-                    AppFurn1.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
-                    AppFurn1.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
+                    AppFurn1.Cassette.CassetteNo->GetInt() == Stoi(it.CassetteNo) &&
+                    AppFurn1.Cassette.Hour->GetInt() == Stoi(it.Hour) &&
+                    AppFurn1.Cassette.Day->GetInt() == Stoi(it.Day) &&
+                    AppFurn1.Cassette.Month->GetInt() == Stoi(it.Month) &&
+                    AppFurn1.Cassette.Year->GetInt() == Stoi(it.Year)
                     )
                     &&
                     !(
-                    AppFurn2.Cassette.CassetteNo->Val.As<int32_t>() == Stoi(it.CassetteNo) &&
-                    AppFurn2.Cassette.Hour->Val.As<int32_t>() == Stoi(it.Hour) &&
-                    AppFurn2.Cassette.Day->Val.As<int32_t>() == Stoi(it.Day) &&
-                    AppFurn2.Cassette.Month->Val.As<int32_t>() == Stoi(it.Month) &&
-                    AppFurn2.Cassette.Year->Val.As<int32_t>() == Stoi(it.Year)
+                    AppFurn2.Cassette.CassetteNo->GetInt() == Stoi(it.CassetteNo) &&
+                    AppFurn2.Cassette.Hour->GetInt() == Stoi(it.Hour) &&
+                    AppFurn2.Cassette.Day->GetInt() == Stoi(it.Day) &&
+                    AppFurn2.Cassette.Month->GetInt() == Stoi(it.Month) &&
+                    AppFurn2.Cassette.Year->GetInt() == Stoi(it.Year)
                     )
                     )
                 {
@@ -1095,11 +1089,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             {
                 CassetteInRel[i] = TCassette();
                 if(
-                    AppCassette[i].CassetteNo->Val.As<int32_t>() != 0 ||
-                    //AppCassette[i].Hour->Val.As<int32_t>() != 0 ||
-                    AppCassette[i].Day->Val.As<int32_t>() != 0 ||
-                    AppCassette[i].Month->Val.As<int32_t>() != 0 ||
-                    AppCassette[i].Year->Val.As<int32_t>() != 0
+                    AppCassette[i].CassetteNo->GetInt() != 0 ||
+                    //AppCassette[i].Hour->GetInt() != 0 ||
+                    AppCassette[i].Day->GetInt() != 0 ||
+                    AppCassette[i].Month->GetInt() != 0 ||
+                    AppCassette[i].Year->GetInt() != 0
                    )
                 {
                     //Отбравляем в печь
@@ -1149,15 +1143,15 @@ void Open_FURN()
 #ifndef TESTSPIS
 #ifndef TESTWIN
 #ifndef TESTGRAFF
-    //S107::Furn1::Petch.Day = AppFurn1.Cassette.Day->Val.As<int32_t>();
-    //S107::Furn1::Petch.Month = AppFurn1.Cassette.Month->Val.As<int32_t>();
-    //S107::Furn1::Petch.Year = AppFurn1.Cassette.Year->Val.As<int32_t>();
-    //S107::Furn1::Petch.CassetteNo = AppFurn1.Cassette.CassetteNo->Val.As<int32_t>();
+    //S107::Furn1::Petch.Day = AppFurn1.Cassette.Day->GetInt();
+    //S107::Furn1::Petch.Month = AppFurn1.Cassette.Month->GetInt();
+    //S107::Furn1::Petch.Year = AppFurn1.Cassette.Year->GetInt();
+    //S107::Furn1::Petch.CassetteNo = AppFurn1.Cassette.CassetteNo->GetInt();
 
-    //S107::Furn2::Petch.Day = AppFurn2.Cassette.Day->Val.As<int32_t>();
-    //S107::Furn2::Petch.Month = AppFurn2.Cassette.Month->Val.As<int32_t>();
-    //S107::Furn2::Petch.Year = AppFurn2.Cassette.Year->Val.As<int32_t>();
-    //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->Val.As<int32_t>();
+    //S107::Furn2::Petch.Day = AppFurn2.Cassette.Day->GetInt();
+    //S107::Furn2::Petch.Month = AppFurn2.Cassette.Month->GetInt();
+    //S107::Furn2::Petch.Year = AppFurn2.Cassette.Year->GetInt();
+    //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->GetInt();
 
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
     hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);

@@ -452,12 +452,12 @@ namespace KPVL {
         //Проверка на наличие листа
         bool IsSheet(T_PlateData& PD)
         {
-            int32_t Melt = PD.Melt->Val.As<int32_t>();
-            int32_t Pack = PD.Pack->Val.As<int32_t>();
-            int32_t PartNo = PD.PartNo->Val.As<int32_t>();
-            int32_t Sheet = PD.Sheet->Val.As<int32_t>();
-            //int32_t SubSheet = PD.SubSheet->Val.As<int32_t>();
-            //int32_t Slab = PD.Slab->Val.As<int32_t>();
+            int32_t Melt = PD.Melt->GetInt();
+            int32_t Pack = PD.Pack->GetInt();
+            int32_t PartNo = PD.PartNo->GetInt();
+            int32_t Sheet = PD.Sheet->GetInt();
+            //int32_t SubSheet = PD.SubSheet->GetInt();
+            //int32_t Slab = PD.Slab->GetInt();
             return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
         }
         bool IsSheet(TSheet& PS)
@@ -504,12 +504,12 @@ namespace KPVL {
 
                 std::stringstream sd;
                 sd << "SELECT id FROM sheet WHERE";
-                sd << " melt = " << PD.Melt->Val.As<int32_t>();
-                sd << " AND pack = " << PD.Pack->Val.As<int32_t>();
-                sd << " AND partno = " << PD.PartNo->Val.As<int32_t>();
-                sd << " AND sheet = " << PD.Sheet->Val.As<int32_t>();
-                sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
-                sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
+                sd << " melt = " << PD.Melt->GetInt();
+                sd << " AND pack = " << PD.Pack->GetInt();
+                sd << " AND partno = " << PD.PartNo->GetInt();
+                sd << " AND sheet = " << PD.Sheet->GetInt();
+                sd << " AND subsheet = " << PD.SubSheet->GetInt();
+                sd << " AND slab = " << PD.Slab->GetInt();
                 std::string comand = sd.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
@@ -647,31 +647,31 @@ namespace KPVL {
                     //sd << += ss; // "'" + PD.AlloyCodeText->GetString() + "', ";
                     //sprintf_s(ss, 255, "\x27%s\x27, ", PD.ThiknessText->GetString().c_str());
                     //comand += ss; // "'" + PD.ThiknessText->GetString() + "', ";
-                    sd << PD.Melt->Val.As<int32_t>() << ", ";
-                    sd << PD.Slab->Val.As<int32_t>() << ", ";
-                    sd << PD.PartNo->Val.As<int32_t>() << ", ";
-                    sd << PD.Pack->Val.As<int32_t>() << ", ";
-                    sd << PD.Sheet->Val.As<int32_t>() << ", ";
-                    sd << PD.SubSheet->Val.As<int32_t>() << ", ";
+                    sd << PD.Melt->GetInt() << ", ";
+                    sd << PD.Slab->GetInt() << ", ";
+                    sd << PD.PartNo->GetInt() << ", ";
+                    sd << PD.Pack->GetInt() << ", ";
+                    sd << PD.Sheet->GetInt() << ", ";
+                    sd << PD.SubSheet->GetInt() << ", ";
 #pragma endregion
 
 #pragma region MyRegion
                     if(Pos == 1 || Pos == 2)
                     {
-                        sd << GenSeqFromHmi.TempSet1->Val.As<float>() << ", ";
-                        sd << Par_Gen.UnloadSpeed->Val.As<float>() << ", ";
+                        sd << GenSeqFromHmi.TempSet1->GetFloat() << ", ";
+                        sd << Par_Gen.UnloadSpeed->GetFloat() << ", ";
 
-                        sd << Par_Gen.TimeForPlateHeat->Val.As<float>() << ", ";
-                        sd << Par_Gen.PresToStartComp->Val.As<float>() << ", ";
+                        sd << Par_Gen.TimeForPlateHeat->GetFloat() << ", ";
+                        sd << Par_Gen.PresToStartComp->GetFloat() << ", ";
 
-                        sd << HMISheetData.SpeedSection.Top->Val.As<float>() << ", ";
-                        sd << HMISheetData.SpeedSection.Bot->Val.As<float>() << ", ";
+                        sd << HMISheetData.SpeedSection.Top->GetFloat() << ", ";
+                        sd << HMISheetData.SpeedSection.Bot->GetFloat() << ", ";
 
-                        sd << HMISheetData.LaminarSection1.Top->Val.As<float>() << ", ";
-                        sd << HMISheetData.LaminarSection1.Bot->Val.As<float>() << ", ";
+                        sd << HMISheetData.LaminarSection1.Top->GetFloat() << ", ";
+                        sd << HMISheetData.LaminarSection1.Bot->GetFloat() << ", ";
 
-                        sd << HMISheetData.LaminarSection2.Top->Val.As<float>() << ", ";
-                        sd << HMISheetData.LaminarSection2.Bot->Val.As<float>() << ", ";
+                        sd << HMISheetData.LaminarSection2.Top->GetFloat() << ", ";
+                        sd << HMISheetData.LaminarSection2.Bot->GetFloat() << ", ";
 
                         sd << "'" + MaskKlapan + "', ";
                     }
@@ -738,12 +738,12 @@ namespace KPVL {
                 std::stringstream sd;
                 sd << "UPDATE sheet SET" << update;
                 sd << " WHERE" << where;
-                sd << " melt = " << PD.Melt->Val.As<int32_t>();
-                sd << " AND partno = " << PD.PartNo->Val.As<int32_t>();
-                sd << " AND pack = " << PD.Pack->Val.As<int32_t>();
-                sd << " AND sheet = " << PD.Sheet->Val.As<int32_t>();
-                sd << " AND subsheet = " << PD.SubSheet->Val.As<int32_t>();
-                sd << " AND slab = " << PD.Slab->Val.As<int32_t>();
+                sd << " melt = " << PD.Melt->GetInt();
+                sd << " AND partno = " << PD.PartNo->GetInt();
+                sd << " AND pack = " << PD.Pack->GetInt();
+                sd << " AND sheet = " << PD.Sheet->GetInt();
+                sd << " AND subsheet = " << PD.SubSheet->GetInt();
+                sd << " AND slab = " << PD.Slab->GetInt();
                 sd << ";";
                 SETUPDATESQL(SQLLogger, conn, sd);
 
@@ -851,12 +851,12 @@ namespace KPVL {
             TSheet& TS = PalletSheet[Pos];
             if(Pos != 5 && IsSheet(PD) && IsSheet(TS))
             {
-                if(PD.Melt->Val.As<int32_t>() != Stoi(TS.Melt)
-                   || PD.Pack->Val.As<int32_t>() != Stoi(TS.Pack)
-                   || PD.PartNo->Val.As<int32_t>() != Stoi(TS.PartNo)
-                   || PD.Sheet->Val.As<int32_t>() != Stoi(TS.Sheet)
-                   || PD.SubSheet->Val.As<int32_t>() != Stoi(TS.SubSheet)
-                   || PD.Slab->Val.As<int32_t>() != Stoi(TS.Slab))
+                if(PD.Melt->GetInt() != Stoi(TS.Melt)
+                   || PD.Pack->GetInt() != Stoi(TS.Pack)
+                   || PD.PartNo->GetInt() != Stoi(TS.PartNo)
+                   || PD.Sheet->GetInt() != Stoi(TS.Sheet)
+                   || PD.SubSheet->GetInt() != Stoi(TS.SubSheet)
+                   || PD.Slab->GetInt() != Stoi(TS.Slab))
                 {
                     //std::string sId = GetIdSheet(PD);
                     std::string sId = GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
@@ -1018,7 +1018,7 @@ namespace KPVL {
             DWORD DataSlab(Value* value)
             {
                 T_PlateData& PD = PlateData[Pos];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1092,7 +1092,7 @@ namespace KPVL {
             DWORD DataSlab(Value* value)
             {
                 T_PlateData& PD = PlateData[Pos];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1138,7 +1138,7 @@ namespace KPVL {
             DWORD DataSlab(Value* value)
             {
                 T_PlateData& PD = PlateData[Pos];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1186,7 +1186,7 @@ namespace KPVL {
             DWORD DataSlab(Value* value)
             {
                 T_PlateData& PD = PlateData[Pos];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1224,7 +1224,7 @@ namespace KPVL {
             DWORD DataSlab(Value* value)
             {
                 T_PlateData& PD = PlateData[Pos];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1290,7 +1290,7 @@ namespace KPVL {
                 T_PlateData PD = PlateData[Pos];
                 //if(!IsSheet(PD))
                 //    PD = PlateData[5];
-                std::string update = " slab = " + std::to_string(PD.Slab->Val.As<int32_t>());
+                std::string update = " slab = " + std::to_string(PD.Slab->GetInt());
                 SetUpdateSheet(conn_kpvl, PD, update, "");
                 MySetWindowText(value);
                 return 0;
@@ -1306,7 +1306,7 @@ namespace KPVL {
                 //if(!IsSheet(PD))
                 //    PD = PlateData[5];
 
-                if(HMISheetData.NewData->Val.As<bool>())
+                if(HMISheetData.NewData->GetBool())
                 {
                     if(IsSheet(PD))
                     {
@@ -1319,28 +1319,28 @@ namespace KPVL {
                             co << "UPDATE sheet SET";
                             co << " pos = 7";
                             co << ", news = 1";
-                            co << ", top1 = " << Top_Side.h1->Val.As<float>();
-                            co << ", top2 = " << Top_Side.h2->Val.As<float>();
-                            co << ", top3 = " << Top_Side.h3->Val.As<float>();
-                            co << ", top4 = " << Top_Side.h4->Val.As<float>();
-                            co << ", top5 = " << Top_Side.h5->Val.As<float>();
-                            co << ", top6 = " << Top_Side.h6->Val.As<float>();
-                            co << ", top7 = " << Top_Side.h7->Val.As<float>();
-                            co << ", top8 = " << Top_Side.h8->Val.As<float>();
-                            co << ", bot1 = " << Bot_Side.h1->Val.As<float>();
-                            co << ", bot2 = " << Bot_Side.h2->Val.As<float>();
-                            co << ", bot3 = " << Bot_Side.h3->Val.As<float>();
-                            co << ", bot4 = " << Bot_Side.h4->Val.As<float>();
-                            co << ", bot5 = " << Bot_Side.h5->Val.As<float>();
-                            co << ", bot6 = " << Bot_Side.h6->Val.As<float>();
-                            co << ", bot7 = " << Bot_Side.h7->Val.As<float>();
-                            co << ", bot8 = " << Bot_Side.h8->Val.As<float>();
-                            co << ", hour = " << Stoi(Cassette.Hour->GetString());// ->Val.As<int32_t>();
-                            co << ", day = " << Cassette.Day->Val.As<int32_t>();
-                            co << ", month = " << Cassette.Month->Val.As<int32_t>();
-                            co << ", year = " << Cassette.Year->Val.As<int32_t>();
-                            co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                            co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
+                            co << ", top1 = " << Top_Side.h1->GetFloat();
+                            co << ", top2 = " << Top_Side.h2->GetFloat();
+                            co << ", top3 = " << Top_Side.h3->GetFloat();
+                            co << ", top4 = " << Top_Side.h4->GetFloat();
+                            co << ", top5 = " << Top_Side.h5->GetFloat();
+                            co << ", top6 = " << Top_Side.h6->GetFloat();
+                            co << ", top7 = " << Top_Side.h7->GetFloat();
+                            co << ", top8 = " << Top_Side.h8->GetFloat();
+                            co << ", bot1 = " << Bot_Side.h1->GetFloat();
+                            co << ", bot2 = " << Bot_Side.h2->GetFloat();
+                            co << ", bot3 = " << Bot_Side.h3->GetFloat();
+                            co << ", bot4 = " << Bot_Side.h4->GetFloat();
+                            co << ", bot5 = " << Bot_Side.h5->GetFloat();
+                            co << ", bot6 = " << Bot_Side.h6->GetFloat();
+                            co << ", bot7 = " << Bot_Side.h7->GetFloat();
+                            co << ", bot8 = " << Bot_Side.h8->GetFloat();
+                            co << ", hour = " << Stoi(Cassette.Hour->GetString());// ->GetInt();
+                            co << ", day = " << Cassette.Day->GetInt();
+                            co << ", month = " << Cassette.Month->GetInt();
+                            co << ", year = " << Cassette.Year->GetInt();
+                            co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
+                            co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
                             co << " WHERE id = " << id << ";";
 #pragma endregion
                             SETUPDATESQL(SQLLogger, conn, co);
@@ -1370,7 +1370,7 @@ namespace KPVL {
             DWORD NewSheetData(Value* value)
             {
                 const char* ss = WaitKant;
-                if(value->Val.As<bool>())                   //Если лист новый
+                if(value->GetBool())                   //Если лист новый
                 {
                     Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
                     SetSaveDone(conn_kpvl);
@@ -1389,12 +1389,12 @@ namespace KPVL {
         void SetOldCassette(T_CassetteData& CD, int32_t id)
         {
             OldCassette.Id = id;
-            OldCassette.Year = CD.Year->Val.As<int32_t>();
-            OldCassette.Month = CD.Month->Val.As<int32_t>();
-            OldCassette.Hour = Stoi(CD.Hour->GetString());// CD.Hour->Val.As<uint16_t>();
-            OldCassette.Day = CD.Day->Val.As<int32_t>();
-            OldCassette.CassetteNo = CD.CassetteNo->Val.As<int32_t>();
-            OldCassette.SheetInCassette = CD.SheetInCassette->Val.As<int16_t>();
+            OldCassette.Year = CD.Year->GetInt();
+            OldCassette.Month = CD.Month->GetInt();
+            OldCassette.Hour = Stoi(CD.Hour->GetString());
+            OldCassette.Day = CD.Day->GetInt();
+            OldCassette.CassetteNo = CD.CassetteNo->GetInt();
+            OldCassette.SheetInCassette = CD.SheetInCassette->GetInt();
         }
 
         //Проверка на наличие кассеты
@@ -1439,29 +1439,13 @@ namespace KPVL {
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD)
         {
-            //auto tt = CD.Hour->GetType();
-            //uint32_t Hour = 0;// 
-            //if(tt == OpcUa::VariantType::UINT16)
-            //{
-            //    Hour = GetVal<uint16_t>(CD.Hour); //Stoi(CD.Hour->GetString());// 
-            //}
-            //else if(tt == OpcUa::VariantType::UINT32)
-            //{
-            //    Hour = GetVal<uint32_t>(CD.Hour); //Stoi(CD.Hour->GetString());// 
-            //}
-
-            int32_t Hour = Stoi(CD.Hour->GetString()); //Stoi(CD.Hour->GetString());// 
-            int32_t Day = Stoi(CD.Day->GetString());
-            int32_t Month = Stoi(CD.Month->GetString());
-            int32_t Year = Stoi(CD.Year->GetString());
-            int32_t CassetteNo = Stoi(CD.CassetteNo->GetString());
-            int16_t SheetInCassette = 0;
-            auto t = CD.SheetInCassette->GetType();
-            if(t == OpcUa::VariantType::INT16)
-                SheetInCassette = Stoi(CD.SheetInCassette->GetString());
-            else
-                if(t == OpcUa::VariantType::INT32)
-                    SheetInCassette = Stoi(CD.SheetInCassette->GetString());
+            int32_t Hour = CD.Hour->GetInt(); //Stoi(CD.Hour->GetString());// 
+            int32_t Day = CD.Day->GetInt();
+            int32_t Month = CD.Month->GetInt();
+            int32_t Year = CD.Year->GetInt();
+            int32_t CassetteNo = CD.CassetteNo->GetInt();
+            int16_t SheetInCassette = CD.SheetInCassette->GetInt();
+           
             return Day && Month && Year && CassetteNo && SheetInCassette;
         }
 
@@ -1474,11 +1458,11 @@ namespace KPVL {
             {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
-                co << " hour = " << Stoi(CD.Hour->GetString());//CD.Hour->Val.As<uint32_t>();
-                co << " day = " << CD.Day->Val.As<int32_t>();
-                co << " AND month = " << CD.Month->Val.As<int32_t>();
-                co << " AND year = " << CD.Year->Val.As<int32_t>();
-                co << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
+                co << " hour = " << CD.Hour->GetInt();
+                co << " day = " << CD.Day->GetInt();
+                co << " AND month = " << CD.Month->GetInt();
+                co << " AND year = " << CD.Year->GetInt();
+                co << " AND cassetteno = " << CD.CassetteNo->GetInt();
                 co << " AND hour <> -1";
                 co << ";";
                 std::string comand = co.str();
@@ -1501,12 +1485,12 @@ namespace KPVL {
                 std::stringstream co;
                 co << "INSERT INTO cassette ";
                 co << "(event, year, month, day, hour, cassetteno, sheetincassette) VALUES (1, ";
-                co << CD.Year->Val.As<int32_t>() << ", ";
-                co << CD.Month->Val.As<int32_t>() << ", ";
-                co << CD.Day->Val.As<int32_t>() << ", ";
-                co << Stoi(CD.Hour->GetString());//CD.Hour->Val.As<int32_t>() << ", ";
-                co << CD.CassetteNo->Val.As<int32_t>() << ", ";
-                co << CD.SheetInCassette->Val.As<int16_t>() << ");";
+                co << CD.Year->GetInt() << ", ";
+                co << CD.Month->GetInt() << ", ";
+                co << CD.Day->GetInt() << ", ";
+                co << CD.Hour->GetInt();//CD.Hour->GetInt() << ", ";
+                co << CD.CassetteNo->GetInt() << ", ";
+                co << CD.SheetInCassette->GetInt() << ");";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
@@ -1527,12 +1511,12 @@ namespace KPVL {
         {
             std::stringstream co;
             co << "UPDATE cassette SET";
-            co << " year = " << CD.Year->Val.As<int32_t>() << ", ";
-            co << " month = " << CD.Month->Val.As<int32_t>() << ", ";
-            co << " day = " << CD.Day->Val.As<int32_t>() << ", ";
-            co << " hour = " << Stoi(CD.Hour->GetString());//CD.Hour->Val.As<int32_t>() << ", ";
-            co << " cassetteno = " << CD.CassetteNo->Val.As<int32_t>() << ", ";
-            co << " sheetincassette = " << CD.SheetInCassette->Val.As<int16_t>() << ",";
+            co << " year = " << CD.Year->GetInt() << ", ";
+            co << " month = " << CD.Month->GetInt() << ", ";
+            co << " day = " << CD.Day->GetInt() << ", ";
+            co << " hour = " << CD.Hour->GetInt();//CD.Hour->GetInt() << ", ";
+            co << " cassetteno = " << CD.CassetteNo->GetInt() << ", ";
+            co << " sheetincassette = " << CD.SheetInCassette->GetInt() << ",";
             co << " close_at = DEFAULT, event = 1";
             co << " WHERE id = " << id;
             co << ";";
@@ -1587,12 +1571,12 @@ namespace KPVL {
         DWORD Sheet_InCassette(Value* value)
         {
             char ss[256];
-            sprintf_s(ss, 256, "%d", value->Val.As<int16_t>() + 1);
+            sprintf_s(ss, 256, "%d", value->GetInt() + 1);
             MySetWindowText(winmap(value->winId), ss);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int16_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1603,10 +1587,10 @@ namespace KPVL {
             MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
             MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
             MySetWindowText(value);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CassetteNo = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| CassetteNo = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1615,10 +1599,10 @@ namespace KPVL {
         DWORD CassetteHour(Value* value)
         {
             MySetWindowText(value);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CassetteHour = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| CassetteHour = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1627,10 +1611,10 @@ namespace KPVL {
         DWORD CassetteDay(Value* value)
         {
             MySetWindowText(value);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CassetteDay = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| CassetteDay = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1639,10 +1623,10 @@ namespace KPVL {
         DWORD CassetteMonth(Value* value)
         {
             MySetWindowText(value);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1651,10 +1635,10 @@ namespace KPVL {
         DWORD CassetteYear(Value* value)
         {
             MySetWindowText(value);
-            if(HMISheetData.CasseteIsFill->Val.As<bool>())
+            if(HMISheetData.CasseteIsFill->GetBool())
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                LOG_INFO(HardLogger, "{:90}| CassetteYear = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<int32_t>(), OldCassette.Id, id);
+                LOG_INFO(HardLogger, "{:90}| CassetteYear = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
             }
             return 0;
         }
@@ -1665,7 +1649,7 @@ namespace KPVL {
         DWORD CasseteIsFill(Value* value)
         {
             MySetWindowText(value);
-            bool b = value->Val.As<bool>();
+            bool b = value->GetBool();
             if(b)
             {
                 int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -1690,7 +1674,7 @@ namespace KPVL {
         //DWORD CassetteIsComplete(Value* value)
         //{
         //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    LOG_INFO(HardLogger, "{:90}| CassetteIsComplete = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<bool>(), OldCassette.Id);
+        //    LOG_INFO(HardLogger, "{:90}| CassetteIsComplete = {} Id = {}", FUNCTION_LINE_NAME, value->GetBool(), OldCassette.Id);
         //    return 0;
         //}
         //
@@ -1698,7 +1682,7 @@ namespace KPVL {
         //DWORD StartNewCassette(Value* value)
         //{
         //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    LOG_INFO(HardLogger, "{:90}| StartNewCassette = {} Id = {}", FUNCTION_LINE_NAME, value->Val.As<bool>(), OldCassette.Id);
+        //    LOG_INFO(HardLogger, "{:90}| StartNewCassette = {} Id = {}", FUNCTION_LINE_NAME, value->GetBool(), OldCassette.Id);
         //    return 0;
         //}
     }
@@ -1722,8 +1706,8 @@ namespace KPVL {
                 int32_t Slab     = Stoi(PalletSheet[2].Slab);
 
 
-                float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetVal<float>();
-                int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetVal<int16_t>();
+                float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetFloat();
+                int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetInt();
 
                 if(Time_Z2 == 0)
                 {
@@ -1841,7 +1825,7 @@ namespace KPVL {
         //Операция в 1 зоне
         DWORD DataPosState_1(Value* value)
         {
-            int16_t val = value->Val.As<int16_t>();
+            int16_t val = value->GetInt();
             MySetWindowText(value);
             SetWindowText(winmap(hEditState_12), GenSeq1[val].c_str());
             if(val == 3)
@@ -1854,7 +1838,7 @@ namespace KPVL {
         //Операция в 2 зоне
         DWORD DataPosState_2(Value* value)
         {
-            int16_t val = value->Val.As<int16_t>();
+            int16_t val = value->GetInt();
             MySetWindowText(value);
             SetWindowText(winmap(hEditState_22), GenSeq2[val].c_str());
             if(val == 5 || val == 6)
@@ -1870,7 +1854,7 @@ namespace KPVL {
         DWORD DataPosState_3(Value* value)
         {
             MySetWindowText(value);
-            SetWindowText(winmap(hEditState_32), GenSeq3[GetVal<int16_t>(value)].c_str());
+            SetWindowText(winmap(hEditState_32), GenSeq3[value->GetInt()].c_str());
 
             MySetWindowText(winmap(value->winId), value->GetString().c_str());
             return 0;
@@ -1887,7 +1871,7 @@ namespace KPVL {
         {
             MySetWindowText(value);
 
-            if(value->Val.As<float>() > 0)
+            if(value->GetFloat() > 0)
             {
                 std::string update = " temper = " + value->GetString();
                 Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
@@ -1901,7 +1885,7 @@ namespace KPVL {
         {
             MySetWindowText(value);
 
-            if(value->Val.As<float>() > 0)
+            if(value->GetFloat() > 0)
             {
                 std::string update = " speed = " + value->GetString();
                 Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
@@ -1940,7 +1924,7 @@ namespace KPVL {
     namespace Mask{
         DWORD DataMaskKlapan1(Value* value)
         {
-            int16_t v = value->Val.As<uint16_t>();
+            int16_t v = value->GetInt();
             for(int i = 0; i < 9; i++)
             {
                 if((1 << i) & v)
@@ -1965,7 +1949,7 @@ namespace KPVL {
         }
         DWORD DataMaskKlapan2(Value* value)
         {
-            int16_t v = value->Val.As<uint16_t>();
+            int16_t v = value->GetInt();
             for(int i = 0; i < 9; i++)
             {
                 if((1 << i) & v)
@@ -2082,7 +2066,7 @@ namespace KPVL {
             if(l != std::string::npos)
             {
                 std::stringstream up;
-                up << f.first << " = " << value->Val.As<float>();
+                up << f.first << " = " << value->GetFloat();
                 LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
                 Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
             }
@@ -2097,7 +2081,7 @@ namespace KPVL {
         //    {
         //        char s = value->Patch[l + 13];
         //        std::stringstream up;
-        //        up << " top" << value->Patch[l + find.length()] << " = " << value->Val.As<float>();
+        //        up << " top" << value->Patch[l + find.length()] << " = " << value->GetFloat();
         //        LOG_INFO(SQLLogger, "{:90}| {}", up.str());
         //        Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
         //    }
@@ -2117,10 +2101,10 @@ namespace KPVL {
             Hmi210_1.Htr2_4->Val.IsNul()
             )return 0;
 
-        float f1 = Hmi210_1.Htr2_1->Val.As<float>();
-        float f2 = Hmi210_1.Htr2_2->Val.As<float>();
-        float f3 = Hmi210_1.Htr2_3->Val.As<float>();
-        float f4 = Hmi210_1.Htr2_4->Val.As<float>();
+        float f1 = Hmi210_1.Htr2_1->GetFloat();
+        float f2 = Hmi210_1.Htr2_2->GetFloat();
+        float f3 = Hmi210_1.Htr2_3->GetFloat();
+        float f4 = Hmi210_1.Htr2_4->GetFloat();
         if(f1 && f2 && f3 && f4)
         {
             Hmi210_1.Temperature = (f1 + f2 + f3 + f4) / 4.0f;
@@ -2136,7 +2120,7 @@ namespace KPVL {
     //Бит жмизни
     DWORD SheetData_WDG_toBase(Value* value)
     {
-        if(GetVal<bool>(value))
+        if(value->GetBool())
         {
             PLC_KPVL_old_dt = time(NULL);
             struct tm TM;

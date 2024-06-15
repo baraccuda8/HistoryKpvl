@@ -112,17 +112,17 @@ bool cmpMaxMin(Value* first, Value* second)
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
     if(type == OpcUa::VariantType::BOOLEAN)        val->Val = (bool)(value == "true");      // atoi_t(bool, atoi, value);
-    else if(type == OpcUa::VariantType::SBYTE)     val->Val = atoi_t(int8_t, atoi, value) / (int8_t)val->coeff;
-    else if(type == OpcUa::VariantType::BYTE)      val->Val = atoi_t(uint8_t, atoi, value) / (uint8_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT16)     val->Val = atoi_t(int16_t, atoi, value) / (int16_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT16)    val->Val = atoi_t(uint16_t, atoi, value) / (uint16_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT32)     val->Val = atoi_t(int32_t, atol, value) / (int32_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT32)    val->Val = atoi_t(uint32_t, atol, value) / (uint32_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT64)     val->Val = atoi_t(int64_t, atoll, value) / (int64_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT64)    val->Val = atoi_t(uint64_t, atoll, value) / (uint64_t)val->coeff;
-    else if(type == OpcUa::VariantType::FLOAT)     val->Val = atoi_t(float, atof, value) / (float)val->coeff;
-    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = atoi_t(double, atof, value) / (double)val->coeff;
-    else if(type == OpcUa::VariantType::STRING)    val->Val =  cp1251_to_utf8(value);
+    else if(type == OpcUa::VariantType::SBYTE)     val->Val = int8_t(std::stoi(value)) / (int8_t)val->coeff;
+    else if(type == OpcUa::VariantType::BYTE)      val->Val = uint8_t(std::stoi(value)) / (uint8_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT16)     val->Val = int16_t(std::stoi(value)) / (int16_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT16)    val->Val = uint16_t(std::stoi(value)) / (uint16_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT32)     val->Val = int32_t(std::stoi(value)) / (int32_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT32)    val->Val = uint32_t(std::stoll(value)) / (uint32_t)val->coeff;
+    else if(type == OpcUa::VariantType::INT64)     val->Val = int64_t(std::stoll(value)) / (int64_t)val->coeff;
+    else if(type == OpcUa::VariantType::UINT64)    val->Val = uint64_t(std::stod(value)) / (uint64_t)val->coeff;
+    else if(type == OpcUa::VariantType::FLOAT)     val->Val = float(std::stof(value)) / (float)val->coeff;
+    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = double(std::stof(value)) / (double)val->coeff;
+    else if(type == OpcUa::VariantType::STRING)    val->Val =  cp1251_to_utf8(value); // utf8_to_cp1251(value); //cp1251_to_utf8
     val->GetString();
     val->OldVal = val->Val;
 }

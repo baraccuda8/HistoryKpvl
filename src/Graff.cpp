@@ -616,7 +616,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 			int i = 0;
 			int64_t t = 0;
 
-			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
+			float f = Stof(conn->PGgetvalue(res, 0, 1));
 			DataTimeOfString(sBegTime, TM_Temp);
 			TM_Temp.tm_year -= 1900;
 			TM_Temp.tm_mon -= 1;
@@ -636,7 +636,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 					TM_Temp.tm_year -= 1900;
 					TM_Temp.tm_mon -= 1;
 
-					f = static_cast<float>(atof(sTemp.c_str()));
+					f = Stof(sTemp);
 					if(f > 0 && f < 2000)
 						st[sData] = std::pair(mktime(&TM_Temp), f);
 				}
@@ -756,7 +756,7 @@ void GetGrTempKPVLTempAct()
 				{
 					auto a = GraffKPVL.TempAct.find(sData);
 					std::string sTemp = GraffKPVL.conn->PGgetvalue(res, l, 1);
-					float f =  Stof(sTemp); //static_cast<float>(atof(sTemp.c_str()));
+					float f =  Stof(sTemp);
 					if(f > 0 && f < 2000)
 					{
 						if(a != GraffKPVL.TempAct.end() && a._Ptr != NULL)
@@ -1000,7 +1000,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 			int i = 0;
 			int64_t t = 0;
 
-			float f = static_cast<float>(atof(conn->PGgetvalue(res, 0, 1).c_str()));
+			float f = Stof(conn->PGgetvalue(res, 0, 1));
 			DataTimeOfString(sBegTime, TM_Temp);
 			TM_Temp.tm_year -= 1900;
 			TM_Temp.tm_mon -= 1;
@@ -1020,7 +1020,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 					TM_Temp.tm_year -= 1900;
 					TM_Temp.tm_mon -= 1;
 
-					f = static_cast<float>(atof(sTemp.c_str()));
+					f = Stof(sTemp.c_str());
 					if(f != 0 && f < 2000)
 						st[sData] = std::pair(mktime(&TM_Temp), f);
 				}

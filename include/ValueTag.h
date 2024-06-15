@@ -69,6 +69,10 @@ public:
     OpcUa::AttributeId attr;
 
     std::string GetString();
+    bool GetBool();
+    int GetInt();
+    float GetFloat();
+    double GetDouble();
     std::string GetString(std::string patch);
 
     void SetVariant(HWNDCLIENT id = HWNDCLIENT::hNull);

@@ -490,7 +490,7 @@ void PLC_KPVL::Run(int count)
         while(isRun)
         {
             //Проверяем на новый лист на кантовке
-            if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый
+            if(HMISheetData.NewData->GetBool())                   //Если лист новый
             {
                 if(++NewDataVal > 5)    //5 цыклов по 1 секунде
                 {
@@ -578,7 +578,7 @@ void PLC_KPVL::GetWD()
     //{
     //    try
     //    {
-    //        //bool WDG_toBase = AllTagKpvl[std::string("HMISheetData.Sheet.WDG_toBase")].Val.As<bool>();
+    //        //bool WDG_toBase = AllTagKpvl[std::string("HMISheetData.Sheet.WDG_toBase")].GetBool();
     //        for(auto& a : AllTagKpvl)
     //        {
     //            if("|var|PLC210 OPC-UA.Application.HMISheetData.Sheet.WDG_toBase" == a.second.Patch)
