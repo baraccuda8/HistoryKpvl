@@ -27,48 +27,6 @@ std::shared_ptr<spdlog::logger> PdfLogger;
 #define TESTPDF2
 
 
-//typedef struct T_cass{
-//	int nom = 0;
-//	int id = 0;
-//	std::string Run_at = "";
-//	std::string End_at = "";
-//	std::string Err_at = "";
-//	std::string Fin_at = "";
-//
-//	std::tm TM_Run = std::tm();
-//	std::tm TM_End = std::tm();
-//	std::tm TM_Fin = std::tm();
-//	std::tm TM_All = std::tm();
-//	time_t tm_Run = 0;
-//	time_t tm_End = 0;
-//	time_t tm_Fin = 0;
-//	time_t tm_All = 0;
-//
-//	float facttemper = 0.0f;
-//
-//	int Repeat_at = 0;
-//
-//	int Day = 0;
-//	int Month = 0;
-//	int Year = 0;
-//	int CassetteNo = 0;
-//	int Petch = 0;
-//
-//	float PointRef_1 = 0.0f;		//Уставка Tемпературы
-//	float TempAct = 0.0f;			//Фактическое значение температуры
-//
-//	float PointTime_1 = 0.0f;		//Заданное нагрева
-//	float ActTimeHeatAcc = 0.0f;	//Факт время нагрева
-//
-//	float PointDTime_2 = 0.0f;		//Заданное Выдержка
-//	float ActTimeHeatWait = 0.0f;	//Факт время выдержки
-//
-//	float TimeProcSet = 0.0f;		//Полное время процесса (уставка), мин
-//	float ActTimeTotal = 0.0f;		//Факт общее время
-//};
-
-//#define HENDINSERT
-
 extern std::string lpLogPdf;
 extern std::string lpLogPdf2;
 //extern const std::string FORMATTIME;
@@ -680,13 +638,11 @@ namespace PDF
 
 	}
 
-
-
 	void PdfClass::SqlTempActKPVL3(std::string Start, std::string Stop, VPFS& pF)
 	{
 		//std::stringstream sdt;
 		//sdt << "SELECT id_name, create_at, content FROM todos WHERE (";
-
+		//
 		//sdt << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
 		//sdt << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
 		//sdt << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
@@ -695,30 +651,30 @@ namespace PDF
 		//sdt << "id_name = " << Hmi210_1.Htr2_2->ID << " OR ";
 		//sdt << "id_name = " << Hmi210_1.Htr2_3->ID << " OR ";
 		//sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
-
+		//
 		//sdt << ")  AND create_at >= '" << Start;
 		//sdt << "' AND create_at <= '" << Stop;
 		//sdt << "' ORDER BY id ASC;";
-
-
+		//
+		//
 		//std::string comand = sdt.str();
 		//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 		//PGresult* res = conn.PGexec(comand);
-
+		//
 		//if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		//{
 		//	int line = PQntuples(res);
 		//	if(line)
 		//	{
 		//		if(!Stoi(Sheet.Temperature)) SrTemp = 0.0f;
-
+		//
 		//		for(int l = 0; l < line; l++)
 		//		{
 		//			PFS pfs;
 		//			int id_name		= Stoi(conn.PGgetvalue(res, l, 0));
 		//			pfs.data		= conn.PGgetvalue(res, l, 1);
 		//			pfs.temper		= Stof(conn.PGgetvalue(res, l, 2));
-
+		//
 		//			if(id_name == Hmi210_1.Htr1_1->ID) pF.push_back(pfs); else
 		//			if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
 		//			if(id_name == Hmi210_1.Htr1_2->ID) pF.push_back(pfs); else
@@ -736,6 +692,7 @@ namespace PDF
 		//PQclear(res);
 
 	}
+
 	void PdfClass::GetSrTemper(std::vector<PFS>& pF, std::map<int, PFS>& mF)
 	{
 		std::tm TM;
@@ -1007,7 +964,7 @@ namespace PDF
 		{
 			float mY = Rect.Y + float((f_maxt - d) * coeffH);
 			Gdiplus::PointF pt1 ={Rect.X - 5,				mY};
-			Gdiplus::PointF pt2 ={Rect.X + Rect.Width + 5,	mY};
+			Gdiplus::PointF pt2 ={Rect.X + Rect.Width,	mY};
 			temp.DrawLine(&Gdi_L1, pt1, pt2);
 
 			Gdiplus::RectF Rect2 ={Rect.X - 45, mY - 11, 40, 20};
@@ -1036,13 +993,13 @@ namespace PDF
 			h3 = 60.0f * 60.0f;
 		}
 
-		for(float e = 0; e < Rect.Width; e++)
+		for(float e = 0; e <= Rect.Width; e++)
 		{
 			float sd = W * e;
 			bool b1 = std::fmod(sd, h1) < W;
 			bool b2 = std::fmod(sd, h2) < W;
 
-			if(b1 && (e + 15) < Rect.Width)
+			if(b1 /*&& (e + 15) < Rect.Width*/)
 			{
 				if(b2)
 				{
@@ -1060,8 +1017,8 @@ namespace PDF
 			}
 			if(b2)
 			{
-				float X = float(e) + 20;
-				if(X < Rect.Width)
+				//float X = float(e) + 20;
+				//if(X < Rect.Width)
 				{
 					std::wstringstream sdw;
 					sdw << std::fixed << std::setprecision(0) << (sd / h3);
@@ -1071,16 +1028,16 @@ namespace PDF
 			}
 		}
 
-		int sd = int(W * Rect.Width);
-		Gdiplus::PointF pt1 ={Rect.X + Rect.Width, Rect.Y};
-		Gdiplus::PointF pt2 ={Rect.X + Rect.Width, Rect.Height - 10};
-
-		temp.DrawLine(&Gdi_D1, pt1, pt2);
-
-		std::wstringstream sdw;
-		sdw << std::fixed << std::setprecision(1) << (sd / h3);
-		std::wstring sDataBeg = sdw.str();
-		DrawT(temp, Rect, Rect.Width, sDataBeg);
+		//int sd = int(W * Rect.Width);
+		//Gdiplus::PointF pt1 ={Rect.X + Rect.Width, Rect.Y};
+		//Gdiplus::PointF pt2 ={Rect.X + Rect.Width, Rect.Height - 10};
+		//
+		//temp.DrawLine(&Gdi_D1, pt1, pt2);
+		//
+		//std::wstringstream sdw;
+		//sdw << std::fixed << std::setprecision(1) << (sd / h3);
+		//std::wstring sDataBeg = sdw.str();
+		//DrawT(temp, Rect, Rect.Width, sDataBeg);
 
 	}
 
@@ -1127,7 +1084,7 @@ namespace PDF
 			RectG2.Height -= 40;
 
 			RectG2.X += 55;
-			RectG2.Width -= 75;
+			RectG2.Width -= 65;
 
 			Gdiplus::RectF RectG3(RectG2);
 			RectG3.Height += 17;
@@ -2946,11 +2903,11 @@ namespace PDF
 			std::fstream fUpdateSheet;
 			void UpdateSheet(PGConnection& conn, T_IdSheet& td);
 
-			bool InZone1(PGConnection& conn, T_IdSheet& ids1, std::string create_at, size_t count, size_t i);
-			bool InZone2(PGConnection& conn, T_IdSheet& ids1, T_IdSheet& ids2, std::string create_at);
-			bool InZone3(PGConnection& conn, T_IdSheet& ids1, T_IdSheet& ids2, std::string create_at);
+			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i);
+			bool InZone2(PGConnection& conn, std::string create_at);
+			bool InZone3(PGConnection& conn, std::string create_at);
 
-			void InZone6(PGConnection& conn, T_IdSheet& ids1, V_IdSheet& vids, V_Todos& allTime, std::fstream& s1, std::string create_at);
+			void InZone6(PGConnection& conn, std::fstream& s1, std::string create_at);
 
 			std::fstream SaveStepHeadCsv(std::string name);
 			void SaveStepBodyCsv(std::fstream& ss1, T_Todos& td);
@@ -2960,6 +2917,16 @@ namespace PDF
 			void GetSheetCassette(PGConnection& conn, T_IdSheet& ids);
 
 			GetSheets(PGConnection& conn, std::string datestart, std::string datestop = "");
+
+			V_Todos allTime;
+
+			T_IdSheet Ids1;
+			T_IdSheet Ids2;
+			T_IdSheet Ids3;
+
+			V_IdSheet Ids6;
+
+			std::fstream ss1;
 		};
 
 
@@ -3647,42 +3614,51 @@ namespace PDF
 			}
 		}
 
-		bool GetSheets::InZone1(PGConnection& conn, T_IdSheet& ids1, std::string create_at, size_t count, size_t i)
+		bool GetSheets::InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
 		{
 			T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
 			if(isSheet(ids))
 			{
-				if(isSheet(ids1)) return false;
+				if(isSheet(Ids1))
+				{
+					InZone2(conn, create_at);
+				}
 
-				ids1 = ids;
-				ids1.DataTime = create_at;
-				ids1.Start1 = create_at;
+				Ids1 = ids;
+				Ids1.DataTime = create_at;
+				Ids1.Start1 = create_at;
 			}
 			return true;
 		}
 
-		bool GetSheets::InZone2(PGConnection& conn, T_IdSheet& ids1, T_IdSheet& ids2, std::string create_at)
+		bool GetSheets::InZone2(PGConnection& conn, std::string create_at)
 		{
-			if(isSheet(ids1))
+			if(isSheet(Ids1))
 			{
-				if(isSheet(ids2)) return false;
+				if(isSheet(Ids2))
+				{
+					InZone3(conn, create_at);
+				}
 
-				ids2 = ids1;
-				ids2.Start2 = create_at;
-				ids1 = T_IdSheet();
+				Ids2 = Ids1;
+				Ids2.Start2 = create_at;
+				Ids1 = T_IdSheet();
 			}
 			return true;
 		}
 
-		bool GetSheets::InZone3(PGConnection& conn, T_IdSheet& ids1, T_IdSheet& ids2, std::string create_at)
+		bool GetSheets::InZone3(PGConnection& conn, std::string create_at)
 		{
-			if(isSheet(ids1))
+			if(isSheet(Ids2))
 			{
-				if(isSheet(ids2)) return false;
-				ids2 = ids1;
-				ids2.DataTime_End = create_at;
-				ids2.InCant = create_at;
-				ids1 = T_IdSheet();
+				if(isSheet(Ids3))
+				{
+					InZone6(conn, ss1, create_at);
+				}
+				Ids3 = Ids2;
+				Ids3.DataTime_End = create_at;
+				Ids3.InCant = create_at;
+				Ids2 = T_IdSheet();
 			}
 			return true;
 		}
@@ -3746,12 +3722,12 @@ namespace PDF
 				ids.Pos = 16;
 			}
 		}
-		void GetSheets::InZone6(PGConnection& conn, T_IdSheet& ids1, V_IdSheet& vids, V_Todos& allTime, std::fstream& s1, std::string create_at)
+		void GetSheets::InZone6(PGConnection& conn, std::fstream& s1, std::string create_at)
 		{
-			if(isSheet(ids1))
+			if(isSheet(Ids3))
 			{
-				T_IdSheet ids = ids1;
-				ids1 = T_IdSheet();
+				T_IdSheet ids = Ids3;
+				Ids3 = T_IdSheet();
 
 				ids.Cant = create_at;
 				GetDataSheet1(conn, ids);
@@ -3782,7 +3758,7 @@ namespace PDF
 				SaveBodyCsv(s1, ids, "");
 
 				UpdateSheet(conn, ids);
-				vids.push_back(ids);
+				Ids6.push_back(ids);
 			}
 		}
 
@@ -3849,19 +3825,12 @@ namespace PDF
 
 			MapTodos allSheetTodos;
 
-			V_Todos allTime;
-
-			T_IdSheet ids1;
-			T_IdSheet ids2;
-			T_IdSheet ids3;
-
-			V_IdSheet ids4;
-
+			
 			remove("UpdateSheet.txt");
 			fUpdateSheet = std::fstream("UpdateSheet.txt", std::fstream::binary | std::fstream::out | std::ios::app);
 
 
-			std::fstream ss1 = SaveHeadCsv("Sheet.csv");
+			ss1 = SaveHeadCsv("Sheet.csv");
 
 
 			GetAllTime(conn, allTime);
@@ -3898,56 +3867,58 @@ namespace PDF
 					int16_t st = td.content.As<int16_t>();
 					if(st == st1_3) //Открыть входную дверь
 					{
-						if(!InZone1(conn, ids1, td.create_at, count, i))
-						{
-							if(!InZone2(conn, ids1, ids2, td.create_at))
-								if(!InZone3(conn, ids1, ids3, td.create_at))
-									InZone6(conn, ids1, ids4, allTime, ss1, td.create_at);
-
-							InZone1(conn, ids1, td.create_at, count, i);
-						}
-						SaveT_IdSheetBodyCsv(ff2, ids1);
+						//if(!InZone1(conn, Ids1, td.create_at, count, i))
+						//{
+						//	if(!InZone2(conn, Ids1, Ids2, td.create_at))
+						//		if(!InZone3(conn, Ids1, Ids3, td.create_at))
+						//			InZone6(conn, Ids1, Ids6, allTime, ss1, td.create_at);
+						//
+						//	InZone1(conn, Ids1, td.create_at, count, i);
+						//}
+						InZone1(conn, td.create_at, count, i);
+						SaveT_IdSheetBodyCsv(ff2, Ids1);
 					}
 					else if(st == st1_4 || st == st1_5) //"Загрузка в печь" || "Закрыть входную дверь"
 					{
-						if(ids1.CloseInDor.length())
+						if(Ids1.CloseInDor.length())
 						{
-							if(!isSheet(ids1))
+							if(!isSheet(Ids1))
 							{
-								InZone1(conn, ids1, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, ids1);
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
 							}
-							if(isSheet(ids1))
+							if(isSheet(Ids1))
 							{
-								ids1.CloseInDor = td.create_at;
-								ids1.Start1 = td.create_at;
+								Ids1.CloseInDor = td.create_at;
+								Ids1.Start1 = td.create_at;
 							}
 						}
 					}
 					else if(st == st1_6) //"Нагрев листа"
 					{
-						if(!ids1.Nagrev.length())
+						if(!Ids1.Nagrev.length())
 						{
-							if(!isSheet(ids1))
+							if(!isSheet(Ids1))
 							{
-								InZone1(conn, ids1, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, ids1);
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
 							}
-							if(isSheet(ids1))
+							if(isSheet(Ids1))
 							{
-								ids1.Nagrev = td.create_at;
-								ids1.Start1 = td.create_at;
+								Ids1.Nagrev = td.create_at;
+								Ids1.Start1 = td.create_at;
 							}
 						}
 					}
 					else if(st == st1_7 || st == st1_8) 	//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
 					{
-						if(!InZone2(conn, ids1, ids2, td.create_at))
-						{
-							if(!InZone3(conn, ids2, ids3, td.create_at))
-								InZone6(conn, ids2, ids4, allTime, ss1, td.create_at);
-							InZone2(conn, ids1, ids2, td.create_at);
-						}
+						//if(!InZone2(conn, Ids1, Ids2, td.create_at))
+						//{
+						//	if(!InZone3(conn, Ids2, Ids3, td.create_at))
+						//		InZone6(conn, Ids2, Ids6, allTime, ss1, td.create_at);
+						//	InZone2(conn, Ids1, Ids2, td.create_at);
+						//}
+						InZone2(conn, td.create_at);
 					}
 				}
 
@@ -3956,26 +3927,28 @@ namespace PDF
 					int16_t st = td.content.As<int16_t>();
 					if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
 					{
-						if(!InZone2(conn, ids1, ids2, td.create_at))
-						{
-							if(!InZone3(conn, ids2, ids3, td.create_at))
-								InZone6(conn, ids2, ids4, allTime, ss1, td.create_at);
-
-							InZone2(conn, ids1, ids2, td.create_at);
-						}
+						//if(!InZone2(conn, Ids1, Ids2, td.create_at))
+						//{
+						//	if(!InZone3(conn, Ids2, Ids3, td.create_at))
+						//		InZone6(conn, Ids2, Ids6, allTime, ss1, td.create_at);
+						//
+						//	InZone2(conn, Ids1, Ids2, td.create_at);
+						//}
+						InZone2(conn, td.create_at);
 					}
 					else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
 					{
-						if(!InZone3(conn, ids2, ids3, td.create_at))
-						{
-							InZone6(conn, ids3, ids4, allTime, ss1, td.create_at);
-							InZone3(conn, ids2, ids3, td.create_at);
-						}
+						//if(!InZone3(conn, Ids2, Ids3, td.create_at))
+						//{
+						//	InZone6(conn, Ids3, Ids6, allTime, ss1, td.create_at);
+						//	InZone3(conn, Ids2, Ids3, td.create_at);
+						//}
+						InZone3(conn, td.create_at);
 					}
 				}
 				else if(td.id_name == HMISheetData.NewData->ID)
 				{
-					InZone6(conn, ids3, ids4, allTime, ss1, td.create_at);
+					InZone6(conn, ss1, td.create_at);
 				}
 
 				i--;
@@ -4033,8 +4006,8 @@ namespace PDF
 		//}
 	}
 
-//#define HENDINSERT
-#ifdef HENDINSERT
+#define HENDINSERT 0
+#if HENDINSERT
 
 
 	typedef struct T_casset{
@@ -4188,7 +4161,7 @@ namespace PDF
 			PGConnection conn_pdf;
 			conn_pdf.connection();
 
-#ifdef HENDINSERT
+#if HENDINSERT
 			//Для ручного тестирования
 			DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
@@ -4241,14 +4214,14 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					//std::string start = "2024-06-09 03:00:00";
+					std::string start = "2024-06-09 03:00:00";
 					std::string stop = "";
-					//SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 					DelAllPdf(lpLogPdf2);
 					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");
-
 					CopyAllFile();
+
 					Correct = false;
 				}
 #ifdef _DEBUG

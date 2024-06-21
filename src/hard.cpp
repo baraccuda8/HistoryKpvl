@@ -295,22 +295,21 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                 {
                     SetWindowText(winmap(hEditDiagnose8), (KPVL::ServerDataTime + " (" + std::to_string(WatchDogWait) + ")").c_str());
                 }
+
+                SetWindowText(winmap(hEditMode1), "Пришли данные...");
+                WatchDog = TRUE; //Бит жизни
+
                 OpcUa::NodeId id = node.GetId();
                 if(id.IsInteger())
                 {
                     if((uint32_t)OpcUa::ObjectId::Server_ServerStatus_CurrentTime == id.GetIntegerIdentifier())
                     {
-                        SetWindowText(winmap(hEditMode1), "Пришло время...");
-                        WatchDog = TRUE; //Бит жизни
-
                         KPVL::ServerDataTime = val.ToString();
                         SetWindowText(winmap(hEditTimeServer), KPVL::ServerDataTime.c_str());
-                        SetWindowText(winmap(hEditMode1), "Жду данные...");
                     }
                 }
                 else if(id.IsString())
                 {
-                    SetWindowText(winmap(hEditMode1), "Пришли данные...");
                     patch = id.GetStringIdentifier();
                     OpcUa::Variant vals = val;
                     for(auto& a : AllTagKpvl)
@@ -324,12 +323,12 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                                 a->attr = attr;
                             }
                             a->Find(handle, vals);
-                            SetWindowText(winmap(hEditMode1), "Жду данные...");
                             return;
                         }
                     }
-                    SetWindowText(winmap(hEditMode1), "Жду данные...");
                 }
+
+                SetWindowText(winmap(hEditMode1), "Жду данные...");
             }
             catch(std::runtime_error& exc)
             {
@@ -654,10 +653,10 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
     LOG_INFO(Logger, "{:90}| Старт to: {}", FUNCTION_LINE_NAME, KPVL::URI);
 
     int countconnect = 1;
-    LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
-    //Динамичесокая работа памяти с умным unique_ptr
-    SetWindowText(winmap(hEditMode1), "Создание объекта");
-    auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
+    //LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
+    ////Динамичесокая работа памяти с умным unique_ptr
+    //SetWindowText(winmap(hEditMode1), "Создание объекта");
+    //auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
 
     while(isRun)
     {
@@ -679,6 +678,11 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
             //CS_S107->Run(countconnect);
             //delete CS_S107;
 
+            LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
+//Динамичесокая работа памяти с умным unique_ptr
+            SetWindowText(winmap(hEditMode1), "Создание объекта");
+            auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
+
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
             PLC->Run(countconnect);
         }
@@ -693,8 +697,8 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
             Sleep(1000);
         }
     }
-    SetWindowText(winmap(hEditMode1), "Удаление PLC");
-    PLC.reset();
+    //SetWindowText(winmap(hEditMode1), "Удаление PLC");
+    //PLC.reset();
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
 

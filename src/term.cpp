@@ -180,21 +180,20 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
                 SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
             }
 
+            SetWindowText(winmap(hEditMode2), "Пришли данные...");
+            WatchDog = TRUE; //Бит жизни
+
             OpcUa::NodeId id = node.GetId();
             if(id.IsInteger())
             {
                 if((uint32_t)OpcUa::ObjectId::Server_ServerStatus_CurrentTime == id.GetIntegerIdentifier())
                 {
-                    SetWindowText(winmap(hEditMode2), "Пришло время...");
-                    WatchDog = TRUE; //Бит жизни
                     S107::ServerDataTime = val.ToString();
                     SetWindowText(winmap(hEditTimeServer_2), S107::ServerDataTime.c_str());
-                    SetWindowText(winmap(hEditMode2), "Жду данные...");
                 }
             }
             else if(id.IsString())
             {
-                SetWindowText(winmap(hEditMode2), "Пришли данные...");
                 patch = id.GetStringIdentifier();
                 OpcUa::Variant vals = val;
                 for(auto& a : AllTagPeth)
@@ -208,12 +207,12 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
                             a->attr = attr;
                         }
                         a->Find(handle, vals);
-                        SetWindowText(winmap(hEditMode2), "Жду данные...");
                         return;
                     }
                 }
-                SetWindowText(winmap(hEditMode2), "Жду данные...");
             }
+
+            SetWindowText(winmap(hEditMode2), "Жду данные...");
         }
         catch(std::runtime_error& exc)
         {
@@ -468,10 +467,6 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
     LOG_INFO(Logger, "{:90}| Старт to: {}", FUNCTION_LINE_NAME, S107::URI);
 
     int countconnect = 1;
-    LOG_INFO(Logger, "{:90}| Создание класса PLC_S107 {}", FUNCTION_LINE_NAME, countconnect);
-    //Динамичесокая работа памяти с умным unique_ptr
-    SetWindowText(winmap(hEditMode2), "Создание объекта");
-    auto PLC = std::unique_ptr<PLC_S107>(new PLC_S107(S107::URI, PethLogger));
 
     while(isRun)
     {
@@ -493,6 +488,11 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
             //CS_S107->Run(countconnect);
             //delete CS_S107;
 
+            LOG_INFO(Logger, "{:90}| Создание класса PLC_S107 {}", FUNCTION_LINE_NAME, countconnect);
+            //Динамичесокая работа памяти с умным unique_ptr
+            SetWindowText(winmap(hEditMode2), "Создание объекта");
+            auto PLC = std::unique_ptr<PLC_S107>(new PLC_S107(S107::URI, PethLogger));
+
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
             PLC->Run(countconnect);
         }
@@ -507,8 +507,8 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
             Sleep(1000);
         }
     }
-    SetWindowText(winmap(hEditMode2), "Удаление PLC");
-    PLC.reset();
+    //SetWindowText(winmap(hEditMode2), "Удаление PLC");
+    //PLC.reset();
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
 

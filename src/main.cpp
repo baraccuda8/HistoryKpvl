@@ -568,7 +568,7 @@ std::string Formats(float f, int n)
 
 void WaitCloseTheread(HANDLE h, std::string hamd)
 {
-    DWORD dwEvent = WaitForSingleObject(h, INFINITE);
+    DWORD dwEvent = WaitForSingleObject(h, 2000);
     if(dwEvent == WAIT_OBJECT_0)
     {
         LOG_WARN(AllLogger, std::string("WaitForSingleObject( " + hamd + " ) = WAIT_OBJECT_0 "));
