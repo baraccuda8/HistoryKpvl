@@ -49,6 +49,9 @@ namespace PDF
 		int id = 0;
 		std::string Start1 = "";		//Дата, время загрузки листа в закалочную печь
 		std::string Start2 = "";		//Дата, время загрузки листа во вторую зону
+		std::string Start3 = "";		//Дата, время загрузки листа во вторую зону
+		std::string Start5 = "";		//Дата, время загрузки листа на охлаждение
+
 		std::string Nagrev = "";		//Дата, время начала нагрева
 		std::string CloseInDor = "";	//Закрыть входную дверь
 		
@@ -2894,6 +2897,7 @@ namespace PDF
 			void GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos);
 			void GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos);
 			void GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos);
+			void GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos);
 
 			float GetDataTime_All(std::string TimeStart, std::string Start3);
 
@@ -2906,8 +2910,10 @@ namespace PDF
 			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i);
 			bool InZone2(PGConnection& conn, std::string create_at);
 			bool InZone3(PGConnection& conn, std::string create_at);
+			bool InZone5(PGConnection& conn, std::string create_at);
 
-			void InZone6(PGConnection& conn, std::fstream& s1, std::string create_at);
+			void InZone62(PGConnection& conn, T_IdSheet& ids, std::string create_at);
+			void InZone6(PGConnection& conn, std::string create_at);
 
 			std::fstream SaveStepHeadCsv(std::string name);
 			void SaveStepBodyCsv(std::fstream& ss1, T_Todos& td);
@@ -2923,6 +2929,8 @@ namespace PDF
 			T_IdSheet Ids1;
 			T_IdSheet Ids2;
 			T_IdSheet Ids3;
+
+			T_IdSheet Ids5;
 
 			V_IdSheet Ids6;
 
@@ -2940,6 +2948,10 @@ namespace PDF
 
 			ssd << " " << GetStringData(ids.Start1) << ";";
 			ssd << " " << GetStringData(ids.Start2) << ";";
+			ssd << " " << GetStringData(ids.Start3) << ";";
+			ssd << " " << GetStringData(ids.Start5) << ";";
+
+
 			ssd << " " << GetStringData(ids.DataTime_End) << ";";
 			ssd << " " << GetStringData(ids.InCant) << ";";
 			ssd << " " << GetStringData(ids.Cant) << ";";
@@ -3034,6 +3046,8 @@ namespace PDF
 				<< "Id;"
 				<< "В зону 1;"
 				<< "В зону 2;"
+				<< "В охлаждение;"
+				<< "В Кантовку;"
 				<< "DataTime_End;"
 				<< "В кантовку;"
 				<< "Кантовка;"
@@ -3351,7 +3365,25 @@ namespace PDF
 			std::string comand = ssd.str();
 			GetTodosSQL(conn, allSheetTodos, comand);
 		}
+
 		void GetSheets::GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos)
+		{
+			std::stringstream ssd;
+			ssd << "SELECT create_at, id, id_name, content ";
+			ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+			ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
+			ssd << "FROM todos WHERE";
+			ssd << " id_name = " << GenSeqToHmi.Seq_3_StateNo->ID;
+			ssd << " AND (CAST(content AS integer) = " << st3_3;
+			ssd << " OR CAST(content AS integer) = " << st3_4;
+			ssd << " ) AND create_at >= '" << StartSheet << "'";
+			if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+			ssd << " ORDER BY id;";
+
+			std::string comand = ssd.str();
+			GetTodosSQL(conn, allSheetTodos, comand);
+		}
+		void GetSheets::GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos)
 		{
 			std::stringstream ssd;
 			ssd << "SELECT create_at, id, id_name, content ";
@@ -3617,6 +3649,17 @@ namespace PDF
 		bool GetSheets::InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
 		{
 			T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
+
+			std::stringstream sss;
+			sss << "InZone1 №" << i;
+			sss << " Id: " << ids.id;
+			sss << " Melt: " << ids.Melt;
+			sss << " PartNo: " << ids.PartNo;
+			sss << " Pack: " << ids.Pack;
+			sss << " Sheet: " << ids.Sheet;
+			sss << " SubSheet: " << ids.SubSheet;
+			SetWindowText(hWndDebug, sss.str().c_str());
+
 			if(isSheet(ids))
 			{
 				if(isSheet(Ids1))
@@ -3627,6 +3670,7 @@ namespace PDF
 				Ids1 = ids;
 				Ids1.DataTime = create_at;
 				Ids1.Start1 = create_at;
+
 			}
 			return true;
 		}
@@ -3643,6 +3687,17 @@ namespace PDF
 				Ids2 = Ids1;
 				Ids2.Start2 = create_at;
 				Ids1 = T_IdSheet();
+
+				std::stringstream sss;
+				sss << "InZone2";
+				sss << " Id: " << Ids2.id;
+				sss << " Melt: " << Ids2.Melt;
+				sss << " PartNo: " << Ids2.PartNo;
+				sss << " Pack: " << Ids2.Pack;
+				sss << " Sheet: " << Ids2.Sheet;
+				sss << " SubSheet: " << Ids2.SubSheet;
+				SetWindowText(hWndDebug, sss.str().c_str());
+
 			}
 			return true;
 		}
@@ -3653,16 +3708,55 @@ namespace PDF
 			{
 				if(isSheet(Ids3))
 				{
-					InZone6(conn, ss1, create_at);
+					InZone5(conn, create_at);
 				}
 				Ids3 = Ids2;
 				Ids3.DataTime_End = create_at;
-				Ids3.InCant = create_at;
+				Ids3.Start3 = create_at;
 				Ids2 = T_IdSheet();
+
+				std::stringstream sss;
+				sss << "InZone3";
+				sss << " Id: " << Ids3.id;
+				sss << " Melt: " << Ids3.Melt;
+				sss << " PartNo: " << Ids3.PartNo;
+				sss << " Pack: " << Ids3.Pack;
+				sss << " Sheet: " << Ids3.Sheet;
+				sss << " SubSheet: " << Ids3.SubSheet;
+				SetWindowText(hWndDebug, sss.str().c_str());
 			}
 			return true;
 		}
+		bool GetSheets::InZone5(PGConnection& conn, std::string create_at)
+		{
+			if(isSheet(Ids3))
+			{
+				if(isSheet(Ids5))
+				{
+					InZone6(conn, create_at);
+				}
 
+				if(isSheet(Ids3))
+				{
+					Ids5 = Ids3;
+					//Ids5.Start5 = create_at;
+					Ids5.Start5 = create_at;
+					Ids5.InCant = create_at;
+					Ids3 = T_IdSheet();
+
+					std::stringstream sss;
+					sss << "InZone5";
+					sss << " Id: " << Ids5.id;
+					sss << " Melt: " << Ids5.Melt;
+					sss << " PartNo: " << Ids5.PartNo;
+					sss << " Pack: " << Ids5.Pack;
+					sss << " Sheet: " << Ids5.Sheet;
+					sss << " SubSheet: " << Ids5.SubSheet;
+					SetWindowText(hWndDebug, sss.str().c_str());
+				}
+			}
+			return true;
+		}
 		void GetSheets::GetSheetCassette(PGConnection& conn, T_IdSheet& ids)
 		{
 			int Hour = 0;
@@ -3722,43 +3816,65 @@ namespace PDF
 				ids.Pos = 16;
 			}
 		}
-		void GetSheets::InZone6(PGConnection& conn, std::fstream& s1, std::string create_at)
+
+
+		void GetSheets::InZone62(PGConnection& conn, T_IdSheet& Ids, std::string create_at)
 		{
-			if(isSheet(Ids3))
+			T_IdSheet ids = Ids;
+
+			std::stringstream sss;
+			sss << "InZone6 ";
+			sss << "Id: " << ids.id;
+			sss << "Melt: " << ids.Melt;
+			sss << "PartNo: " << ids.PartNo;
+			sss << "Pack: " << ids.Pack;
+			sss << "Sheet: " << ids.Sheet;
+			sss << "SubSheet: " << ids.SubSheet;
+			SetWindowText(hWndDebug, sss.str().c_str());
+
+			Ids = T_IdSheet();
+
+			ids.Cant = create_at;
+			GetDataSheet1(conn, ids);
+			GetDataSheet2(conn, ids);
+			GetDataSheet3(conn, ids);
+			Get_ID_S(conn, ids);
+
+			//if(!ids.DataTime_End.length()) return;
+			if(!ids.Start2.length())
 			{
-				T_IdSheet ids = Ids3;
-				Ids3 = T_IdSheet();
+				std::tm TM;
+				time_t tm1 = DataTimeOfString(ids.DataTime_End, TM);
+				time_t tm2 = DataTimeOfString(ids.Start1, TM);
 
-				ids.Cant = create_at;
-				GetDataSheet1(conn, ids);
-				GetDataSheet2(conn, ids);
-				GetDataSheet3(conn, ids);
-				Get_ID_S(conn, ids);
+				time_t tm = time_t(tm1 + (difftime(tm1, tm2) / 2.0));
+				ids.Start2 = GetDataTimeString(&tm);
+			}
 
-				//if(!ids.DataTime_End.length()) return;
-				if(!ids.Start2.length())
-				{
-					std::tm TM;
-					time_t tm1 = DataTimeOfString(ids.DataTime_End, TM);
-					time_t tm2 = DataTimeOfString(ids.Start1, TM);
+			ids.TimeForPlateHeat = GetTime(ids.Start2, allTime);
 
-					time_t tm = time_t(tm1 + (difftime(tm1, tm2) / 2.0));
-					ids.Start2 = GetDataTimeString(&tm);
-				}
-
-				ids.TimeForPlateHeat = GetTime(ids.Start2, allTime);
-
+			ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
+			float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
+			if(f > 2.0f)
 				ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
-				float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
-				if(f > 2.0f)
-					ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
-				
 
-				GetSheetCassette(conn, ids);
-				SaveBodyCsv(s1, ids, "");
 
-				UpdateSheet(conn, ids);
-				Ids6.push_back(ids);
+			GetSheetCassette(conn, ids);
+			SaveBodyCsv(ss1, ids, "");
+
+			UpdateSheet(conn, ids);
+			Ids6.push_back(ids);
+		}
+
+		void GetSheets::InZone6(PGConnection& conn, std::string create_at)
+		{
+			if(isSheet(Ids5))
+			{
+				InZone62(conn, Ids5, create_at);
+			}
+			else if(isSheet(Ids3))
+			{
+				InZone62(conn, Ids3, create_at);
 			}
 		}
 
@@ -3781,6 +3897,8 @@ namespace PDF
 				ss1 << GenSeq1[Stoi(td.value)] << ";";
 			else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
 				ss1 << GenSeq2[Stoi(td.value)] << ";";
+			else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
+				ss1 << GenSeq3[Stoi(td.value)] << ";";
 			else
 				ss1 << td.value << ";";
 			ss1 << td.id_name << ";";
@@ -3840,10 +3958,15 @@ namespace PDF
 
 			//GenSeqToHmi.Seq_2_StateNo
 			GetSeq_2(conn, allSheetTodos);
-
 			
+			//GenSeqToHmi.Seq_3_StateNo
 			GetSeq_3(conn, allSheetTodos);
 
+			//HMISheetData.NewData
+			GetSeq_6(conn, allSheetTodos);
+
+
+			//Сортируем по времени
 			std::sort(allSheetTodos.begin(), allSheetTodos.end(), cmpData);
 
 			////GenSeqToHmi.Seq_3_StateNo
@@ -3946,9 +4069,15 @@ namespace PDF
 						InZone3(conn, td.create_at);
 					}
 				}
+				else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID) //Охлаждение
+				{
+					int16_t st = td.content.As<int16_t>();
+					if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
+						InZone5(conn, td.create_at);
+				}
 				else if(td.id_name == HMISheetData.NewData->ID)
 				{
-					InZone6(conn, ss1, td.create_at);
+					InZone6(conn, td.create_at);
 				}
 
 				i--;
@@ -4214,12 +4343,12 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					std::string start = "2024-06-09 03:00:00";
+					std::string start = "2024-03-01 00:00:00";
 					std::string stop = "";
-					SHEET::GetSheets getsheet(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					SHEET::GetSheets getsheet(conn_pdf, "2024-04-17 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 					DelAllPdf(lpLogPdf2);
-					CASSETTE::GetCassettes getpdf(conn_pdf, "2024-06-11 00:00:00", stop); // , "2024-03-30 00:00:00.00");
+					CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");
 					CopyAllFile();
 
 					Correct = false;
