@@ -709,6 +709,14 @@ int Run()
             DestroyWindow(Global0);
         }
     }
+    catch(std::filesystem::filesystem_error& exc)
+    {
+        WinErrorExit(NULL, exc.what());
+    }
+    catch(std::runtime_error& exc)
+    {
+        WinErrorExit(NULL, exc.what());
+    }
     catch(std::exception& exc)
     {
         WinErrorExit(NULL, exc.what());
@@ -717,6 +725,7 @@ int Run()
     {
         WinErrorExit(NULL, "Unknown error.");
     }
+
     isRun = false;
 
 #if FULLRUN

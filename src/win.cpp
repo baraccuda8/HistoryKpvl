@@ -27,11 +27,11 @@ HWND hWndTest2 = NULL;
 
 HWND hwndCassette = NULL;
 HWND hwndSheet = NULL;
-
 HWND hHeaderCassette = NULL;
 HWND hHeaderSheet = NULL;
 
 extern HWND hWndDebug;
+HWND hWndTimes = NULL;
 
 extern std::deque<TSheet>AllSheet;
 extern std::deque<TCassette> AllCassette;
@@ -254,7 +254,8 @@ std::map<int, const char*> NamePos2 = {
 std::map<HWNDCLIENT, structWindow>mapWindow = {
 
 
-{hEditDiagnose, {szStat,   Stat03Flag, {0, 0, 0, 21}, "Информацмя"}},
+{hEditDiagnose, {szStat,   Stat03Flag, {150, 0, 0, 21}, "Информацмя"}},
+{hEditTimes,    {szStat,   Stat03Flag, {0, 0, 150, 21}, "00:00:00"}},
 {hEditszButt,   {szButt,   Butt5Flag, {0, 0, 21, 21}, "Информацмя"}},
 
 #pragma region Задание: Время закалки, Давление воды
@@ -1121,6 +1122,7 @@ LRESULT CreatWindowChild(HWND hWnd)
         }
         ListGruup.clear();
         hWndDebug = winmap(HWNDCLIENT::hEditDiagnose);
+        hWndTimes =  winmap(HWNDCLIENT::hEditTimes);
         CreateHistoriSheet();
         CreateHistoriCassette();
         //CreateHistoriListTemperature();
@@ -1746,15 +1748,17 @@ LRESULT Size1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     if(FULLSCREEN)
     {
-        MoveWindow(winmap(HWNDCLIENT::hEditDiagnose), 0, cy - 20, cx, 20, true);
-        MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet), 0, ptLT1.y - 1, cx, y2, true);
-        MoveWindow(winmap(HWNDCLIENT::hEditszButt), cx - 21, 0, 21, 21, false);
+        MoveWindow(winmap(HWNDCLIENT::hEditDiagnose),   150, cy - 20, cx - 150, 20, true);
+        MoveWindow(winmap(HWNDCLIENT::hEditTimes),      0, cy - 20, 150, 20, true);
+        MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet),     0, ptLT1.y - 1, cx, y2, true);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 21, 0, 21, 21, false);
     }
     else
     {
-        MoveWindow(winmap(HWNDCLIENT::hEditDiagnose), 0, 1007 - 20, cx, 20, false);
-        MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet), 0, 700, cx, 286, true);
-        MoveWindow(winmap(HWNDCLIENT::hEditszButt), cx - 21, 0, 21, 21, false);
+        MoveWindow(winmap(HWNDCLIENT::hEditDiagnose),   150, 1007 - 20, cx - 150, 20, false);
+        MoveWindow(winmap(HWNDCLIENT::hEditTimes),      0, 1007 - 20, 150, 20, false);
+        MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet),     0, 700, cx, 286, true);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 21, 0, 21, 21, false);
         
     }
     //SetWindowPos(winmap(HWNDCLIENT::hEdit_Sheet), HWND_TOP, 5, 0, cx - 10, y2, SWP_NOMOVE);
@@ -1955,6 +1959,11 @@ LRESULT Move0(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK WndProc0(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     //if(message == WM_CREATE) return CreatWindowChild(hWnd);
+    if(message == WM_TIMER)
+    {
+        SetWindowText(winmap(HWNDCLIENT::hEditTimes), GetDataTimeString().c_str());
+        return 0L;
+    }
     if(message == WM_COMMAND) return Command0(hWnd, message, wParam, lParam);
     if(message == WM_SIZE) return Size0(hWnd, message, wParam, lParam);
     if(message == WM_MOVE) return Move0(hWnd, message, wParam, lParam);
@@ -2222,6 +2231,7 @@ void InitInstance()
 
         //hWndTitl = CreateWindow(szStat, "", Stat10Flag | DT_SINGLELINE, SIZEX * 2, 0, cx - SIZEX * 2 + 1, SIZEY, Global0, (HMENU)IDI_EXIT, hInstance, nullptr);
         //if(!hWndTitl) throw std::exception((FUNCTION_LINE_NAME + std::string(" Ошибка создания окна : " + std::string(szStat))).c_str());
+        SetTimer(Global0, 101, 1000, NULL);
     }
 
 

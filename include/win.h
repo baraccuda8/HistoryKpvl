@@ -174,8 +174,9 @@ enum HWNDCLIENT{
     hNull  = -1,
     hEditszButt = 999,
     hEditDiagnose  = 1000,
-    hEdit_Sheet = 1001,
-    hEdit_Cassette  = 1002,
+    hEditTimes = 1001,
+    hEdit_Sheet = 1002,
+    hEdit_Cassette  = 1003,
 
     hID1002 = 1003,
     hID1003 = 1004,
