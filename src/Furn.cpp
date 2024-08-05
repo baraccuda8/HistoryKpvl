@@ -549,11 +549,11 @@ namespace S107
     std::string AddCD(T_cassette& CD)
     {
         std::stringstream sd;
-        sd << " hour = " << CD.Hour->GetInt();//Furn.Cassette.Hour->GetInt(); //GetString();
-        sd << " AND day = " << CD.Day->GetInt();//GetInt(); //GetString();
-        sd << " AND month = " << CD.Month->GetInt();//GetInt(); //GetString();
-        sd << " AND year = " << CD.Year->GetInt();//GetInt(); //GetString();
-        sd << " AND cassetteno = " << CD.CassetteNo->GetInt();//GetInt(); //GetString();
+        sd << " hour = " << CD.Hour->GetInt();
+        sd << " AND day = " << CD.Day->GetInt();
+        sd << " AND month = " << CD.Month->GetInt();
+        sd << " AND year = " << CD.Year->GetInt();
+        sd << " AND cassetteno = " << CD.CassetteNo->GetInt();
         return sd.str();
     }
 
@@ -775,6 +775,37 @@ namespace S107
         }
     }
 
+    void ReturnCassette(T_ForBase_RelFurn& Furn, T_cass & Petch, const int nPetch)
+    {
+        if(IsCassete1(Furn.Cassette))
+        {
+            std::stringstream sd;
+            sd << "UPDATE cassette SET";
+            sd << " event = 2, ";
+            sd << " run_at = DEFAULT, ";
+            sd << " error_at = DEFAULT, ";
+            sd << " end_at = DEFAULT, ";
+            sd << " delete_at = DEFAULT, ";
+            sd << " finish_at = DEFAULT, ";
+            sd << " peth = " << nPetch;
+            sd << " WHERE";
+            sd << " cassetteno = " << Furn.Cassette.CassetteNo;
+            sd << " AND hour = " << Furn.Cassette.Hour;
+            sd << " AND day = " << Furn.Cassette.Day;
+            sd << " AND month = " << Furn.Cassette.Month;
+            sd << " AND year = " << Furn.Cassette.Year;
+
+            LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
+            SETUPDATESQL(SQLLogger, conn_temp, sd);
+
+            Furn.Cassette.CassetteNo->Set_Value((int32_t)0);
+            Furn.Cassette.Year->Set_Value((int32_t)0);
+            Furn.Cassette.Month->Set_Value((int32_t)0);
+            Furn.Cassette.Day->Set_Value((int32_t)0);
+            Furn.Cassette.Hour->Set_Value((uint16_t)0);
+        }
+    }
+
 #pragma endregion
 
     //Печ отпуска #1
@@ -789,6 +820,7 @@ namespace S107
                 AppFurn1.Furn_old_dt = time(NULL);
                 try
                 {
+                    //AppFurn1.WDG_toBase->Set_Value(false);
                     AppFurn1.WDG_fromBase->Set_Value(true);
                 }
                 CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_1.Data.WDG_fromBase.Set_Value");
@@ -893,6 +925,19 @@ namespace S107
             return 0;
         }
 
+        //BOOL Возврат касеты в список
+        DWORD ReturnCassetteCmd(Value* value)
+        {
+            bool b = value->GetBool();
+            if(b)
+            {
+                ReturnCassette(AppFurn1, Petch, nPetch);
+                value->Set_Value(false);
+            }
+            LOG_ERROR(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
+
+            return 0;
+        }
         DWORD Hour(Value* value)
         {
             MySetWindowText(value);
@@ -981,6 +1026,7 @@ namespace S107
                 AppFurn2.Furn_old_dt = time(NULL);
                 try
                 {
+                    //AppFurn2.WDG_toBase->Set_Value(false);
                     AppFurn2.WDG_fromBase->Set_Value(true);
                 }
                 CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value");
@@ -1074,6 +1120,22 @@ namespace S107
 
             return 0;
         }
+
+        //BOOL Возврат касеты в список
+        //BOOL Возврат касеты в список
+        DWORD ReturnCassetteCmd(Value* value)
+        {
+            bool b = value->GetBool();
+            if(b)
+            {
+                ReturnCassette(AppFurn2, Petch, nPetch);
+                value->Set_Value(false);
+                
+            }
+            LOG_ERROR(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
+            return 0;
+        }
+
 
         DWORD Hour(Value* value)
         {

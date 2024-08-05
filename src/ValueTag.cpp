@@ -55,11 +55,11 @@ void Value::InsertVal()
 {
     char comand[1024];
     if(GetType() == OpcUa::VariantType::BOOLEAN)
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist, Sec);
     else if(GetType() == OpcUa::VariantType::STRING)
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
     else
-        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist) VALUES(\'%s\', %u, %s, now(), %s, %f, %f);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist);
+        sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
 
     PGresult* res = Conn->PGexec(comand);
     //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -262,7 +262,21 @@ void Value::SaveSQL()
             OldVal = Val;
         }
     }
-
+    //else if(GetType() == OpcUa::VariantType::BOOLEAN)
+    //{
+    //    std::string s1 = GetValString(Val, coeff, format);
+    //    std::string s2 = GetValString(OldVal, coeff, format);
+    //    if(ifval && s1 != s2)
+    //    {
+    //        std::stringstream sd;
+    //        sd << "UPDATE tag SET content_at = now(), content = ";
+    //        sd << s1;
+    //        sd << " WHERE id = " << ID;
+    //        SETUPDATESQL(SQLLogger, (*Conn), sd);
+    //        InsertValue();
+    //        OldVal = Val;
+    //    }
+    //}
     else if(ifval || OldVal != Val)
     {
         std::stringstream sd;
@@ -270,13 +284,6 @@ void Value::SaveSQL()
         sd << GetString();
         sd << " WHERE id = " << ID;
         SETUPDATESQL(SQLLogger, (*Conn), sd);
-
-        //std::string comand = sd.str();
-        //PGresult* res = Conn->PGexec(comand);
-        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        //    LOG_ERR_SQL(SQLLogger, res, comand);
-        //PQclear(res);
         InsertValue();
         OldVal = Val;
     }
@@ -317,12 +324,22 @@ Value::Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, 
     }
 }
 
+int ouu = 0;
+void vvv (std::string ss)
+{
+    ouu = 1;
+}
+
 
 void Value::InitNodeId(Client* cds)
 {
     if(!cds)
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Codesys = NULL")).c_str());
 
+    if(Patch.find("ReturnCassetteCmd") != std::string::npos)
+    {
+        vvv (Patch);
+    }
     Codesys = cds;
     NodeId = OpcUa::NodeId(Patch, cds->NamespaceIndex); 
 }
@@ -340,6 +357,29 @@ OpcUa::VariantType Value::GetType()
     return Val.Type();
 }
 
+OpcUa::Variant Value::GetValuew()
+{
+    if(isRun)
+    {
+        try
+        {
+            Val = Node.GetValue();
+            if(Val.IsNul())
+                throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Type Variant is NULL; Patch = ") + Patch).c_str());
+            GetString();
+        }
+        catch(std::runtime_error& exc)
+        {
+            LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
+        }
+        catch(...)
+        {
+            LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
+        }
+    }
+    return Val;
+}
+
 OpcUa::Variant Value::GetValue()
 {
     if(isRun)
@@ -352,18 +392,29 @@ OpcUa::Variant Value::GetValue()
                 if(!Node.IsValid())
                 {
                     Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
-
                     if(!Node.IsValid())
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
+                    //else
+                    //{
+                   //     GetValuew();
+                   // }
                 }
+
+                //else
+                //{
+                //    GetValuew();
+                //}
 
                 Val = Node.GetValue();
                 if(Val.IsNul())
                     throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Type Variant is NULL; Patch = ") + Patch).c_str());
-
                 GetString();
+
             }
+            //else
+            //    throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Codesys is NULL; Patch = ") + Patch).c_str());
         }
+
         catch(std::runtime_error& exc)
         {
             LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
@@ -390,13 +441,26 @@ void Value::Set_Value(OpcUa::Variant var)
 
                     if(!Node.IsValid())
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
+                    else
+                    {
+                        Val = var;
+                        if(Patch.find("WDG") == std::string::npos)
+                            LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
+                        Node.SetValue(Val);
+                    }
                 }
-
-                Val = var;
-                //#ifndef _DEBUG
+                else
+                {
+                    Val = var;
+                    //#ifndef _DEBUG
+                    if(Patch.find("WDG") == std::string::npos)
+                        LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
                     Node.SetValue(Val);
-                //#endif
+                    //#endif
+                }
             }
+            //else
+            //    throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Codesys is NULL; Patch = ") + Patch).c_str());
         }
         catch(std::runtime_error& exc)
         {
@@ -421,11 +485,24 @@ void Value::Set_Value(){
 
                     if(!Node.IsValid())
                         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Error Patch = ") + Patch).c_str());
+                    //#ifndef _DEBUG
+                    else
+                    {
+                        LOG_ERROR(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
+                        Node.SetValue(Val);
+                    }
+                   //#endif
+                }
+                else
+                {
+                    //#ifndef _DEBUG
+                    {
+                        LOG_ERROR(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
+                        Node.SetValue(Val);
+                    }
+                    //#endif
                 }
 
-                //#ifndef _DEBUG
-                    Node.SetValue(Val);
-                //#endif
             }
         }
         catch(std::runtime_error& exc)

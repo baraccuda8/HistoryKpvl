@@ -73,6 +73,9 @@ namespace S107
         //BOOL Авария процесса
         DWORD ProcError(Value* value);
 
+        //BOOL Возврат касеты в список
+        DWORD ReturnCassetteCmd(Value* value);
+
         //Обнуление температуры для сравнения
         //DWORD SetNull_Temper(Value* value);
 
@@ -147,6 +150,9 @@ namespace S107
 
         //BOOL Авария процесса
         DWORD ProcError(Value* value);
+
+        //BOOL Возврат касеты в список
+        DWORD ReturnCassetteCmd(Value* value);
 
         //Обнуление температуры для сравнения
         //DWORD SetNull_Temper(Value* value);

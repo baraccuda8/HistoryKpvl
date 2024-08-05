@@ -62,6 +62,7 @@ public:
     void InitNodeId(Client* cds);
     OpcUa::Node GetNode();
     OpcUa::VariantType GetType();
+    OpcUa::Variant GetValuew();
     OpcUa::Variant GetValue();
     void Set_Value(OpcUa::Variant var);
     void Set_Value();

@@ -110,6 +110,7 @@ int Col_Sheet_prestostartcomp = 0;
 int Col_Sheet_temperature = 0;
 int Col_Sheet_correct = 0;
 int Col_Sheet_SecondPos_at = 0;
+int Col_Sheet_hour = 0;
 //};
 #pragma endregion
 
@@ -124,7 +125,7 @@ namespace KPVL {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res)
         {
-            if(!Col_Sheet_SecondPos_at)
+            if(!Col_Sheet_hour)
             {
                 int nFields = PQnfields(res);
                 for(int j = 0; j < nFields; j++)
@@ -178,6 +179,7 @@ namespace KPVL {
                     else if(l == "day") Col_Sheet_day = j;
                     else if(l == "month") Col_Sheet_month = j;
                     else if(l == "year") Col_Sheet_year = j;
+                    else if(l == "hour") Col_Sheet_hour = j;
                     else if(l == "cassetteno") Col_Sheet_cassetteno = j;
                     else if(l == "sheetincassette") Col_Sheet_sheetincassette = j;
                     else if(l == "timeforplateheat") Col_Sheet_timeforplateheat = j;
@@ -185,6 +187,7 @@ namespace KPVL {
                     else if(l == "temperature") Col_Sheet_temperature = j;
                     else if(l == "correct") Col_Sheet_correct = j;
                     else if(l == "secondpos_at") Col_Sheet_SecondPos_at = j;
+                    
                     
                     
                 }
@@ -248,7 +251,7 @@ namespace KPVL {
                 sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
                 sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
 
-                sheet.Hour = conn.PGgetvalue(res, l, Col_Sheet_day);
+                sheet.Hour = conn.PGgetvalue(res, l, Col_Sheet_hour);
                 sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
                 sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
                 sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
@@ -1459,7 +1462,7 @@ namespace KPVL {
                 std::stringstream co;
                 co << "SELECT id FROM cassette WHERE";
                 co << " hour = " << CD.Hour->GetInt();
-                co << " day = " << CD.Day->GetInt();
+                co << " AND day = " << CD.Day->GetInt();
                 co << " AND month = " << CD.Month->GetInt();
                 co << " AND year = " << CD.Year->GetInt();
                 co << " AND cassetteno = " << CD.CassetteNo->GetInt();
@@ -1488,7 +1491,7 @@ namespace KPVL {
                 co << CD.Year->GetInt() << ", ";
                 co << CD.Month->GetInt() << ", ";
                 co << CD.Day->GetInt() << ", ";
-                co << CD.Hour->GetInt();//CD.Hour->GetInt() << ", ";
+                co << CD.Hour->GetInt() << ", ";    //CD.Hour->GetInt() << ", ";
                 co << CD.CassetteNo->GetInt() << ", ";
                 co << CD.SheetInCassette->GetInt() << ");";
                 std::string comand = co.str();

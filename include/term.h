@@ -131,6 +131,9 @@ typedef struct T_ForBase_RelFurn{
     //REAL Факт общее время 
     Value* ActTimeTotal;
 
+    //Возврат касеты в список
+    Value* ReturnCassetteCmd;
+
     T_cassette Cassette;
 };
 

@@ -46,6 +46,13 @@ struct T_cassetteArray{
 
 #define SETALLTAG2(_t, _f, _e, _s,  _d) SETALLTAG(PathPeth, _t, _f, _e, _s,  _d)
 
+std::string sdTemp = "";
+DWORD Temp(Value* value)
+{
+    //sdTemp = value->GetString();
+    return 0;
+}
+
 //template<>
 std::deque<Value*> AllTagPeth = {
 
@@ -60,6 +67,9 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.ProcRun               = new Value(StrFurn1 + "ProcRun",               HWNDCLIENT::RelF1_Edit_ProcRun,         S107::Furn1::ProcRun, &conn_temp)}, //: BOOL;//Работа
     {AppFurn1.ProcEnd               = new Value(StrFurn1 + "ProcEnd",               HWNDCLIENT::RelF1_Edit_ProcEnd,         S107::Furn1::ProcEnd, &conn_temp)}, //: BOOL;//Окончание процесса
     {AppFurn1.ProcFault             = new Value(StrFurn1 + "ProcFault",             HWNDCLIENT::RelF1_Edit_ProcFault,       S107::Furn1::ProcError, &conn_temp)}, //: BOOL;//Авария процесса
+
+    {AppFurn1.ReturnCassetteCmd     = new Value(StrFurn1 + "ReturnCassetteCmd",     HWNDCLIENT::hNull,                      S107::Furn1::ReturnCassetteCmd, &conn_temp)}, //: BOOL;//Возврат касеты в список
+    
 
     {AppFurn1.TimeProcSet           = new Value(StrFurn1 + "TimeProcSet",           HWNDCLIENT::RelF1_Edit_TimeProcSet,     0, &conn_temp)}, //: REAL;//Полное время процесса (уставка), мин
     {AppFurn1.ProcTimeMin           = new Value(StrFurn1 + "ProcTimeMin",           HWNDCLIENT::RelF1_Edit_ProcTimeMin,     0, &conn_temp)}, //: REAL;//Время процесса, час (0..XX)
@@ -90,9 +100,13 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn2.ProcEnd               = new Value(StrFurn2 + "ProcEnd",               HWNDCLIENT::RelF2_Edit_ProcEnd,         S107::Furn2::ProcEnd, &conn_temp)}, //: BOOL;//Окончание процесса
     {AppFurn2.ProcFault             = new Value(StrFurn2 + "ProcFault",             HWNDCLIENT::RelF2_Edit_ProcFault,       S107::Furn2::ProcError, &conn_temp)}, //: BOOL;//Авария процесса
 
+    {AppFurn2.ReturnCassetteCmd     = new Value(StrFurn2 + "ReturnCassetteCmd",     HWNDCLIENT::hNull,                      S107::Furn2::ReturnCassetteCmd, &conn_temp)}, //: BOOL;//Возврат касеты в список
+
     {AppFurn2.TimeProcSet           = new Value(StrFurn2 + "TimeProcSet",           HWNDCLIENT::RelF2_Edit_TimeProcSet,     0, &conn_temp)}, //: REAL;//Полное время процесса (уставка), мин
     {AppFurn2.ProcTimeMin           = new Value(StrFurn2 + "ProcTimeMin",           HWNDCLIENT::RelF2_Edit_ProcTimeMin,     0, &conn_temp)}, //: REAL;//Время процесса, час (0..XX)
     {AppFurn2.TimeToProcEnd         = new Value(StrFurn2 + "TimeToProcEnd",         HWNDCLIENT::RelF2_Edit_TimeToProcEnd,   S107::Furn2::TimeToProcEnd, &conn_temp)}, //: REAL;//Время до окончания процесса, мин
+
+
     {AppFurn2.TempRef               = new Value(StrFurn2 + "TempRef",               HWNDCLIENT::RelF2_Edit_TempRef,         0, &conn_temp)}, //: REAL;//Заданное значение температуры
     {AppFurn2.TempAct               = new Value(StrFurn2 + "TempAct",               HWNDCLIENT::RelF2_Edit_TempAct,         0, &conn_temp)}, //: REAL;//Фактическое значение температуры
     {AppFurn2.T1                    = new Value(StrFurn2 + "T1",                    HWNDCLIENT::RelF2_Edit_T1,              0, &conn_temp)}, //: REAL; // термопара 1
@@ -112,7 +126,7 @@ std::deque<Value*> AllTagPeth = {
     {AppCassette1.Year         = new Value(StrCassette1 + "Year",       HWNDCLIENT::hEditState1_Year,     0, &conn_temp)}, //ID касеты год
     {AppCassette1.Month        = new Value(StrCassette1 + "Month",      HWNDCLIENT::hEditState1_Month,    0, &conn_temp)}, //ID касеты месяц
     {AppCassette1.Day          = new Value(StrCassette1 + "Day",        HWNDCLIENT::hEditState1_Day,      0, &conn_temp)}, //ID касеты день
-    {AppCassette1.Hour         = new Value(StrCassette1 + "Hour",       HWNDCLIENT::hEditState1_Hour,      0, &conn_temp)}, //ID касеты час
+    {AppCassette1.Hour         = new Value(StrCassette1 + "Hour",       HWNDCLIENT::hEditState1_Hour,     0, &conn_temp)}, //ID касеты час
     {AppCassette1.CassetteNo   = new Value(StrCassette1 + "CaasetteNo", HWNDCLIENT::hEditState1_Cassette, 0, &conn_temp)}, //ID касеты номер
 
     {AppCassette2.Year         = new Value(StrCassette2 + "Year",       HWNDCLIENT::hEditState2_Year,     0, &conn_temp)}, //ID касеты год
@@ -907,13 +921,13 @@ void SetCassetteToBase(int i)
     int32_t Year = Stoi(CassetteInRel[i].Year);
     int32_t Month = Stoi(CassetteInRel[i].Month);
     int32_t Day = Stoi(CassetteInRel[i].Day);
-    int32_t Hour = Stoi(CassetteInRel[i].Hour);
+    uint16_t Hour = Stoi(CassetteInRel[i].Hour);
     int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
     int32_t aYear = AppCassette[i].Year->GetInt();
     int32_t aMonth = AppCassette[i].Month->GetInt();
     int32_t aDay = AppCassette[i].Day->GetInt();
-    int32_t aHour = AppCassette[i].Hour->GetInt();
+    uint16_t aHour = AppCassette[i].Hour->GetInt();
     int32_t aCassetteNo = AppCassette[i].CassetteNo->GetInt();
 
     if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
@@ -1100,7 +1114,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                     AppCassette[i].Year->Set_Value(int32_t(0));
                     AppCassette[i].Month->Set_Value(int32_t(0));
                     AppCassette[i].Day->Set_Value(int32_t(0));
-                    AppCassette[i].Hour->Set_Value(int32_t(0));
+                    AppCassette[i].Hour->Set_Value(uint16_t(0));
                     AppCassette[i].CassetteNo->Set_Value(int32_t(0));
                     SCassett[i] = 0;
                 }
