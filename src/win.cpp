@@ -736,8 +736,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
         {RelF1_Edit_Cassette_Year,  {szStat, Stat04Flag, {55 * 0 + 2, 40, 54, 19}, ""}},
         {RelF1_Edit_Cassette_Month, {szStat, Stat04Flag, {55 * 1 + 2, 40, 54, 19}, ""}},
         {RelF1_Edit_Cassette_Day,   {szStat, Stat04Flag, {55 * 2 + 2, 40, 54, 19}, ""}},
-        {RelF1_Edit_CassetteNo,     {szStat, Stat04Flag, {55 * 3 + 2, 40, 54, 19}, ""}},
-        {RelF1_Edit_SheetInCassette,{szStat, Stat04Flag, {55 * 4 + 2, 40, 54, 19}, ""}},
+        {RelF1_Edit_Cassette_Hour,  {szStat, Stat04Flag, {55 * 3 + 2, 40, 54, 19}, ""}},
+        {RelF1_Edit_CassetteNo,     {szStat, Stat04Flag, {55 * 4 + 2, 40, 54, 19}, ""}},
         {hEndGroup201, {}},
     #pragma endregion
 
@@ -823,8 +823,8 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
             {RelF2_Edit_Cassette_Year,  {szStat, Stat04Flag, {55 * 0 + 2, 40, 54, 19}, ""}},
             {RelF2_Edit_Cassette_Month, {szStat, Stat04Flag, {55 * 1 + 2, 40, 54, 19}, ""}},
             {RelF2_Edit_Cassette_Day,   {szStat, Stat04Flag, {55 * 2 + 2, 40, 54, 19}, ""}},
-            {RelF2_Edit_CassetteNo,     {szStat, Stat04Flag, {55 * 3 + 2, 40, 54, 19}, ""}},
-            {RelF2_Edit_SheetInCassette,{szStat, Stat04Flag, {55 * 4 + 2, 40, 54, 19}, ""}},
+            {RelF1_Edit_Cassette_Hour,  {szStat, Stat04Flag, {55 * 3 + 2, 40, 54, 19}, ""}},
+            {RelF2_Edit_CassetteNo,     {szStat, Stat04Flag, {55 * 4 + 2, 40, 54, 19}, ""}},
             {hEndGroup301, {}},
         #pragma endregion
 

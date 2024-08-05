@@ -1542,10 +1542,12 @@ namespace KPVL {
             if(IsCassette(CD))
             {
                 //UpdateCassette(conn, CD, id);
-                InsertCassette(conn, CD);
+                
                 id = GetIdCassette(conn, CD);
                 if(id)
                     SetOldCassette(CD, id);
+                else
+                    InsertCassette(conn, CD);
             }
             return id;
         }
