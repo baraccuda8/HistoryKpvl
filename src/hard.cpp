@@ -218,8 +218,8 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Sheet::Z6::DataSlab, &conn_kpvl)},    //Номер сляба
     {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},                            //Номер подлиста
 
-    {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hStatSheet_CassetteNo,      KPVL::Cassette::CassetteNo, &conn_kpvl)},       //Номер кассеты за день
-    {HMISheetData.Cassette.Hour             = new Value(AppHMISheetData2 + "Hour",                HWNDCLIENT::hEdit_Sheet_Cassette_Hour,    KPVL::Cassette::CassetteHour, &conn_kpvl)},       //Час ID листа
+    {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNo,      KPVL::Cassette::CassetteNo, &conn_kpvl)},        //Номер кассеты за день
+    {HMISheetData.Cassette.Hour             = new Value(AppHMISheetData2 + "Hour",                HWNDCLIENT::hEdit_Sheet_Cassette_Hour,    KPVL::Cassette::CassetteHour, &conn_kpvl)},     //Час ID листа
     {HMISheetData.Cassette.Day              = new Value(AppHMISheetData2 + "Day",                 HWNDCLIENT::hEdit_Sheet_Cassette_Day,     KPVL::Cassette::CassetteDay, &conn_kpvl)},      //День ID листа
     {HMISheetData.Cassette.Month            = new Value(AppHMISheetData2 + "Month",               HWNDCLIENT::hEdit_Sheet_Cassette_Month,   KPVL::Cassette::CassetteMonth, &conn_kpvl)},    //Месяц ID листа
     {HMISheetData.Cassette.Year             = new Value(AppHMISheetData2 + "Year",                HWNDCLIENT::hEdit_Sheet_Cassette_Year,    KPVL::Cassette::CassetteYear, &conn_kpvl)},     //Год ID листа

@@ -324,7 +324,7 @@ namespace PDF
 			comand += "day = " + Sheet.Day + " AND ";
 			comand += "hour = " + Sheet.Hour + " AND ";
 			comand += "cassetteno = " + Sheet.CassetteNo + " ";
-			comand += "ORDER BY create_at DESC";
+			comand += "ORDER BY run_at DESC";
 			comand += ";";
 
 			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -348,12 +348,12 @@ namespace PDF
 			AllPfdSheet.erase(AllPfdSheet.begin(), AllPfdSheet.end());
 			std::stringstream sd;
 			sd << "SELECT * FROM sheet WHERE ";
-			//sd << "hour = '" << Cassette.Hour << "' AND ";
+			sd << "hour = '" << Cassette.Hour << "' AND ";
 			sd << "day = '" << Cassette.Day << "' AND ";
 			sd << "month = '" << Cassette.Month << "' AND ";
 			sd << "year = '" << Cassette.Year << "' AND ";
 			sd << "cassetteno = " << Cassette.CassetteNo << " ";
-			sd << "ORDER BY  create_at DESC, pos DESC, start_at DESC;";
+			sd << "ORDER BY start_at DESC, pos DESC;";
 			std::string comand = sd.str();
 			if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 			PGresult* res = conn.PGexec(comand);
@@ -4343,9 +4343,9 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					std::string start = "2024-03-01 00:00:00";
+					std::string start = "2024-08-05 00:00:00";
 					std::string stop = "";
-					SHEET::GetSheets getsheet(conn_pdf, "2024-04-17 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					SHEET::GetSheets getsheet(conn_pdf, "2024-08-05 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 					DelAllPdf(lpLogPdf2);
 					CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");

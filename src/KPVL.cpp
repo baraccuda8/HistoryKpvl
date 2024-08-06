@@ -602,7 +602,7 @@ namespace KPVL {
             if(IsSheet(PD))
             {
                 std::string id = GetIdSheet(conn, PD);
-                if(!id.length() || id == "" || id == "0")
+                if(!Stoi(id)) //!id.length() || id == "" || id == "0")
                 {
                     std::stringstream sd;
                     sd << "INSERT INTO sheet ";
@@ -682,7 +682,8 @@ namespace KPVL {
 
                     sd << Pos << ");";
 
-                    SETUPDATESQL(SQLLogger, conn, sd);
+                    LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                    SETUPDATESQL(HardLogger, conn, sd);
                     //std::string comand = sd.str();
                     //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //PGresult* res = conn.PGexec(comand);
@@ -1481,8 +1482,9 @@ namespace KPVL {
         }
 
         //Добовление кассеты в базу
-        void InsertCassette(PGConnection& conn, T_CassetteData& CD)
+        int32_t InsertCassette(PGConnection& conn, T_CassetteData& CD)
         {
+            int32_t id = 0;
             if(IsCassette(CD))
             {
                 std::stringstream co;
@@ -1497,16 +1499,17 @@ namespace KPVL {
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
-                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
 
                 if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
 
-                int32_t id = GetIdCassette(conn, CD);
+                id = GetIdCassette(conn, CD);
 
                 SetOldCassette(CD, id);
             }
+            return id;
         }
 
         //Обновляем в базе данные по кассете
@@ -1547,7 +1550,8 @@ namespace KPVL {
                 if(id)
                     SetOldCassette(CD, id);
                 else
-                    InsertCassette(conn, CD);
+                    id = InsertCassette(conn, CD);
+                
             }
             return id;
         }

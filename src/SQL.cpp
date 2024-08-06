@@ -262,6 +262,15 @@ void GetPetch(S107::T_cass& tc, int p)
     }
 }
 
+
+//int id1ProcRun = 0;
+//int id1ProcEnd = 0;
+//int id1ProcError = 0;
+//int id2ProcRun = 0;
+//int id2ProcEnd = 0;
+//int id2ProcError = 0;
+
+
 void InitCurentTag()
 {
 #pragma region SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id 
@@ -312,6 +321,34 @@ void InitCurentTag()
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, comand);
     PQclear(res);
+
+    //for(auto& val : AllTagPeth)
+    //{
+    //    if(val->Patch.find("1.Data.ProcRun") != std::string::npos)
+    //    {
+    //        id1ProcRun = val->ID;
+    //    }
+    //    if(val->Patch.find("1.Data.ProcEnd") != std::string::npos)
+    //    {
+    //        id1ProcEnd = val->ID;
+    //    }
+    //    if(val->Patch.find("1.Data.ProcFault") != std::string::npos)
+    //    {
+    //        id1ProcError = val->ID;
+    //    }
+    //    if(val->Patch.find("2.Data.ProcRun") != std::string::npos)
+    //    {
+    //        id2ProcRun = val->ID;
+    //    }
+    //    if(val->Patch.find("2.Data.ProcEnd") != std::string::npos)
+    //    {
+    //        id2ProcEnd = val->ID;
+    //    }
+    //    if(val->Patch.find("2.Data.ProcFault") != std::string::npos)
+    //    {
+    //        id2ProcError = val->ID;
+    //    }
+    //}
 
     for(auto& val : AllTagKpvl)
     {

@@ -1122,7 +1122,6 @@ namespace S107
         }
 
         //BOOL Возврат касеты в список
-        //BOOL Возврат касеты в список
         DWORD ReturnCassetteCmd(Value* value)
         {
             bool b = value->GetBool();
