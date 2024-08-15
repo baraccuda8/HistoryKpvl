@@ -218,6 +218,26 @@ namespace S107
                         PQclear(res);
                     }
 
+                    if(Stoi(CD.SheetInCassette) != count)
+                    {
+                        std::stringstream ss;
+                        ss << "UPDATE cassette SET";
+                        ss << " sheetincassette = " << count;
+                        ss << " WHERE";
+                        ss << " hour = " << CD.Hour;
+                        ss << " AND day = " << CD.Day;
+                        ss << " AND month = " << CD.Month;
+                        ss << " AND year = " << CD.Year;
+                        ss << " AND cassetteno = " << CD.CassetteNo;
+                        std::string comand = ss.str();
+                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        PGresult* res = conn_spic.PGexec(comand);
+                        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                            LOG_ERR_SQL(SQLLogger, res, comand);
+                        PQclear(res);
+                        return false;
+                    }
+
                     if(line)
                     {
                         if(!count && !Stoi(CD.Peth))
@@ -235,26 +255,26 @@ namespace S107
                             SETUPDATESQL(SQLLogger, conn, ss);
                             return true;
                         }
-                        else
-                        if(Stoi(CD.SheetInCassette) != count)
-                        {
-                            std::stringstream ss;
-                            ss << "UPDATE cassette SET";
-                            ss << " sheetincassette = " << count;
-                            ss << " WHERE";
-                            ss << " hour = " << CD.Hour;
-                            ss << " AND day = " << CD.Day;
-                            ss << " AND month = " << CD.Month;
-                            ss << " AND year = " << CD.Year;
-                            ss << " AND cassetteno = " << CD.CassetteNo;
-                            std::string comand = ss.str();
-                            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                            PGresult* res = conn_spic.PGexec(comand);
-                            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                LOG_ERR_SQL(SQLLogger, res, comand);
-                            PQclear(res);
-                            return false;
-                        }
+                        //else
+                        //if(Stoi(CD.SheetInCassette) != count)
+                        //{
+                        //    std::stringstream ss;
+                        //    ss << "UPDATE cassette SET";
+                        //    ss << " sheetincassette = " << count;
+                        //    ss << " WHERE";
+                        //    ss << " hour = " << CD.Hour;
+                        //    ss << " AND day = " << CD.Day;
+                        //    ss << " AND month = " << CD.Month;
+                        //    ss << " AND year = " << CD.Year;
+                        //    ss << " AND cassetteno = " << CD.CassetteNo;
+                        //    std::string comand = ss.str();
+                        //    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        //    PGresult* res = conn_spic.PGexec(comand);
+                        //    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                        //        LOG_ERR_SQL(SQLLogger, res, comand);
+                        //    PQclear(res);
+                        //    return false;
+                        //}
                     }
                 }
                 else

@@ -1117,7 +1117,7 @@ namespace PDF
 			std::string outDate = "";
 			std::string outTime = "";
 			GetDataTimeStr(Sheet.Start_at, outDate, outTime);
-			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата
+			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата XP = 70
 			draw_text_rect (page, left + 340, Y, XP, YP, outTime);  //Время
 
 
@@ -2349,8 +2349,8 @@ namespace PDF
 				std::stringstream ssg;
 				ssg << "SELECT id FROM cassette ";
 				ssg << "WHERE";
-				//ssg << " hour = " << ct.Hour << " AND";
-				ssg << " day = " << ct.Day;
+				ssg << " hour = " << ct.Hour;
+				ssg << " AND day = " << ct.Day;
 				ssg << " AND month = " << ct.Month;
 				ssg << " AND year = " << ct.Year;
 				ssg << " AND cassetteno = " << ct.CassetteNo;
@@ -2380,8 +2380,8 @@ namespace PDF
 			std::stringstream ssg;
 			ssg << "SELECT id FROM cassette ";
 			ssg << "WHERE ";
-			//ssg << " hour = " << it.Hour << " AND";
-			ssg << " day = " << it.Day;
+			ssg << " hour = " << it.Hour;
+			ssg << " AND day = " << it.Day;
 			ssg << " AND month = " << it.Month;
 			ssg << " AND year = " << it.Year;
 			ssg << " AND cassetteno = " << it.CassetteNo;
@@ -4343,13 +4343,15 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					std::string start = "2024-08-05 00:00:00";
+					std::string start1 = "2024-08-14 00:00:00";
+					std::string start2 = "2024-08-13 00:00:00";
 					std::string stop = "";
-					SHEET::GetSheets getsheet(conn_pdf, "2024-08-05 00:00:00", stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
-
+					SHEET::GetSheets getsheet(conn_pdf, start1, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+					
 					DelAllPdf(lpLogPdf2);
-					CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");
+					CASSETTE::GetCassettes getpdf(conn_pdf, start2, stop); // , "2024-03-30 00:00:00.00");
 					CopyAllFile();
+					
 
 					Correct = false;
 				}
