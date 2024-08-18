@@ -4118,6 +4118,17 @@ namespace PDF
 					 |  std::filesystem::copy_options::recursive);
 		}
 		CATCH(PdfLogger, "");;
+
+		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
+
+		try
+		{
+			std::filesystem::copy(dir1, dir2,
+								  std::filesystem::copy_options::update_existing
+							   //|  std::filesystem::copy_options::overwrite_existing
+								  | std::filesystem::copy_options::recursive);
+		}
+		CATCH(PdfLogger, "");;
 	}
 	void DelAllPdf(std::filesystem::path dir)
 	{
@@ -4343,8 +4354,21 @@ namespace PDF
 					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
 					//PQclear(res);
 
-					std::string start1 = "2024-08-14 00:00:00";
-					std::string start2 = "2024-08-13 00:00:00";
+					std::time_t st = time(NULL);;
+					time_t td1 = (time_t)difftime(st, 60 * 60 * 24);
+					time_t td2 = (time_t)difftime(st, 60 * 60 * 24 * 1);
+					std::string start1 = GetDataTimeString(&td1);
+					std::string start2 = GetDataTimeString(&td2);
+
+					size_t t1 = start1.find(" ");
+					size_t t2 = start2.find(" ");
+					if(t1 != std::string::npos)start1[t1] = 0;
+					if(t2 != std::string::npos)start2[t2] = 0;
+					if(t1 != std::string::npos)start1.resize(t1);
+					if(t2 != std::string::npos)start2.resize(t2);
+
+					//std::string start1 = "2024-08-15 00:00:00";
+					//std::string start2 = "2024-08-14 00:00:00";
 					std::string stop = "";
 					SHEET::GetSheets getsheet(conn_pdf, start1, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 					
