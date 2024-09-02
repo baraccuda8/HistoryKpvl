@@ -203,6 +203,11 @@ namespace PDF
 		HPDF_Page_Rectangle(page, HPDF_REAL(x), HPDF_REAL(y), HPDF_REAL(w), HPDF_REAL(h));
 		HPDF_Page_Stroke (page);
 	}
+	void draw_rect(HPDF_Page page, double x, double y, double w, double h)
+	{
+		HPDF_Page_Rectangle(page, HPDF_REAL(x), HPDF_REAL(y), HPDF_REAL(w), HPDF_REAL(h));
+		HPDF_Page_Stroke (page);
+	}
 
 	typedef struct PFS{
 		int sec = 0;
@@ -235,7 +240,8 @@ namespace PDF
 		TCassette Cassette;
 
 		int64_t MaxSecCount = 0LL;
-		const int XP = 70;
+		const int XP = 40;
+		const int DXP = 70;
 		const int YP = 18;
 
 		T_SqlTemp FurnRef ={};	//Задание
@@ -255,7 +261,7 @@ namespace PDF
 		int64_t maxd = 0LL;
 
 
-		PdfClass(TCassette& TC);
+		PdfClass(TCassette& TC, bool end = false);
 		//CassettePdfClass(TSheet& sheet, bool view = true);
 		//CassettePdfClass(T_IdSheet& sheet, bool view = false);
 		~PdfClass()
@@ -304,6 +310,7 @@ namespace PDF
 		void UpdateTemperature(T_SqlTemp& tr);
 		void GetSheet();
 		void GetCassette(TCassette& cassette);
+		void DrawHeap(HPDF_REAL left, HPDF_REAL Y);
 	};
 
 	void PdfClass::GetCassette(TCassette& cassette)
@@ -1108,6 +1115,19 @@ namespace PDF
 
 		
 
+	void PdfClass::DrawHeap(HPDF_REAL left, HPDF_REAL Y)
+	{
+		draw_text (page, left + 10, Y, "Параметры");
+		draw_text (page, left + 265, Y, "Задание");
+		draw_text (page, left + 370, Y, "Факт");
+
+		HPDF_Page_SetFontAndSize (page, font, 8);
+		draw_text (page, left + 316, Y + 10, "Доступное");
+		draw_text (page, left + 313, Y - 0, "отклонение/");
+		draw_text (page, left + 317, Y - 10, "диапазон");
+		HPDF_Page_SetFontAndSize (page, font, 10);
+	}
+
 	HPDF_REAL PdfClass::DrawKpvl(HPDF_REAL left, HPDF_REAL top, HPDF_REAL w)
 	{
 		HPDF_REAL Y = top - 0;
@@ -1117,8 +1137,8 @@ namespace PDF
 			std::string outDate = "";
 			std::string outTime = "";
 			GetDataTimeStr(Sheet.Start_at, outDate, outTime);
-			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата XP = 70
-			draw_text_rect (page, left + 340, Y, XP, YP, outTime);  //Время
+			draw_text_rect (page, left + 270, Y, DXP, YP, outDate);  //Дата XP = 70
+			draw_text_rect (page, left + 340, Y, DXP, YP, outTime);  //Время
 
 
 			//std::string str = Sheet.Start_at;
@@ -1148,32 +1168,43 @@ namespace PDF
 			//	}
 			//}
 			Y -= 25;
-			draw_text (page, left + 10, Y, "Параметры");
-			draw_text (page, left + 280, Y, "Задание");
-			draw_text (page, left + 355, Y, "Факт");
+			DrawHeap(left, Y);
+			//draw_text (page, left + 10, Y, "Параметры");
+			//draw_text (page, left + 280, Y, "Задание");
+			//draw_text (page, left + 355, Y, "Факт");
 
-			Y -= 20;
-			draw_text_rect (page, left + 0, Y, w, YP, "Время нахождения листа в закалочной печи. мин");
-			draw_text_rect (page, left + 270, Y, XP, YP, Sheet.TimeForPlateHeat);//Задание Время нахождения листа в закалочной печи. мин
-			
+			Y -= 25;
 
 			//Sheet.DataTime_All = (boost::format("%.1f") % (double(DataTimeDiff(Sheet.DataTime_End, Sheet.Start_at)) / 60.0)).str();
 			//Sheet.DataTime_All = std::to_string(double(DataTimeDiff(Sheet.DataTime_End, Sheet.Start_at)) / 60.0);
-			draw_text_rect (page, left + 340, Y, XP, YP, Sheet.DataTime_All);    //Факт Время нахождения листа в закалочной печи. мин
+
+			draw_text_rect (page, left + 0, Y, w, YP, "Время нахождения листа в закалочной печи. мин");
+			draw_text_rect (page, left + 270, Y, XP, YP, Sheet.TimeForPlateHeat);	//Задание Время нахождения листа в закалочной печи. мин
+			draw_text_rect (page, left + 370, Y, XP, YP, Sheet.DataTime_All);		//Факт Время нахождения листа в закалочной печи. мин
+
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 330, Y, "±2");		// Доступное отклонение/диапазон
+			
 
 			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Температура закалки, °С");
-			draw_text_rect (page, left + 270, Y, XP, YP, Sheet.Temper);			//Задание Температуры закалки
-			draw_text_rect (page, left + 340, Y, XP, YP, strSrTemp);				//Факт Температуры закалки
+			draw_text_rect (page, left + 270, Y, XP, YP, Sheet.Temper);				//Задание Температуры закалки
+			draw_text_rect (page, left + 370, Y, XP, YP, strSrTemp);				//Факт Температуры закалки
+
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 327, Y, "±10");		// Доступное отклонение/диапазон
 
 			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Давление воды в коллекторе закал. машины, бар");
 			draw_text_rect (page, left + 270, Y, XP, YP, Sheet.PresToStartComp);	//Задание Давления воды
-			draw_text_rect (page, left + 340, Y, XP, YP, Sheet.Za_PT3);			//Факт Давления воды
+			draw_text_rect (page, left + 370, Y, XP, YP, Sheet.Za_PT3);				//Факт Давления воды
+
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 315, Y, "3.6 - 4.6");		// Доступное отклонение/диапазон
 
 			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Температура закалочной жидкости, °С");
-			draw_text_rect (page, left + 340, Y, XP, YP, Sheet.Za_TE3);			//Факт Температура воды, °С
+			draw_text_rect (page, left + 370, Y, XP, YP, Sheet.Za_TE3);				//Факт Температура воды, °С
 
 			Y -= 10;
 			HPDF_Page_MoveTo (page, 15, Y);
@@ -1207,8 +1238,8 @@ namespace PDF
 			std::string outDate = "";
 			std::string outTime = "";
 			GetDataTimeStr(Cassette.Run_at, outDate, outTime);
-			draw_text_rect (page, left + 270, Y, XP, YP, outDate);  //Дата
-			draw_text_rect (page, left + 340, Y, XP, YP, outTime);  //Время
+			draw_text_rect (page, left + 270, Y, DXP, YP, outDate);  //Дата
+			draw_text_rect (page, left + 340, Y, DXP, YP, outTime);  //Время
 
 			//std::string str = Cassette.Run_at;
 			//boost::regex xRegEx("^(\\d{1,4})-(\\d{1,2})-(\\d{1,2}) (\\d{1,2}:\\d{1,2}:\\d{1,2}).*");
@@ -1246,31 +1277,41 @@ namespace PDF
 			//}
 
 			Y -= 25;
-			draw_text (page, left + 10, Y, "Параметры");
-			draw_text (page, left + 280, Y, "Задание");
-			draw_text (page, left + 355, Y, "Факт");
+			DrawHeap(left, Y);
 
-			Y -= 20;
+			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Время нагрева до температуры отпуска, мин");
 
-			float PointTime1 = Stof(Cassette.PointTime_1);
-			float PointTime2 = PointTime1 + 60;
-			std::stringstream sss;
-			sss << boost::format("%.1f - ") % PointTime1;
-			sss << boost::format("%.1f") % PointTime2;
 
-			draw_text_rect (page, left + 270, Y, XP, YP, sss.str());								//Задание
-			draw_text_rect (page, left + 340, Y, XP, YP, Cassette.HeatAcc);							//Факт
+			//float PointTime1 = Stof(Cassette.PointTime_1);
+			//float PointTime2 = PointTime1 + 60;
+			//std::stringstream sss;
+			//sss << boost::format("%.1f - ") % PointTime1;
+			//sss << boost::format("%.1f") % PointTime2;
+
+			draw_text_rect (page, left + 270, Y, XP, YP, Cassette.PointTime_1);						//Задание
+			draw_text_rect (page, left + 370, Y, XP, YP, Cassette.HeatAcc);							//Факт
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 315, Y, "120-180");		// Доступное отклонение/диапазон
 
 			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Время выдержки при заданной температуре, мин");
 			draw_text_rect (page, left + 270, Y, XP, YP, Cassette.PointDTime_2);						//Задание
-			draw_text_rect (page, left + 340, Y, XP, YP, Cassette.HeatWait);							//Факт
+			draw_text_rect (page, left + 370, Y, XP, YP, Cassette.HeatWait);							//Факт
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 330, Y, "±5");		// Доступное отклонение/диапазон
 
 			Y -= 25;
 			draw_text_rect (page, left + 0, Y, w, YP, "Температура отпуска, °С");
 			draw_text_rect (page, left + 270, Y, XP, YP, Cassette.PointRef_1);						//Задание
-			draw_text_rect (page, left + 340, Y, XP, YP, Cassette.facttemper);							//Факт
+			draw_text_rect (page, left + 370, Y, XP, YP, Cassette.facttemper);							//Факт
+			draw_rect(page, left + 310, Y, DXP - 10, YP);
+			draw_text (page, left + 327, Y, "±10");		// Доступное отклонение/диапазон
+
+			Y -= 10;
+			HPDF_Page_MoveTo (page, 15, Y);
+			HPDF_Page_LineTo (page, Width - 20, Y);
+			HPDF_Page_Stroke (page);
 			Y -= 20;
 		}CATCH(PdfLogger, FUNCTION_LINE_NAME);
 		return Y;
@@ -1529,10 +1570,12 @@ namespace PDF
 			HPDF_Page_SetFontAndSize (page, font, 10);
 			HPDF_REAL Y1 = DrawKpvl(410, Y, Width - 432);
 
+			//HPDF_REAL r0 = 310;
 			HPDF_REAL r1 = Y - Y1;
+			HPDF_REAL r0 = top - r1; //top = 275
 			HPDF_REAL r3 = top - Y1 + (Y - Y1);
 
-			HPDF_Page_Rectangle(page, 20, r3 - 15/*Height - 270*/, 374, r1 - 10);
+			HPDF_Page_Rectangle(page, 20, r0, 374, r1 - 10);
 			HPDF_Page_Stroke(page);
 
 			//std::ifstream ifs(tempImage);
@@ -1542,7 +1585,7 @@ namespace PDF
 			{
 				ifs.close();
 				HPDF_Image image1 = HPDF_LoadJpegImageFromFile(pdf, tempImage.c_str());
-				HPDF_Page_DrawImage (page, image1, 22, r3 - 14/*Height - 269*/, 370, r1 - 13);
+				HPDF_Page_DrawImage (page, image1, 22, r0 + 1, 370, r1 - 13);
 			}
 			Y = r3 - 20;
 		}CATCH(PdfLogger, FUNCTION_LINE_NAME);
@@ -1563,11 +1606,13 @@ namespace PDF
 			HPDF_Page_SetFontAndSize (page, font, 10);
 			HPDF_REAL Y1 = DrawFurn(410, Y, Width - 432);
 
-			HPDF_REAL r0 = Height - 440 - (23 + 5);
+			//HPDF_REAL r0 = top - 140; //top = 275
 			HPDF_REAL r1 = Y - Y1;
+
+			HPDF_REAL r0 = top - r1; //top = 275
 			HPDF_REAL r3 = top - Y1 + (Y - Y1);
 
-			HPDF_Page_Rectangle(page, 20, r0, 374, 140);
+			HPDF_Page_Rectangle(page, 20, r0, 374, r1 - 10);
 			//HPDF_Page_Rectangle(page, 20, r3 - 15, 374, r1 - 10);
 
 			HPDF_Page_Stroke(page);
@@ -1578,7 +1623,7 @@ namespace PDF
 			{
 				ifs.close();
 				HPDF_Image image2 = HPDF_LoadJpegImageFromFile(pdf, furnImage.c_str());
-				HPDF_Page_DrawImage (page, image2, 22, r0 + 1, 370, 137);
+				HPDF_Page_DrawImage (page, image2, 22, r0 + 1, 370, r1 - 13);
 				//HPDF_Page_DrawImage (page, image2, 22, r3 - 14, 370, r1 - 13);
 			}
 		}CATCH(PdfLogger, FUNCTION_LINE_NAME);
@@ -1607,7 +1652,7 @@ namespace PDF
 
 	}
 
-	PdfClass::PdfClass(TCassette& TC)
+	PdfClass::PdfClass(TCassette& TC, bool end)
 	{
 		try
 		{
@@ -1686,7 +1731,7 @@ namespace PDF
 				if(!isRun) break;
 				Sheet = a;
 
-				#pragma region tempImage.jpg
+#pragma region tempImage.jpg
 				{
 					std::stringstream ssh;
 					ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
@@ -1696,11 +1741,11 @@ namespace PDF
 					ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
 					tempImage = ssh.str();
 				}
-				#pragma endregion				
+#pragma endregion				
 
 				OutDebugInfo(Cassette, Sheet);
 
-				#pragma region Графики закалки
+#pragma region Графики закалки
 				{
 					TempRef.erase(TempRef.begin(), TempRef.end());
 					TempAct.erase(TempAct.begin(), TempAct.end());
@@ -1713,7 +1758,7 @@ namespace PDF
 					//SqlTempActKPVL(TempAct);
 
 					//Рисуем график KPVL
-				
+
 					time_t t1 = DataTimeOfString(Sheet.Start_at);
 					time_t t2 = DataTimeOfString(Sheet.DataTime_End);
 					int t = int(difftime(t2, t1));
@@ -1721,9 +1766,9 @@ namespace PDF
 		//theString = L"Время час:мин";
 					PaintGraff(TempAct, TempRef, tempImage, t, L"Температура С°", L"Время мин");
 				}
-				#pragma endregion
+#pragma endregion
 
-				#pragma region Создание PFD файла
+#pragma region Создание PFD файла
 
 				if(NewPdf())
 				{
@@ -1731,7 +1776,7 @@ namespace PDF
 					HPDF_REAL Y1 = DrawHeder(0, Height);
 
 					//Рисуем PDF Закалка
-					HPDF_REAL Y2 = DrawKpvlPDF(0, Y1) - 30;
+					HPDF_REAL Y2 = DrawKpvlPDF(0, Y1) - 40;
 
 					//Рисуем PDF Отпуск
 					HPDF_REAL Y3 = DrawFurnPDF(0, Y2);
@@ -1742,15 +1787,16 @@ namespace PDF
 
 				}
 
-				#pragma endregion
+#pragma endregion
 
 				remove(tempImage.c_str());
-#ifdef HENDINSERT
-				std::string url = FileName;
-				boost::replace_all(url, "/", "\\");
-				ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-				return;
-#endif
+				if(end)
+				{
+					std::string url = FileName;
+					boost::replace_all(url, "/", "\\");
+					ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+					return;
+				}
 			}
 			remove(furnImage.c_str());
 			{
@@ -4120,7 +4166,6 @@ namespace PDF
 		CATCH(PdfLogger, "");;
 
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
-
 		try
 		{
 			std::filesystem::copy(dir1, dir2,
@@ -4270,7 +4315,7 @@ namespace PDF
 		//
 		//int tt = 0;
 		//{
-			std::string comand = "SELECT * FROM cassette WHERE id = 664"; //2024-05-25-06
+			std::string comand = "SELECT * FROM cassette WHERE id = 1158"; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			TCassette Cassette;
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4282,7 +4327,7 @@ namespace PDF
 			else
 				LOG_ERR_SQL(PdfLogger, res, comand);
 			PQclear(res);
-			PdfClass sdc(Cassette);
+			PdfClass sdc(Cassette, true);
 	}
 #endif // HENDINSERT
 
@@ -4315,45 +4360,6 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
-					////Проверяем и востанавливаем все листы
-					//SHEET::StartSheet = "2024-01-01 00:00:00";
-					//SHEET::AllId = 1356;
-					//SHEET::iAllId = 1;
-					//
-					//Найти Потерянные листы:
-					//SELECT * FROM sheet WHERE create_at > '2024-05-15 17:25:13.433' AND news <> 1 ORDER BY id DESC
-					//PDF::SHEET::GetRawSheet(conn_pdf);
-					//
-					//
-					//SHEET::StartSheet = "2024-05-25 04:30:00";
-					//
-					////Для автоматической коррекции
-					//int id = 0;
-					//std::string comand = "SELECT create_at, id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1";
-					//std::string comand = "SELECT create_at, id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1";
-					//PGresult* res = conn_pdf.PGexec(comand);
-					//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					//{
-					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
-					//	id = Stoi(conn_pdf.PGgetvalue(res, 0, 1));
-					//}
-					//PQclear(res);
-					//
-					//comand = "SELECT create_at, id FROM sheet WHERE id > " + std::to_string(id) + " ORDER BY id ASC LIMIT 1";
-					//res = conn_pdf.PGexec(comand);
-					//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					//	SHEET::StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
-					//PQclear(res);
-					//
-					//SHEET::StartSheet = "2024-06-02 00:00:00.00";
-					//SHEET::StopSheet  = "2024-05-31 11:00:00.00";
-					//std::string StartSheet = "2024-05-15 00:00:00.00";
-					//std::string comand = "SELECT create_at, id, correct FROM sheet WHERE correct <= '2024-06-05' AND create_at  > '2024-04-01' ORDER BY id ASC LIMIT 1";
-					//PGresult* res = conn_pdf.PGexec(comand);
-					//if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					//	StartSheet = conn_pdf.PGgetvalue(res, 0, 0);
-					//PQclear(res);
-
 					std::time_t st = time(NULL);;
 					time_t td1 = (time_t)difftime(st, 60 * 60 * 24);
 					time_t td2 = (time_t)difftime(st, 60 * 60 * 24 * 1);
@@ -4368,7 +4374,7 @@ namespace PDF
 					if(t2 != std::string::npos)start2.resize(t2);
 
 					//std::string start1 = "2024-08-15 00:00:00";
-					//std::string start2 = "2024-08-14 00:00:00";
+					//std::string start2 = "2024-08-01 00:00:00";
 					std::string stop = "";
 					SHEET::GetSheets getsheet(conn_pdf, start1, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 					
