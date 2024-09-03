@@ -4191,7 +4191,7 @@ namespace PDF
 		//}
 	}
 
-#define HENDINSERT 0
+#define HENDINSERT 1
 #if HENDINSERT
 
 
@@ -4315,7 +4315,7 @@ namespace PDF
 		//
 		//int tt = 0;
 		//{
-			std::string comand = "SELECT * FROM cassette WHERE id = 1158"; //2024-05-25-06
+			std::string comand = "SELECT * FROM cassette WHERE id = 1159"; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			TCassette Cassette;
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4327,7 +4327,7 @@ namespace PDF
 			else
 				LOG_ERR_SQL(PdfLogger, res, comand);
 			PQclear(res);
-			PdfClass sdc(Cassette, true);
+			PdfClass sdc(Cassette);
 	}
 #endif // HENDINSERT
 
