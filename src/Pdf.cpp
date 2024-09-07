@@ -4331,6 +4331,75 @@ namespace PDF
 	}
 #endif // HENDINSERT
 
+	DWORD CorrectSheet()
+	{
+		try
+		{
+			PGConnection conn_pdf;
+			conn_pdf.connection();
+
+			time_t st;
+			time_t td;
+			std::string start = "";
+			std::string stop = "";
+
+			std::string comand = "SELECT start_at FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
+			PGresult* res = conn_pdf.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(conn_pdf.PQntuples(res))
+				{
+					start = conn_pdf.PGgetvalue(res, 0, 0);
+				}
+			}
+			else
+			{
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			}
+			PQclear(res);
+
+			if(start.length() == 0)
+				return 1;
+
+			st = DataTimeOfString(start);
+			td = (time_t)difftime(st, 5 * 60); //минус 5 минут
+			start  = GetDataTimeString(&td);
+			//std::string start1 = "2024-08-15 00:00:00";
+			SHEET::GetSheets getsheet(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+		}
+		CATCH(PdfLogger, "");;
+
+		return 0;
+	}
+
+	DWORD CorrectCassette()
+	{
+		try
+		{
+			PGConnection conn_pdf;
+			conn_pdf.connection();
+
+			time_t st = time(NULL);
+			time_t td = (time_t)difftime(st, 60 * 60 * 24 * 1); //За сутки
+			std::string start = GetDataTimeString(&td);
+			std::string stop = "";
+
+			size_t t2 = start.find(" "); //Оставляем только дату время будет с нуля часов
+			if(t2 != std::string::npos)
+			{
+				start[t2] = 0;
+				start.resize(t2);
+			}
+			//std::string start2 = "2024-08-01 00:00:00";
+			DelAllPdf(lpLogPdf2);
+			CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");
+			CopyAllFile();
+		}
+		CATCH(PdfLogger, "");;
+
+		return 0;
+	}
+
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID)
 	{
@@ -4361,58 +4430,16 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
-					time_t st;
-					time_t td;
-					std::string start1 = "";
-					std::string start2 = "";
-					std::string stop = "";
-
-					std::string comand = "SELECT start_at FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
-					PGresult* res = conn_pdf.PGexec(comand);
-					TCassette Cassette;
-					if(PQresultStatus(res) == PGRES_TUPLES_OK)
-					{
-						if(conn_pdf.PQntuples(res))
-						{ 
-							start1 = conn_spis.PGgetvalue(res, 0, 0);
-						}
-					}
-					else
-						LOG_ERR_SQL(PdfLogger, res, comand);
-					PQclear(res);
-
-					if(start1.length() == 0)
+					if( CorrectSheet() )
 					{
 						isRun = false;
-						return 0;
+						PDF::Correct = true;
+						return 1;
 					}
 
-					st = DataTimeOfString(start1);
-					td = (time_t)difftime(st, 5 * 60);
-					start1 = GetDataTimeString(&td);
+					CorrectCassette();
 
-
-					st = time(NULL);
-					td = (time_t)difftime(st, 60 * 60 * 24 * 1); //За сутки
-					start2 = GetDataTimeString(&td);
-					size_t t2 = start2.find(" "); //Оставляем только дату время будет с нуля часов
-					if(t2 != std::string::npos)
-					{
-						start2[t2] = 0;
-						start2.resize(t2);
-					}
-
-
-					//std::string start1 = "2024-08-15 00:00:00";
-					//std::string start2 = "2024-08-01 00:00:00";
-					SHEET::GetSheets getsheet(conn_pdf, start1, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
-					
-					DelAllPdf(lpLogPdf2);
-					CASSETTE::GetCassettes getpdf(conn_pdf, start2, stop); // , "2024-03-30 00:00:00.00");
-					CopyAllFile();
-					
-
-					Correct = false;
+					PDF::Correct = false;
 				}
 #ifdef _DEBUG
 				//В дебаге один проход и выход из программы
