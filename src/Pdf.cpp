@@ -4191,7 +4191,7 @@ namespace PDF
 		//}
 	}
 
-#define HENDINSERT 1
+#define HENDINSERT 0
 #if HENDINSERT
 
 
@@ -4315,7 +4315,7 @@ namespace PDF
 		//
 		//int tt = 0;
 		//{
-			std::string comand = "SELECT * FROM cassette WHERE id = 1159"; //2024-05-25-06
+			std::string comand = "SELECT * FROM cassette WHERE id = 1181"; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			TCassette Cassette;
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4350,6 +4350,7 @@ namespace PDF
 			//Для ручного тестирования
 			DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
+			CopyAllFile();
 			isRun = false;
 			return 0;
 #else
@@ -4360,22 +4361,50 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
-					std::time_t st = time(NULL);;
-					time_t td1 = (time_t)difftime(st, 60 * 60 * 24);
-					time_t td2 = (time_t)difftime(st, 60 * 60 * 24 * 1);
-					std::string start1 = GetDataTimeString(&td1);
-					std::string start2 = GetDataTimeString(&td2);
+					time_t st;
+					time_t td;
+					std::string start1 = "";
+					std::string start2 = "";
+					std::string stop = "";
 
-					size_t t1 = start1.find(" ");
-					size_t t2 = start2.find(" ");
-					if(t1 != std::string::npos)start1[t1] = 0;
-					if(t2 != std::string::npos)start2[t2] = 0;
-					if(t1 != std::string::npos)start1.resize(t1);
-					if(t2 != std::string::npos)start2.resize(t2);
+					std::string comand = "SELECT start_at FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
+					PGresult* res = conn_pdf.PGexec(comand);
+					TCassette Cassette;
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						if(conn_pdf.PQntuples(res))
+						{ 
+							start1 = conn_spis.PGgetvalue(res, 0, 0);
+						}
+					}
+					else
+						LOG_ERR_SQL(PdfLogger, res, comand);
+					PQclear(res);
+
+					if(start1.length() == 0)
+					{
+						isRun = false;
+						return 0;
+					}
+
+					st = DataTimeOfString(start1);
+					td = (time_t)difftime(st, 5 * 60);
+					start1 = GetDataTimeString(&td);
+
+
+					st = time(NULL);
+					td = (time_t)difftime(st, 60 * 60 * 24 * 1); //За сутки
+					start2 = GetDataTimeString(&td);
+					size_t t2 = start2.find(" "); //Оставляем только дату время будет с нуля часов
+					if(t2 != std::string::npos)
+					{
+						start2[t2] = 0;
+						start2.resize(t2);
+					}
+
 
 					//std::string start1 = "2024-08-15 00:00:00";
 					//std::string start2 = "2024-08-01 00:00:00";
-					std::string stop = "";
 					SHEET::GetSheets getsheet(conn_pdf, start1, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 					
 					DelAllPdf(lpLogPdf2);
