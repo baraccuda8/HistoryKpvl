@@ -6,7 +6,7 @@
 
 #include "Graff.h"
 
-const int64_t SecCount1 = 60 * 60 * 12; //12 часов
+const int64_t SecCount1 = 60 * 60 * 24; //12 часов
 const int64_t SecCount2 = 60 * 60; //1 час
 
 HANDLE hGGraff1 = NULL;
