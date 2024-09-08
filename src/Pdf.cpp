@@ -4483,12 +4483,12 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
-					//if( CorrectSheet(0) )
-					//{
-					//	isRun = false;
-					//	PDF::Correct = true;
-					//	return 1;
-					//}
+					if( CorrectSheet(0) )
+					{
+						isRun = false;
+						PDF::Correct = true;
+						return 1;
+					}
 
 					CorrectCassette(0);
 
