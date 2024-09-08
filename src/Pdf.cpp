@@ -4383,9 +4383,12 @@ namespace PDF
 			PdfClass sdc(Cassette);
 	}
 #endif // HENDINSERT
-
+	bool isCorrectSheet = false;
 	DWORD CorrectSheet(LPVOID)
 	{
+		if(isCorrectSheet) return 0;
+		isCorrectSheet = true;
+
 		try
 		{
 			PGConnection conn_pdf;
@@ -4422,11 +4425,15 @@ namespace PDF
 		}
 		CATCH(PdfLogger, "");;
 
+		isCorrectSheet = false;
 		return 0;
 	}
 
+	bool isCorrectCassette = false;
 	DWORD CorrectCassette(LPVOID)
 	{
+		if(isCorrectCassette) return 0;
+		isCorrectCassette = true;
 		try
 		{
 			PGConnection conn_pdf;
@@ -4450,6 +4457,7 @@ namespace PDF
 		}
 		CATCH(PdfLogger, "");;
 
+		isCorrectCassette = false;
 		return 0;
 	}
 
@@ -4483,12 +4491,12 @@ namespace PDF
 				//PDF::Correct = false;
 				if(PDF::Correct)
 				{
-					if( CorrectSheet(0) )
-					{
-						isRun = false;
-						PDF::Correct = true;
-						return 1;
-					}
+					//if( CorrectSheet(0) )
+					//{
+					//	isRun = false;
+					//	PDF::Correct = true;
+					//	return 1;
+					//}
 
 					CorrectCassette(0);
 

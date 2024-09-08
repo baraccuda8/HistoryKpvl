@@ -834,7 +834,7 @@ void Open_KPVL()
 #ifndef TESTGRAFF
     hKPVLURI = CreateThread(0, 0, Open_KPVL_RUN, (LPVOID)0, 0, 0);
     hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
-    CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
+    //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
 #endif
 
 #ifdef _DEBUG
