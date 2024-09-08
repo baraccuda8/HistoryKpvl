@@ -1379,10 +1379,15 @@ namespace KPVL {
                     Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
                     SetSaveDone(conn_kpvl);
                     ss = WaitResv;
+
+                    //Коррекция листа
+                    CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
                 }
                 //else
                 //    LOG_INFO(SQLLogger, "{:90}| NewData = false", FUNCTION_LINE_NAME);
                 MySetWindowText(winmap(value->winId), ss);
+
+                
                 return 0;
             }
         }

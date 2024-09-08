@@ -9,6 +9,7 @@
 typedef std::map <int, T_Todos> MapRunn;
 typedef std::map<int, TCassette> TCASS;
 
+
 namespace PDF
 {
 	OpcUa::Variant GetVarVariant(OpcUa::VariantType Type, std::string value);
@@ -32,5 +33,7 @@ namespace PDF
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID);
 
+	DWORD CorrectCassette(LPVOID);
+	DWORD CorrectSheet(LPVOID);
 };
 
