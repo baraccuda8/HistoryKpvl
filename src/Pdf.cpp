@@ -2582,16 +2582,10 @@ namespace PDF
 						std::string old_value = "";
 						for(int l = 0; l < line && isRun; l++)
 						{
-							//std::stringstream ssd;
-							//ssd << "SaveCassette: " << line << ":" << l;
-							//SetWindowText(hWndDebug, ssd.str().c_str());
-
-
 							T_Todos ct;
 							ct.value = conn.PGgetvalue(res, l, TODOS::content);
 							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
 							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-							//ct.id_name_at = "";
 							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
 							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
 							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
@@ -2619,8 +2613,8 @@ namespace PDF
 					if(DateStop.length())
 						ssd << "create_at < '" << DateStop << "' AND ";
 
-					ssd << "(id_name = " << Furn->Cassette.Hour->ID;
-					ssd << ") ORDER BY id";
+					ssd << "id_name = " << Furn->Cassette.Hour->ID;
+					ssd << " ORDER BY id";
 
 					std::string comand = ssd.str();
 					PGresult* res = conn.PGexec(comand);
@@ -2632,16 +2626,10 @@ namespace PDF
 						std::string old_value = "";
 						for(int l = 0; l < line && isRun; l++)
 						{
-							//std::stringstream ssd;
-							//ssd << "SaveCassette: " << line << ":" << l;
-							//SetWindowText(hWndDebug, ssd.str().c_str());
-
-
 							T_Todos ct;
 							ct.value = conn.PGgetvalue(res, l, TODOS::content);
 							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
 							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-							//ct.id_name_at = "";
 							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
 							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
 							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
@@ -4203,6 +4191,10 @@ namespace PDF
 		return paths;
 	}
 
+	//--Удаление "левых" листов
+	//--DELETE FROM sheet WHERE id = 13530;
+	//--SELECT * FROM sheet WHERE (pos > 5 AND secondpos_at IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-01' ORDER BY id;
+
 	void CopyAllFile()
 	{
 		//namespace fs = std::filesystem;
@@ -4301,86 +4293,19 @@ namespace PDF
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
-		//MapTodos allCassetTodos;
-		////MapTodos allTodos;
-		//std::vector <T_casset> all_casset;
-		//GetSeq1(conn, allCassetTodos);
-		//
-		//for(auto a : allCassetTodos)
-		//{
-		//	if(a.content.As<bool>())
-		//	{
-		//		std::stringstream ssd;
-		//		ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
-		//		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-		//		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-		//		ssd << "FROM todos WHERE (";
-		//		ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
-		//		ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
-		//		ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
-		//		ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
-		//		ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
-		//		ssd << ") AND create_at <= '" << a.create_at << "'";
-		//		ssd << " ORDER BY id_name DESC, id DESC;";
-		//		std::string comand = ssd.str();
-		//		SetWindowText(hWndDebug, comand.c_str());
-		//		PGresult* res = conn.PGexec(comand); 
-		//		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		//		{
-		//			int nFields = PQnfields(res);
-		//			int line = PQntuples(res);
-		//			if(line)
-		//			{
-		//				//float f = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-		//				T_casset tc;
-		//				for(int l = 0; l < line; l++)
-		//				{
-		//					T_Todos td;
-		//					td.create_at = conn.PGgetvalue(res, l, 0);
-		//					td.id = Stoi(conn.PGgetvalue(res, l, 1));
-		//					td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
-		//					td.value = conn.PGgetvalue(res, l, 3);
-		//					int type = Stoi(conn.PGgetvalue(res, l, 4));
-		//					td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
-		//					if(nFields >= 6)
-		//						td.id_name_at = conn.PGgetvalue(res, l, 5);
-		//
-		//					if(td.id_name == HMISheetData.Cassette.Hour->ID)tc.Hour = Stoi(td.value);
-		//					if(td.id_name == HMISheetData.Cassette.Day->ID)tc.Day = Stoi(td.value);
-		//					if(td.id_name == HMISheetData.Cassette.Month->ID)tc.Month = Stoi(td.value);
-		//					if(td.id_name == HMISheetData.Cassette.Year->ID)tc.Year = Stoi(td.value);
-		//					if(td.id_name == HMISheetData.Cassette.CassetteNo->ID)tc.CassetteNo = Stoi(td.value);
-		//				}
-		//				if(tc.Day && tc.Month && tc.Year && tc.CassetteNo)
-		//				{
-		//					tc.Create = a.create_at;
-		//					all_casset.push_back(tc);
-		//				}
-		//			}
-		//		}
-		//		PQclear(res);
-		//		//GetSeq2(conn, allTodos, a.create_at);
-		//		//T_casset tc;
-		//		//std::stringstream ssd;
-		//		//ssd << "SELECT create_at, hour, day, month, year, cassetteno, WHERE create_at <=" << a.create_at << " ORDER BY id DESC id LIMIT 1";
-		//	}
-		//}
-		//
-		//int tt = 0;
-		//{
-			std::string comand = "SELECT * FROM cassette WHERE id = 1197"; //2024-05-25-06
-			PGresult* res = conn.PGexec(comand);
-			TCassette Cassette;
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				S107::GetColl(res);
-				if(conn.PQntuples(res))
-					S107::GetCassette(res, Cassette, 0);
-			}
-			else
-				LOG_ERR_SQL(PdfLogger, res, comand);
-			PQclear(res);
-			PdfClass sdc(Cassette);
+		std::string comand = "SELECT * FROM cassette WHERE id = 1216"; //2024-05-25-06
+		PGresult* res = conn.PGexec(comand);
+		TCassette Cassette;
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			S107::GetColl(res);
+			if(conn.PQntuples(res))
+				S107::GetCassette(res, Cassette, 0);
+		}
+		else
+			LOG_ERR_SQL(PdfLogger, res, comand);
+		PQclear(res);
+		PdfClass sdc(Cassette);
 	}
 #endif // HENDINSERT
 	bool isCorrectSheet = false;
@@ -4450,7 +4375,9 @@ namespace PDF
 				start[t2] = 0;
 				start.resize(t2);
 			}
-			//std::string start2 = "2024-08-01 00:00:00";
+			start += " 00:00:00";
+
+			//start = "2024-09-05 00:00:00";
 			DelAllPdf(lpLogPdf2);
 			CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");
 			CopyAllFile();
