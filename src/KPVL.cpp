@@ -421,7 +421,7 @@ namespace KPVL {
                 {
                     float HeatTime_Z2 = GetHeatTime_Z2(conn, enddata_at);
 
-                    std::string Id = Sheet::GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string Id = Sheet::GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet/*, TS.Slab*/);
 
                     std::stringstream co;
                     co << "UPDATE sheet SET datatime_end = '" << enddata_at << "', datatime_all = " << HeatTime_Z2 << " WHERE id = " << Id;
@@ -512,7 +512,7 @@ namespace KPVL {
                 sd << " AND partno = " << PD.PartNo->GetInt();
                 sd << " AND sheet = " << PD.Sheet->GetInt();
                 sd << " AND subsheet = " << PD.SubSheet->GetInt();
-                sd << " AND slab = " << PD.Slab->GetInt();
+                //sd << " AND slab = " << PD.Slab->GetInt();
                 std::string comand = sd.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
@@ -533,7 +533,7 @@ namespace KPVL {
         }
 
         //Получаем ID листа
-        std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
+        std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet/*, std::string sSlab*/)
         {
             std::string id = "0";
 
@@ -542,7 +542,7 @@ namespace KPVL {
             int32_t PartNo = Stoi(sPartNo);
             int32_t Sheet = Stoi(sSheet);
             int32_t SubSheet = Stoi(sSubSheet);
-            int32_t Slab = Stoi(sSlab);
+            //int32_t Slab = Stoi(sSlab);
 
             if(Melt && Pack && PartNo && Sheet /*&& SubSheet && Slab*/)
             {
@@ -553,7 +553,7 @@ namespace KPVL {
                 co << " AND partno = " << PartNo;
                 co << " AND sheet = " << Sheet;
                 co << " AND subsheet = " << SubSheet;
-                co << " AND slab = " << Slab;
+                //co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -569,7 +569,7 @@ namespace KPVL {
         }
 
                 //Получаем ID листа
-        std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
+        std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet/*, int32_t Slab*/)
         {
             std::string id = "0";
 
@@ -582,7 +582,7 @@ namespace KPVL {
                 co << " AND partno = " << PartNo;
                 co << " AND sheet = " << Sheet;
                 co << " AND subsheet = " << SubSheet;
-                co << " AND slab = " << Slab;
+                //co << " AND slab = " << Slab;
                 co << ";";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -860,10 +860,11 @@ namespace KPVL {
                    || PD.PartNo->GetInt() != Stoi(TS.PartNo)
                    || PD.Sheet->GetInt() != Stoi(TS.Sheet)
                    || PD.SubSheet->GetInt() != Stoi(TS.SubSheet)
-                   || PD.Slab->GetInt() != Stoi(TS.Slab))
+                   //|| PD.Slab->GetInt() != Stoi(TS.Slab)
+                   )
                 {
                     //std::string sId = GetIdSheet(PD);
-                    std::string sId = GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet, TS.Slab);
+                    std::string sId = GetIdSheet(conn, TS.Melt, TS.Pack, TS.PartNo, TS.Sheet, TS.SubSheet/*, TS.Slab*/);
                     if(atoi(sId.c_str()))
                     {
                         int iPos = -1;
@@ -1302,72 +1303,76 @@ namespace KPVL {
 
             void SetSaveDone(PGConnection& conn)
             {
-                T_Side Top_Side = HMISheetData.Top_Side;
-                T_Side Bot_Side = HMISheetData.Bot_Side;
-                T_CassetteData Cassette = HMISheetData.Cassette;
-
-                T_PlateData PD = PlateData[Pos];
-                //if(!IsSheet(PD))
-                //    PD = PlateData[5];
-
-                if(HMISheetData.NewData->GetBool())
+                try
                 {
-                    if(IsSheet(PD))
+                    T_Side Top_Side = HMISheetData.Top_Side;
+                    T_Side Bot_Side = HMISheetData.Bot_Side;
+                    T_CassetteData Cassette = HMISheetData.Cassette;
+
+                    T_PlateData PD = PlateData[Pos];
+                    //if(!IsSheet(PD))
+                    //    PD = PlateData[5];
+
+                    if(HMISheetData.NewData->GetBool())
                     {
-                        std::string id = GetIdSheet(conn, PD);
-                        if(id.length() && id != "0")
+                        if(IsSheet(PD))
                         {
+                            std::string id = GetIdSheet(conn, PD);
+                            if(id.length() && id != "0")
+                            {
 
 #pragma region comand = "UPDATE sheet SET"
-                            std::stringstream co;
-                            co << "UPDATE sheet SET";
-                            co << " pos = 7";
-                            co << ", news = 1";
-                            co << ", top1 = " << Top_Side.h1->GetFloat();
-                            co << ", top2 = " << Top_Side.h2->GetFloat();
-                            co << ", top3 = " << Top_Side.h3->GetFloat();
-                            co << ", top4 = " << Top_Side.h4->GetFloat();
-                            co << ", top5 = " << Top_Side.h5->GetFloat();
-                            co << ", top6 = " << Top_Side.h6->GetFloat();
-                            co << ", top7 = " << Top_Side.h7->GetFloat();
-                            co << ", top8 = " << Top_Side.h8->GetFloat();
-                            co << ", bot1 = " << Bot_Side.h1->GetFloat();
-                            co << ", bot2 = " << Bot_Side.h2->GetFloat();
-                            co << ", bot3 = " << Bot_Side.h3->GetFloat();
-                            co << ", bot4 = " << Bot_Side.h4->GetFloat();
-                            co << ", bot5 = " << Bot_Side.h5->GetFloat();
-                            co << ", bot6 = " << Bot_Side.h6->GetFloat();
-                            co << ", bot7 = " << Bot_Side.h7->GetFloat();
-                            co << ", bot8 = " << Bot_Side.h8->GetFloat();
-                            co << ", hour = " << Stoi(Cassette.Hour->GetString());// ->GetInt();
-                            co << ", day = " << Cassette.Day->GetInt();
-                            co << ", month = " << Cassette.Month->GetInt();
-                            co << ", year = " << Cassette.Year->GetInt();
-                            co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
-                            co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
-                            co << " WHERE id = " << id << ";";
+                                std::stringstream co;
+                                co << "UPDATE sheet SET";
+                                co << " pos = 7";
+                                co << ", news = 1";
+                                co << ", top1 = " << Top_Side.h1->GetFloat();
+                                co << ", top2 = " << Top_Side.h2->GetFloat();
+                                co << ", top3 = " << Top_Side.h3->GetFloat();
+                                co << ", top4 = " << Top_Side.h4->GetFloat();
+                                co << ", top5 = " << Top_Side.h5->GetFloat();
+                                co << ", top6 = " << Top_Side.h6->GetFloat();
+                                co << ", top7 = " << Top_Side.h7->GetFloat();
+                                co << ", top8 = " << Top_Side.h8->GetFloat();
+                                co << ", bot1 = " << Bot_Side.h1->GetFloat();
+                                co << ", bot2 = " << Bot_Side.h2->GetFloat();
+                                co << ", bot3 = " << Bot_Side.h3->GetFloat();
+                                co << ", bot4 = " << Bot_Side.h4->GetFloat();
+                                co << ", bot5 = " << Bot_Side.h5->GetFloat();
+                                co << ", bot6 = " << Bot_Side.h6->GetFloat();
+                                co << ", bot7 = " << Bot_Side.h7->GetFloat();
+                                co << ", bot8 = " << Bot_Side.h8->GetFloat();
+                                co << ", hour = " << Stoi(Cassette.Hour->GetString());// ->GetInt();
+                                co << ", day = " << Cassette.Day->GetInt();
+                                co << ", month = " << Cassette.Month->GetInt();
+                                co << ", year = " << Cassette.Year->GetInt();
+                                co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
+                                co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
+                                co << " WHERE id = " << id << ";";
 #pragma endregion
-                            SETUPDATESQL(SQLLogger, conn, co);
+                                SETUPDATESQL(SQLLogger, conn, co);
 
-                            //std::string comand = co.str();
-                            //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                            //PGresult* res = conn.PGexec(comand);
-                            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            //    LOG_ERR_SQL(SQLLogger, res, comand);
-                            //PQclear(res);
+                                //std::string comand = co.str();
+                                //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                //PGresult* res = conn.PGexec(comand);
+                                //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                                //    LOG_ERR_SQL(SQLLogger, res, comand);
+                                //PQclear(res);
 
-                            //PlateData[5].Sheet->Set_Value((int32_t)0);
-                            LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                //PlateData[5].Sheet->Set_Value((int32_t)0);
+                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                            }
+                            else
+                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                         }
                         else
                             LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
-                    }
-                    else
-                        LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
 
-                    LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    HMISheetData.SaveDone->Set_Value(true);
+                        LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                        HMISheetData.SaveDone->Set_Value(true);
+                    }
                 }
+                CATCH(HardLogger, "");
             }
 
             //Новые лист в касету, Кассета наполяентся
@@ -1376,10 +1381,13 @@ namespace KPVL {
                 const char* ss = WaitKant;
                 if(value->GetBool())                   //Если лист новый
                 {
-                    Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    SetSaveDone(conn_kpvl);
-                    ss = WaitResv;
-
+                    try
+                    {
+                        Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
+                        SetSaveDone(conn_kpvl);
+                        ss = WaitResv;
+                    }
+                    CATCH(HardLogger, "");
                     //Коррекция листа
                     CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
                 }
@@ -1717,7 +1725,7 @@ namespace KPVL {
                 int32_t PartNo   = Stoi(PalletSheet[2].PartNo);
                 int32_t Sheet    = Stoi(PalletSheet[2].Sheet);
                 int32_t SubSheet = Stoi(PalletSheet[2].SubSheet);
-                int32_t Slab     = Stoi(PalletSheet[2].Slab);
+                //int32_t Slab     = Stoi(PalletSheet[2].Slab);
 
 
                 float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetFloat();
@@ -1735,7 +1743,7 @@ namespace KPVL {
                 if(Melt && Pack && PartNo && Sheet)
                 {
                     //LOG_INFO(SQLLogger, "{:90}| Time_Z2={}, StateNo={}, Melt={}, Pack={}, PartNo={}, Sheet={}, SubSheet={}, Slab={}", FUNCTION_LINE_NAME, Time_Z2, StateNo, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
-                    int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+                    int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet/*, Slab*/));
 
                     std::stringstream ss1;
                     ss1 << "UPDATE sheet SET ";

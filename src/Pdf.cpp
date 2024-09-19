@@ -18,7 +18,7 @@
 
 #include <filesystem>
 
-std::shared_ptr<spdlog::logger> PdfLogger;
+std::shared_ptr<spdlog::logger> PdfLogger = NULL;
 
 //Для выполнения дебага, начинапь прзод с самогго начала ишнарируя "correct IS NULL AND"
 #define TESTPDF
@@ -1819,6 +1819,7 @@ namespace PDF
 	//Автоматическое создание по кассете
 	void PrintCassettePdfAuto(TCassette& TC)
 	{
+		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 		try
 		{
 			if(TC.Run_at.length() && TC.Finish_at.length())
@@ -4210,6 +4211,7 @@ namespace PDF
 		}
 		CATCH(PdfLogger, "");;
 
+#if _DEBUG
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
 		try
 		{
@@ -4219,6 +4221,7 @@ namespace PDF
 								  | std::filesystem::copy_options::recursive);
 		}
 		CATCH(PdfLogger, "");;
+#endif
 	}
 	void DelAllPdf(std::filesystem::path dir)
 	{
@@ -4236,7 +4239,12 @@ namespace PDF
 		//}
 	}
 
+#if _DEBUG
 #define HENDINSERT 0
+//#define HENDINSERT 1
+#else
+#define HENDINSERT 0
+#endif
 #if HENDINSERT
 
 
@@ -4293,7 +4301,7 @@ namespace PDF
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
 	{
-		std::string comand = "SELECT * FROM cassette WHERE id = 1216"; //2024-05-25-06
+		std::string comand = "SELECT * FROM cassette WHERE id = 1275"; //2024-05-25-06
 		PGresult* res = conn.PGexec(comand);
 		TCassette Cassette;
 		if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4311,13 +4319,15 @@ namespace PDF
 	bool isCorrectSheet = false;
 	DWORD CorrectSheet(LPVOID)
 	{
-		if(isCorrectSheet) return 0;
+		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
+
+		//if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
 
 		try
 		{
-			PGConnection conn_pdf;
-			conn_pdf.connection();
+			PGConnection conn;
+			conn.connection();
 
 			time_t st;
 			time_t td;
@@ -4325,12 +4335,12 @@ namespace PDF
 			std::string stop = "";
 
 			std::string comand = "SELECT start_at FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
-			PGresult* res = conn_pdf.PGexec(comand);
+			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
-				if(conn_pdf.PQntuples(res))
+				if(conn.PQntuples(res))
 				{
-					start = conn_pdf.PGgetvalue(res, 0, 0);
+					start = conn.PGgetvalue(res, 0, 0);
 				}
 			}
 			else
@@ -4341,32 +4351,59 @@ namespace PDF
 
 			if(start.length() == 0)
 				return 1;
-
+			
 			st = DataTimeOfString(start);
 			td = (time_t)difftime(st, 5 * 60); //минус 5 минут
 			start  = GetDataTimeString(&td);
-			//std::string start1 = "2024-08-15 00:00:00";
-			SHEET::GetSheets getsheet(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+
+			//start = "2024-09-15 17:00:00";
+
+			SHEET::GetSheets getsheet(conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+
 		}
 		CATCH(PdfLogger, "");;
 
 		isCorrectSheet = false;
+		SetWindowText(hWndDebug, "Закончили коррекчию листов");
 		return 0;
 	}
 
 	bool isCorrectCassette = false;
 	DWORD CorrectCassette(LPVOID)
 	{
+		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 		if(isCorrectCassette) return 0;
 		isCorrectCassette = true;
 		try
 		{
-			PGConnection conn_pdf;
-			conn_pdf.connection();
+			PGConnection conn;
+			conn.connection();
 
-			time_t st = time(NULL);
-			time_t td = (time_t)difftime(st, 60 * 60 * 24 * 1); //За сутки
+			time_t rt = time(NULL);
+			time_t td = (time_t)difftime(rt, 60 * 60 * 24 * 1); //За сутки
 			std::string start = GetDataTimeString(&td);
+
+			//std::string start;
+			//std::string comand = "SELECT run_at FROM cassette WHERE pdf IS NULL AND id > "
+			//"(SELECT id FROM cassette WHERE pdf IS NOT NULL ORDER BY id DESC LIMIT 1)"
+			//" AND CAST(event AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
+			//PGresult* res = conn.PGexec(comand);
+			//if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			//{
+			//	if(conn.PQntuples(res))
+			//	{
+			//		start = conn.PGgetvalue(res, 0, 0);
+			//	}
+			//}
+			//else
+			//{
+			//	LOG_ERR_SQL(PdfLogger, res, comand);
+			//}
+			//PQclear(res);
+			//
+			//if(start.length() == 0)
+			//	return 1;
+
 			std::string stop = "";
 
 			size_t t2 = start.find(" "); //Оставляем только дату время будет с нуля часов
@@ -4379,27 +4416,22 @@ namespace PDF
 
 			//start = "2024-09-05 00:00:00";
 			DelAllPdf(lpLogPdf2);
-			CASSETTE::GetCassettes getpdf(conn_pdf, start, stop); // , "2024-03-30 00:00:00.00");
+			CASSETTE::GetCassettes getpdf(conn, start, stop); // , "2024-03-30 00:00:00.00");
 			CopyAllFile();
 		}
 		CATCH(PdfLogger, "");;
 
 		isCorrectCassette = false;
+		SetWindowText(hWndDebug, "Закончили коррекчию кассет");
 		return 0;
 	}
 
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID)
 	{
-		//return 0;
-#ifndef _DEBUG
-		
-#else
-
 		try
 		{
-			//return 0;
-			PdfLogger = InitLogger("Pdf Debug");
+			if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 
 #if HENDINSERT
 			PGConnection conn_pdf;
@@ -4412,39 +4444,20 @@ namespace PDF
 			return 0;
 #else
 
-			while(isRun)
-			{
-				PDF::Correct = true;
-				//PDF::Correct = false;
-				if(PDF::Correct)
-				{
-					//if( CorrectSheet(0) )
-					//{
-					//	isRun = false;
-					//	PDF::Correct = true;
-					//	return 1;
-					//}
+			//CorrectSheet(0);
+			CorrectCassette(0);
 
-					CorrectCassette(0);
+			PDF::Correct = false;
 
-					PDF::Correct = false;
-				}
-#ifdef _DEBUG
-				//В дебаге один проход и выход из программы
-				isRun = false;
-#else
-				int TimeCount = 0;
-				while(TimeCount++ < 60 && isRun)
-					std::this_thread::sleep_for(std::chrono::seconds(1));
+			//В дебаге один проход и выход из программы
+			isRun = false;
+			LOG_INFO(PdfLogger, "{:90}| Stop Pdf Debug", FUNCTION_LINE_NAME);
 #endif
-				LOG_INFO(PdfLogger, "{:90}| Stop Pdf Debug", FUNCTION_LINE_NAME);
-			}
-#endif // HENDINSERT
 		}
 		CATCH(PdfLogger, "");;
-#endif
 
 
+		SetWindowText(hWndDebug, "Закончили создание паспортов");
 		return 0;
 	}
 }
