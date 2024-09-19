@@ -4321,7 +4321,7 @@ namespace PDF
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 
-		//if(isCorrectSheet) return 0;
+		if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
 
 		try
@@ -4361,7 +4361,7 @@ namespace PDF
 			SHEET::GetSheets getsheet(conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 		}
-		CATCH(PdfLogger, "");;
+		CATCH(PdfLogger, "");
 
 		isCorrectSheet = false;
 		SetWindowText(hWndDebug, "Закончили коррекчию листов");
@@ -4419,7 +4419,7 @@ namespace PDF
 			CASSETTE::GetCassettes getpdf(conn, start, stop); // , "2024-03-30 00:00:00.00");
 			CopyAllFile();
 		}
-		CATCH(PdfLogger, "");;
+		CATCH(PdfLogger, "");
 
 		isCorrectCassette = false;
 		SetWindowText(hWndDebug, "Закончили коррекчию кассет");
