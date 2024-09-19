@@ -4239,64 +4239,13 @@ namespace PDF
 		//}
 	}
 
+
 #if _DEBUG
 #define HENDINSERT 0
 //#define HENDINSERT 1
 #else
 #define HENDINSERT 0
 #endif
-#if HENDINSERT
-
-
-	typedef struct T_casset{
-		std::string Create;
-		std::string End;
-		int Hour = 0;
-		int Day = 0;
-		int Month = 0;
-		int Year = 0;
-		int CassetteNo = 0;
-	}T_casset;
-
-	typedef std::vector<T_casset>VT_casset;
-
-	void GetSeq1(PGConnection& conn, MapTodos& allTodos)
-	{
-		std::stringstream ssd;
-		ssd << "SELECT create_at, id, id_name, content ";
-		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-		ssd << "FROM todos WHERE";
-		ssd << " id_name = " << HMISheetData.CasseteIsFill->ID;
-		//ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
-		//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
-		//ssd << " AND create_at >= '" << StartSheet << "'";
-		//if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-		ssd << " ORDER BY id;";
-		std::string comand = ssd.str();
-		GetTodosSQL(conn, allTodos, comand);
-
-	}
-	void GetSeq2(PGConnection& conn, MapTodos& allTodos, std::string Start)
-	{
-		std::stringstream ssd;
-		ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content ";
-		ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-		ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-		ssd << "FROM todos WHERE (";
-		ssd << " id_name = " << HMISheetData.Cassette.Hour->ID;
-		ssd << " OR id_name = " << HMISheetData.Cassette.Day->ID;
-		ssd << " OR id_name = " << HMISheetData.Cassette.Month->ID;
-		ssd << " OR id_name = " << HMISheetData.Cassette.Year->ID;
-		ssd << " OR id_name = " << HMISheetData.Cassette.CassetteNo->ID;
-		//ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
-		//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
-		ssd << ") AND create_at <= '" << Start << "'";
-		//if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-		ssd << " ORDER BY id_name DESC, id;";
-		std::string comand = ssd.str();
-		GetTodosSQL(conn, allTodos, comand);
-	}
 
 	//Для ручного добавления листа
 	void HendInsetr(PGConnection& conn)
@@ -4313,10 +4262,16 @@ namespace PDF
 		else
 			LOG_ERR_SQL(PdfLogger, res, comand);
 		PQclear(res);
+
+		DelAllPdf(lpLogPdf2);
 		PdfClass sdc(Cassette);
+		CopyAllFile();
+
 	}
-#endif // HENDINSERT
+
 	bool isCorrectSheet = false;
+	bool isCorrectCassette = false;
+
 	DWORD CorrectSheet(LPVOID)
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
@@ -4368,7 +4323,6 @@ namespace PDF
 		return 0;
 	}
 
-	bool isCorrectCassette = false;
 	DWORD CorrectCassette(LPVOID)
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
@@ -4437,9 +4391,7 @@ namespace PDF
 			PGConnection conn_pdf;
 			conn_pdf.connection();
 			//Для ручного тестирования
-			DelAllPdf(lpLogPdf2);
 			HendInsetr(conn_pdf);
-			CopyAllFile();
 			isRun = false;
 			return 0;
 #else
