@@ -4276,7 +4276,9 @@ namespace PDF
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 
-		if(isCorrectSheet) return 0;
+		LOG_INFO(PdfLogger, "Старт корректировки листов");
+
+		//if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
 
 		try
@@ -4319,6 +4321,9 @@ namespace PDF
 		CATCH(PdfLogger, "");
 
 		isCorrectSheet = false;
+
+		LOG_INFO(PdfLogger, "Стоп корректировки листов");
+
 		SetWindowText(hWndDebug, "Закончили коррекчию листов");
 		return 0;
 	}
@@ -4326,7 +4331,10 @@ namespace PDF
 	DWORD CorrectCassette(LPVOID)
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
-		if(isCorrectCassette) return 0;
+		LOG_INFO(PdfLogger, "Старт корректировки кассет");
+
+		//if(isCorrectCassette) return 0;
+
 		isCorrectCassette = true;
 		try
 		{
@@ -4376,6 +4384,7 @@ namespace PDF
 		CATCH(PdfLogger, "");
 
 		isCorrectCassette = false;
+		LOG_INFO(PdfLogger, "Стоп корректировки кассет");
 		SetWindowText(hWndDebug, "Закончили коррекчию кассет");
 		return 0;
 	}
