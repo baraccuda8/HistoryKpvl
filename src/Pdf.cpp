@@ -1915,10 +1915,11 @@ namespace PDF
 
 			std::string DateStart = "";
 			std::string DateStop = "";
-			TCASS P0;
 			std::fstream fUpdateCassette;
+			
 			int lin = 1;
 
+			std::string GetStartTime(PGConnection& conn, std::string peth = "");
 			std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at);
 			void GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn);
 			void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
@@ -1927,13 +1928,12 @@ namespace PDF
 			void SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it);
 			void SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it);
 			void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it);
-			void SaveFileCass();
-			void GetCasset(PGConnection& conn, MapRunn& CassetteTodos, int Petch);
+			void SaveFileCass(TCASS& P);
+			void GetCasset(PGConnection& conn, int Petch);
 			void GetCasset(PGConnection& conn);
 			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
-			void CorrectSQL(PGConnection& conn);
-			GetCassettes(PGConnection& conn, std::string datestart = "", std::string datestop = "");
-			std::string GetStartTime(PGConnection& conn, std::string peth = "");
+			//void CorrectSQL(PGConnection& conn);
+			GetCassettes(PGConnection& conn);
 		};
 
 		std::string GetCassettes::GetStartTime(PGConnection& conn, std::string peth)
@@ -2531,7 +2531,7 @@ namespace PDF
 			}
 		}
 
-		void GetCassettes::SaveFileCass()
+		void GetCassettes::SaveFileCass(TCASS& P0)
 		{
 
 	//#ifdef _DEBUG
@@ -2620,13 +2620,15 @@ namespace PDF
 			}
 		}
 
-		void GetCassettes::GetCasset(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
+		void GetCassettes::GetCasset(PGConnection& conn, int Petch)
 		{
+			MapRunn CassetteTodos;
+
 			T_ForBase_RelFurn* Furn = NULL;
+			TCASS P0;
+
 			try
 			{
-				P0.erase(P0.begin(), P0.end());
-				CassetteTodos.erase(CassetteTodos.begin(), CassetteTodos.end());
 
 				if(Petch == 1)
 				{
@@ -2753,7 +2755,6 @@ namespace PDF
 				int lin = 0;
 				auto size = CassetteTodos.size();
 				TCassette P;
-
 				for(auto& a : CassetteTodos)
 				{
 					if(!isRun)break;
@@ -2931,6 +2932,8 @@ namespace PDF
 					CATCH(PdfLogger, "");
 
 				}
+
+				SaveFileCass(P0);
 				s1.close();
 			}
 			CATCH(PdfLogger, "");
@@ -2938,26 +2941,24 @@ namespace PDF
 
 		void GetCassettes::GetCasset(PGConnection& conn)
 		{
-			MapRunn CassetteTodos;
 			SetWindowText(hWndDebug, "SaveCassette");
 			try
 			{
-				GetCasset(conn, CassetteTodos, 1);
-				GetCasset(conn, CassetteTodos, 2);
-
+				GetCasset(conn, 1);
+				GetCasset(conn, 2);
 			}
 			CATCH(PdfLogger, "");
 		}
 
 
-		GetCassettes::GetCassettes(PGConnection& conn, std::string datestart, std::string datestop)
+		GetCassettes::GetCassettes(PGConnection& conn)
 		{
 			try
 			{
 				DelAllPdf(lpLogPdf2);
 
-				DateStart = datestart;
-				DateStop = datestop;
+				DateStart = "";
+				DateStop = "";
 
 				//if(!DateStart.length()) return;
 
@@ -2971,9 +2972,8 @@ namespace PDF
 				fUpdateCassette = std::fstream("UpdateCassette.txt", std::fstream::binary | std::fstream::out | std::ios::app);
 
 				GetCasset(conn);
-				SetWindowText(hWndDebug, "Закончили коррекцию");
+				SetWindowText(hWndDebug, "Закончили коррекцию кассет");
 
-				SaveFileCass();
 
 				fUpdateCassette.close();
 				LOG_INFO(PdfLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
@@ -4368,32 +4368,7 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			//std::string start = "";
-			//std::string stop = "";
-
-
-			//std::string comand = "SELECT run_at"
-			//	" - TIME '04:00:00'"	//Минус 4 часа
-			//	" FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND id > (SELECT id FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ORDER BY id DESC LIMIT 1) ORDER BY id ASC LIMIT 1;";
-			//PGresult* res = conn.PGexec(comand);
-			//if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			//{
-			//	if(conn.PQntuples(res))
-			//	{
-			//		start = conn.PGgetvalue(res, 0, 0);
-			//	}
-			//}
-			//else
-			//{
-			//	LOG_ERR_SQL(PdfLogger, res, comand);
-			//}
-			//PQclear(res);
-			
-			//start = "2024-09-05 00:00:00";
-			//if(start.length() == 0)
-			//	throw std::runtime_error("Нет подходящих кассет");
-			//else
-				CASSETTE::GetCassettes (conn, "", ""); // , "2024-03-30 00:00:00.00");
+			CASSETTE::GetCassettes cass (conn); // , "2024-03-30 00:00:00.00");
 		}
 		CATCH(PdfLogger, "");
 
