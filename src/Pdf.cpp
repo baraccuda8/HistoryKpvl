@@ -45,6 +45,51 @@ extern std::map<int, std::string> GenSeq3;
 
 namespace PDF
 {
+
+	void CopyAllFile()
+	{
+		//namespace fs = std::filesystem;
+		const char* dir1 = lpLogPdf2.c_str();
+		const char* dir2 = lpLogPdf.c_str();
+
+		try
+		{
+			std::filesystem::copy(dir1, dir2,
+								  std::filesystem::copy_options::update_existing
+							   //|  std::filesystem::copy_options::overwrite_existing
+								  | std::filesystem::copy_options::recursive);
+		}
+		CATCH(PdfLogger, "");;
+
+#if _DEBUG
+		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
+		try
+		{
+			std::filesystem::copy(dir1, dir2,
+								  std::filesystem::copy_options::update_existing
+							   //|  std::filesystem::copy_options::overwrite_existing
+								  | std::filesystem::copy_options::recursive);
+		}
+		CATCH(PdfLogger, "");;
+#endif
+	}
+	void DelAllPdf(std::filesystem::path dir)
+	{
+		boost::system::error_code ec;
+		std::filesystem::remove_all(dir, ec);
+		//std::string err = "";
+		//if(ec)
+		//{
+		//	std::vector<boost::filesystem::path> patch = getDir(dir.string());
+		//	for(auto& p : patch)
+		//		remove(p.string().c_str());
+		//	if(ec)
+		//		LOG_ERROR(PdfLogger, "{:90}| Eor Delete dir: \"{}\"", FUNCTION_LINE_NAME, ec.message());
+		//	patch.erase(patch.begin(), patch.end());
+		//}
+	}
+
+
 	typedef struct T_IdSheet{
 		int id = 0;
 		std::string Start1 = "";		//Дата, время загрузки листа в закалочную печь
@@ -2650,6 +2695,8 @@ namespace PDF
 			}
 			CATCH(PdfLogger, "");
 
+			SaveFileSdg(CassetteTodos);
+			//return;
 			try
 			{
 				std::string name = "cass" + std::to_string(Petch) + ".csv";
@@ -2843,7 +2890,6 @@ namespace PDF
 				GetCasset(conn, CassetteTodos, 1);
 				GetCasset(conn, CassetteTodos, 2);
 
-				SaveFileSdg(CassetteTodos);
 			}
 			CATCH(PdfLogger, "");
 		}
@@ -2870,11 +2916,12 @@ namespace PDF
 		{
 			try
 			{
+				DelAllPdf(lpLogPdf2);
+
 				DateStart = datestart;
 				DateStop = datestop;
 
-				if(!DateStart.length())
-					return;
+				if(!DateStart.length()) return;
 
 				remove("Cass.csv");
 				remove("cass1.csv");
@@ -2888,6 +2935,8 @@ namespace PDF
 				CorrectSQL(conn);
 				fUpdateCassette.close();
 				LOG_INFO(PdfLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+				
+				CopyAllFile();
 			}
 			CATCH(PdfLogger, "");
 
@@ -4196,50 +4245,6 @@ namespace PDF
 	//--DELETE FROM sheet WHERE id = 13530;
 	//--SELECT * FROM sheet WHERE (pos > 5 AND secondpos_at IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-01' ORDER BY id;
 
-	void CopyAllFile()
-	{
-		//namespace fs = std::filesystem;
-		const char* dir1 = lpLogPdf2.c_str();
-		const char* dir2 = lpLogPdf.c_str();
-
-		try
-		{
-			std::filesystem::copy(dir1, dir2,
-						std::filesystem::copy_options::update_existing
-					 //|  std::filesystem::copy_options::overwrite_existing
-					 |  std::filesystem::copy_options::recursive);
-		}
-		CATCH(PdfLogger, "");;
-
-#if _DEBUG
-		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
-		try
-		{
-			std::filesystem::copy(dir1, dir2,
-								  std::filesystem::copy_options::update_existing
-							   //|  std::filesystem::copy_options::overwrite_existing
-								  | std::filesystem::copy_options::recursive);
-		}
-		CATCH(PdfLogger, "");;
-#endif
-	}
-	void DelAllPdf(std::filesystem::path dir)
-	{
-		boost::system::error_code ec;
-		std::filesystem::remove_all(dir, ec);
-		//std::string err = "";
-		//if(ec)
-		//{
-		//	std::vector<boost::filesystem::path> patch = getDir(dir.string());
-		//	for(auto& p : patch)
-		//		remove(p.string().c_str());
-		//	if(ec)
-		//		LOG_ERROR(PdfLogger, "{:90}| Eor Delete dir: \"{}\"", FUNCTION_LINE_NAME, ec.message());
-		//	patch.erase(patch.begin(), patch.end());
-		//}
-	}
-
-
 #if _DEBUG
 #define HENDINSERT 0
 //#define HENDINSERT 1
@@ -4278,7 +4283,7 @@ namespace PDF
 
 		LOG_INFO(PdfLogger, "Старт корректировки листов");
 
-		//if(isCorrectSheet) return 0;
+		if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
 
 		try
@@ -4286,12 +4291,10 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			time_t st;
-			time_t td;
 			std::string start = "";
 			std::string stop = "";
 
-			std::string comand = "SELECT start_at FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
+			std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
@@ -4306,16 +4309,11 @@ namespace PDF
 			}
 			PQclear(res);
 
-			if(start.length() == 0)
-				return 1;
-			
-			st = DataTimeOfString(start);
-			td = (time_t)difftime(st, 5 * 60); //минус 5 минут
-			start  = GetDataTimeString(&td);
-
 			//start = "2024-09-15 17:00:00";
-
-			SHEET::GetSheets getsheet(conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+			if(start.length() == 0)
+				throw std::runtime_error("Нет подходящих листов");
+			else
+				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 		}
 		CATCH(PdfLogger, "");
@@ -4333,7 +4331,7 @@ namespace PDF
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
 		LOG_INFO(PdfLogger, "Старт корректировки кассет");
 
-		//if(isCorrectCassette) return 0;
+		if(isCorrectCassette) return 0;
 
 		isCorrectCassette = true;
 		try
@@ -4341,45 +4339,30 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			time_t rt = time(NULL);
-			time_t td = (time_t)difftime(rt, 60 * 60 * 24 * 1); //За сутки
-			std::string start = GetDataTimeString(&td);
-
-			//std::string start;
-			//std::string comand = "SELECT run_at FROM cassette WHERE pdf IS NULL AND id > "
-			//"(SELECT id FROM cassette WHERE pdf IS NOT NULL ORDER BY id DESC LIMIT 1)"
-			//" AND CAST(event AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
-			//PGresult* res = conn.PGexec(comand);
-			//if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			//{
-			//	if(conn.PQntuples(res))
-			//	{
-			//		start = conn.PGgetvalue(res, 0, 0);
-			//	}
-			//}
-			//else
-			//{
-			//	LOG_ERR_SQL(PdfLogger, res, comand);
-			//}
-			//PQclear(res);
-			//
-			//if(start.length() == 0)
-			//	return 1;
-
+			std::string start = "";
 			std::string stop = "";
 
-			size_t t2 = start.find(" "); //Оставляем только дату время будет с нуля часов
-			if(t2 != std::string::npos)
-			{
-				start[t2] = 0;
-				start.resize(t2);
-			}
-			start += " 00:00:00";
 
+			std::string comand = "SELECT run_at - TIME '05:00:00' FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND id > (SELECT id FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ORDER BY id DESC LIMIT 1) ORDER BY id ASC LIMIT 1;";
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(conn.PQntuples(res))
+				{
+					start = conn.PGgetvalue(res, 0, 0);
+				}
+			}
+			else
+			{
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			}
+			PQclear(res);
+			
 			//start = "2024-09-05 00:00:00";
-			DelAllPdf(lpLogPdf2);
-			CASSETTE::GetCassettes getpdf(conn, start, stop); // , "2024-03-30 00:00:00.00");
-			CopyAllFile();
+			if(start.length() == 0)
+				throw std::runtime_error("Нет подходящих кассет");
+			else
+				CASSETTE::GetCassettes (conn, start, stop); // , "2024-03-30 00:00:00.00");
 		}
 		CATCH(PdfLogger, "");
 

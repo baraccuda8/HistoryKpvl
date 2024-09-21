@@ -28,10 +28,10 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 
 
 #define CATCH(_l, _s) \
-    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
-    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
-    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s) + exc.what())} \
-    catch(...){LOG_ERROR(_l, "{:89}| Error {} ", FUNCTION_LINE_NAME, std::string(_s) + "Unknown error")}
+    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s),  exc.what())} \
+    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
+    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
+    catch(...){LOG_ERROR(_l, "{:89}| Error {} {}", FUNCTION_LINE_NAME, std::string(_s), "Unknown error")}
 
 #define CATCH_RUN(_l) \
     catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);\
