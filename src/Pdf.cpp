@@ -1933,7 +1933,42 @@ namespace PDF
 			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
 			void CorrectSQL(PGConnection& conn);
 			GetCassettes(PGConnection& conn, std::string datestart = "", std::string datestop = "");
+			std::string GetStartTime(PGConnection& conn, std::string peth = "");
 		};
+
+		std::string GetCassettes::GetStartTime(PGConnection& conn, std::string peth)
+		{
+			std::string start = "";
+
+			std::string comand1 = "(SELECT run_at FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ";
+			comand1 += peth;
+			comand1 += " ORDER BY id DESC LIMIT 1)";
+
+			std::string comand = "SELECT run_at";
+			comand += " - TIME '04:00:00'";	//Минус 4 часа
+			comand += " FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND run_at > ";
+			comand += comand1;
+			comand += peth;
+			comand += " ORDER BY id ASC LIMIT 1;";
+
+			//std::string comand = "SELECT start_at - TIME '00:04:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ";
+			//comand += peth;
+			//comand += " ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(conn.PQntuples(res))
+				{
+					start = conn.PGgetvalue(res, 0, 0);
+				}
+			}
+			else
+			{
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			}
+			PQclear(res);
+			return start;
+		}
 
 		std::string GetCassettes::GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at)
 		{
@@ -2587,15 +2622,28 @@ namespace PDF
 
 		void GetCassettes::GetCasset(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
 		{
-			TCassette P;
 			T_ForBase_RelFurn* Furn = NULL;
 			try
 			{
+				P0.erase(P0.begin(), P0.end());
+				CassetteTodos.erase(CassetteTodos.begin(), CassetteTodos.end());
+
 				if(Petch == 1)
+				{
 					Furn = &ForBase_RelFurn_1;
+					DateStart = GetStartTime(conn, "AND peth = 1");
+				}
 				if(Petch == 2)
+				{
 					Furn = &ForBase_RelFurn_2;
+					DateStart = GetStartTime(conn, "AND peth = 2");
+				}
 				if(Furn == NULL) return;
+
+				if(!DateStart.length()) return;
+
+				LOG_INFO(PdfLogger, "{:90}| Печь = {}, DateStart = {}", FUNCTION_LINE_NAME, Petch, DateStart);
+
 
 				{
 					std::stringstream ssd;
@@ -2704,14 +2752,12 @@ namespace PDF
 
 				int lin = 0;
 				auto size = CassetteTodos.size();
+				TCassette P;
+
 				for(auto& a : CassetteTodos)
 				{
 					if(!isRun)break;
 					lin++;
-
-					//std::stringstream ssd;
-					//ssd << "GetCassette:CassetteTodos " << Petch << ", " << size << ":" << lin;
-					//SetWindowText(hWndDebug, ssd.str().c_str());
 
 					//Furn->Cassette.Hour->ID
 					try
@@ -2720,7 +2766,15 @@ namespace PDF
 						{
 							if(!P.Run_at.size())
 								P.Hour = a.second.value;
-							else if(P.Hour != a.second.value)
+							else if(
+									P.Hour != a.second.value
+									&& 
+									(
+										(Stoi(a.second.value) == 0 && Stoi(P.Hour) < 1) ||
+										(Stoi(a.second.value) != 0)
+									)
+								)
+									
 							{
 								P.End_at = a.second.create_at;
 								//EndCassette(conn, P, Petch, s1);
@@ -2734,6 +2788,7 @@ namespace PDF
 						}
 					}
 					CATCH(PdfLogger, "");
+
 					//Furn->Cassette.Day->ID
 					try
 					{
@@ -2778,7 +2833,7 @@ namespace PDF
 					}
 					CATCH(PdfLogger, "");
 
-					//Furn->Cassette.Year->I
+					//Furn->Cassette.Year->ID
 					try
 					{
 						if(a.second.id_name == Furn->Cassette.Year->ID)
@@ -2895,23 +2950,6 @@ namespace PDF
 		}
 
 
-		void GetCassettes::CorrectSQL(PGConnection& conn)
-		{
-			try
-			{
-				P0.erase(P0.begin(), P0.end());
-
-				SetWindowText(hWndDebug, "connection");
-
-				GetCasset(conn);
-
-				SaveFileCass();
-			}
-			CATCH(PdfLogger, "");
-
-			SetWindowText(hWndDebug, "Закончили коррекцию");
-		}
-
 		GetCassettes::GetCassettes(PGConnection& conn, std::string datestart, std::string datestop)
 		{
 			try
@@ -2921,7 +2959,7 @@ namespace PDF
 				DateStart = datestart;
 				DateStop = datestop;
 
-				if(!DateStart.length()) return;
+				//if(!DateStart.length()) return;
 
 				remove("Cass.csv");
 				remove("cass1.csv");
@@ -2930,9 +2968,13 @@ namespace PDF
 				remove("all_tag.csv");
 				remove("UpdateCassette.txt");
 
-				LOG_INFO(PdfLogger, "{:90}| DateStart = {}", FUNCTION_LINE_NAME, DateStart);
 				fUpdateCassette = std::fstream("UpdateCassette.txt", std::fstream::binary | std::fstream::out | std::ios::app);
-				CorrectSQL(conn);
+
+				GetCasset(conn);
+				SetWindowText(hWndDebug, "Закончили коррекцию");
+
+				SaveFileCass();
+
 				fUpdateCassette.close();
 				LOG_INFO(PdfLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 				
@@ -4294,20 +4336,7 @@ namespace PDF
 			std::string start = "";
 			std::string stop = "";
 
-			std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
-			PGresult* res = conn.PGexec(comand);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				if(conn.PQntuples(res))
-				{
-					start = conn.PGgetvalue(res, 0, 0);
-				}
-			}
-			else
-			{
-				LOG_ERR_SQL(PdfLogger, res, comand);
-			}
-			PQclear(res);
+
 
 			//start = "2024-09-15 17:00:00";
 			if(start.length() == 0)
@@ -4339,30 +4368,32 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			std::string start = "";
-			std::string stop = "";
+			//std::string start = "";
+			//std::string stop = "";
 
 
-			std::string comand = "SELECT run_at - TIME '05:00:00' FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND id > (SELECT id FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ORDER BY id DESC LIMIT 1) ORDER BY id ASC LIMIT 1;";
-			PGresult* res = conn.PGexec(comand);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				if(conn.PQntuples(res))
-				{
-					start = conn.PGgetvalue(res, 0, 0);
-				}
-			}
-			else
-			{
-				LOG_ERR_SQL(PdfLogger, res, comand);
-			}
-			PQclear(res);
+			//std::string comand = "SELECT run_at"
+			//	" - TIME '04:00:00'"	//Минус 4 часа
+			//	" FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND id > (SELECT id FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ORDER BY id DESC LIMIT 1) ORDER BY id ASC LIMIT 1;";
+			//PGresult* res = conn.PGexec(comand);
+			//if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			//{
+			//	if(conn.PQntuples(res))
+			//	{
+			//		start = conn.PGgetvalue(res, 0, 0);
+			//	}
+			//}
+			//else
+			//{
+			//	LOG_ERR_SQL(PdfLogger, res, comand);
+			//}
+			//PQclear(res);
 			
 			//start = "2024-09-05 00:00:00";
-			if(start.length() == 0)
-				throw std::runtime_error("Нет подходящих кассет");
-			else
-				CASSETTE::GetCassettes (conn, start, stop); // , "2024-03-30 00:00:00.00");
+			//if(start.length() == 0)
+			//	throw std::runtime_error("Нет подходящих кассет");
+			//else
+				CASSETTE::GetCassettes (conn, "", ""); // , "2024-03-30 00:00:00.00");
 		}
 		CATCH(PdfLogger, "");
 
