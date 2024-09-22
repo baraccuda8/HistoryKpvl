@@ -550,6 +550,10 @@ void GetVersionProg()
     boost::replace_all(rc, "  ", " ");
     boost::replace_last(rc, " ", "");
     szTitle += rc;
+#ifdef _DEBUG
+    szTitle += " Дебуег";
+#endif // _DEBUG
+
 }
 
 std::string Formats(float f, int n)

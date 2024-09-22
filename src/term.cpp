@@ -957,12 +957,6 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
     while(isRun)
     {
 
-#pragma region Удаляем ложные кассеты
-        //std::stringstream com;
-        //com << "DELETE FROM cassette WHERE event = 1 AND id <> (SELECT id FROM cassette WHERE event = 1 ORDER BY id DESC LIMIT 1)";
-        //SETUPDATESQL(PethLogger, conn_spic, com);
-#pragma endregion
-
 #pragma region Выводим список кассет
 
         S107::SQL::FURN_SQL(conn_spic, AllCassette);
@@ -989,6 +983,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         }
 #pragma endregion
 
+#ifndef _DEBUG
 
 #pragma region Вычисляем дату финала
 
@@ -1009,7 +1004,6 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         }
 #pragma endregion
 
-#ifndef _DEBUG
         std::deque<TCassette> CIl;
         
         for(auto& it : AllCassette)
@@ -1141,9 +1135,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             fSpCassette.close();
         }
         
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+#else
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 #endif
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     };
     return 0;
 }
@@ -1168,9 +1164,10 @@ void Open_FURN()
     //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->GetInt();
 
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
-    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #endif
-    
+
+    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
+
 #endif
 #endif
 }

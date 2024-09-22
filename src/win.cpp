@@ -215,18 +215,19 @@ std::vector <ListTitle> Cassette_Collumn ={
     {"ID", 50 },
     { "Событие", XL_CX1 },
     { "Новая кассета", XL_CX2 },
-    { "Год", XL_CX3 },
-    { "Месяц", XL_CX4 },
-    { "День", XL_CX5 },
-    { "Час", XL_CX5 },
-    { "Касета", XL_CX6 },
-    { "Листов", XL_CX6 },
-    //{ "Кассета закрыта", XL_CX8 },
-    { "Печь",  XL_CX6},
+
+    { "Г", 40 },
+    { "М", 30 },
+    { "Д", 30 },
+    { "Ч", 30 },
+    { "К", 30 },
+    { "Л", 30 },
+    { "П",  20},
+
     { "Начало оптуска", XL_CX8 },
     { "Конец оптуска", XL_CX8 },
-    { "Конец процесса",  XL_CX8},
-    { "Ошибка оптуска", XL_CX8 },
+    { "Коррекция",  XL_CX8},
+    { "Пдф", XL_CX8 },
 
     { "Факт время нагрева", XL_CX4 },
     { "Факт время выдержки", XL_CX4 },
@@ -1540,22 +1541,23 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             if(plvdi->item.iSubItem == Cassete::Id)                lstrcpy(plvdi->item.pszText, p.Id.c_str());
                             if(plvdi->item.iSubItem == Cassete::Event)             lstrcpy(plvdi->item.pszText, (EventCassette[Stoi(p.Event)] + "(" + p.Event + ")").c_str());
                             if(plvdi->item.iSubItem == Cassete::Create_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Create_at).c_str());
+
                             if(plvdi->item.iSubItem == Cassete::Year)              lstrcpy(plvdi->item.pszText, p.Year.c_str());
                             if(plvdi->item.iSubItem == Cassete::Month)             lstrcpy(plvdi->item.pszText, p.Month.c_str());
                             if(plvdi->item.iSubItem == Cassete::Day)               lstrcpy(plvdi->item.pszText, p.Day.c_str());
-                            if(plvdi->item.iSubItem == Cassete::Hour)               lstrcpy(plvdi->item.pszText, p.Hour.c_str());
-                            
+                            if(plvdi->item.iSubItem == Cassete::Hour)              lstrcpy(plvdi->item.pszText, p.Hour.c_str());
                             if(plvdi->item.iSubItem == Cassete::CassetteNo)        lstrcpy(plvdi->item.pszText, p.CassetteNo.c_str());
                             if(plvdi->item.iSubItem == Cassete::SheetInCassette)   lstrcpy(plvdi->item.pszText, p.SheetInCassette.c_str());
-                            //if(plvdi->item.iSubItem == Cassete::Close)             lstrcpy(plvdi->item.pszText, p.Close_at.c_str());  //Закрытие касеты
+                            if(plvdi->item.iSubItem == Cassete::Peth)              lstrcpy(plvdi->item.pszText, p.Peth.c_str());                //Печь
+
                             if(plvdi->item.iSubItem == Cassete::Run_at)            lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Run_at).c_str());      //Начало отпуска
-                            if(plvdi->item.iSubItem == Cassete::Error_at)          lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Error_at).c_str());    //Ошибка отпуска
-                            if(plvdi->item.iSubItem == Cassete::End_at)            lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.End_at).c_str());      //Конец отпуска
-                            if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Finish_at).c_str());//Конец процесса
-                            if(plvdi->item.iSubItem == Cassete::Peth)              lstrcpy(plvdi->item.pszText, p.Peth.c_str());       //Печь
-                            if(plvdi->item.iSubItem == Cassete::HeatAcc)           lstrcpy(plvdi->item.pszText, p.HeatAcc.c_str());           //Факт время нагрева
-                            if(plvdi->item.iSubItem == Cassete::HeatWait)          lstrcpy(plvdi->item.pszText, p.HeatWait.c_str());          //Факт время выдержки
-                            if(plvdi->item.iSubItem == Cassete::Total)             lstrcpy(plvdi->item.pszText, p.Total.c_str());             //Факт общее время
+                            if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Finish_at).c_str());   //Конец отпуска
+                            if(plvdi->item.iSubItem == Cassete::Correct)           lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Correct).c_str());     //Коррекция
+                            if(plvdi->item.iSubItem == Cassete::Pdf)               lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Pdf).c_str());         //Пдф
+
+                            if(plvdi->item.iSubItem == Cassete::HeatAcc)           lstrcpy(plvdi->item.pszText, p.HeatAcc.c_str());             //Факт время нагрева
+                            if(plvdi->item.iSubItem == Cassete::HeatWait)          lstrcpy(plvdi->item.pszText, p.HeatWait.c_str());            //Факт время выдержки
+                            if(plvdi->item.iSubItem == Cassete::Total)             lstrcpy(plvdi->item.pszText, p.Total.c_str());               //Факт общее время
                         }
                         CATCH(AllLogger, FUNCTION_LINE_NAME + " : ");
                     }

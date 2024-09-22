@@ -766,7 +766,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
             KPVL::SQL::GetDataTime_All(conn_spis, TS);
         }
 
-        UpdateSheetPos();
+        //UpdateSheetPos();
 
         size_t count = AllSheet.size();
         if(old_count != count)
@@ -838,7 +838,9 @@ void Open_KPVL()
 #endif
 
 #ifdef _DEBUG
+    hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
     hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
+    //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
 #endif // _DEBUG
 
 #endif

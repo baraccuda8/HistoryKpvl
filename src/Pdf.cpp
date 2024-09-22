@@ -1913,6 +1913,8 @@ namespace PDF
 		{
 		public:
 
+			PGConnection conn;
+
 			std::string DateStart = "";
 			std::string DateStop = "";
 			std::fstream fUpdateCassette;
@@ -1933,7 +1935,7 @@ namespace PDF
 			void GetCasset(PGConnection& conn);
 			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
 			//void CorrectSQL(PGConnection& conn);
-			GetCassettes(PGConnection& conn);
+			GetCassettes();
 		};
 
 		std::string GetCassettes::GetStartTime(PGConnection& conn, std::string peth)
@@ -2951,10 +2953,12 @@ namespace PDF
 		}
 
 
-		GetCassettes::GetCassettes(PGConnection& conn)
+		GetCassettes::GetCassettes()
 		{
 			try
 			{
+				conn.connection();
+
 				DelAllPdf(lpLogPdf2);
 
 				DateStart = "";
@@ -3115,7 +3119,6 @@ namespace PDF
 
 			std::fstream ss1;
 		};
-
 
 
 		void GetSheets::SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error)
@@ -4319,6 +4322,29 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
+
+	std::string GetStartTime(PGConnection& conn)
+	{
+		std::string start = "";
+
+		std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1;";
+
+		PGresult* res = conn.PGexec(comand);
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			if(conn.PQntuples(res))
+			{
+				start = conn.PGgetvalue(res, 0, 0);
+			}
+		}
+		else
+		{
+			LOG_ERR_SQL(PdfLogger, res, comand);
+		}
+		PQclear(res);
+		return start;
+	}
+
 	DWORD CorrectSheet(LPVOID)
 	{
 		if(!PdfLogger)PdfLogger = InitLogger("Pdf Debug");
@@ -4333,7 +4359,7 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			std::string start = "";
+			std::string start = GetStartTime(conn);
 			std::string stop = "";
 
 
@@ -4365,10 +4391,7 @@ namespace PDF
 		isCorrectCassette = true;
 		try
 		{
-			PGConnection conn;
-			conn.connection();
-
-			CASSETTE::GetCassettes cass (conn); // , "2024-03-30 00:00:00.00");
+			CASSETTE::GetCassettes cass; // , "2024-03-30 00:00:00.00");
 		}
 		CATCH(PdfLogger, "");
 

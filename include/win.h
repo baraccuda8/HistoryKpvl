@@ -1301,18 +1301,14 @@ enum Cassete{
     Hour,
     CassetteNo,
     SheetInCassette,
-    //Close,
     Peth,
     Run_at,
-    End_at,
     Finish_at,
-    Error_at,
+    Correct,
+    Pdf,
     HeatAcc,           //Факт время нагрева
     HeatWait,          //Факт время выдержки
     Total,             //Факт общее время
-    Correct,
-    Pdf,
-
 };
 
 typedef struct TCassette{

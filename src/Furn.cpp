@@ -83,10 +83,9 @@ namespace S107
                 else if(l == "heatacc")Coll::HeatAcc = j;
                 else if(l == "heatwait")Coll::HeatWait = j;
                 else if(l == "total")Coll::Total = j;
-                else if(l == "correct")Coll::Total = j;
-                else if(l == "pdf")Coll::Total = j;
+                else if(l == "correct")Coll::Correct = j;
+                else if(l == "pdf")Coll::Pdf = j;
                 else if(l == "hour")Coll::Hour = j;
-
             }
         }
     }
@@ -94,6 +93,7 @@ namespace S107
     //Чтение кассеты
     void GetCassette(PGresult* res, TCassette& cassette, int line)
     {
+        GetColl(res);
         cassette.Create_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Create_at));
         cassette.Id = conn_spis.PGgetvalue(res, line, Coll::Id);
         cassette.Event = conn_spis.PGgetvalue(res, line, Coll::Event);
@@ -1151,7 +1151,7 @@ namespace S107
                 value->Set_Value(false);
                 
             }
-            LOG_ERROR(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
+            LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
             return 0;
         }
 
