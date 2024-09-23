@@ -1942,20 +1942,17 @@ namespace PDF
 		{
 			std::string start = "";
 
-			std::string comand1 = "(SELECT run_at FROM cassette WHERE delete_at IS NULL AND correct IS NOT NULL AND CAST(event AS integer) = 5 ";
+			std::string comand1 = "(SELECT run_at FROM cassette WHERE delete_at IS NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 ";
 			comand1 += peth;
 			comand1 += " ORDER BY id DESC LIMIT 1)";
 
 			std::string comand = "SELECT run_at";
 			comand += " - TIME '04:00:00'";	//Минус 4 часа
-			comand += " FROM cassette WHERE delete_at IS NULL AND correct IS NULL AND CAST(event AS integer) = 5 AND run_at > ";
+			comand += " FROM cassette WHERE delete_at IS NULL AND (correct IS NULL OR pfd IS NULL) AND CAST(event AS integer) = 5 AND run_at > ";
 			comand += comand1;
 			comand += peth;
 			comand += " ORDER BY id ASC LIMIT 1;";
 
-			//std::string comand = "SELECT start_at - TIME '00:04:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ";
-			//comand += peth;
-			//comand += " ORDER BY id ASC LIMIT 1; "; //2024-05-25-06
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
@@ -4279,7 +4276,9 @@ namespace PDF
 		{
 			std::string start = "";
 
-			std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1;";
+			std::string comand = "SELECT start_at"
+				" - TIME '00:02:00'"						//Минут 2 минуты
+				" FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 4 ORDER BY id ASC LIMIT 1;";
 
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
