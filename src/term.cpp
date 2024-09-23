@@ -1164,9 +1164,9 @@ void Open_FURN()
     //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->GetInt();
 
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
+    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #endif
 
-    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 
 #endif
 #endif

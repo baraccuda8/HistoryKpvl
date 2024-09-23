@@ -1456,7 +1456,7 @@ namespace KPVL {
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD)
         {
-            int32_t Hour = CD.Hour->GetInt(); //Stoi(CD.Hour->GetString());// 
+            //int32_t Hour = CD.Hour->GetInt(); //Stoi(CD.Hour->GetString());// 
             int32_t Day = CD.Day->GetInt();
             int32_t Month = CD.Month->GetInt();
             int32_t Year = CD.Year->GetInt();

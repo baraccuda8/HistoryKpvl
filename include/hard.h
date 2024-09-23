@@ -65,6 +65,7 @@ public:
         //DINT подномер листа
         Value* SubSheet;
     };
+
     typedef struct T_TopBot{
         Value* Top;                  //REAL
         Value* Bot;                  //REAL

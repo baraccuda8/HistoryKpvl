@@ -1269,11 +1269,11 @@ namespace PDF
 #if _DEBUG
 
 			std::stringstream ssd;
-			ssd << "Печь № " << Cassette.Peth << " Кассета № ";
-			ssd << std::setw(2) << std::setfill('0') << Cassette.Hour << "-";
+			ssd << "Печь № " << Cassette.Peth << " Кассета: ";
+			ssd << std::setw(2) << std::setfill('0') << Cassette.Hour << " ";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
-			ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
+			ssd << std::setw(4) << std::setfill('0') << Cassette.Year << " №";
 			ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo;
 			draw_text_rect (page, left, Y, w, YP, ssd.str().c_str());
 			Y -= 25;
@@ -2305,9 +2305,9 @@ namespace PDF
 					ssd << "end_at = DEFAULT, ";
 
 				if(ct.Finish_at.length())
-					ssd << "finish_at = '" << ct.Finish_at << "', correct = now(), pdf = DEFAULT";
+					ssd << "finish_at = '" << ct.Finish_at << "'";// , correct = now(), pdf = DEFAULT";
 				else
-					ssd << "finish_at = DEFAULT, correct = now()";
+					ssd << "finish_at = DEFAULT"; // , correct = now()";
 
 
 				if(Stof(ct.PointRef_1))
@@ -3590,7 +3590,7 @@ namespace PDF
 		void GetSheets::Get_ID_S(PGConnection& conn, T_IdSheet& td)
 		{
 			std::stringstream ssd;
-			ssd << "SELECT id, day, month, year, cassetteno, sheetincassette, pos, news FROM sheet ";
+			ssd << "SELECT id, day, month, year, hour, cassetteno, sheetincassette, pos, news FROM sheet ";
 			ssd << "WHERE melt = " << td.Melt;
 			ssd << " AND partno = " << td.PartNo;
 			ssd << " AND pack = " << td.Pack;
@@ -3606,10 +3606,11 @@ namespace PDF
 				td.day = Stoi(conn.PGgetvalue(res, 0, 1));
 				td.month = Stoi(conn.PGgetvalue(res, 0, 2));
 				td.year = Stoi(conn.PGgetvalue(res, 0, 3));
-				td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 4));
-				td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 5));
-				td.Pos = Stoi(conn.PGgetvalue(res, 0, 6));
-				td.news = Stoi(conn.PGgetvalue(res, 0, 7));
+				td.hour = Stoi(conn.PGgetvalue(res, 0, 4));
+				td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 5));
+				td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 6));
+				td.Pos = Stoi(conn.PGgetvalue(res, 0, 7));
+				td.news = Stoi(conn.PGgetvalue(res, 0, 8));
 
 			}
 			PQclear(res);
@@ -3623,6 +3624,7 @@ namespace PDF
 			ssd << "WHERE day = " << td.day;
 			ssd << " AND month = " << td.month;
 			ssd << " AND year = " << td.year;
+			ssd << " AND hour = " << td.hour;
 			ssd << " AND cassetteno = " << td.cassetteno;
 			ssd << " ORDER BY id LIMIT 1";
 			std::string comand = ssd.str();
@@ -3676,18 +3678,17 @@ namespace PDF
 				ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
 				ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
 
-				ssd << ", hour = '" << td.hour << "'";
 				ssd << ", day = '" << td.day << "'";
 				ssd << ", month = '" << td.month << "'";
 				ssd << ", year = '" << td.year << "'";
+				ssd << ", hour = " << td.hour;
 				ssd << ", cassetteno = " << td.cassetteno;
 				ssd << ", sheetincassette = " << td.sheetincassette;
 				ssd << ", pos = " << td.Pos;
 				ssd << ", news = " << td.news;
 				
 				
-
-				ssd << ", correct = now(), pdf = '' WHERE id = " << td.id;
+				ssd << ", correct = now(), pdf = ''	WHERE id = " << td.id;
 				SetWindowText(hWndDebug, ssd.str().c_str());
 
 
@@ -3696,7 +3697,7 @@ namespace PDF
 				//LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
 				SETUPDATESQL(PdfLogger, conn, ssd);
 
-				if(td.day && td.month && td.year && td.cassetteno)
+				if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
 				{
 					int ID_C = Get_ID_C(conn, td);
 					if(ID_C)
@@ -3750,6 +3751,7 @@ namespace PDF
 				ssd << " day, ";
 				ssd << " month, ";
 				ssd << " year, ";
+				ssd << " hour, ";
 				ssd << " cassetteno, ";
 				ssd << " sheetincassette, ";
 
@@ -3800,6 +3802,7 @@ namespace PDF
 				ssd << "'" << td.day << "', ";
 				ssd << "'" << td.month << "', ";
 				ssd << "'" << td.year << "', ";
+				ssd << td.hour << ", ";
 				ssd << td.cassetteno << ", ";
 				ssd << td.sheetincassette << ", ";
 
@@ -4271,6 +4274,29 @@ namespace PDF
 			INT II = 0;
 		}
 
+
+		std::string GetStartTime(PGConnection& conn)
+		{
+			std::string start = "";
+
+			std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1;";
+
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(conn.PQntuples(res))
+				{
+					start = conn.PGgetvalue(res, 0, 0);
+				}
+			}
+			else
+			{
+				LOG_ERR_SQL(PdfLogger, res, comand);
+			}
+			PQclear(res);
+			return start;
+		}
+
 	};
 
 		//Перечисление дирректорий. Возвращает только файлы формата
@@ -4323,27 +4349,6 @@ namespace PDF
 	bool isCorrectCassette = false;
 
 
-	std::string GetStartTime(PGConnection& conn)
-	{
-		std::string start = "";
-
-		std::string comand = "SELECT start_at - TIME '00:05:00' FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 6 ORDER BY id ASC LIMIT 1;";
-
-		PGresult* res = conn.PGexec(comand);
-		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		{
-			if(conn.PQntuples(res))
-			{
-				start = conn.PGgetvalue(res, 0, 0);
-			}
-		}
-		else
-		{
-			LOG_ERR_SQL(PdfLogger, res, comand);
-		}
-		PQclear(res);
-		return start;
-	}
 
 	DWORD CorrectSheet(LPVOID)
 	{
@@ -4359,8 +4364,10 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
-			std::string start = GetStartTime(conn);
+			std::string start = SHEET::GetStartTime(conn);
 			std::string stop = "";
+			//std::string start = "2024-09-23 12:00:00";
+			//std::string stop = "2024-09-23 14:00:00";
 
 
 
