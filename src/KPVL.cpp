@@ -306,29 +306,30 @@ namespace KPVL {
         float GetHeatTime_Z2(PGConnection& conn, std::string enddata_at)
         {
             float out = 0;
-            std::string next_at = "";
             std::string sout = "";
-            if(enddata_at.length())
-            {
-                std::stringstream co;
-                co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
-                std::string comand = co.str();
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                PGresult* res = conn.PGexec(comand);
-                if(PQresultStatus(res) == PGRES_TUPLES_OK)
-                {
-                    if(PQntuples(res))
-                        next_at = conn.PGgetvalue(res, 0, 0);
-                }
-                else
-                    LOG_ERR_SQL(SQLLogger, res, comand);
-                PQclear(res);
-            }
+            //std::string next_at = "";
+            //if(enddata_at.length())
+            //{
+            //    std::stringstream co;
+            //    co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
+            //    std::string comand = co.str();
+            //    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            //    PGresult* res = conn.PGexec(comand);
+            //    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            //    {
+            //        if(PQntuples(res))
+            //            next_at = conn.PGgetvalue(res, 0, 0);
+            //    }
+            //    else
+            //        LOG_ERR_SQL(SQLLogger, res, comand);
+            //    PQclear(res);
+            //}
 
-            if(next_at.length())
+            //if(next_at.length())
             {
                 std::stringstream co;
-                co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
+                //co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
+                co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "' ORDER BY id DESC LIMIT 1";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);

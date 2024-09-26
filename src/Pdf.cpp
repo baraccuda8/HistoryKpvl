@@ -1947,8 +1947,8 @@ namespace PDF
 			comand1 += " ORDER BY id DESC LIMIT 1)";
 
 			std::string comand = "SELECT run_at";
-			comand += " - TIME '04:00:00'";	//Минус 4 часа
-			comand += " FROM cassette WHERE delete_at IS NULL AND (correct IS NULL OR pfd IS NULL) AND CAST(event AS integer) = 5 AND run_at > ";
+			comand += " - TIME '05:00:00'";	//Минус 5 часов
+			comand += " FROM cassette WHERE delete_at IS NULL AND (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > ";
 			comand += comand1;
 			comand += peth;
 			comand += " ORDER BY id ASC LIMIT 1;";
@@ -2302,9 +2302,9 @@ namespace PDF
 					ssd << "end_at = DEFAULT, ";
 
 				if(ct.Finish_at.length())
-					ssd << "finish_at = '" << ct.Finish_at << "'";// , correct = now(), pdf = DEFAULT";
+					ssd << "finish_at = '" << ct.Finish_at << "', correct = now(), pdf = DEFAULT";
 				else
-					ssd << "finish_at = DEFAULT"; // , correct = now()";
+					ssd << "finish_at = DEFAULT, correct = now()";
 
 
 				if(Stof(ct.PointRef_1))
@@ -2665,7 +2665,7 @@ namespace PDF
 					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
 					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
 					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
-					ssd << ") AND content <> '0' AND content <> 'false' ORDER BY id";
+					ssd << ") AND content <> '0' ORDER BY id";
 
 					std::string comand = ssd.str();
 					PGresult* res = conn.PGexec(comand);
@@ -4365,7 +4365,7 @@ namespace PDF
 
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop = "";
-			//std::string start = "2024-09-23 12:00:00";
+			//std::string start = "2024-09-24 16:00:00";
 			//std::string stop = "2024-09-23 14:00:00";
 
 

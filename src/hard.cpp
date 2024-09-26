@@ -763,7 +763,9 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
                 LOG_INFO(HardLogger, "{:90}| {}", sss.str());
                 SETUPDATESQL(HardLogger, conn_spis, sss);
             }
+//#ifndef _DEBUG
             KPVL::SQL::GetDataTime_All(conn_spis, TS);
+//#endif
         }
 
         //UpdateSheetPos();
