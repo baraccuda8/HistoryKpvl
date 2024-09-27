@@ -643,7 +643,6 @@ int Run()
     DWORD pid = EnumProcess();
     if(pid)
     {
-        //WinErrorExit(NULL, (std::string("Программа уже запущена. Pid = ") + std::to_string(pid)).c_str());
         std::fstream s("err.txt", std::fstream::binary | std::fstream::out | std::fstream::app);
         if(s.is_open())
             s << "Программа уже запущена. Pid = " << pid << std::endl;
