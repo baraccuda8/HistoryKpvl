@@ -1871,11 +1871,11 @@ BOOL bSendNewCassette = FALSE;       //Команда в PLC "Новая касета"
 LRESULT Sheet_New(HWND hWnd, WORD wParam)
 {
     if(wParam != BN_CLICKED) return 0;
-    if(MessageBox(hWnd, "Это тестовая команда!\nНо данные будут записаны в базу.\nВы увепены что хотите ввести новый лист кантовки?", "Внимание!", MB_SYSTEMMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
-        bSendNewSheet = TRUE;
-    else
-        bSendNewSheet = FALSE;
-    SetFocus(NULL);
+    //if(MessageBox(hWnd, "Это тестовая команда!\nНо данные будут записаны в базу.\nВы увепены что хотите ввести новый лист кантовки?", "Внимание!", MB_SYSTEMMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+    //    bSendNewSheet = TRUE;
+    //else
+    //    bSendNewSheet = FALSE;
+    //SetFocus(NULL);
 
     return 0;
 }
@@ -1884,11 +1884,11 @@ LRESULT Sheet_New(HWND hWnd, WORD wParam)
 LRESULT Cassette_New(HWND hWnd, WORD wParam)
 {
     if(wParam != BN_CLICKED) return 0;
-    if(MessageBox(hWnd, "Это тестовая команда!\nНо данные будут записаны в базу.\nВы увепены что хотите ввести новую касету кантовки?", "Внимание!", MB_SYSTEMMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
-        bSendNewCassette = TRUE;
-    else
-        bSendNewCassette = FALSE;
-    SetFocus(NULL);
+    //if(MessageBox(hWnd, "Это тестовая команда!\nНо данные будут записаны в базу.\nВы увепены что хотите ввести новую касету кантовки?", "Внимание!", MB_SYSTEMMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+    //    bSendNewCassette = TRUE;
+    //else
+    //    bSendNewCassette = FALSE;
+    //SetFocus(NULL);
 
     return 0;
 }

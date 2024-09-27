@@ -1013,9 +1013,11 @@ namespace casSheet{
         DataTime = 2,
         Start_at,
         SecondPos_at,
+        DataTime_End,
         Correct,
         Pos,
-        DataTime_End,
+
+        TimeForPlateHeat, //Время сигнализации окончания нагрева, мин
         DataTime_All,
 
         News,
@@ -1026,8 +1028,6 @@ namespace casSheet{
         CassetteNo,
         SheetInCassette,
 
-        TimeForPlateHeat, //Время сигнализации окончания нагрева, мин
-        PresToStartComp,  //Уставка давления для запуска комперссора
 
         Alloy,
         Thikness,
@@ -1049,6 +1049,8 @@ namespace casSheet{
         LamPressBot,
         PosClapanTop,
         PosClapanBot,
+        PresToStartComp,  //Уставка давления для запуска комперссора
+
         Mask,
 
         Lam1PosClapanTop,

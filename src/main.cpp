@@ -405,8 +405,8 @@ int WinErrorExit(HWND hWnd, const char* lpszFunction)
     lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
     StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s\r\nfailed with error %d:\r\n%s"), lpszFunction, dw, lpMsgBuf);
 
-    //if(MainLogger) MainLogger->error(std::string((char*)lpDisplayBuf));
-    MessageBox(hWnd, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK | MB_SYSTEMMODAL | MB_ICONERROR);
+    //if(AllLogger) AllLogger->error(std::string((char*)lpDisplayBuf));
+    //MessageBox(hWnd, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK | MB_SYSTEMMODAL | MB_ICONERROR);
 
     LocalFree(lpMsgBuf);
     LocalFree(lpDisplayBuf);
@@ -643,7 +643,11 @@ int Run()
     DWORD pid = EnumProcess();
     if(pid)
     {
-        WinErrorExit(NULL, (std::string("Программа уже запущена. Pid = ") + std::to_string(pid)).c_str());
+        //WinErrorExit(NULL, (std::string("Программа уже запущена. Pid = ") + std::to_string(pid)).c_str());
+        std::fstream s("err.txt", std::fstream::binary | std::fstream::out | std::fstream::app);
+        if(s.is_open())
+            s << "Программа уже запущена. Pid = " << pid << std::endl;
+        s.close();
         return 0;
     }
     SavePid();
@@ -710,6 +714,8 @@ int Run()
                 }
             }
             isRun = false;
+            //Для задержки выхода из программы MessageBox(Global0, "", "", 0);
+
             DestroyWindow(Global0);
         }
     }
@@ -735,7 +741,6 @@ int Run()
 #if FULLRUN
     Stop();
 #endif
-
     ClosePid();
 
     LOG_DEBUG(AllLogger, "{:90}| Стоп программы", FUNCTION_LINE_NAME);

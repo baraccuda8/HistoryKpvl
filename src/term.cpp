@@ -1055,7 +1055,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                     )
                     )
                 {
-                    if(it.End_at.length())
+                    if(it.End_at.length() && it.Finish_at.length())
                     {
                         it.Event = "5";
                         std::stringstream sd;

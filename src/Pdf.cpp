@@ -2633,11 +2633,14 @@ namespace PDF
 				{
 					Furn = &ForBase_RelFurn_1;
 					DateStart = GetStartTime(conn, "AND peth = 1");
+
 				}
 				if(Petch == 2)
 				{
 					Furn = &ForBase_RelFurn_2;
 					DateStart = GetStartTime(conn, "AND peth = 2");
+					//DateStart = "26-09-2024 12:58:00";
+					//DateStop = "26-09-2024 18:14:00";
 				}
 				if(Furn == NULL) return;
 
@@ -2661,11 +2664,12 @@ namespace PDF
 					ssd << " OR id_name = " << Furn->ProcRun->ID;
 					ssd << " OR id_name = " << Furn->ProcFault->ID;
 
+					ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
 					ssd << " OR id_name = " << Furn->Cassette.Day->ID;
 					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
 					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
 					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
-					ssd << ") AND content <> '0' ORDER BY id";
+					ssd << ") ORDER BY id DESC"; //AND content <> 'false' AND content <> '0' 
 
 					std::string comand = ssd.str();
 					PGresult* res = conn.PGexec(comand);
@@ -2697,48 +2701,48 @@ namespace PDF
 
 				}
 
-				{
-					std::stringstream ssd;
-					ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
-					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << "FROM todos WHERE ";
-					ssd << "create_at >= '" << DateStart << "' AND ";
-
-					if(DateStop.length())
-						ssd << "create_at < '" << DateStop << "' AND ";
-
-					ssd << "id_name = " << Furn->Cassette.Hour->ID;
-					ssd << " ORDER BY id";
-
-					std::string comand = ssd.str();
-					PGresult* res = conn.PGexec(comand);
-					if(PQresultStatus(res) == PGRES_TUPLES_OK)
-					{
-						TodosColumn(res);
-
-						int line = PQntuples(res);
-						std::string old_value = "";
-						for(int l = 0; l < line && isRun; l++)
-						{
-							T_Todos ct;
-							ct.value = conn.PGgetvalue(res, l, TODOS::content);
-							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
-							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
-							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
-							ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
-							ct.Petch = Petch;
-							CassetteTodos[ct.id] = ct;
-						}
-					}
-					else
-					{
-						LOG_ERR_SQL(PdfLogger, res, comand);
-					}
-					PQclear(res);
-				}
+				//{
+				//	std::stringstream ssd;
+				//	ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
+				//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				//	ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
+				//	ssd << "FROM todos WHERE ";
+				//	ssd << "create_at >= '" << DateStart << "' AND ";
+				//
+				//	if(DateStop.length())
+				//		ssd << "create_at < '" << DateStop << "' AND ";
+				//
+				//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
+				//	ssd << " ORDER BY id";
+				//
+				//	std::string comand = ssd.str();
+				//	PGresult* res = conn.PGexec(comand);
+				//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				//	{
+				//		TodosColumn(res);
+				//
+				//		int line = PQntuples(res);
+				//		std::string old_value = "";
+				//		for(int l = 0; l < line && isRun; l++)
+				//		{
+				//			T_Todos ct;
+				//			ct.value = conn.PGgetvalue(res, l, TODOS::content);
+				//			ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
+				//			ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
+				//			ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
+				//			ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
+				//			ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+				//			ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
+				//			ct.Petch = Petch;
+				//			CassetteTodos[ct.id] = ct;
+				//		}
+				//	}
+				//	else
+				//	{
+				//		LOG_ERR_SQL(PdfLogger, res, comand);
+				//	}
+				//	PQclear(res);
+				//}
 
 
 			}
@@ -2792,7 +2796,7 @@ namespace PDF
 					//Furn->Cassette.Day->ID
 					try
 					{
-						if(a.second.id_name == Furn->Cassette.Day->ID)
+						if(a.second.id_name == Furn->Cassette.Day->ID && a.second.content.As<int32_t>())
 						{
 							if(!P.Run_at.size())
 								P.Day = a.second.value;
@@ -2814,7 +2818,7 @@ namespace PDF
 					//Furn->Cassette.Month->ID
 					try
 					{
-						if(a.second.id_name == Furn->Cassette.Month->ID)
+						if(a.second.id_name == Furn->Cassette.Month->ID && a.second.content.As<int32_t>())
 						{
 							if(!P.Run_at.size())
 								P.Month = a.second.value;
@@ -2836,7 +2840,7 @@ namespace PDF
 					//Furn->Cassette.Year->ID
 					try
 					{
-						if(a.second.id_name == Furn->Cassette.Year->ID)
+						if(a.second.id_name == Furn->Cassette.Year->ID && a.second.content.As<int32_t>())
 						{
 							if(!P.Run_at.size())
 								P.Year = a.second.value;
@@ -2859,7 +2863,7 @@ namespace PDF
 					//Furn->Cassette.CassetteNo->ID
 					try
 					{
-						if(a.second.id_name == Furn->Cassette.CassetteNo->ID)
+						if(a.second.id_name == Furn->Cassette.CassetteNo->ID && a.second.content.As<int32_t>())
 						{
 							if(!P.Run_at.size())
 								P.CassetteNo = a.second.value;
@@ -3572,7 +3576,7 @@ namespace PDF
 			ssd << " id_name = " << HMISheetData.NewData->ID;
 			ssd << " AND create_at >= '" << StartSheet << "'";
 			if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-			ssd << " ORDER BY id;";
+			ssd << " AND content <> 'false'  ORDER BY id;";
 
 			std::string comand = ssd.str();
 			GetTodosSQL(conn, allSheetTodos, comand);
@@ -3694,16 +3698,16 @@ namespace PDF
 				//LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
 				SETUPDATESQL(PdfLogger, conn, ssd);
 
-				if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
-				{
-					int ID_C = Get_ID_C(conn, td);
-					if(ID_C)
-					{
-						std::stringstream ssd;
-						ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
-						SETUPDATESQL(PdfLogger, conn, ssd);
-					}
-				}
+				//if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
+				//{
+				//	int ID_C = Get_ID_C(conn, td);
+				//	if(ID_C)
+				//	{
+				//		std::stringstream ssd;
+				//		ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
+				//		SETUPDATESQL(PdfLogger, conn, ssd);
+				//	}
+				//}
 			}
 			else
 			{
@@ -3815,16 +3819,16 @@ namespace PDF
 
 				SETUPDATESQL(SQLLogger, conn, ssd);
 
-				if(td.day && td.month && td.year && td.cassetteno)
-				{
-					int ID_C = Get_ID_C(conn, td);
-					if(ID_C)
-					{
-						std::stringstream ssd;
-						ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
-						SETUPDATESQL(PdfLogger, conn, ssd);
-					}
-				}
+				//if(td.day && td.month && td.year && td.cassetteno)
+				//{
+				//	int ID_C = Get_ID_C(conn, td);
+				//	if(ID_C)
+				//	{
+				//		std::stringstream ssd;
+				//		ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
+				//		SETUPDATESQL(PdfLogger, conn, ssd);
+				//	}
+				//}
 			}
 		}
 
@@ -4257,7 +4261,7 @@ namespace PDF
 					if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
 						InZone5(conn, td.create_at);
 				}
-				else if(td.id_name == HMISheetData.NewData->ID)
+				else if(td.id_name == HMISheetData.NewData->ID && td.content.As<bool>())
 				{
 					InZone6(conn, td.create_at);
 				}
@@ -4363,10 +4367,15 @@ namespace PDF
 			PGConnection conn;
 			conn.connection();
 
+#ifndef _DEBUG
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop = "";
-			//std::string start = "2024-09-24 16:00:00";
-			//std::string stop = "2024-09-23 14:00:00";
+#else
+			std::string start = SHEET::GetStartTime(conn);
+			std::string stop = "";
+			//std::string start = "2024-09-27 07:18:00";
+			//std::string stop = "2024-09-27 07:50:00";
+#endif // DEBUG
 
 
 
@@ -4423,7 +4432,7 @@ namespace PDF
 			return 0;
 #else
 
-			//CorrectSheet(0);
+			CorrectSheet(0);
 			CorrectCassette(0);
 
 			PDF::Correct = false;
