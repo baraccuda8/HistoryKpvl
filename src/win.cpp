@@ -135,6 +135,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
     {casSheet::SecondPos_at, { "Дата время\nво второй зоне", LL0 }},
+    {casSheet::Delete_at, { "Удален", LL0 }},
     {casSheet::Correct, { "Коррекция", LL0 }},
 
     //{casSheet::Pos, { "Лист\nнайден в", 100 }},
@@ -158,7 +159,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::Thikness, { "Толщина\nлиста\nмм", L2 }},
     {casSheet::Melt, { "Плавка", L1 }},
     {casSheet::PartNo, { "Партия", L0 }},
-    //{casSheet::Slab, { "Сляб", L0 }},
+    {casSheet::Slab, { "Сляб", L0 }},
     {casSheet::Pack, { "Пачка", L0 }},
     {casSheet::Sheet, { "Номер\nлиста", L0 }},
     //{casSheet::SubSheet, { "Номер\nдодлиста", L0 }},
@@ -1404,6 +1405,8 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         ELSEIF (casSheet::Start_at, GetDataTimeStr(p.Start_at));
                         ELSEIF (casSheet::SecondPos_at, GetDataTimeStr(p.SecondPos_at));
                         ELSEIF (casSheet::DataTime_End, GetDataTimeStr(p.DataTime_End));
+                        ELSEIF (casSheet::Delete_at, GetDataTimeStr(p.Delete_at));
+                        
                         ELSEIF (casSheet::Correct, GetDataTimeStr(p.Correct));
 
                         ELSEIF (casSheet::Pos, (NamePos[p.Pos] + " (" + p.Pos + ")"));
@@ -1425,7 +1428,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         ELSEIF (casSheet::Thikness, p.Thikness);
                         
                         ELSEIF (casSheet::Melt, p.Melt);
-                        //ELSEIF (casSheet::Slab, p.Slab);
+                        ELSEIF (casSheet::Slab, p.Slab);
                         ELSEIF (casSheet::PartNo, p.PartNo);
                         ELSEIF (casSheet::Pack, p.Pack);
                         ELSEIF (casSheet::Sheet, (p.Sheet + "/" + p.SubSheet));

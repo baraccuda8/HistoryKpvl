@@ -197,7 +197,7 @@ namespace S107
             if(IsCassette(CD))
             {
                 std::stringstream ss;
-                ss << "SELECT count(*) FROM sheet WHERE";
+                ss << "SELECT count(*) FROM sheet WHERE delete_at IS NULL AND ";
                 ss << " hour = '" << CD.Hour << "'";
                 ss << " AND day = '" << CD.Day << "'";
                 ss << " AND month = '" << CD.Month << "'";

@@ -399,7 +399,7 @@ namespace PDF
 		{
 			AllPfdSheet.erase(AllPfdSheet.begin(), AllPfdSheet.end());
 			std::stringstream sd;
-			sd << "SELECT * FROM sheet WHERE ";
+			sd << "SELECT * FROM sheet WHERE "; //delete_at IS NULL AND 
 			sd << "hour = '" << Cassette.Hour << "' AND ";
 			sd << "day = '" << Cassette.Day << "' AND ";
 			sd << "month = '" << Cassette.Month << "' AND ";
@@ -1544,7 +1544,7 @@ namespace PDF
 			boost::replace_all(PdfName, lpLogPdf2, lpLogPdf);
 			std::stringstream ssd;
 			ssd << "UPDATE sheet SET pdf = '" << PdfName;
-			ssd << "' WHERE id = " << Sheet.id;
+			ssd << "' WHERE id = " << Sheet.id; //delete_at IS NULL AND 
 			std::string comand = ssd.str();
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_FATAL_ERROR)
@@ -1942,13 +1942,13 @@ namespace PDF
 		{
 			std::string start = "";
 
-			std::string comand1 = "(SELECT run_at FROM cassette WHERE delete_at IS NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 ";
+			std::string comand1 = "(SELECT run_at FROM cassette WHERE (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
 			comand1 += peth;
 			comand1 += " ORDER BY id DESC LIMIT 1)";
 
 			std::string comand = "SELECT run_at";
 			comand += " - TIME '05:00:00'";	//Минус 5 часов
-			comand += " FROM cassette WHERE delete_at IS NULL AND (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > ";
+			comand += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
 			comand += comand1;
 			comand += peth;
 			comand += " ORDER BY id ASC LIMIT 1;";
@@ -2419,9 +2419,9 @@ namespace PDF
 				else
 				{
 					std::stringstream set;
-					set << "SELECT COUNT(*) FROM sheet WHERE ";
+					set << "SELECT COUNT(*) FROM sheet WHERE "; //delete_at IS NULL AND 
 					set << "year = '" << Stoi(ct.Year) << "' ";
-					set << "month = '" << Stoi(ct.Month) << "' ";
+					set << "AND month = '" << Stoi(ct.Month) << "' ";
 					set << "AND day = '" << Stoi(ct.Day) << "' ";
 					set << "AND hour = '" << Stoi(ct.Hour) << "' ";
 					set << "AND cassetteno = " << Stoi(ct.CassetteNo);;
@@ -3150,6 +3150,7 @@ namespace PDF
 			ssd << ids.Melt << ";";
 			ssd << ids.PartNo << ";";
 			ssd << ids.Pack << ";";
+			ssd << ids.Slab << ";";
 			ssd << ids.Sheet << ";";
 			ssd << ids.SubSheet << ";";
 
@@ -3244,6 +3245,7 @@ namespace PDF
 				<< "Плавка;"
 				<< "Партия;"
 				<< "Пачка;"
+				<< "Сляб;"
 				<< "Лист;"
 				<< "Сублист;"
 				<< "TempSet1;"
@@ -3687,9 +3689,10 @@ namespace PDF
 				ssd << ", sheetincassette = " << td.sheetincassette;
 				ssd << ", pos = " << td.Pos;
 				ssd << ", news = " << td.news;
+				ssd << ", delete_at = DEFAULT";
 				
 				
-				ssd << ", correct = now(), pdf = ''	WHERE id = " << td.id;
+				ssd << ", correct = now(), pdf = ''	WHERE id = " << td.id; //delete_at IS NULL AND 
 				SetWindowText(hWndDebug, ssd.str().c_str());
 
 
@@ -3729,6 +3732,7 @@ namespace PDF
 				ssd << "slab, ";
 				ssd << "partno, ";
 				ssd << "pack, ";
+				ssd << "slab, ";
 				ssd << "sheet, ";
 				ssd << "subsheet, ";
 				ssd << "temper, ";
@@ -3779,6 +3783,7 @@ namespace PDF
 				ssd << td.Slab << ", "; //Slab
 				ssd << td.PartNo << ", ";
 				ssd << td.Pack << ", ";
+				ssd << td.Slab << ", ";
 				ssd << td.Sheet << ", ";
 				ssd << td.SubSheet << ", ";
 				ssd << td.Temper << ", ";
@@ -3842,6 +3847,7 @@ namespace PDF
 			sss << " Melt: " << ids.Melt;
 			sss << " PartNo: " << ids.PartNo;
 			sss << " Pack: " << ids.Pack;
+			sss << " Slab: " << ids.Slab;
 			sss << " Sheet: " << ids.Sheet;
 			sss << " SubSheet: " << ids.SubSheet;
 			SetWindowText(hWndDebug, sss.str().c_str());
@@ -3880,6 +3886,7 @@ namespace PDF
 				sss << " Melt: " << Ids2.Melt;
 				sss << " PartNo: " << Ids2.PartNo;
 				sss << " Pack: " << Ids2.Pack;
+				sss << " Slab: " << Ids2.Slab;
 				sss << " Sheet: " << Ids2.Sheet;
 				sss << " SubSheet: " << Ids2.SubSheet;
 				SetWindowText(hWndDebug, sss.str().c_str());
@@ -3907,6 +3914,7 @@ namespace PDF
 				sss << " Melt: " << Ids3.Melt;
 				sss << " PartNo: " << Ids3.PartNo;
 				sss << " Pack: " << Ids3.Pack;
+				sss << " Slab: " << Ids3.Slab;
 				sss << " Sheet: " << Ids3.Sheet;
 				sss << " SubSheet: " << Ids3.SubSheet;
 				SetWindowText(hWndDebug, sss.str().c_str());
@@ -3936,6 +3944,7 @@ namespace PDF
 					sss << " Melt: " << Ids5.Melt;
 					sss << " PartNo: " << Ids5.PartNo;
 					sss << " Pack: " << Ids5.Pack;
+					sss << " Slab: " << Ids5.Slab;
 					sss << " Sheet: " << Ids5.Sheet;
 					sss << " SubSheet: " << Ids5.SubSheet;
 					SetWindowText(hWndDebug, sss.str().c_str());
@@ -4014,6 +4023,7 @@ namespace PDF
 			sss << "Melt: " << ids.Melt;
 			sss << "PartNo: " << ids.PartNo;
 			sss << "Pack: " << ids.Pack;
+			sss << "Slab: " << ids.Slab;
 			sss << "Sheet: " << ids.Sheet;
 			sss << "SubSheet: " << ids.SubSheet;
 			SetWindowText(hWndDebug, sss.str().c_str());
@@ -4282,7 +4292,8 @@ namespace PDF
 
 			std::string comand = "SELECT start_at"
 				" - TIME '00:02:00'"						//Минут 2 минуты
-				" FROM sheet WHERE correct IS NULL AND id > (SELECT id FROM sheet WHERE correct IS NOT NULL ORDER BY id DESC LIMIT 1) AND CAST(pos AS integer) > 4 ORDER BY id ASC LIMIT 1;";
+				//delete_at IS NULL AND 
+				" FROM sheet WHERE correct IS NULL AND start_at > (SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1) AND CAST(pos AS integer) > 4 ORDER BY start_at ASC LIMIT 1;";
 
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -4373,7 +4384,7 @@ namespace PDF
 #else
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop = "";
-			//std::string start = "2024-09-27 07:18:00";
+			//std::string start = "2024-09-27 17:15:00";
 			//std::string stop = "2024-09-27 07:50:00";
 #endif // DEBUG
 
@@ -4433,12 +4444,12 @@ namespace PDF
 #else
 
 			CorrectSheet(0);
-			CorrectCassette(0);
+			//CorrectCassette(0);
 
 			PDF::Correct = false;
 
 			//В дебаге один проход и выход из программы
-			isRun = false;
+			//isRun = false;
 			LOG_INFO(PdfLogger, "{:90}| Stop Pdf Debug", FUNCTION_LINE_NAME);
 #endif
 		}

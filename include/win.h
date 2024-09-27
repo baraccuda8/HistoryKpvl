@@ -1014,6 +1014,7 @@ namespace casSheet{
         Start_at,
         SecondPos_at,
         DataTime_End,
+        Delete_at,
         Correct,
         Pos,
 
@@ -1032,7 +1033,7 @@ namespace casSheet{
         Alloy,
         Thikness,
         Melt,
-        //Slab,
+        Slab,
         PartNo,
         Pack,
         Sheet,
@@ -1140,6 +1141,7 @@ namespace cas{
         TimeForPlateHeat, //Время сигнализации окончания нагрева, мин
         PresToStartComp,  //Уставка давления для запуска комперссора
         Correct,
+        Delete_at,
     };
 };
 
@@ -1210,6 +1212,7 @@ typedef struct _TSheet{
     std::string Temperature = "";       //Средняя температура 2-части печи закалки
     std::string Correct = "";
     std::string SecondPos_at = "";      //Время прехода во вторую зону
+    std::string Delete_at = "";      //Удален
 
     _TSheet()
     {
@@ -1281,6 +1284,7 @@ typedef struct _TSheet{
         Temperature = "";
         Correct = "";
         SecondPos_at = "";
+        Delete_at = "";
     }
 
     //bool compare(TSheet& rhs)

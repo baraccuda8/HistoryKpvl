@@ -152,7 +152,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[1].Pack          = new Value(AppGenSeqToHmi1 + "Z1.Pack",                HWNDCLIENT::hEditPlate_DataZ1_Pack,       KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[1].Sheet         = new Value(AppGenSeqToHmi1 + "Z1.Sheet",               HWNDCLIENT::hEditPlate_DataZ1_Sheet,      KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Sheet::Z1::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[1].Slab          = new Value(AppGenSeqToHmi1 + "Z1.Slab",                HWNDCLIENT::hEditPlate_DataZ1_Slab,       KPVL::Sheet::Z1::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[1].SubSheet      = new Value(AppGenSeqToHmi1 + "Z1.SubSheet",            HWNDCLIENT::hEditPlate_DataZ1_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
@@ -164,7 +164,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[2].Pack          = new Value(AppGenSeqToHmi1 + "Z2.Pack",                HWNDCLIENT::hEditPlate_DataZ2_Pack,       KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[2].Sheet         = new Value(AppGenSeqToHmi1 + "Z2.Sheet",               HWNDCLIENT::hEditPlate_DataZ2_Sheet,      KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Sheet::Z2::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[2].Slab          = new Value(AppGenSeqToHmi1 + "Z2.Slab",                HWNDCLIENT::hEditPlate_DataZ2_Slab,       KPVL::Sheet::Z2::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[2].SubSheet      = new Value(AppGenSeqToHmi1 + "Z2.SubSheet",            HWNDCLIENT::hEditPlate_DataZ2_SubSheet,   0, &conn_kpvl)}, //Номер подлиста
 #pragma endregion
 
@@ -176,7 +176,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[3].Pack          = new Value(AppGenSeqToHmi1 + "Z3.Pack",                HWNDCLIENT::hEditPlate_DataZ3_Pack,       KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[3].Sheet         = new Value(AppGenSeqToHmi1 + "Z3.Sheet",               HWNDCLIENT::hEditPlate_DataZ3_Sheet,      KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Sheet::Z3::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[3].Slab          = new Value(AppGenSeqToHmi1 + "Z3.Slab",                HWNDCLIENT::hEditPlate_DataZ3_Slab,       KPVL::Sheet::Z3::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[3].SubSheet      = new Value(AppGenSeqToHmi1 + "Z3.SubSheet",            HWNDCLIENT::hEditPlate_DataZ3_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
@@ -188,7 +188,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[4].Pack          = new Value(AppGenSeqToHmi1 + "Z4.Pack",                HWNDCLIENT::hEditPlate_DataZ4_Pack,       KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[4].Sheet         = new Value(AppGenSeqToHmi1 + "Z4.Sheet",               HWNDCLIENT::hEditPlate_DataZ4_Sheet,      KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Sheet::Z4::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[4].Slab          = new Value(AppGenSeqToHmi1 + "Z4.Slab",                HWNDCLIENT::hEditPlate_DataZ4_Slab,       KPVL::Sheet::Z4::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[4].SubSheet      = new Value(AppGenSeqToHmi1 + "Z4.SubSheet",            HWNDCLIENT::hEditPlate_DataZ4_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
@@ -201,7 +201,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[5].Pack          = new Value(AppGenSeqToHmi1 + "Z5.Pack",                HWNDCLIENT::hEditPlate_DataZ5_Pack,       KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер пачки
     {PlateData[5].Sheet         = new Value(AppGenSeqToHmi1 + "Z5.Sheet",               HWNDCLIENT::hEditPlate_DataZ5_Sheet,      KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер листа
 
-    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Sheet::Z5::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[5].Slab          = new Value(AppGenSeqToHmi1 + "Z5.Slab",                HWNDCLIENT::hEditPlate_DataZ5_Slab,       KPVL::Sheet::Z5::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[5].SubSheet      = new Value(AppGenSeqToHmi1 + "Z5.SubSheet",            HWNDCLIENT::hEditPlate_DataZ5_SubSheet,   0, &conn_kpvl)},    //Номер подлиста
 #pragma endregion
 
@@ -215,7 +215,7 @@ std::deque<Value*> AllTagKpvl = {
     {PlateData[6].Pack          = new Value(AppHMISheetData1 + "Pack",                HWNDCLIENT::hEdit_Sheet_Pack,         KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер пачки
     {PlateData[6].Sheet         = new Value(AppHMISheetData1 + "Sheet",               HWNDCLIENT::hEdit_Sheet_Sheet,        KPVL::Sheet::Z6::Data, &conn_kpvl)},      //Номер листа
 
-    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Sheet::Z6::DataSlab, &conn_kpvl)},    //Номер сляба
+    {PlateData[6].Slab          = new Value(AppHMISheetData1 + "Slab",                HWNDCLIENT::hEdit_Sheet_Slab,         KPVL::Sheet::Z6::Data, &conn_kpvl)},    //Номер сляба
     {PlateData[6].SubSheet      = new Value(AppHMISheetData1 + "SubSheet",            HWNDCLIENT::hEdit_Sheet_SubSheet,     0, &conn_kpvl)},                            //Номер подлиста
 
     {HMISheetData.Cassette.CassetteNo       = new Value(AppHMISheetData2 + "CassetteNo",          HWNDCLIENT::hEdit_Sheet_CassetteNo,      KPVL::Cassette::CassetteNo, &conn_kpvl)},        //Номер кассеты за день
@@ -731,12 +731,43 @@ void UpdateSheetPos()
         //PQclear(res);
     }
     {
-        std::string comand = "UPDATE sheet SET pos = 7 WHERE news = 1;";
+        std::string comand = "UPDATE sheet SET pos = 7 WHERE delete_at IS NULL AND news = 1;";
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         PGresult* res = conn_spis.PGexec(comand);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, comand);
         PQclear(res);
+    }
+}
+
+void TestSheet()
+{
+    std::vector <std::string> IDS;
+    //Удаление "левых" листов
+    //DELETE FROM sheet WHERE id = 15825;
+    std::string comand = "SELECT id FROM sheet WHERE delete_at IS NULL AND datatime_end IS NULL AND (pos > 5 AND secondpos_at IS NULL AND datatime_end IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-11 00:00:00' ORDER BY id;";
+    PGresult* res = conn_spis.PGexec(comand);
+    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        int line = PQntuples(res);
+        for(int l = 0; l < line; l++)
+        {
+            std::string ids = conn_spis.PGgetvalue(res, l, 0);
+            if(ids.length())
+                IDS.push_back(ids);
+        }
+    }
+    else
+        LOG_ERR_SQL(HardLogger, res, comand);
+    PQclear(res);
+
+    for(auto& ids : IDS)
+    {
+        std::stringstream comand;
+        //comand << "DELETE FROM sheet WHERE id = " << ids;
+        comand << "UPDATE sheet SET delete_at = now() WHERE id = " << ids;
+        LOG_INFO(HardLogger, "{:90}| {}", comand.str());
+        SETUPDATESQL(HardLogger, conn_spis, comand);
     }
 }
 
@@ -749,6 +780,8 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
 
     while(isRun)
     {
+        TestSheet();
+
         KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
         for(auto& TS : AllSheet)
         {
@@ -759,7 +792,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
                 int pos2 = Pos / 10;
                 TS.Pos = std::to_string(pos1 + pos2);
                 std::stringstream sss;
-                sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE id = " << TS.id;
+                sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE delete_at IS NULL AND id = " << TS.id;
                 LOG_INFO(HardLogger, "{:90}| {}", sss.str());
                 SETUPDATESQL(HardLogger, conn_spis, sss);
             }

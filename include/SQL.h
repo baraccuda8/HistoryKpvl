@@ -16,12 +16,12 @@ extern std::string m_dbpass;
 
 #define SETUPDATESQL(_l, _c, _s) \
 {\
-    std::string comand = _s.str(); \
-    if(DEB)LOG_INFO(_l, "{:90}| {}", FUNCTION_LINE_NAME, comand); \
-    PGresult* res = _c.PGexec(comand); \
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)\
-        LOG_ERR_SQL(_l, res, comand); \
-    PQclear(res);\
+    std::string _comand = _s.str(); \
+    if(DEB)LOG_INFO(_l, "{:90}| {}", FUNCTION_LINE_NAME, _comand); \
+    PGresult* _res = _c.PGexec(_comand); \
+    if(PQresultStatus(_res) == PGRES_FATAL_ERROR)\
+        LOG_ERR_SQL(_l, _res, _comand); \
+    PQclear(_res);\
 }
 
 
