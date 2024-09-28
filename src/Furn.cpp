@@ -47,13 +47,14 @@ namespace S107
         int Total = 0;             //Факт общее время
         int Correct = 0;           //
         int Pdf = 0;               //
+        int Return_at = 0;
 
     };
 
     //Получение номера колонки
     void GetColl(PGresult* res)
     {
-        if(!Coll::Hour)
+        if(!Coll::Return_at)
         {
             int nFields = PQnfields(res);
             for(int j = 0; j < nFields; j++)
@@ -86,6 +87,8 @@ namespace S107
                 else if(l == "correct")Coll::Correct = j;
                 else if(l == "pdf")Coll::Pdf = j;
                 else if(l == "hour")Coll::Hour = j;
+                else if(l == "return_at")Coll::Return_at = j;
+                
             }
         }
     }
@@ -121,6 +124,8 @@ namespace S107
         cassette.Total = conn_spis.PGgetvalue(res, line, Coll::Total); //Завершение процесса + 15 минут
         cassette.Correct = conn_spis.PGgetvalue(res, line, Coll::Correct); //Завершение процесса + 15 минут
         cassette.Pdf = conn_spis.PGgetvalue(res, line, Coll::Pdf); //Завершение процесса + 15 минут
+        cassette.Return_at = conn_spis.PGgetvalue(res, line, Coll::Return_at); //Завершение процесса + 15 минут
+        
 
     }
 
@@ -618,7 +623,7 @@ namespace S107
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
-        else
+        else if(DEB)
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
 
@@ -645,7 +650,7 @@ namespace S107
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
-        else
+        else if(DEB)
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
@@ -670,7 +675,7 @@ namespace S107
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
-        else
+        else if(DEB)
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
     }
@@ -807,6 +812,7 @@ namespace S107
             sd << " end_at = DEFAULT, ";
             sd << " delete_at = DEFAULT, ";
             sd << " finish_at = DEFAULT, ";
+            sd << " return_at = now(), ";
             sd << " peth = " << nPetch;
             sd << " WHERE";
             sd << " cassetteno = " << Furn.Cassette.CassetteNo;
@@ -953,8 +959,9 @@ namespace S107
             {
                 ReturnCassette(AppFurn1, Petch, nPetch);
                 value->Set_Value(false);
+                LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
             }
-            LOG_ERROR(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
+            if(DEB)LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
 
             return 0;
         }
@@ -1149,9 +1156,9 @@ namespace S107
             {
                 ReturnCassette(AppFurn2, Petch, nPetch);
                 value->Set_Value(false);
-                
+                LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
             }
-            LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
+            if(DEB)LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
             return 0;
         }
 

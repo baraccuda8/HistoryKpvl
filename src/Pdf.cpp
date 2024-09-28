@@ -54,11 +54,12 @@ namespace PDF
 	void CopyAllFile()
 	{
 		//namespace fs = std::filesystem;
+		struct stat buff;
 		const char* dir1 = lpLogPdf2.c_str();
 		const char* dir2 = lpLogPdf.c_str();
-
 		try
 		{
+			if(!stat(dir1, &buff) && !stat(dir2, &buff))
 			std::filesystem::copy(dir1, dir2,
 								  std::filesystem::copy_options::update_existing
 							   //|  std::filesystem::copy_options::overwrite_existing
@@ -70,6 +71,7 @@ namespace PDF
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
 		try
 		{
+			if(!stat(dir1, &buff) && !stat(dir2, &buff))
 			std::filesystem::copy(dir1, dir2,
 								  std::filesystem::copy_options::update_existing
 							   //|  std::filesystem::copy_options::overwrite_existing
@@ -80,8 +82,10 @@ namespace PDF
 	}
 	void DelAllPdf(std::filesystem::path dir)
 	{
+		struct stat buff;
 		boost::system::error_code ec;
-		std::filesystem::remove_all(dir, ec);
+		if(!stat((const char*)dir.c_str(), &buff))
+			std::filesystem::remove_all(dir, ec);
 		//std::string err = "";
 		//if(ec)
 		//{
@@ -3827,7 +3831,7 @@ namespace PDF
 					//	}
 					//}
 				}
-				else
+				else if(td.Melt && td.Pack && td.PartNo && td.Sheet)
 				{
 					if(iAllId) td.id = iAllId++;
 					std::stringstream ssd;
@@ -3938,6 +3942,28 @@ namespace PDF
 
 
 					SETUPDATESQL(SQLLogger, conn, ssd);
+
+
+					std::stringstream ssf;
+					ssf << "SELECT id FROM sheet ";
+					ssf << "WHERE melt = '" << td.Melt << "'";
+					ssf << " AND slab = " << td.Slab;
+					ssf << " AND partno = " << td.PartNo;
+					ssf << " AND pack = " << td.Pack;
+					ssf << " AND sheet = " << td.Sheet;
+					ssf << " AND subsheet = " << td.SubSheet;
+					ssf << " ORDER BY id DESC LIMIT 1";
+
+					LOG_INFO(SheetLogger, ssf.str());
+					PGresult* res = conn.PGexec(ssf.str());
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						if(PQntuples(res))
+							td.id = Stoi(conn.PGgetvalue(res, 0, 0));
+					}
+					else
+						LOG_ERR_SQL(SheetLogger, res, ssf.str());
+					PQclear(res);
 
 					//if(td.day && td.month && td.year && td.cassetteno)
 					//{

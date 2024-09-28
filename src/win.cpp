@@ -211,28 +211,29 @@ std::map<int, std::string> EventCassette ={
 };
 
 
-std::vector <ListTitle> Cassette_Collumn ={
-    { "№", 30 },
-    {"ID", 50 },
-    { "Событие", XL_CX1 },
-    { "Новая кассета", XL_CX2 },
+std::map < Cassete::cas, ListTitle> Cassette_Collumn ={
+    {Cassete::NN, {"№", 30 }},
+    {Cassete::Id, {"ID", 50 }},
+    {Cassete::Event, {"Событие", XL_CX1 }},
+    {Cassete::Create_at, {"Новая кассета", XL_CX2 }},
 
-    { "Г", 40 },
-    { "М", 30 },
-    { "Д", 30 },
-    { "Ч", 30 },
-    { "К", 30 },
-    { "Л", 30 },
-    { "П",  20},
+    {Cassete::Year, {"Г", 40 }},
+    {Cassete::Month, {"М", 30 }},
+    {Cassete::Day, {"Д", 30 }},
+    {Cassete::Hour, {"Ч", 30 }},
+    {Cassete::CassetteNo, {"К", 30 }},
+    {Cassete::SheetInCassette, {"Л", 30 }},
+    {Cassete::Peth, {"П",  20}},
 
-    { "Начало оптуска", XL_CX8 },
-    { "Конец оптуска", XL_CX8 },
-    { "Коррекция",  XL_CX8},
-    { "Пдф", XL_CX8 },
+    {Cassete::Run_at, {"Начало оптуска", XL_CX8 }},
+    {Cassete::Finish_at, {"Конец оптуска", XL_CX8 }},
+    {Cassete::Correct, {"Коррекция",  XL_CX8}},
+    {Cassete::Pdf, {"Пдф", XL_CX8 }},
+    {Cassete::Return_at, {"Вернули", XL_CX8 }},
 
-    { "Факт время нагрева", XL_CX4 },
-    { "Факт время выдержки", XL_CX4 },
-    { "Факт общее время", XL_CX4 },
+    {Cassete::HeatAcc, {"Факт время нагрева", XL_CX4 }},
+    {Cassete::HeatWait, {"Факт время выдержки", XL_CX4 }},
+    {Cassete::Total, {"Факт общее время", XL_CX4 }},
 
 };
 
@@ -1066,8 +1067,13 @@ void CreateHistoriCassette()
 
     SetWindowSubclass(hHeaderCassette, WndProcHeadListView, 2, 20);
 
-    for(size_t i = 0; i < Cassette_Collumn.size(); i++)
-        AddColumn(hwndCassette, i, &Cassette_Collumn[i]);
+
+    size_t i = 0;
+    for(auto& a : Cassette_Collumn)
+        AddColumn(hwndCassette, i++, &a.second);
+
+    //for(size_t i = 0; i < Cassette_Collumn.size(); i++)
+    //    AddColumn(hwndCassette, i, &Cassette_Collumn[i]);
     ListView_SetExtendedListViewStyle(hwndCassette, LVS_EX_ONECLICKACTIVATE | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP | LVS_EX_REGIONAL | LVS_EX_FULLROWSELECT);
 }
 
@@ -1557,6 +1563,8 @@ LRESULT OnNotifyCassette(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             if(plvdi->item.iSubItem == Cassete::Finish_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Finish_at).c_str());   //Конец отпуска
                             if(plvdi->item.iSubItem == Cassete::Correct)           lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Correct).c_str());     //Коррекция
                             if(plvdi->item.iSubItem == Cassete::Pdf)               lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Pdf).c_str());         //Пдф
+                            if(plvdi->item.iSubItem == Cassete::Return_at)         lstrcpy(plvdi->item.pszText, GetDataTimeStr(p.Return_at).c_str());   //Вернули в список
+                            
 
                             if(plvdi->item.iSubItem == Cassete::HeatAcc)           lstrcpy(plvdi->item.pszText, p.HeatAcc.c_str());             //Факт время нагрева
                             if(plvdi->item.iSubItem == Cassete::HeatWait)          lstrcpy(plvdi->item.pszText, p.HeatWait.c_str());            //Факт время выдержки

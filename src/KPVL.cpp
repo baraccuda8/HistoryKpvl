@@ -518,8 +518,7 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->GetInt();
                 sd << " AND slab = " << PD.Slab->GetInt();
                 std::string comand = sd.str();
-                //if(DEB)
-                    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                 PGresult* res = conn.PGexec(comand);
 
@@ -604,20 +603,20 @@ namespace KPVL {
         //Добовление листа в базу
         void InsertSheet(PGConnection& conn, T_PlateData& PD, int Pos)
         {
+            PD.Melt->GetValue();
+            PD.PartNo->GetValue();
+            PD.Pack->GetValue();
+            PD.Slab->GetValue();
+            PD.Sheet->GetValue();
+            PD.SubSheet->GetValue();
+            PD.AlloyCodeText->GetValue();
+            PD.ThiknessText->GetValue();
+
             if(IsSheet(PD))
             {
                 std::string id = GetIdSheet(conn, PD);
                 if(!Stoi(id)) //!id.length() || id == "" || id == "0")
                 {
-                    PD.Melt->GetValue();
-                    PD.PartNo->GetValue();
-                    PD.Pack->GetValue();
-                    PD.Slab->GetValue();
-                    PD.Sheet->GetValue();
-                    PD.SubSheet->GetValue();
-                    PD.AlloyCodeText->GetValue();
-                    PD.ThiknessText->GetValue();
-
                     std::stringstream sd;
                     sd << "INSERT INTO sheet ";
                     sd << "(";
@@ -2160,7 +2159,7 @@ namespace KPVL {
             {
                 std::stringstream up;
                 up << f.first << " = " << value->GetFloat();
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
+                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
                 Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
             }
         }

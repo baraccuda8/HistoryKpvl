@@ -1213,6 +1213,7 @@ typedef struct _TSheet{
     std::string Correct = "";
     std::string SecondPos_at = "";      //Время прехода во вторую зону
     std::string Delete_at = "";      //Удален
+    std::string Return_at = "";     //Вернули в список
 
     _TSheet()
     {
@@ -1285,6 +1286,7 @@ typedef struct _TSheet{
         Correct = "";
         SecondPos_at = "";
         Delete_at = "";
+        Return_at = "";
     }
 
     //bool compare(TSheet& rhs)
@@ -1296,25 +1298,29 @@ typedef struct _TSheet{
     //}
 }TSheet;
 
-enum Cassete{
-    NN,
-    Id,
-    Event,
-    Create_at,
-    Year,
-    Month,
-    Day,
-    Hour,
-    CassetteNo,
-    SheetInCassette,
-    Peth,
-    Run_at,
-    Finish_at,
-    Correct,
-    Pdf,
-    HeatAcc,           //Факт время нагрева
-    HeatWait,          //Факт время выдержки
-    Total,             //Факт общее время
+namespace Cassete
+{
+    enum cas{
+        NN,
+        Id,
+        Event,
+        Create_at,
+        Year,
+        Month,
+        Day,
+        Hour,
+        CassetteNo,
+        SheetInCassette,
+        Peth,
+        Run_at,
+        Finish_at,
+        Correct,
+        Pdf,
+        Return_at,
+        HeatAcc,           //Факт время нагрева
+        HeatWait,          //Факт время выдержки
+        Total,             //Факт общее время
+    };
 };
 
 typedef struct TCassette{
@@ -1345,6 +1351,7 @@ typedef struct TCassette{
     std::string Total = "";             //Факт общее время
     std::string Correct = "";           //
     std::string Pdf = "";               //
+    std::string Return_at = "";     //Вернули в список
 
     bool compare(const TCassette& rhs)
     {
