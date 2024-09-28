@@ -3046,16 +3046,16 @@ namespace PDF
 				remove("Sdg.csv");
 				remove("all_tag.csv");
 
-				//Корекция и ПДФ				
+				//Коррекция и ПДФ				
 				GetCasset(conn);
 
-				//ПДФ без корекции
+				//ПДФ без коррекции
 				HendCassettePDF(conn);
 
 				CopyAllFile();
 
-				SetWindowText(hWndDebug, "Закончили коррекцию кассет");
-				LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+				//SetWindowText(hWndDebug, "Закончили коррекцию кассет");
+				//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 			}
 			CATCH(CassetteLogger, "");
 
@@ -4583,7 +4583,18 @@ namespace PDF
 #else
 
 			//CorrectSheet(0);
-			CorrectCassette(0);
+			while(isRun)
+			{
+				CorrectCassette(0);
+				std::string out = "Закончили создание паспортов " + GetDataTimeString();
+
+				SetWindowText(hWndDebug, out.c_str());
+				LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+
+				int f = 60;
+				while(isRun && --f > 0)
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			}
 
 			PDF::Correct = false;
 
@@ -4594,8 +4605,8 @@ namespace PDF
 		}
 		CATCH(CorrectLog, "");
 
-
-		SetWindowText(hWndDebug, "Закончили создание паспортов");
+		std::string out = "Закончили создание паспортов " + GetDataTimeString();
+		SetWindowText(hWndDebug, out.c_str());
 		return 0;
 	}
 }
