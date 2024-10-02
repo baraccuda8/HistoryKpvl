@@ -1323,6 +1323,20 @@ namespace Cassete
     };
 };
 
+typedef struct Tcass{
+    std::string Peth = "";
+    std::string Run_at = "";
+    std::string Hour = "";
+    std::string Day = "";
+    std::string Month = "";
+    std::string Year = "";
+    std::string CassetteNo = "";
+    Tcass(int p)
+    {
+        Peth = std::to_string(p);
+    }
+}Tcass;
+
 typedef struct TCassette{
     std::string Create_at = "";
     std::string Id = "";
@@ -1362,6 +1376,18 @@ typedef struct TCassette{
             && Month == rhs.Month
             && Year == rhs.Year;
 
+    };
+
+    TCassette& operator = (Tcass& cass)
+    {
+        Run_at = cass.Run_at;
+        Peth = cass.Peth;
+        Hour = cass.Hour;
+        Day = cass.Day;
+        Month = cass.Month;
+        Year = cass.Year;
+        CassetteNo = cass.CassetteNo;
+        return *this;
     }
 }TCassette;
 

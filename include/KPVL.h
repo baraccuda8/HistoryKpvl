@@ -108,60 +108,72 @@ namespace KPVL {
 
         //Зона 0 на входе в печь
         namespace  Z0{
+            extern const int Pos;
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 1 зона печи
         namespace  Z1{
+            extern const int Pos;
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         };
 
         //Зона 2 зона печи
         namespace Z2{
+            extern const int Pos;
+
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 3 закалка
         namespace Z3{
+            extern const int Pos;
+
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 4 Охлаждение
         namespace Z4{
+            extern const int Pos;
+
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 5 Выход
         namespace Z5{
+            extern const int Pos;
+
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
         }
 
         //Зона 6 (кантовка)
         namespace Z6{
+            extern const int Pos;
+
             DWORD DataTime(Value* value);
 
             DWORD DataAlloyThikn(Value* value);
 
             DWORD Data(Value* value);
-            DWORD DataSlab(Value* value);
+            //DWORD DataSlab(Value* value);
 
             //Новые лист в касету, Кассета наполяентся
             DWORD NewSheetData(Value* value);

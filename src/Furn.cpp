@@ -815,11 +815,11 @@ namespace S107
             sd << " return_at = now(), ";
             sd << " peth = " << nPetch;
             sd << " WHERE";
-            sd << " cassetteno = " << Furn.Cassette.CassetteNo;
-            sd << " AND hour = " << Furn.Cassette.Hour;
-            sd << " AND day = " << Furn.Cassette.Day;
-            sd << " AND month = " << Furn.Cassette.Month;
-            sd << " AND year = " << Furn.Cassette.Year;
+            sd << " cassetteno = " << Furn.Cassette.CassetteNo->GetInt();
+            sd << " AND hour = " << Furn.Cassette.Hour->GetInt();
+            sd << " AND day = " << Furn.Cassette.Day->GetInt();
+            sd << " AND month = " << Furn.Cassette.Month->GetInt();
+            sd << " AND year = " << Furn.Cassette.Year->GetInt();
 
             LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
             SETUPDATESQL(SQLLogger, conn_temp, sd);

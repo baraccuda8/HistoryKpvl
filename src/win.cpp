@@ -2371,6 +2371,9 @@ bool InitWindow(HINSTANCE hInst)
     //TestNodiscard();
     MyRegisterClass();
     InitInstance();
+
+
+
     SetWindowText(winmap(hEditDiagnose5), GetDataTimeString().c_str());
 #ifndef TESTWIN
     for(auto& val : AllTagKpvl)
