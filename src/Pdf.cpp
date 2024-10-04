@@ -3154,8 +3154,8 @@ namespace PDF
 
 				DelAllPdf(lpLogPdf2);
 
-				DateStart = "2024-03-01 00:00:00";
-				//DateStart = "";
+				//DateStart = "2024-03-01 00:00:00";
+				DateStart = "";
 				//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
 				DateStop = "";
 
@@ -4797,6 +4797,7 @@ namespace PDF
 			isRun = false;
 			return 0;
 #else
+
 
 			//CorrectSheet(0);
 			while(isRun)
