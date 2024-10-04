@@ -2084,6 +2084,8 @@ namespace KPVL {
     
     DWORD Temperature(Value* value)
     {
+        MySetWindowText(value);
+
         if(
             Hmi210_1.Htr2_1->Val.IsNul() ||
             Hmi210_1.Htr2_2->Val.IsNul() ||
