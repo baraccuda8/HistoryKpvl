@@ -163,7 +163,7 @@ namespace S107
             ss << boost::format("%|02|:") % TM_Beg.tm_hour;
             ss << boost::format("%|02|:") % TM_Beg.tm_min;
             ss << boost::format("%|02|'") % TM_Beg.tm_sec;
-            ss << " ORDER BY event ASC, create_at DESC;"; //DESC
+            ss << " AND delete_at IS NULL ORDER BY event ASC, create_at DESC;"; //DESC
             std::string comand = ss.str();
             if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn.PGexec(comand);
@@ -187,7 +187,8 @@ namespace S107
 
             for(auto iCD = allCassette.begin(); iCD != allCassette.end();)
             {
-                if(GetCountSheet(conn, *iCD))
+                bool r = GetCountSheet(conn, *iCD);
+                if(r)
                     iCD = allCassette.erase(iCD);
                 else
                 {
@@ -215,7 +216,7 @@ namespace S107
                 //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
-                    int count = 0;
+                    int count = -1;
                     int line =  PQntuples(res);
                     if(line)
                     {
@@ -229,11 +230,11 @@ namespace S107
                         ss << "UPDATE cassette SET";
                         ss << " sheetincassette = " << count;
                         ss << " WHERE";
-                        ss << " hour = " << CD.Hour;
-                        ss << " AND day = " << CD.Day;
-                        ss << " AND month = " << CD.Month;
-                        ss << " AND year = " << CD.Year;
-                        ss << " AND cassetteno = " << CD.CassetteNo;
+                        //ss << " hour = " << CD.Hour;
+                        //ss << " AND day = " << CD.Day;
+                        //ss << " AND month = " << CD.Month;
+                        //ss << " AND year = " << CD.Year;
+                        ss << " id = " << CD.Id;
                         std::string comand = ss.str();
                         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn_spic.PGexec(comand);
@@ -245,7 +246,9 @@ namespace S107
 
                     if(line)
                     {
-                        if(!count && !Stoi(CD.Peth))
+                        
+                        if(!isCasseteCant(HMISheetData.Cassette, CD))
+                        if(!count && !Stoi(CD.Peth) && Stoi(CD.Event) > 1)
                         {
                             CD.Event = "7";
                             std::time_t st;
@@ -257,9 +260,11 @@ namespace S107
                             sd << " AND month = " << CD.Month;
                             sd << " AND year = " << CD.Year;
                             sd << " AND cassetteno = " << CD.CassetteNo;
-                            SETUPDATESQL(SQLLogger, conn, ss);
+                            LOG_INFO(SQLLogger, "{:90}| count = {} {}", FUNCTION_LINE_NAME, count, sd.str() );
+                            SETUPDATESQL(SQLLogger, conn, sd);
                             return true;
                         }
+                        
                         //else
                         //if(Stoi(CD.SheetInCassette) != count)
                         //{

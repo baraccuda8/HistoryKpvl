@@ -1484,7 +1484,7 @@ namespace KPVL {
                 co << " AND month = " << CD.Month->GetInt();
                 co << " AND year = " << CD.Year->GetInt();
                 co << " AND cassetteno = " << CD.CassetteNo->GetInt();
-                co << " AND hour <> -1";
+                //co << " AND hour <> -1";
                 co << ";";
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);

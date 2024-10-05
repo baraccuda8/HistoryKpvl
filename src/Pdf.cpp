@@ -2075,7 +2075,7 @@ namespace PDF
 				comand1 += " ORDER BY run_at DESC LIMIT 1)";
 
 				std::string comand = "SELECT run_at";
-				comand += " - TIME '05:00:00'";	//Минус 5 часов
+				comand += " - TIME '06:00:00'";	//Минус 5 часов
 				comand += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
 				comand += comand1;
 				comand += peth;
@@ -2806,130 +2806,6 @@ namespace PDF
 			}CATCH(CassetteLogger, "");
 		}
 
-		void GetCassettes::GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
-		{
-			T_ForBase_RelFurn* Furn = NULL;
-			try
-			{
-				if(Petch == 1)
-				{
-					Furn = &ForBase_RelFurn_1;
-					if(!DateStart.length())
-						DateStart = GetStartTime(conn, "AND peth = 1");
-				}
-				if(Petch == 2)
-				{
-					Furn = &ForBase_RelFurn_2;
-					if(!DateStart.length())
-						DateStart = GetStartTime(conn, "AND peth = 2");
-				}
-
-				if(Furn == NULL || !DateStart.length()) return;
-
-				LOG_INFO(CassetteLogger, "{:90}| Печь = {}, DateStart = {}", FUNCTION_LINE_NAME, Petch, DateStart);
-
-
-				{
-					std::stringstream ssd;
-					ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
-					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << "FROM todos WHERE ";
-					ssd << "create_at >= '" << DateStart << "' AND ";
-
-					if(DateStop.length())
-						ssd << "create_at < '" << DateStop << "' AND ";
-
-					ssd << "(id_name = " << Furn->ProcEnd->ID;
-					ssd << " OR id_name = " << Furn->ProcRun->ID;
-					ssd << " OR id_name = " << Furn->ProcFault->ID;
-
-					ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Day->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
-					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
-					ssd << ") ORDER BY id DESC"; //AND content <> 'false' AND content <> '0' 
-
-					std::string comand = ssd.str();
-					PGresult* res = conn.PGexec(comand);
-					if(PQresultStatus(res) == PGRES_TUPLES_OK)
-					{
-						TodosColumn(res);
-
-						int line = PQntuples(res);
-						std::string old_value = "";
-						for(int l = 0; l < line && isRun; l++)
-						{
-							T_Todos ct;
-							ct.value = conn.PGgetvalue(res, l, TODOS::content);
-							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
-							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
-							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
-							ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
-							ct.Petch = Petch;
-							CassetteTodos[ct.id] = ct;
-						}
-					}
-					else
-					{
-						LOG_ERR_SQL(CassetteLogger, res, comand);
-					}
-					PQclear(res);
-
-				}
-
-				//{
-				//	std::stringstream ssd;
-				//	ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
-				//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-				//	ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
-				//	ssd << "FROM todos WHERE ";
-				//	ssd << "create_at >= '" << DateStart << "' AND ";
-				//
-				//	if(DateStop.length())
-				//		ssd << "create_at < '" << DateStop << "' AND ";
-				//
-				//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
-				//	ssd << " ORDER BY id";
-				//
-				//	std::string comand = ssd.str();
-				//	PGresult* res = conn.PGexec(comand);
-				//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				//	{
-				//		TodosColumn(res);
-				//
-				//		int line = PQntuples(res);
-				//		std::string old_value = "";
-				//		for(int l = 0; l < line && isRun; l++)
-				//		{
-				//			T_Todos ct;
-				//			ct.value = conn.PGgetvalue(res, l, TODOS::content);
-				//			ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
-				//			ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-				//			ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
-				//			ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-				//			ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
-				//			ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
-				//			ct.Petch = Petch;
-				//			CassetteTodos[ct.id] = ct;
-				//		}
-				//	}
-				//	else
-				//	{
-				//		LOG_ERR_SQL(PdfLogger, res, comand);
-				//	}
-				//	PQclear(res);
-				//}
-
-
-			}
-			CATCH(CassetteLogger, "");
-
-			SaveFileSdg(CassetteTodos);
-		}
 
 
 		bool IsCassette(Tcass& p)
@@ -3094,11 +2970,140 @@ namespace PDF
 			CATCH(CassetteLogger, "");
 		}
 
+		void GetCassettes::GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
+		{
+			T_ForBase_RelFurn* Furn = NULL;
+			try
+			{
+				if(Petch == 1)
+				{
+					Furn = &ForBase_RelFurn_1;
+					if(!DateStart.length())
+						DateStart = GetStartTime(conn, "AND peth = 1");
+				}
+				if(Petch == 2)
+				{
+					Furn = &ForBase_RelFurn_2;
+					if(!DateStart.length())
+						DateStart = GetStartTime(conn, "AND peth = 2");
+				}
+
+				if(Furn == NULL || !DateStart.length()) return;
+
+				LOG_INFO(CassetteLogger, "{:90}| Печь = {}, DateStart = {}", FUNCTION_LINE_NAME, Petch, DateStart);
+
+				{
+					std::stringstream ssd;
+					ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+					ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
+					ssd << "FROM todos WHERE ";
+					ssd << "create_at >= '" << DateStart << "' AND ";
+
+					if(DateStop.length())
+						ssd << "create_at < '" << DateStop << "' AND ";
+
+					ssd << "(id_name = " << Furn->ProcEnd->ID;
+					ssd << " OR id_name = " << Furn->ProcRun->ID;
+					ssd << " OR id_name = " << Furn->ProcFault->ID;
+
+					ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
+					ssd << " OR id_name = " << Furn->Cassette.Day->ID;
+					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
+					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
+					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
+					ssd << ") ORDER BY id DESC"; //AND content <> 'false' AND content <> '0' 
+
+					std::string comand = ssd.str();
+					PGresult* res = conn.PGexec(comand);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						TodosColumn(res);
+
+						int line = PQntuples(res);
+						std::string old_value = "";
+						for(int l = 0; l < line && isRun; l++)
+						{
+							T_Todos ct;
+							ct.value = conn.PGgetvalue(res, l, TODOS::content);
+							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
+							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
+							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
+							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
+							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+							ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
+							ct.Petch = Petch;
+							CassetteTodos[ct.id] = ct;
+						}
+					}
+					else
+					{
+						LOG_ERR_SQL(CassetteLogger, res, comand);
+					}
+					PQclear(res);
+
+				}
+				//{
+				//	std::stringstream ssd;
+				//	ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
+				//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+				//	ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
+				//	ssd << "FROM todos WHERE ";
+				//	ssd << "create_at >= '" << DateStart << "' AND ";
+				//
+				//	if(DateStop.length())
+				//		ssd << "create_at < '" << DateStop << "' AND ";
+				//
+				//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
+				//	ssd << " ORDER BY id";
+				//
+				//	std::string comand = ssd.str();
+				//	PGresult* res = conn.PGexec(comand);
+				//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				//	{
+				//		TodosColumn(res);
+				//
+				//		int line = PQntuples(res);
+				//		std::string old_value = "";
+				//		for(int l = 0; l < line && isRun; l++)
+				//		{
+				//			T_Todos ct;
+				//			ct.value = conn.PGgetvalue(res, l, TODOS::content);
+				//			ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
+				//			ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
+				//			ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
+				//			ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
+				//			ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+				//			ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
+				//			ct.Petch = Petch;
+				//			CassetteTodos[ct.id] = ct;
+				//		}
+				//	}
+				//	else
+				//	{
+				//		LOG_ERR_SQL(PdfLogger, res, comand);
+				//	}
+				//	PQclear(res);
+				//}
+			}
+			CATCH(CassetteLogger, "");
+
+			SaveFileSdg(CassetteTodos);
+		}
+
 		void GetCassettes::GetCassette(PGConnection& conn)
 		{
 			MapRunn CassetteTodos;
 
+			//DateStart = "2024-03-01 00:00:00";
+			//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
+			DateStart = "";
+			DateStop = "";
+
 			GetCassetDataBase(conn, CassetteTodos, 1);
+
+			DateStart = "";
+			DateStop = "";
 			GetCassetDataBase(conn, CassetteTodos, 2);
 
 			try
@@ -3153,11 +3158,6 @@ namespace PDF
 				conn.connection();
 
 				DelAllPdf(lpLogPdf2);
-
-				//DateStart = "2024-03-01 00:00:00";
-				DateStart = "";
-				//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
-				DateStop = "";
 
 				//if(!DateStart.length()) return;
 
@@ -4810,7 +4810,7 @@ namespace PDF
 				LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 
 				//В дебаге один проход и выход из программы
-						isRun = false;
+				//isRun = false;
 
 				int f = 60;
 				while(isRun && --f > 0)
