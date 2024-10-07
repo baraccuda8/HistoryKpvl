@@ -812,6 +812,7 @@ namespace KPVL {
             LOG_INFO(HardLogger, "{:90}| SheetId = {}, потерян на кантовке", FUNCTION_LINE_NAME, id);
             std::stringstream sd;
             sd << "UPDATE sheet SET pos = 16 WHERE id = " << id;
+            LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
             SETUPDATESQL(SQLLogger, conn, sd);
         }
         //Установка позиции листа
@@ -823,11 +824,12 @@ namespace KPVL {
             std::stringstream sd;
             sd << "UPDATE sheet SET pos = " << Pos;
             sd << " WHERE id = " << id;
+            //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
             SETUPDATESQL(SQLLogger, conn, sd);
         }
 
         //Потерян на кантовке
-        void GetIdCant(PGConnection& conn, std::string id)
+        void UpdateIdCant(PGConnection& conn, std::string id)
         {
             std::vector<std::string> oldid;
             std::stringstream sr;
@@ -858,7 +860,8 @@ namespace KPVL {
 
                 if(Stoi(sid))
                 {
-                    GetIdCant(conn, sid);
+                    if(Pos == 6)
+                        UpdateIdCant(conn, sid);
 
                     std::stringstream se;
                     se << "SELECT pos FROM sheet WHERE id = " << sid;
@@ -1385,10 +1388,10 @@ namespace KPVL {
                                 co << " WHERE delete_at IS NULL AND id = " << id << ";";
 #pragma endregion
                                 SETUPDATESQL(SQLLogger, conn, co);
-                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                             }
                             else
-                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                         }
                         else
                             LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
