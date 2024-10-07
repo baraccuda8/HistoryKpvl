@@ -1759,18 +1759,21 @@ namespace PDF
 		if(!PdfLog)PdfLog = InitLogger("Pdf Debug");
 		try
 		{
+			if(!conn.connection())
+				throw std::exception("Ошибка connection: ");
+
 			Cassette = TC;
 
-		#pragma region Готовим графики
+#pragma region Готовим графики
 
-			#pragma region общий stringFormat для графиков
+#pragma region общий stringFormat для графиков
 			{
 				stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
 				stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
 			}
-			#pragma endregion
+#pragma endregion
 
-			#pragma region furnImage.jpg
+#pragma region furnImage.jpg
 			{
 				std::stringstream ssd;
 				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
@@ -1780,145 +1783,152 @@ namespace PDF
 				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
 				furnImage = ssd.str();
 			}
-			#pragma endregion
+#pragma endregion
 
 
-			if(!conn.connection()) return;
-			GetSheet();
-
-			#pragma region Номер печи для FurnRef и FurnAct
+			try
 			{
-				FurnRef.erase(FurnRef.begin(), FurnRef.end());
-				FurnAct.erase(FurnAct.begin(), FurnAct.end());
+				GetSheet();
+				if(AllPfdSheet.size())
+					throw std::exception("Ошибка AllPfdSheet = 0");
 
-				int P = atoi(Cassette.Peth.c_str());
-				if(Cassette.Run_at.length() && Cassette.Finish_at.length())
+
+#pragma region Номер печи для FurnRef и FurnAct
 				{
+					FurnRef.erase(FurnRef.begin(), FurnRef.end());
+					FurnAct.erase(FurnAct.begin(), FurnAct.end());
 
-					int Ref_ID = 0;
-					int Act_ID = 0;
-
-					//Первая отпускная печь
-					if(P == 1)
+					int P = atoi(Cassette.Peth.c_str());
+					if(Cassette.Run_at.length() && Cassette.Finish_at.length())
 					{
-						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
-						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+
+						int Ref_ID = 0;
+						int Act_ID = 0;
+
+						//Первая отпускная печь
+						if(P == 1)
+						{
+							Ref_ID = ForBase_RelFurn_1.TempRef->ID;
+							Act_ID = ForBase_RelFurn_1.TempAct->ID;
+						}
+
+						//Вторая отпускная печь
+						if(P == 2)
+						{
+							Ref_ID = ForBase_RelFurn_2.TempRef->ID;
+							Act_ID = ForBase_RelFurn_2.TempAct->ID;
+						}
+
+						if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
+						if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+
 					}
+					else return;
 
-					//Вторая отпускная печь
-					if(P == 2)
-					{
-						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
-						Act_ID = ForBase_RelFurn_2.TempAct->ID;
-					}
+					//Рисуем график FURN
+					time_t t1 = DataTimeOfString(Cassette.Run_at);
+					time_t t2 = DataTimeOfString(Cassette.End_at);
+					int t = int(difftime(t2, t1));
 
-					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
-					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
-
+					PaintGraff(FurnAct, FurnRef, furnImage, t, L"Температура С°", L"Время час");
 				}
-				else return;
+#pragma endregion
 
-				//Рисуем график FURN
-				time_t t1 = DataTimeOfString(Cassette.Run_at);
-				time_t t2 = DataTimeOfString(Cassette.End_at);
-				int t = int(difftime(t2, t1));
+#pragma endregion
 
-				PaintGraff(FurnAct, FurnRef, furnImage, t, L"Температура С°", L"Время час");
-			}
-			#pragma endregion
-
-		#pragma endregion
-
-			for(auto& a : AllPfdSheet)
-			{
-				if(!isRun) break;
-				Sheet = a;
+				for(auto& a : AllPfdSheet)
+				{
+					if(!isRun) break;
+					Sheet = a;
 
 #pragma region tempImage.jpg
-				{
-					std::stringstream ssh;
-					ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
-					ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
-					ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
-					tempImage = ssh.str();
-				}
+					{
+						std::stringstream ssh;
+						ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
+						ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
+						ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+						tempImage = ssh.str();
+					}
 #pragma endregion				
 
-				OutDebugInfo(Cassette, Sheet);
+					OutDebugInfo(Cassette, Sheet);
 
 #pragma region Графики закалки
-				{
-					TempRef.erase(TempRef.begin(), TempRef.end());
-					TempAct.erase(TempAct.begin(), TempAct.end());
+					{
+						TempRef.erase(TempRef.begin(), TempRef.end());
+						TempAct.erase(TempAct.begin(), TempAct.end());
 
-					//Закалка
-					SqlTempActKPVL(TempAct);
-					GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+						//Закалка
+						SqlTempActKPVL(TempAct);
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
 
-					//TempAct.erase(TempAct.begin(), TempAct.end());
-					//SqlTempActKPVL(TempAct);
+						//TempAct.erase(TempAct.begin(), TempAct.end());
+						//SqlTempActKPVL(TempAct);
 
-					//Рисуем график KPVL
+						//Рисуем график KPVL
 
-					time_t t1 = DataTimeOfString(Sheet.Start_at);
-					time_t t2 = DataTimeOfString(Sheet.DataTime_End);
-					int t = int(difftime(t2, t1));
-		//std::wstring theString = L"Температура С°";
-		//theString = L"Время час:мин";
-					PaintGraff(TempAct, TempRef, tempImage, t, L"Температура С°", L"Время мин");
-				}
+						time_t t1 = DataTimeOfString(Sheet.Start_at);
+						time_t t2 = DataTimeOfString(Sheet.DataTime_End);
+						int t = int(difftime(t2, t1));
+			//std::wstring theString = L"Температура С°";
+			//theString = L"Время час:мин";
+						PaintGraff(TempAct, TempRef, tempImage, t, L"Температура С°", L"Время мин");
+					}
 #pragma endregion
 
 #pragma region Создание PFD файла
 
-				if(NewPdf())
-				{
-					//Рисуем PDF заголовок
-					HPDF_REAL Y1 = DrawHeder(0, Height);
+					if(NewPdf())
+					{
+						//Рисуем PDF заголовок
+						HPDF_REAL Y1 = DrawHeder(0, Height);
 
-					//Рисуем PDF Закалка
-					HPDF_REAL Y2 = DrawKpvlPDF(0, Y1) - 40;
+						//Рисуем PDF Закалка
+						HPDF_REAL Y2 = DrawKpvlPDF(0, Y1) - 40;
 
-					//Рисуем PDF Отпуск
-					HPDF_REAL Y3 = DrawFurnPDF(0, Y2);
+						//Рисуем PDF Отпуск
+						HPDF_REAL Y3 = DrawFurnPDF(0, Y2);
 
-					//auto index = a.index();
-					//Сохраняем PDF
-					SavePDF();
+						//auto index = a.index();
+						//Сохраняем PDF
+						SavePDF();
 
-				}
+					}
 
 #pragma endregion
 
-				remove(tempImage.c_str());
-				if(end)
-				{
-					std::string url = FileName;
-					boost::replace_all(url, "/", "\\");
-					ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-					return;
+					remove(tempImage.c_str());
+
+#if _DEBUG
+					if(end)
+					{
+						std::string url = FileName;
+						boost::replace_all(url, "/", "\\");
+						ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+						return;
+					}
+#endif
 				}
+				remove(furnImage.c_str());
 			}
-			remove(furnImage.c_str());
-			{
-				std::stringstream ssd;
-				ssd << "UPDATE cassette SET pdf = now() WHERE";
-				ssd << " year = '" << Cassette.Year << "' AND";
-				ssd << " month = '" << Cassette.Month << "' AND";
-				ssd << " day = '" << Cassette.Day << "' AND";
-				//if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
-					ssd << " hour = " << Cassette.Hour << " AND";
-				//else
-				//	ssd << " hour < 1 " << Cassette.Hour << " AND";
+			CATCH(PdfLog, "");
 
-				ssd << " cassetteno = " << Cassette.CassetteNo;
-				SETUPDATESQL(PdfLog, conn, ssd);
-			}
+			std::stringstream ssq;
+			ssq << "UPDATE cassette SET pdf = now() WHERE";
+			ssq << " year = '" << Cassette.Year << "' AND";
+			ssq << " month = '" << Cassette.Month << "' AND";
+			ssq << " day = '" << Cassette.Day << "' AND";
+			//if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
+			ssq << " hour = " << Cassette.Hour << " AND";
+		//else
+		//	ssd << " hour < 1 " << Cassette.Hour << " AND";
 
+			ssq << " cassetteno = " << Cassette.CassetteNo;
+			SETUPDATESQL(PdfLog, conn, ssq);
 		}
-		CATCH(PdfLog, "");
+		CATCH(CorrectLog, "");
 	};
 	
 
