@@ -1920,11 +1920,7 @@ namespace PDF
 			ssq << " year = '" << Cassette.Year << "' AND";
 			ssq << " month = '" << Cassette.Month << "' AND";
 			ssq << " day = '" << Cassette.Day << "' AND";
-			//if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
 			ssq << " hour = " << Cassette.Hour << " AND";
-		//else
-		//	ssd << " hour < 1 " << Cassette.Hour << " AND";
-
 			ssq << " cassetteno = " << Cassette.CassetteNo;
 			SETUPDATESQL(PdfLog, conn, ssq);
 		}
@@ -4710,7 +4706,7 @@ namespace PDF
 	{
 		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
 
-		LOG_INFO(SheetLogger, "Старт корректировки листов");
+		LOG_INFO(SheetLogger, "Старт корректировки листов: " + GetDataTimeString());
 
 		if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
@@ -4734,7 +4730,7 @@ namespace PDF
 
 			//start = "2024-09-15 17:00:00";
 			if(start.length() == 0)
-				throw std::runtime_error("Нет подходящих листов");
+				throw std::runtime_error("Нет подходящих листов: " + GetDataTimeString());
 			else
 				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
@@ -4743,9 +4739,9 @@ namespace PDF
 
 		isCorrectSheet = false;
 
-		LOG_INFO(SheetLogger, "Стоп корректировки листов");
+		LOG_INFO(SheetLogger, "Закончили коррекчию листов: " + GetDataTimeString());
 
-		SetWindowText(hWndDebug, "Закончили коррекчию листов");
+		SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetDataTimeString()).c_str());
 		return 0;
 	}
 
@@ -4807,7 +4803,7 @@ namespace PDF
 
 		isCorrectCassette = false;
 		//LOG_INFO(CassetteLogger, "Стоп корректировки кассет");
-		SetWindowText(hWndDebug, "Закончили коррекчию кассет");
+		SetWindowText(hWndDebug, ("Закончили коррекчию кассет: " + GetDataTimeString()).c_str());
 		return 0;
 	}
 
@@ -4816,7 +4812,9 @@ namespace PDF
 	{
 		try
 		{
+
 			if(!CorrectLog)CorrectLog = InitLogger("Correct Debug");
+
 
 #if HENDINSERT
 			//Для ручного тестирования
@@ -4830,16 +4828,17 @@ namespace PDF
 			return 0;
 #else
 
-
+			std::string out1 = "Вход d создание паспортов: " + GetDataTimeString();
+			LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out1);
 			//CorrectSheet(0);
 			while(isRun)
 			{
 				//CorrectSheet2(0); break;
-				std::string out = "Запуск создание паспортов " + GetDataTimeString();
+				std::string out = "Запуск создание паспортов: " + GetDataTimeString();
 				SetWindowText(hWndDebug, out.c_str());
 
 				CorrectCassette(0);
-				out = "Закончили создание паспортов " + GetDataTimeString();
+				out = "Закончили создание паспортов: " + GetDataTimeString();
 
 				SetWindowText(hWndDebug, out.c_str());
 				//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
@@ -4859,8 +4858,9 @@ namespace PDF
 		}
 		CATCH(CorrectLog, "");
 
-		std::string out = "Закончили создание паспортов " + GetDataTimeString();
-		SetWindowText(hWndDebug, out.c_str());
+		std::string out2 = "Выход из создания паспортов: " + GetDataTimeString();
+		LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out2);
+		SetWindowText(hWndDebug, out2.c_str());
 		return 0;
 	}
 }
