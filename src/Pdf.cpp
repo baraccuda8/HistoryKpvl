@@ -55,18 +55,18 @@ namespace PDF
 	void CopyAllFile()
 	{
 		//namespace fs = std::filesystem;
-		struct stat buff;
-		const char* dir1 = lpLogPdf2.c_str();
+		//struct stat buff;
+		const char* dir1 = lpLogPdf.c_str(); ; // lpLogPdf2.c_str();
 		const char* dir2 = lpLogPdf.c_str();
-		try
-		{
-			if(!stat(dir1, &buff) && !stat(dir2, &buff))
-			std::filesystem::copy(dir1, dir2,
-								  std::filesystem::copy_options::update_existing
-							   //|  std::filesystem::copy_options::overwrite_existing
-								  | std::filesystem::copy_options::recursive);
-		}
-		CATCH(PdfLog, "");;
+		//try
+		//{
+		//	if(!stat(dir1, &buff) && !stat(dir2, &buff))
+		//	std::filesystem::copy(dir1, dir2,
+		//						  std::filesystem::copy_options::update_existing
+		//					   //|  std::filesystem::copy_options::overwrite_existing
+		//						  | std::filesystem::copy_options::recursive);
+		//}
+		//CATCH(PdfLog, "");;
 
 #if _DEBUG
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
@@ -1479,8 +1479,8 @@ namespace PDF
 		std::stringstream temp;
 		try
 		{
-			temp << lpLogPdf2;
-			urls << lpLogPdf2;
+			temp << lpLogPdf; // lpLogPdf2;
+			urls << lpLogPdf; //lpLogPdf2;
 			CheckDir(temp.str());
 		}CATCH(PdfLog, " File: " + temp.str() + " ");
 
@@ -1589,7 +1589,7 @@ namespace PDF
 			HPDF_Free (pdf);
 
 			
-			boost::replace_all(PdfName, lpLogPdf2, lpLogPdf);
+			//boost::replace_all(PdfName, lpLogPdf2, lpLogPdf);
 			std::stringstream ssd;
 			ssd << "UPDATE sheet SET pdf = '" << PdfName;
 			ssd << "' WHERE id = " << Sheet.id; //delete_at IS NULL AND 
@@ -1938,6 +1938,7 @@ namespace PDF
 				sss << " № " << TC.CassetteNo;
 				SetWindowText(hWndDebug, sss.str().c_str());
 				PdfClass pdf(TC);
+				SetWindowText(hWndDebug, "");
 			}
 		}
 		CATCH(PdfLog, "");
@@ -1987,8 +1988,8 @@ namespace PDF
 			try
 			{
 				//std::string comand = "SELECT id, run_at  FROM cassette WHERE pdf IS NULL AND run_at > (now() - interval '7 day') AND CAST(event AS integer) = 5 ORDER BY run_at;";
-				//std::string comand = "SELECT id, run_at  FROM cassette WHERE pdf IS NULL AND correct IS NOT NULL ORDER BY run_at;";
-				std::string comand = "SELECT id, run_at FROM cassette WHERE CAST(event AS integer) >= 5 ORDER BY run_at;";
+				std::string comand = "SELECT id, run_at  FROM cassette WHERE delete_at IS NULL AND pdf IS NULL AND correct IS NOT NULL ORDER BY run_at;";
+				//std::string comand = "SELECT id, run_at FROM cassette WHERE CAST(event AS integer) >= 5 ORDER BY run_at;";
 				PGresult* res = conn.PGexec(comand);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -2051,6 +2052,7 @@ namespace PDF
 			void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
 			void GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it);
 			void SaveFileSdg(MapRunn& CassetteTodos);
+			int GetCountSheet(PGConnection& conn, TCassette& ct);
 			void SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it);
 			void SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it);
 			void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it);
@@ -2393,6 +2395,27 @@ namespace PDF
 		}
 
 
+		int GetCassettes::GetCountSheet(PGConnection& conn, TCassette& ct)
+		{
+			int countSheet = 0;
+			std::stringstream set;
+			set << "SELECT COUNT(*) FROM sheet WHERE"; //delete_at IS NULL AND 
+			set << " year = '" << Stoi(ct.Year) << "'";
+			set << " AND month = '" << Stoi(ct.Month) << "'";
+			set << " AND day = '" << Stoi(ct.Day) << "'";
+			set << " AND cassetteno = " << Stoi(ct.CassetteNo);;
+			if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
+				set << " AND hour = " << Stoi(ct.Hour);
+
+			std::string comand = set.str();
+			PGresult* res = conn.PGexec(comand);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+				countSheet = Stoi(conn.PGgetvalue(res, 0, 0));
+			PQclear(res);
+			return countSheet;
+		}
+
+
 		void GetCassettes::SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it)
 		{
 			std::stringstream sg2;
@@ -2400,6 +2423,7 @@ namespace PDF
 			{
 				//sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
 				//SetWindowText(hWndDebug, sg2.str().c_str());
+				int countSheet = GetCountSheet(conn, ct);
 
 				if(it.Create_at.length())ct.Create_at = it.Create_at;
 				else
@@ -2480,6 +2504,9 @@ namespace PDF
 					ssd << ", timeprocset = " << ct.TimeProcSet;
 				if(Stof(ct.Total))
 					ssd << ", total = " << ct.Total;
+				
+				ssd << ", sheetincassette = " << countSheet;
+				
 
 				ssd << " WHERE id = " << ct.Id;
 				std::string comand = ssd.str();
@@ -2495,10 +2522,15 @@ namespace PDF
 			CATCH(CassetteLogger, "")
 		}
 
+
 		void GetCassettes::SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it)
 		{
 			try
 			{
+				int countSheet = GetCountSheet(conn, ct);
+
+				if(!countSheet) return;
+
 				if(it.Create_at.length())ct.Create_at = it.Create_at;
 				else
 					if(it.Run_at.length())ct.Create_at = it.Run_at;
@@ -2578,31 +2610,13 @@ namespace PDF
 				ssd << Stoi(ct.Hour) << ", ";
 				ssd << Stoi(ct.CassetteNo) << ", ";
 
-				int count = -1;
-				if(Stoi(ct.SheetInCassette))
-					ssd << Stoi(ct.SheetInCassette) << ", ";
-				else
-				{
-					std::stringstream set;
-					set << "SELECT COUNT(*) FROM sheet WHERE"; //delete_at IS NULL AND 
-					set << " year = '" << Stoi(ct.Year) << "'";
-					set << " AND month = '" << Stoi(ct.Month) << "'";
-					set << " AND day = '" << Stoi(ct.Day) << "'";
-					if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
-						set << " AND hour = " << Stoi(ct.Hour);
-					//else 
-					//else
-					//	set << " AND hour > 1";
-					set << " AND cassetteno = " << Stoi(ct.CassetteNo);;
-
-					std::string comand = set.str();
-					PGresult* res = conn.PGexec(comand);
-					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-						count = Stoi(conn.PGgetvalue(res, 0, 0));
-					PQclear(res);
-
-				}
-					ssd << count << ", ";
+				//if(Stoi(ct.SheetInCassette))
+				//	ssd << Stoi(ct.SheetInCassette) << ", ";
+				//else
+				//{
+				//
+				//}
+				ssd << countSheet << ", ";
 
 				ssd << Stoi(ct.Peth) << ", ";
 
@@ -3157,7 +3171,7 @@ namespace PDF
 			{
 				conn.connection();
 
-				DelAllPdf(lpLogPdf2);
+				//DelAllPdf(lpLogPdf2);
 
 				//if(!DateStart.length()) return;
 
@@ -3171,9 +3185,11 @@ namespace PDF
 				PrepareCassette(conn);
 
 				//ПДФ без коррекции
-				//HendCassettePDF(conn);
+				HendCassettePDF(conn);
 
-				CopyAllFile();
+				SetWindowText(hWndDebug, "Копирую паспорта");
+				//CopyAllFile();
+				SetWindowText(hWndDebug, "Закончил копирование паспортов");
 
 				//SetWindowText(hWndDebug, "Закончили коррекцию кассет");
 				//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
@@ -4762,7 +4778,7 @@ namespace PDF
 	DWORD CorrectCassette(LPVOID)
 	{
 		if(!CassetteLogger)CassetteLogger = InitLogger("Cassette Debug");
-		LOG_INFO(CassetteLogger, "Старт корректировки кассет");
+		//LOG_INFO(CassetteLogger, "Старт корректировки кассет");
 
 		if(isCorrectCassette) return 0;
 
@@ -4774,7 +4790,7 @@ namespace PDF
 		CATCH(CassetteLogger, "");
 
 		isCorrectCassette = false;
-		LOG_INFO(CassetteLogger, "Стоп корректировки кассет");
+		//LOG_INFO(CassetteLogger, "Стоп корректировки кассет");
 		SetWindowText(hWndDebug, "Закончили коррекчию кассет");
 		return 0;
 	}
@@ -4803,16 +4819,19 @@ namespace PDF
 			while(isRun)
 			{
 				//CorrectSheet2(0); break;
+				std::string out = "Запуск создание паспортов " + GetDataTimeString();
+				SetWindowText(hWndDebug, out.c_str());
+
 				CorrectCassette(0);
-				std::string out = "Закончили создание паспортов " + GetDataTimeString();
+				out = "Закончили создание паспортов " + GetDataTimeString();
 
 				SetWindowText(hWndDebug, out.c_str());
-				LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+				//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 
 				//В дебаге один проход и выход из программы
 				//isRun = false;
 
-				int f = 60;
+				int f = 300; //5 минут
 				while(isRun && --f > 0)
 					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}

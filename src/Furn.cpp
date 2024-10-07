@@ -596,7 +596,12 @@ namespace S107
             sd << "UPDATE cassette SET ";
             sd << "peth = " << Peth;
             sd << ", run_at = now()";
-            
+            sd << ", end_at = DEFAULT";
+            sd << ", finish_at = DEFAULT";
+            sd << ", correct = DEFAULT";
+            sd << ", pdf = DEFAULT";
+            sd << ", error_at = DEFAULT";
+
             sd << ", event = 3";
             sd << ", tempref = " << Furn.TempRef->GetFloat();//GetFloat(); //GetString();
             sd << ", pointtime_1 = " << Furn.PointTime_1->GetFloat();//GetFloat(); //GetString();
@@ -613,17 +618,17 @@ namespace S107
             //sd << " AND cassetteno = " << Stoi(Furn.Cassette.CassetteNo->GetString());//GetInt(); //GetString();
             SETUPDATESQL(SQLLogger, conn, sd);
             
-            sd = std::stringstream("");
-            sd << "UPDATE cassette SET ";
-            sd << "error_at = DEFAULT, ";
-            sd << "end_at = DEFAULT";
-            sd << " WHERE" << AddCD(CD);
-            //sd << " hour = " << Stoi(CD.Hour->GetString());//Furn.Cassette.Hour->GetInt(); //GetString();
-            //sd << " AND day = " << Stoi(CD.Day->GetString());//GetInt(); //GetString();
-            //sd << " AND month = " << Stoi(CD.Month->GetString());//GetInt(); //GetString();
-            //sd << " AND year = " << Stoi(CD.Year->GetString());//GetInt(); //GetString();
-            //sd << " AND cassetteno = " << Stoi(CD.CassetteNo->GetString());//GetInt(); //GetString();
-            SETUPDATESQL(SQLLogger, conn, sd);
+            //sd = std::stringstream("");
+            //sd << "UPDATE cassette SET ";
+            //sd << "error_at = DEFAULT, ";
+            //sd << "end_at = DEFAULT";
+            //sd << " WHERE" << AddCD(CD);
+            ////sd << " hour = " << Stoi(CD.Hour->GetString());//Furn.Cassette.Hour->GetInt(); //GetString();
+            ////sd << " AND day = " << Stoi(CD.Day->GetString());//GetInt(); //GetString();
+            ////sd << " AND month = " << Stoi(CD.Month->GetString());//GetInt(); //GetString();
+            ////sd << " AND year = " << Stoi(CD.Year->GetString());//GetInt(); //GetString();
+            ////sd << " AND cassetteno = " << Stoi(CD.CassetteNo->GetString());//GetInt(); //GetString();
+            //SETUPDATESQL(SQLLogger, conn, sd);
 
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
