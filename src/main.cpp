@@ -27,7 +27,9 @@ std::string CurrentDirPatch = "";
 //std::string lpLCassetteDir = "Cassette";
 std::string lpLogDir = "Log";
 std::string lpLogPdf = "Pdf";
-std::string lpLogPdf2 = "Pdf2";
+#if _DEBUG
+//std::string lpLogPdf2 = "Pdf2";
+#endif
 
 //Глобальный Run
 bool isRun = true;

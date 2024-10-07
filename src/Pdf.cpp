@@ -35,7 +35,9 @@ extern TSheet PalletSheet[7];
 
 
 extern std::string lpLogPdf;
-extern std::string lpLogPdf2;
+#if _DEBUG
+//extern std::string lpLogPdf2;
+#endif
 //extern const std::string FORMATTIME;
 extern Gdiplus::Font font1;
 extern Gdiplus::Font font2;
@@ -52,6 +54,7 @@ extern std::map<int, std::string> GenSeq3;
 
 namespace PDF
 {
+#if _DEBUG
 	void CopyAllFile()
 	{
 		//namespace fs = std::filesystem;
@@ -68,7 +71,6 @@ namespace PDF
 		//}
 		//CATCH(PdfLog, "");;
 
-#if _DEBUG
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
 		try
 		{
@@ -79,7 +81,6 @@ namespace PDF
 								  | std::filesystem::copy_options::recursive);
 		}
 		CATCH(PdfLog, "");;
-#endif
 	}
 
 	void DelAllPdf(std::string dir)
@@ -99,6 +100,7 @@ namespace PDF
 		//	patch.erase(patch.begin(), patch.end());
 		//}
 	}
+#endif
 
 
 	typedef struct T_IdSheet{
@@ -3171,7 +3173,9 @@ namespace PDF
 			{
 				conn.connection();
 
+#if _DEBUG
 				//DelAllPdf(lpLogPdf2);
+#endif
 
 				//if(!DateStart.length()) return;
 
@@ -3188,7 +3192,9 @@ namespace PDF
 				HendCassettePDF(conn);
 
 				SetWindowText(hWndDebug, "Копирую паспорта");
+#if _DEBUG
 				//CopyAllFile();
+#endif
 				SetWindowText(hWndDebug, "Закончил копирование паспортов");
 
 				//SetWindowText(hWndDebug, "Закончили коррекцию кассет");
