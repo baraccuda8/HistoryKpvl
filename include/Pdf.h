@@ -35,5 +35,8 @@ namespace PDF
 
 	DWORD CorrectCassette(LPVOID);
 	DWORD CorrectSheet(LPVOID);
+#ifdef _DEBUG
+	DWORD CorrectSheet2(LPVOID);
+#endif
 };
 

@@ -1057,8 +1057,8 @@ namespace KPVL {
                     update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");
 
-                    update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                    //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
+                    //SetUpdateSheet(conn_kpvl, PD, update, "");
 
                     update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");
@@ -1123,14 +1123,14 @@ namespace KPVL {
                     update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");
 
-                    update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                    //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
+                    //SetUpdateSheet(conn_kpvl, PD, update, "");
 
                     update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");
 
-                    update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                    SetUpdateSheet(conn_kpvl, PD, update, "");
+                    //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
+                    //SetUpdateSheet(conn_kpvl, PD, update, "");
 
                     update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");

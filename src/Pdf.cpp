@@ -4701,6 +4701,52 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
+	void CorrectSheet(PGConnection conn)
+	{
+		try
+		{
+			std::stringstream ssd;
+			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES', timeforplateheat FROM sheet WHERE correct IS NULL AND pos >= 5 ORDER BY id, start_at;";
+			std::string comand = ssd.str();
+			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+			PGresult* res = conn.PGexec(comand);
+			std::map <std::string, std::string>sheet_at;
+
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				int len = PQntuples(res);
+				for(int l = 0; l < len; l++)
+				{
+					std::string id = conn.PGgetvalue(res, l, 0);
+					sheet_at[id] = conn.PGgetvalue(res, l, 1);
+				}
+			}
+			else
+				LOG_ERR_SQL(CassetteLogger, res, comand);
+			PQclear(res);
+
+			for(auto& a : sheet_at)
+			{
+				std::string start = "";
+				std::string stop = "";
+				start = a.second;
+				time_t td = DataTimeOfString(a.second);
+				td += (long long)3600;
+				stop = GetDataTimeString(&td);
+
+				SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
+				LOG_INFO(SheetLogger, "Корректировка листа id = '{}'", a.first);
+
+				SHEET::GetSheets (conn, start, stop);
+
+				std::stringstream ssd;
+				ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
+				SETUPDATESQL(SheetLogger, conn, ssd);
+			}
+		}
+		CATCH(SheetLogger, "");
+	}
+
 	DWORD CorrectSheet(LPVOID)
 	{
 		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
@@ -4733,6 +4779,8 @@ namespace PDF
 			else
 				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
+			CorrectSheet(conn);
+
 		}
 		CATCH(SheetLogger, "");
 
@@ -4744,6 +4792,7 @@ namespace PDF
 		return 0;
 	}
 
+#ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID)
 	{
 		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
@@ -4757,25 +4806,7 @@ namespace PDF
 		{
 			PGConnection conn;
 			conn.connection();
-
-#ifndef _DEBUG
-			std::string start = SHEET::GetStartTime2(conn);
-			std::string stop = "";
-#else
-			std::string start = SHEET::GetStartTime2(conn);
-			std::string stop = "";
-			//std::string start = "2024-09-28 20:30:00";
-			//std::string stop = "2024-09-27 07:50:00";
-#endif // DEBUG
-
-
-
-			//start = "2024-09-15 17:00:00";
-			if(start.length() == 0)
-				throw std::runtime_error("Нет подходящих листов");
-			else
-				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
-
+			CorrectSheet(conn);
 		}
 		CATCH(SheetLogger, "");
 
@@ -4786,6 +4817,8 @@ namespace PDF
 		SetWindowText(hWndDebug, "Закончили коррекчию листов");
 		return 0;
 	}
+#endif // DEBUG
+
 	DWORD CorrectCassette(LPVOID)
 	{
 		if(!CassetteLogger)CassetteLogger = InitLogger("Cassette Debug");
