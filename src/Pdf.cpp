@@ -1313,8 +1313,6 @@ namespace PDF
 		HPDF_REAL Y = top - 0;
 		try
 		{
-#if _DEBUG
-
 			std::stringstream ssd;
 			ssd << "Печь № " << Cassette.Peth << " Кассета: ";
 			ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Hour) << " ";
@@ -1324,7 +1322,6 @@ namespace PDF
 			ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.CassetteNo);
 			draw_text_rect (page, left, Y, w, YP, ssd.str().c_str());
 			Y -= 25;
-#endif // _DEBUG
 
 			draw_text_rect (page, left + 0, Y, w, YP, "Дата и время загрузки");
 			std::string outDate = "";
@@ -1841,13 +1838,15 @@ namespace PDF
 #pragma region tempImage.jpg
 					{
 						std::stringstream ssh;
-						ssh << std::setw(6) << std::setfill('0') << Sheet.Melt << "-";
-						ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
-						ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
-						ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
-						tempImage = ssh.str();
+						ssh << std::setw(6) << std::setfill('0') << Stoi(Sheet.Melt) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.PartNo) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.Pack) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.Sheet) << "-";
+						ssh << std::setw(2) << std::setfill('0') << Stoi(Sheet.SubSheet);
 						LOG_INFO(PdfLog, "{:90}| Паспорт для листа: {}", FUNCTION_LINE_NAME, ssh.str());
-						ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
+
+						ssh << ".jpg";
+						tempImage = ssh.str();
 					}
 #pragma endregion				
 
@@ -1937,12 +1936,11 @@ namespace PDF
 			if(TC.Run_at.length() && TC.Finish_at.length())
 			{
 				std::stringstream sss;
-				sss << "PrintPdfAuto ";
-				sss << boost::format("%|04|-") % TC.Year;
-				sss << boost::format("%|02|-") % TC.Month;
-				sss << boost::format("%|02|-") % TC.Day;
-				sss << boost::format("%|02| ") % TC.Hour;
-				sss << " № " << TC.CassetteNo;
+				sss << boost::format("%|04|-") % Stoi(TC.Year);
+				sss << boost::format("%|02|-") % Stoi(TC.Month);
+				sss << boost::format("%|02|-") % Stoi(TC.Day);
+				sss << boost::format("%|02| ") % Stoi(TC.Hour);
+				sss << "№ " << Stoi(TC.CassetteNo);
 				SetWindowText(hWndDebug, sss.str().c_str());
 				LOG_INFO(PdfLog, "{:90}| Паспорта для кассеты: {}", FUNCTION_LINE_NAME, sss.str());
 
