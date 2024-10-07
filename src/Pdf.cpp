@@ -4828,7 +4828,7 @@ namespace PDF
 			return 0;
 #else
 
-			std::string out1 = "¬ход d создание паспортов: " + GetDataTimeString();
+			std::string out1 = "¬ход в создание паспортов: " + GetDataTimeString();
 			LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out1);
 			//CorrectSheet(0);
 			while(isRun)
