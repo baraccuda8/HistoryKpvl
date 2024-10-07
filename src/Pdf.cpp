@@ -439,7 +439,7 @@ namespace PDF
 			sd << "month = '" << Stoi(Cassette.Month) << "' AND ";
 			sd << "year = '" << Stoi(Cassette.Year) << "' AND ";
 			sd << "cassetteno = " << Stoi(Cassette.CassetteNo) << " ";
-			sd << "ORDER BY start_at ASC;";
+			sd << "ORDER BY start_at DESC;";
 			std::string comand = sd.str();
 			if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 			PGresult* res = conn.PGexec(comand);
@@ -4701,12 +4701,13 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
-	void CorrectSheet(PGConnection conn)
+	void CorrectSheets(PGConnection& conn)
 	{
+		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
 		try
 		{
 			std::stringstream ssd;
-			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES', timeforplateheat FROM sheet WHERE correct IS NULL AND pos >= 5 ORDER BY id, start_at;";
+			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct IS NULL AND pos >= 6 ORDER BY id, start_at;";
 			std::string comand = ssd.str();
 			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 			PGresult* res = conn.PGexec(comand);
@@ -4725,6 +4726,8 @@ namespace PDF
 				LOG_ERR_SQL(CassetteLogger, res, comand);
 			PQclear(res);
 
+			if(sheet_at.size())
+				LOG_INFO(SheetLogger, "Принудительная корректировка листов");
 			for(auto& a : sheet_at)
 			{
 				std::string start = "";
@@ -4734,15 +4737,24 @@ namespace PDF
 				td += (long long)3600;
 				stop = GetDataTimeString(&td);
 
-				SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
-				LOG_INFO(SheetLogger, "Корректировка листа id = '{}'", a.first);
+				if(a.first.length())
+				{
+					SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
+					LOG_INFO(SheetLogger, "Корректировка листа id = {}", a.first);
 
-				SHEET::GetSheets (conn, start, stop);
+					if(start.length() && stop.length())
+						SHEET::GetSheets (conn, start, stop);
+					else
+						LOG_INFO(SheetLogger, "Ошибка корректировки листа id = {}, start = {}, stop = {}", a.first, start, stop);
 
-				std::stringstream ssd;
-				ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
-				SETUPDATESQL(SheetLogger, conn, ssd);
+
+					std::stringstream ssd;
+					ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
+					SETUPDATESQL(SheetLogger, conn, ssd);
+				}
 			}
+			if(sheet_at.size())
+				LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
 		}
 		CATCH(SheetLogger, "");
 	}
@@ -4751,7 +4763,7 @@ namespace PDF
 	{
 		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
 
-		LOG_INFO(SheetLogger, "Старт корректировки листов: " + GetDataTimeString());
+		//LOG_INFO(SheetLogger, "Старт корректировки листов: " + GetDataTimeString());
 
 		if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
@@ -4774,19 +4786,18 @@ namespace PDF
 
 
 			//start = "2024-09-15 17:00:00";
-			if(start.length() == 0)
-				throw std::runtime_error("Нет подходящих листов: " + GetDataTimeString());
-			else
+			if(start.length() )
 				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
-			CorrectSheet(conn);
+			//Проверка и коррекция всех листов не имеющих метку correct
+			CorrectSheets(conn);
 
 		}
 		CATCH(SheetLogger, "");
 
 		isCorrectSheet = false;
 
-		LOG_INFO(SheetLogger, "Закончили коррекчию листов: " + GetDataTimeString());
+		//LOG_INFO(SheetLogger, "Закончили коррекчию листов: " + GetDataTimeString());
 
 		SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetDataTimeString()).c_str());
 		return 0;
@@ -4862,10 +4873,9 @@ namespace PDF
 
 			std::string out1 = "Вход в создание паспортов: " + GetDataTimeString();
 			LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out1);
-			//CorrectSheet(0);
+
 			while(isRun)
 			{
-				//CorrectSheet2(0); break;
 				std::string out = "Запуск создание паспортов: " + GetDataTimeString();
 				SetWindowText(hWndDebug, out.c_str());
 
