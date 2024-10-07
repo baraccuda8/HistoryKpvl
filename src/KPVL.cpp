@@ -473,18 +473,11 @@ namespace KPVL {
         //Проверка на наличие листа
         bool IsSheet(T_PlateData& PD)
         {
-            //PD.Melt->GetValue();
-            //PD.Pack->GetValue();
-            //PD.PartNo->GetValue();
-            //PD.Sheet->GetValue();
-
             int32_t Melt = PD.Melt->GetInt();
             int32_t Pack = PD.Pack->GetInt();
             int32_t PartNo = PD.PartNo->GetInt();
             int32_t Sheet = PD.Sheet->GetInt();
-            //int32_t SubSheet = PD.SubSheet->GetInt();
-            //int32_t Slab = PD.Slab->GetInt();
-            return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
+            return Melt && Pack && PartNo && Sheet;
         }
         bool IsSheet(TSheet& PS)
         {
@@ -504,17 +497,17 @@ namespace KPVL {
 
             if(IsSheet(PD))
             {
-                PD.SubSheet->GetValue();
-                PD.Slab->GetValue();
+                //PD.SubSheet->GetValue();
+                //PD.Slab->GetValue();
 
                 std::stringstream sd;
                 sd << "SELECT id FROM sheet WHERE ";
                 sd << " melt = " << PD.Melt->GetInt();
+                sd << " AND slab = " << PD.Slab->GetInt();
                 sd << " AND pack = " << PD.Pack->GetInt();
                 sd << " AND partno = " << PD.PartNo->GetInt();
                 sd << " AND sheet = " << PD.Sheet->GetInt();
                 sd << " AND subsheet = " << PD.SubSheet->GetInt();
-                sd << " AND slab = " << PD.Slab->GetInt();
                 std::string comand = sd.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
@@ -814,17 +807,17 @@ namespace KPVL {
 
 
         //Потеряный на кантовке
-        void UpdateCant(PGConnection& conn, int id)
+        void UpdateCant(PGConnection& conn, std::string id)
         {
-            LOG_INFO(HardLogger, "{:90}| SheetId={}, потерян на кантовке", FUNCTION_LINE_NAME, id);
-
+            LOG_INFO(HardLogger, "{:90}| SheetId = {}, потерян на кантовке", FUNCTION_LINE_NAME, id);
             std::stringstream sd;
-            sd << "UPDATE sheet SET pos = 16 WHERE pos = 6 AND id <> " << id;
+            sd << "UPDATE sheet SET pos = 16 WHERE id = " << id;
             SETUPDATESQL(SQLLogger, conn, sd);
         }
         //Установка позиции листа
-        void UpdateSQLPos(PGConnection& conn, int id, int pos, int Pos)
+        void UpdateSQLPos(PGConnection& conn, std::string id, int pos, int Pos)
         {
+            
             LOG_INFO(HardLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
 
             std::stringstream sd;
@@ -832,17 +825,43 @@ namespace KPVL {
             sd << " WHERE id = " << id;
             SETUPDATESQL(SQLLogger, conn, sd);
         }
+
+        //Потерян на кантовке
+        void GetIdCant(PGConnection& conn, std::string id)
+        {
+            std::vector<std::string> oldid;
+            std::stringstream sr;
+            sr << "SELECT id FROM sheet WHERE pos = 6 AND id <> " << id << " ORDER BY id DESC";
+            std::string comand = sr.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                int len = PQntuples(res);
+                for(int l = 0; l < len; l++)
+                    oldid.push_back(conn.PGgetvalue(res, 0, 0));
+            }
+            else
+                LOG_ERR_SQL(SQLLogger, res, comand);
+            PQclear(res);
+
+            for(auto& a : oldid)
+                if(a != id)UpdateCant(conn, a);
+        }
+
         //Обновляем позицию листа
         void UpdateSheetPos(PGConnection& conn, T_PlateData& PD, std::string sid, int Pos)
         {
             if(IsSheet(PD))
             {
                 int pos = 0;
-                int id = Stoi(sid);
-                if(id)
+
+                if(Stoi(sid))
                 {
+                    GetIdCant(conn, sid);
+
                     std::stringstream se;
-                    se << "SELECT pos FROM sheet WHERE id = " << id;
+                    se << "SELECT pos FROM sheet WHERE id = " << sid;
                     std::string comand = se.str();
                     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
@@ -852,33 +871,25 @@ namespace KPVL {
                         LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);
 
-                    if(Pos == 6)UpdateCant(conn, id);
 
                     if(pos != Pos && pos > 0 && pos < 7)
-                        UpdateSQLPos(conn, id, pos, Pos);
+                        UpdateSQLPos(conn, sid, pos, Pos);
                 }
             }
         };
 
         //Обновляем данные по листу если лист есть или добовляем новый
-        void SheetPos(PGConnection& conn, T_PlateData& PD, int pos)
+        void SheetPos(PGConnection& conn, T_PlateData& PD, int Pos)
         {
             std::string id = GetIdSheet(conn, PD);
 
             if(Stoi(id) != 0)
             {
-                UpdateSheetPos(conn, PD, id, pos);
+                UpdateSheetPos(conn, PD, id, Pos);
 
-                if(pos == 1 || pos == 2)
+                if(Pos == 1 || Pos == 2)
                 {
-                    //std::stringstream sAlloy;
-                    //sAlloy << " alloy = '" << PD.AlloyCodeText->GetString() << "'";
-                    //SetUpdateSheet(&conn, PD, sAlloy.str(), " alloy = '' AND");
                     SetUpdateSheet(conn, PD, " alloy = '" + PD.AlloyCodeText->GetString() + "'", " thikness = '' AND");
-
-                    //std::stringstream sThikness;
-                    //sThikness << " thikness = '" + PD.ThiknessText->GetString() + "'";
-                    //SetUpdateSheet(&conn, PD, sThikness.str(), " thikness = '' AND");
                     SetUpdateSheet(conn, PD, " thikness = '" + PD.ThiknessText->GetString() + "'", " thikness = '' AND");
 
                     SetUpdateSheet(conn, PD, " temper = " + GenSeqFromHmi.TempSet1->GetString(), " temper = 0 AND");
@@ -899,7 +910,7 @@ namespace KPVL {
             }
             else
             {
-                InsertSheet(conn, PD, pos);
+                InsertSheet(conn, PD, Pos);
             }
         }
 
@@ -1374,7 +1385,6 @@ namespace KPVL {
                                 co << " WHERE delete_at IS NULL AND id = " << id << ";";
 #pragma endregion
                                 SETUPDATESQL(SQLLogger, conn, co);
-
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                             }
                             else
@@ -1383,7 +1393,7 @@ namespace KPVL {
                         else
                             LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
 
-                        LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                        //LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                         HMISheetData.SaveDone->Set_Value(true);
                     }
                 }
@@ -1672,7 +1682,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CassetteNo = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CassetteNo = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
                 }
             }CATCH(HardLogger, "");
             return 0;
@@ -1687,7 +1697,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CassetteHour = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CassetteHour = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
                 }
             }CATCH(HardLogger, "");
             return 0;
@@ -1702,7 +1712,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CassetteDay = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CassetteDay = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
                 }
             }CATCH(HardLogger, "");
             return 0;
@@ -1717,7 +1727,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
                 }
             }CATCH(HardLogger, "");
             return 0;
@@ -1732,7 +1742,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CassetteYear = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CassetteYear = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), OldCassette.Id, id);
                 }
             }CATCH(HardLogger, "");
             return 0;
@@ -1750,7 +1760,7 @@ namespace KPVL {
                 if(b)
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, OldCassette.Id = {}, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id, id);
+                    //LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, OldCassette.Id = {}, Id = {}", FUNCTION_LINE_NAME, OldCassette.Id, id);
                 }
                 else
                 {
