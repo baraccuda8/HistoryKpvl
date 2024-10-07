@@ -58,7 +58,6 @@ namespace PDF
 	void CopyAllFile()
 	{
 		//namespace fs = std::filesystem;
-		//struct stat buff;
 		const char* dir1 = lpLogPdf.c_str(); ; // lpLogPdf2.c_str();
 		const char* dir2 = lpLogPdf.c_str();
 		//try
@@ -74,6 +73,7 @@ namespace PDF
 		dir2 = "\\\\192.168.9.63\\Prog\\KPVL\\Pdf";
 		try
 		{
+			struct stat buff;
 			if(!stat(dir1, &buff) && !stat(dir2, &buff))
 			std::filesystem::copy(dir1, dir2,
 								  std::filesystem::copy_options::update_existing
@@ -397,22 +397,19 @@ namespace PDF
 
 			if(Sheet.CassetteNo.empty() || !Sheet.CassetteNo.length()) return;
 
-			std::string comand = "SELECT * FROM cassette ";
-			comand += "WHERE ";
-			comand += "year = " + Sheet.Year + " AND ";
-			comand += "month = " + Sheet.Month + " AND ";
-			comand += "day = " + Sheet.Day + " AND ";
+			std::stringstream com;
+			com << "SELECT * FROM cassette WHERE";
+			com << " year = " + Stoi(Sheet.Year);
+			com << " AND month = " << Stoi(Sheet.Month);
+			com << " AND day = " << Stoi(Sheet.Day);
+			if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
+				com << " AND hour = " << Sheet.Hour;
 
-			//if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
-			comand += "hour = " + Sheet.Hour + " AND ";
+			com << " AND cassetteno = " << Sheet.CassetteNo;
+			com << " AND delete_at IS NULL";
+			com << " ORDER BY run_at DESC;";
 
-			//else
-			//	comand += "hour < 1 AND ";
-
-			comand += "cassetteno = " + Sheet.CassetteNo + " ";
-			comand += "ORDER BY run_at DESC";
-			comand += ";";
-
+			std::string comand = com.str();
 			if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 			PGresult* res = conn.PGexec(comand);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -434,10 +431,10 @@ namespace PDF
 			AllPfdSheet.erase(AllPfdSheet.begin(), AllPfdSheet.end());
 			std::stringstream sd;
 			sd << "SELECT * FROM sheet WHERE "; //delete_at IS NULL AND 
+
 			if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
 				sd << "hour = " << Stoi(Cassette.Hour) << " AND ";
-			//else
-			//	sd << "hour < 1 AND ";
+
 			sd << "day = '" << Stoi(Cassette.Day) << "' AND ";
 			sd << "month = '" << Stoi(Cassette.Month) << "' AND ";
 			sd << "year = '" << Stoi(Cassette.Year) << "' AND ";
@@ -1776,11 +1773,11 @@ namespace PDF
 #pragma region furnImage.jpg
 			{
 				std::stringstream ssd;
-				ssd << std::setw(4) << std::setfill('0') << Cassette.Year << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.Month << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.Day << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.Hour << "-";
-				ssd << std::setw(2) << std::setfill('0') << Cassette.CassetteNo << ".jpg";
+				ssd << std::setw(4) << std::setfill('0') << Stoi(Cassette.Year) << "-";
+				ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Month) << "-";
+				ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Day) << "-";
+				ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Hour) << "-";
+				ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.CassetteNo) << ".jpg";
 				furnImage = ssd.str();
 			}
 #pragma endregion
@@ -1789,7 +1786,7 @@ namespace PDF
 			try
 			{
 				GetSheet();
-				if(AllPfdSheet.size())
+				if(!AllPfdSheet.size())
 					throw std::exception("Ошибка AllPfdSheet = 0");
 
 
@@ -1848,8 +1845,9 @@ namespace PDF
 						ssh << std::setw(3) << std::setfill('0') << Sheet.PartNo << "-";
 						ssh << std::setw(3) << std::setfill('0') << Sheet.Pack << "-";
 						ssh << std::setw(3) << std::setfill('0') << Sheet.Sheet << "-";
-						ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
 						tempImage = ssh.str();
+						LOG_INFO(PdfLog, "{:90}| Паспорт для листа: {}", FUNCTION_LINE_NAME, ssh.str());
+						ssh << std::setw(2) << std::setfill('0') << Sheet.SubSheet << ".jpg";
 					}
 #pragma endregion				
 
@@ -1917,11 +1915,12 @@ namespace PDF
 
 			std::stringstream ssq;
 			ssq << "UPDATE cassette SET pdf = now() WHERE";
-			ssq << " year = '" << Cassette.Year << "' AND";
-			ssq << " month = '" << Cassette.Month << "' AND";
-			ssq << " day = '" << Cassette.Day << "' AND";
-			ssq << " hour = " << Cassette.Hour << " AND";
-			ssq << " cassetteno = " << Cassette.CassetteNo;
+			ssq << " year = '" << Stoi(Cassette.Year) << "' AND";
+			ssq << " month = '" << Stoi(Cassette.Month) << "' AND";
+			ssq << " day = '" << Stoi(Cassette.Day) << "' AND";
+			if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
+				ssq << " hour = " << Stoi(Cassette.Hour) << " AND";
+			ssq << " cassetteno = " << Stoi(Cassette.CassetteNo);
 			SETUPDATESQL(PdfLog, conn, ssq);
 		}
 		CATCH(CorrectLog, "");
@@ -1945,6 +1944,8 @@ namespace PDF
 				sss << boost::format("%|02| ") % TC.Hour;
 				sss << " № " << TC.CassetteNo;
 				SetWindowText(hWndDebug, sss.str().c_str());
+				LOG_INFO(PdfLog, "{:90}| Паспорта для кассеты: {}", FUNCTION_LINE_NAME, sss.str());
+
 				PdfClass pdf(TC);
 				SetWindowText(hWndDebug, "");
 			}
@@ -2333,14 +2334,14 @@ namespace PDF
 				std::stringstream com;
 				com << "SELECT * FROM cassette WHERE";
 
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
-					com << " hour = " << it.Hour;
+				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
+					com << " hour = " << Stoi(it.Hour);
 				else
 					com << " hour < 1 ";
-				com << " AND day = " << it.Day;
-				com << " AND month = " << it.Month;
-				com << " AND year = " << it.Year;
-				com << " AND cassetteno = " << it.CassetteNo;
+				com << " AND day = " << Stoi(it.Day);
+				com << " AND month = " << Stoi(it.Month);
+				com << " AND year = " << Stoi(it.Year);
+				com << " AND cassetteno = " << Stoi(it.CassetteNo);
 				com << " AND correct IS NULL";
 				com << " ORDER BY id";;
 
@@ -2802,28 +2803,28 @@ namespace PDF
 		}
 
 
-		void GetCassettes::SaveBaseCassete(PGConnection& conn, TCassette& tc)
+		void GetCassettes::SaveBaseCassete(PGConnection& conn, TCassette& it)
 		{
 			try
 			{
 				TCassette ct;
-				if(tc.Run_at.length() && tc.End_at.length() && S107::IsCassette(tc))
+				if(it.Run_at.length() && it.End_at.length() && S107::IsCassette(it))
 				{
 					//std::string sg = std::string("Получение кассеты из базы ") + std::to_string(P0.size()) + std::string(" :") + std::to_string(lin++);
 					//SetWindowText(hWndDebug, sg.c_str());
 
-					GetCassetteData(conn, tc.Id, ct, tc);
-					if(ct.facttemper.length())	tc.facttemper = ct.facttemper;
-					if(ct.Id.length())			tc.Id = ct.Id;
+					GetCassetteData(conn, it.Id, ct, it);
+					if(ct.facttemper.length())	it.facttemper = ct.facttemper;
+					if(ct.Id.length())			it.Id = ct.Id;
 
-					if(!tc.Finish_at.length())
+					if(!it.Finish_at.length())
 					{
 						std::tm TM;
-						time_t tm = DataTimeOfString(tc.End_at, TM);
+						time_t tm = DataTimeOfString(it.End_at, TM);
 						tm += (60 * 15);
-						tc.Finish_at = GetDataTimeString(tm);
+						it.Finish_at = GetDataTimeString(tm);
 					}
-					SaveDataBase(conn, ct, tc);
+					SaveDataBase(conn, ct, it);
 				}
 			}CATCH(CassetteLogger, "");
 		}
