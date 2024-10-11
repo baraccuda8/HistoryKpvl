@@ -749,9 +749,9 @@ void InsertIsRun(PGConnection& conn, isrun& IR)
 }
 
 //#define _INITPDF
+#ifdef _INITPDF
 void FURN_SQL()
 {
-#ifdef _INITPDF
     //std::stringstream sd;
 
     LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto", FUNCTION_LINE_NAME);
@@ -762,10 +762,13 @@ void FURN_SQL()
         PrintPdfAuto(ct);
     }
     LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
+}
 
 #endif
 
 #ifdef _FURN_SQL
+void FURN_SQL()
+{
     PGConnection conn;
     conn.connection();
     if(!conn.connections) return;
@@ -900,9 +903,9 @@ void FURN_SQL()
         }
     }
     int tt = 0;
+}
 #endif
 
-}
 
 #define CountCaseteInRel 7
 const TCassette NullCasete;

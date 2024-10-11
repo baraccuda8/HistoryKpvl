@@ -1565,7 +1565,7 @@ namespace PDF
 				std::string sn = "_" + std::to_string(n);
 				FileName = temp.str() + "/" + tfile.str() + sn + ".pdf";
 				ImgeName = temp.str() + "/" + ifile.str() + sn + ".jpg";
-				PdfName = urls.str() + "/" + tfile.str() + sn + ".pdf";
+				PdfName  = urls.str() + "/" + tfile.str() + sn + ".pdf";
 			}
 		}
 		CATCH(PdfLog, " File1: " + FileName + " ");
@@ -1788,44 +1788,44 @@ namespace PDF
 
 
 #pragma region Номер печи для FurnRef и FurnAct
+
+				FurnRef.erase(FurnRef.begin(), FurnRef.end());
+				FurnAct.erase(FurnAct.begin(), FurnAct.end());
+
+				int P = atoi(Cassette.Peth.c_str());
+				if(Cassette.Run_at.length() && Cassette.Finish_at.length())
 				{
-					FurnRef.erase(FurnRef.begin(), FurnRef.end());
-					FurnAct.erase(FurnAct.begin(), FurnAct.end());
 
-					int P = atoi(Cassette.Peth.c_str());
-					if(Cassette.Run_at.length() && Cassette.Finish_at.length())
+					int Ref_ID = 0;
+					int Act_ID = 0;
+
+					//Первая отпускная печь
+					if(P == 1)
 					{
-
-						int Ref_ID = 0;
-						int Act_ID = 0;
-
-						//Первая отпускная печь
-						if(P == 1)
-						{
-							Ref_ID = ForBase_RelFurn_1.TempRef->ID;
-							Act_ID = ForBase_RelFurn_1.TempAct->ID;
-						}
-
-						//Вторая отпускная печь
-						if(P == 2)
-						{
-							Ref_ID = ForBase_RelFurn_2.TempRef->ID;
-							Act_ID = ForBase_RelFurn_2.TempAct->ID;
-						}
-
-						if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
-						if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
-
+						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
+						Act_ID = ForBase_RelFurn_1.TempAct->ID;
 					}
-					else return;
 
-					//Рисуем график FURN
-					time_t t1 = DataTimeOfString(Cassette.Run_at);
-					time_t t2 = DataTimeOfString(Cassette.End_at);
-					int t = int(difftime(t2, t1));
+					//Вторая отпускная печь
+					if(P == 2)
+					{
+						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
+						Act_ID = ForBase_RelFurn_2.TempAct->ID;
+					}
 
-					PaintGraff(FurnAct, FurnRef, furnImage, t, L"Температура С°", L"Время час");
+					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
+					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+
 				}
+				else return;
+
+				//Рисуем график FURN
+				time_t t1 = DataTimeOfString(Cassette.Run_at);
+				time_t t2 = DataTimeOfString(Cassette.End_at);
+				int t = int(difftime(t2, t1));
+
+				PaintGraff(FurnAct, FurnRef, furnImage, t, L"Температура С°", L"Время час");
+
 #pragma endregion
 
 #pragma endregion
@@ -4701,7 +4701,7 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
-	void CorrectSheets(PGConnection& conn)
+	void CorrectSheetDebug(PGConnection& conn)
 	{
 		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
 		try
@@ -4790,7 +4790,7 @@ namespace PDF
 				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 			//Проверка и коррекция всех листов не имеющих метку correct
-			CorrectSheets(conn);
+			CorrectSheetDebug(conn);
 
 		}
 		CATCH(SheetLogger, "");
@@ -4817,7 +4817,7 @@ namespace PDF
 		{
 			PGConnection conn;
 			conn.connection();
-			CorrectSheet(conn);
+			CorrectSheetDebug(conn);
 		}
 		CATCH(SheetLogger, "");
 

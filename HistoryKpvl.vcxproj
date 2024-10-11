@@ -48,7 +48,8 @@
     <OutDir>$(SolutionDir)Build\</OutDir>
     <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
     <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)_d</TargetName>
-    <LinkKeyFile>D:\YandexDisk\Project\keyPair.snk</LinkKeyFile>
+    <LinkKeyFile>
+    </LinkKeyFile>
     <LinkDelaySign>false</LinkDelaySign>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -56,7 +57,8 @@
     <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
     <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)</TargetName>
     <LinkIncremental>false</LinkIncremental>
-    <LinkKeyFile>D:\YandexDisk\Project\keyPair.snk</LinkKeyFile>
+    <LinkKeyFile>
+    </LinkKeyFile>
     <LinkDelaySign>false</LinkDelaySign>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -67,7 +69,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>../OPCUA;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../FreeOpcUa/include;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -78,7 +80,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
@@ -111,7 +113,7 @@ time /T &gt;&gt;rc\date.txt</Command>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>../OPCUA;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../FreeOpcUa/include;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;D:\KPVL\PostgreSQL\16\include;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -125,7 +127,7 @@ time /T &gt;&gt;rc\date.txt</Command>
       </EnableCOMDATFolding>
       <OptimizeReferences>
       </OptimizeReferences>
-      <AdditionalLibraryDirectories>../OPCUA/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;D:/KPVL/PostgreSQL/16/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
