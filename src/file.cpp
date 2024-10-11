@@ -214,58 +214,58 @@ extern std::string m_dbpass;
 std::string pKey = "õàáðàbarracudabarracudaõàáðà";
 char sCommand[1024];
 
-void encode(char* pText, int len)
-{
-    //for(int i = 0; i < len; i++)
-    //    pText[i] = (byte)(pText[i] ^ pKey[i % pKey.length()]);
-}
-
-void SaveConnect()
-{
-    std::stringstream pass;
-    pass << m_dbhost << std::endl
-        << m_dbport << std::endl
-        << m_dbname << std::endl
-        << m_dbuser << std::endl
-        << m_dbpass;
-
-    std::string p = pass.str();
-    memset(sCommand, 0, 1024);
-    strcpy_s(sCommand, 255, p.c_str());;
-    //encode(sCommand, (int)p.length());
-
-    std::ofstream s(SQLFileName, std::ios::binary | std::ios::out | std::ios::trunc);
-    if(s.is_open())
-    {
-        s.write(sCommand, p.length());
-        s.close();
-    }
-}
-
-bool LoadConnect()
-{
-    memset(sCommand, 0, 1024);
-    std::ifstream s(SQLFileName, std::ios::binary | std::ios::in);
-    if(s.is_open())
-    {
-        s.read(sCommand, 1024);
-        int len = (int)s.gcount();
-        s.close();
-        //encode(sCommand, len);
-        std::vector <std::string>split;
-        boost::split(split, sCommand, boost::is_any_of("\n"));
-        if(split.size() == 5)
-        {
-            m_dbhost = split[0];
-            m_dbport = split[1];
-            m_dbname = split[2];
-            m_dbuser = split[3];
-            m_dbpass = split[4];
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
+//void encode(char* pText, int len)
+//{
+//    //for(int i = 0; i < len; i++)
+//    //    pText[i] = (byte)(pText[i] ^ pKey[i % pKey.length()]);
+//}
+//
+//void SaveConnect()
+//{
+//    std::stringstream pass;
+//    pass << m_dbhost << std::endl
+//        << m_dbport << std::endl
+//        << m_dbname << std::endl
+//        << m_dbuser << std::endl
+//        << m_dbpass;
+//
+//    std::string p = pass.str();
+//    memset(sCommand, 0, 1024);
+//    strcpy_s(sCommand, 255, p.c_str());;
+//    //encode(sCommand, (int)p.length());
+//
+//    std::ofstream s(SQLFileName, std::ios::binary | std::ios::out | std::ios::trunc);
+//    if(s.is_open())
+//    {
+//        s.write(sCommand, p.length());
+//        s.close();
+//    }
+//}
+//
+//bool LoadConnect()
+//{
+//    memset(sCommand, 0, 1024);
+//    std::ifstream s(SQLFileName, std::ios::binary | std::ios::in);
+//    if(s.is_open())
+//    {
+//        s.read(sCommand, 1024);
+//        int len = (int)s.gcount();
+//        s.close();
+//        //encode(sCommand, len);
+//        std::vector <std::string>split;
+//        boost::split(split, sCommand, boost::is_any_of("\n"));
+//        if(split.size() == 5)
+//        {
+//            m_dbhost = split[0];
+//            m_dbport = split[1];
+//            m_dbname = split[2];
+//            m_dbuser = split[3];
+//            m_dbpass = split[4];
+//            return TRUE;
+//        }
+//    }
+//    return FALSE;
+//}
 
 BOOL CenterWindow(HWND hwndChild, HWND hwndParent)
 {

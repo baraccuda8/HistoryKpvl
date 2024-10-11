@@ -26,6 +26,7 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 //#define TESTWIN
 #endif
 
+LRESULT Quit();
 
 #define CATCH(_l, _s) \
     catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s),  exc.what())} \

@@ -578,8 +578,11 @@ namespace KPVL {
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                 PGresult* res = conn.PGexec(comand);
-                if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn.PGgetvalue(res, 0, 0);
+                if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    if(PQntuples(res))
+                        id = conn.PGgetvalue(res, 0, 0);
+                }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);
@@ -606,8 +609,11 @@ namespace KPVL {
                 std::string comand = co.str();
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
-                if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                    id = conn.PGgetvalue(res, 0, 0);
+                if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                {
+                    if(PQntuples(res))
+                        id = conn.PGgetvalue(res, 0, 0);
+                }
                 else
                     LOG_ERR_SQL(SQLLogger, res, comand);
                 PQclear(res);

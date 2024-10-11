@@ -41,6 +41,11 @@ void Close_KPVL();
 void Open_FURN();
 void Close_FURN();
 
+LRESULT Quit()
+{
+    PostQuitMessage(0);
+    return 0;
+}
 
 
 uint32_t SizeLogger = 104857600;

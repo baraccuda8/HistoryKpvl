@@ -7,8 +7,8 @@ namespace std
 
 std::string cp1251_to_utf8(std::string str);
 std::string utf8_to_cp1251(std::string str);
-bool LoadConnect();
-void SaveConnect();
+//bool LoadConnect();
+//void SaveConnect();
 
 void Log(std::shared_ptr<spdlog::logger> logger, spdlog::level::level_enum lvl, std::string msg);
 

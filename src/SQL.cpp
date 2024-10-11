@@ -31,11 +31,11 @@ std::shared_ptr<spdlog::logger> SQLLogger = NULL;
 //Таблица толщин листов
 //std::map <int, std::map<int, std::string>>MapThicknessCode;
 
-std::string m_dbhost = "192.168.9.63";
+std::string m_dbhost = "localhost";
 std::string m_dbport = "5432";
-std::string m_dbname = "kpvl";
-std::string m_dbuser = "user";
-std::string m_dbpass = "TutonHamon8*";
+std::string m_dbname = "";
+std::string m_dbuser = "";
+std::string m_dbpass = "";
 
 extern std::deque<Value*> AllTagKpvl;
 extern std::deque<Value*> AllTagPeth;
@@ -49,59 +49,118 @@ namespace KPVL {
     extern uint32_t NextID;
 };
 
-//Закрытие программы
-LRESULT Quit()
+
+namespace LoginDlg
 {
-    PostQuitMessage(0);
-    return 0;
-}
+#define SQLFileName "PostgreSQL.dat"
+
+    std::string pKey = "хабраbarracudabarracudaхабра";
+    char sCommand[0xFFFF];
+    char sCommand2[0xFFFF];
 
 
-DLLRESULT InitDialog(HWND hWnd)
-{
-    CenterWindow(hWnd, NULL);
-    SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), m_dbhost.c_str());
-    SetWindowText(GetDlgItem(hWnd, IDC_EDIT2), m_dbport.c_str());
-    SetWindowText(GetDlgItem(hWnd, IDC_EDIT3), m_dbname.c_str());
-    SetWindowText(GetDlgItem(hWnd, IDC_EDIT4), m_dbuser.c_str());
-    SetWindowText(GetDlgItem(hWnd, IDC_EDIT5), m_dbpass.c_str());
-    return 0;
-}
-
-DLLRESULT CommandDialog(HWND hWnd, WPARAM wParam)
-{
-    if(wParam == IDOK)
+    void encode(char* pText, size_t len)
     {
-        char ss[256];
-        GetWindowText(GetDlgItem(hWnd, IDC_EDIT1), ss, 256);    m_dbhost = ss;
-        GetWindowText(GetDlgItem(hWnd, IDC_EDIT2), ss, 256);    m_dbport = ss;
-        GetWindowText(GetDlgItem(hWnd, IDC_EDIT3), ss, 256);    m_dbname = ss;
-        GetWindowText(GetDlgItem(hWnd, IDC_EDIT4), ss, 256);    m_dbuser = ss;
-        GetWindowText(GetDlgItem(hWnd, IDC_EDIT5), ss, 256);    m_dbpass = ss;
+        for(size_t i = 0; i < len; i++)
+            pText[i] = (byte)(pText[i] ^ pKey[i % pKey.length()]);
+    }
 
-        conn_kpvl.connection();
-        if(conn_kpvl.connections)
+    void SaveConnect()
+    {
+        std::stringstream pass;
+        pass << m_dbhost << std::endl
+            << m_dbport << std::endl
+            << m_dbname << std::endl
+            << m_dbuser << std::endl
+            << m_dbpass;
+
+        std::string p = pass.str();
+        memset(sCommand2, 0, 0xFFFF);
+        strcpy_s(sCommand2, 255, p.c_str());;
+        encode(sCommand2, p.length());
+
+        std::ofstream s(SQLFileName, std::ios::binary | std::ios::out | std::ios::trunc);
+        if(s.is_open())
         {
-            //SaveConnect();
-            EndDialog(hWnd, FALSE);
+            s.write(sCommand2, p.length());
+            s.close();
         }
     }
-    if(wParam == IDCANCEL)
+
+    bool LoadConnect()
     {
-        EndDialog(hWnd, FALSE);
-        Quit();
+        memset(sCommand2, 0, 0xFFFF);
+        std::ifstream s(SQLFileName, std::ios::binary | std::ios::in);
+        if(s.is_open())
+        {
+            s.read(sCommand2, 1024);
+            int len = (int)s.gcount();
+            s.close();
+            encode(sCommand2, len);
+            std::vector <std::string>split;
+            boost::split(split, sCommand2, boost::is_any_of("\n"));
+            if(split.size() == 5)
+            {
+                m_dbhost = split[0];
+                m_dbport = split[1];
+                m_dbname = split[2];
+                m_dbuser = split[3];
+                m_dbpass = split[4];
+                return TRUE;
+            }
+        }
+        return FALSE;
     }
-    return 0;
-}
 
+    INT_PTR InitDialog(HWND hWnd)
+    {
+        CenterWindow(hWnd, NULL);
+        SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), m_dbhost.c_str());
+        SetWindowText(GetDlgItem(hWnd, IDC_EDIT2), m_dbport.c_str());
+        SetWindowText(GetDlgItem(hWnd, IDC_EDIT3), m_dbname.c_str());
+        SetWindowText(GetDlgItem(hWnd, IDC_EDIT4), m_dbuser.c_str());
+        SetWindowText(GetDlgItem(hWnd, IDC_EDIT5), m_dbpass.c_str());
+        return 0;
+    }
 
+    INT_PTR CommandDialog(HWND hWnd, WPARAM wParam)
+    {
+        if(wParam == IDOK)
+        {
+            char ss[256];
+            GetWindowText(GetDlgItem(hWnd, IDC_EDIT1), ss, 256);    m_dbhost = ss;
+            GetWindowText(GetDlgItem(hWnd, IDC_EDIT2), ss, 256);    m_dbport = ss;
+            GetWindowText(GetDlgItem(hWnd, IDC_EDIT3), ss, 256);    m_dbname = ss;
+            GetWindowText(GetDlgItem(hWnd, IDC_EDIT4), ss, 256);    m_dbuser = ss;
+            GetWindowText(GetDlgItem(hWnd, IDC_EDIT5), ss, 256);    m_dbpass = ss;
 
-DLLRESULT CALLBACK bagSave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    if(message == WM_INITDIALOG)return InitDialog(hWnd);
-    if(message == WM_COMMAND) return CommandDialog(hWnd, wParam);
-    return (0);
-}
+            conn_spis.connection();
+            if(conn_spis.connections)
+            {
+                SaveConnect();
+                EndDialog(hWnd, FALSE);
+            }
+            else
+            {
+                MessageBox(NULL, "Ошибка соединения с базой!", "Ошибка!", MB_SYSTEMMODAL | MB_ICONERROR | MB_OK);
+            }
+        }
+        if(wParam == IDCANCEL)
+        {
+            EndDialog(hWnd, FALSE);
+            Quit();
+        }
+        return 0;
+    }
+
+    INT_PTR CALLBACK bagSave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    {
+        if(message == WM_INITDIALOG)return InitDialog(hWnd);
+        if(message == WM_COMMAND) return CommandDialog(hWnd, wParam);
+        return (0);
+    }
+};
+
 
 bool cmpMaxMin(Value* first, Value* second)
 {
@@ -628,27 +687,24 @@ bool InitSQL()
     try
     {
         SQLLogger = InitLogger("BASE_SQL");
-        //if(!LoadConnect())
-        //{
-        //    DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, bagSave);
-            //if(!conn_kpvl.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl connection")));
-            //if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
-            //if(!conn_temp.connection()) throw std::exception(__FUN(std::string("Error SQL conn_temp connection")));
-            //if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
-            //if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
-            //if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
-            //
-            //
-
-
-            //SaveConnect();
-        //}
-        //else
+        if(!LoginDlg::LoadConnect())
         {
+            DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, LoginDlg::bagSave);
+            if(!conn_spis.connections && !conn_spis.connection())throw std::exception("Error SQL conn_spis connection");
+
+            if(!conn_kpvl.connection()) throw std::exception("Error SQL conn_kpvl connection");
+            if(!conn_dops.connection()) throw std::exception("Error SQL conn_dops connection");
+            if(!conn_temp.connection()) throw std::exception("Error SQL conn_temp connection");
+            if(!conn_spic.connection()) throw std::exception("Error SQL conn_spic connection");
+            if(!conn_kpvl2.connection()) throw std::exception("Error SQL conn_kpvl2 connection");
+            LoginDlg::SaveConnect();
+        }
+        else
+        {
+            if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
             if(!conn_kpvl.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl connection")));
             if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
             if(!conn_temp.connection()) throw std::exception(__FUN(std::string("Error SQL conn_temp connection")));
-            if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
             if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
             if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
         }

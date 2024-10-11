@@ -4003,7 +4003,6 @@ namespace PDF
 					ssd << "slab, ";
 					ssd << "partno, ";
 					ssd << "pack, ";
-					ssd << "slab, ";
 					ssd << "sheet, ";
 					ssd << "subsheet, ";
 					ssd << "temper, ";
@@ -4054,7 +4053,6 @@ namespace PDF
 					ssd << td.Slab << ", "; //Slab
 					ssd << td.PartNo << ", ";
 					ssd << td.Pack << ", ";
-					ssd << td.Slab << ", ";
 					ssd << td.Sheet << ", ";
 					ssd << td.SubSheet << ", ";
 					ssd << td.Temper << ", ";
