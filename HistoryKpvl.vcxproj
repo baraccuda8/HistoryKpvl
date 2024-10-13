@@ -64,7 +64,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WIN64;%(PreprocessorDefinitions);WIN32_WINDOWS;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0600</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -76,6 +77,7 @@
       <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BuildStlModules>true</BuildStlModules>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -89,7 +91,8 @@
       <LargeAddressAware>true</LargeAddressAware>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <WindowsMetadataFile>HistoryKpvl64v143</WindowsMetadataFile>
-      <SetChecksum>true</SetChecksum>
+      <SetChecksum>
+      </SetChecksum>
       <Version>2.1</Version>
     </Link>
     <PreBuildEvent>

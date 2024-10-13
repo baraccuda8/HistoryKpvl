@@ -874,7 +874,7 @@ void Open_KPVL()
 #endif
 
 #ifdef _DEBUG
-    //hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
+    hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
     //CreateThread(0, 0, PDF::CorrectSheet2, (LPVOID)0, 0, 0);
     //hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
     //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);

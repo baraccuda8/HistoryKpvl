@@ -15,7 +15,9 @@ extern std::string szTitle;
 extern std::string lpLogDir;
 std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut);
 
-extern const std::string FORMATTIME;
+extern const std::string FORMATTIME1;
+extern const std::string FORMATTIME2;
+
 
 extern std::shared_ptr<spdlog::logger> AllLogger;
 
@@ -210,12 +212,12 @@ std::string GetDataTimeString();
 std::string GetDataTimeString(std::time_t& st);
 std::string GetDataTimeString(std::time_t* st);
 std::string GetDataTimeString(std::tm& st);
-time_t DataTimeDiff(std::string str1, std::string str2, std::string format = FORMATTIME);
+time_t DataTimeDiff(std::string str1, std::string str2);
 
 
-time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6, std::string format = FORMATTIME);
-time_t DataTimeOfString(std::string str, std::tm& TM, std::string format = FORMATTIME);
-time_t DataTimeOfString(std::string str, std::string format = FORMATTIME);
+time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);
+time_t DataTimeOfString(std::string str, std::tm& TM);
+time_t DataTimeOfString(std::string str);
 
 std::string GetStringData(std::string d);
 std::string Formats(float f, int n = 1);

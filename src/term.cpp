@@ -1168,6 +1168,8 @@ void Open_FURN()
 
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
     hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
+#else
+    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #endif
 
 

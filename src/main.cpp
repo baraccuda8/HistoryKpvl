@@ -14,7 +14,9 @@
 #define FULLRUN 1
 #endif
 
-const std::string FORMATTIME = "(\\d{1,4}).(\\d{1,2}).(\\d{1,2}) (\\d{1,2}):(\\d{1,2}):(\\d{1,2}).*";
+const std::string FORMATTIME1 = "^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})*";
+const std::string FORMATTIME2 = "^(\\d{2})-(\\d{2})-(\\d{4}) (\\d{2}):(\\d{2}):(\\d{2})*";
+
 
 
 std::string szTitle = "История данных по Комплексу Подготовки Высокопрочного Листа. Версия ";
@@ -104,10 +106,6 @@ void DisplayContextMenu(HWND hwnd, int ID)
     HMENU hmenuTrackPopup = GetSubMenu(hmenu, 0);
     TrackPopupMenu(hmenuTrackPopup, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
     DestroyMenu(hmenu);
-}
-
-void SetWacthDog()
-{
 }
 
 std::string GetLastErrorString()
@@ -211,27 +209,25 @@ std::string GetDataTimeString()
     return sdt.str();
 }
 
-time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6, std::string format)
+time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6)
 {
     try
     {
+        std::tm tm;
         d1 = 0; d2 = 0; d3 = 0; d4 = 0; d5 = 0; d6 = 0;
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
-        boost::regex xRegEx(format);
         boost::match_results<std::string::const_iterator> what;
 
-        if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
+        boost::regex xRegEx(FORMATTIME1);
+        if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
-            size_t size = what.size();
-            if(size >= 1)d1 = atoi(what[1].str().c_str());
-            if(size >= 2)d2 = atoi(what[2].str().c_str());
-            if(size >= 3)d3 = atoi(what[3].str().c_str());
-            if(size >= 4)d4 = atoi(what[4].str().c_str());
-            if(size >= 5)d5 = atoi(what[5].str().c_str());
-            if(size >= 6)d6 = atoi(what[6].str().c_str());
-
-            std::tm tm;
+            d1 = atoi(what[1].str().c_str());
+            d2 = atoi(what[2].str().c_str());
+            d3 = atoi(what[3].str().c_str());
+            d4 = atoi(what[4].str().c_str());
+            d5 = atoi(what[5].str().c_str());
+            d6 = atoi(what[6].str().c_str());
             tm.tm_year = d1 - 1900;
             tm.tm_mon = d2 - 1;
             tm.tm_mday = d3;
@@ -240,75 +236,124 @@ time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int
             tm.tm_sec = d6;
             return mktime(&tm);
         }
+        else
+        {
+            boost::regex xRegEx(FORMATTIME2);
+            if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
+            {
+                d3 = atoi(what[1].str().c_str());
+                d2 = atoi(what[2].str().c_str());
+                d1 = atoi(what[3].str().c_str());
+                d4 = atoi(what[4].str().c_str());
+                d5 = atoi(what[5].str().c_str());
+                d6 = atoi(what[6].str().c_str());
+
+                tm.tm_year = d1 - 1900;
+                tm.tm_mon = d2 - 1;
+                tm.tm_mday = d3;
+                tm.tm_hour = d4;
+                tm.tm_min = d5;
+                tm.tm_sec = d6;
+                return mktime(&tm);
+            }
+        }
     } catch(...) {}
     return 0;
 }
 
 
-time_t DataTimeOfString(std::string str, std::tm& TM, std::string format)
+time_t DataTimeOfString(std::string str, std::tm& TM)
 {
     try
     {
         TM.tm_year = 0; TM.tm_mon = 0; TM.tm_mday = 0; TM.tm_hour = 0; TM.tm_min = 0; TM.tm_sec = 0;
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
-        boost::regex xRegEx(format);
         boost::match_results<std::string::const_iterator> what;
 
-        if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
+        boost::regex xRegEx(FORMATTIME1);
+        if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
-            size_t size = what.size();
-            if(size >= 1)TM.tm_year = Stoi(what[1].str());
-            if(size >= 2)TM.tm_mon = Stoi(what[2].str());
-            if(size >= 3)TM.tm_mday = Stoi(what[3].str());
-            if(size >= 4)TM.tm_hour = Stoi(what[4].str());
-            if(size >= 5)TM.tm_min = Stoi(what[5].str());
-            if(size >= 6)TM.tm_sec = Stoi(what[6].str());
+            TM.tm_year = Stoi(what[1].str());
+            TM.tm_mon = Stoi(what[2].str());
+            TM.tm_mday = Stoi(what[3].str());
+            TM.tm_hour = Stoi(what[4].str());
+            TM.tm_min = Stoi(what[5].str());
+            TM.tm_sec = Stoi(what[6].str());
 
             std::tm tm = TM;
             tm.tm_year -= 1900;
             tm.tm_mon -= 1;
             return mktime(&tm);
         }
+        else
+        {
+            boost::regex xRegEx(FORMATTIME2);
+            if(boost::regex_search(start, end, what, xRegEx, boost::match_default)) 
+            {
+                TM.tm_mday = Stoi(what[1].str());
+                TM.tm_mon = Stoi(what[2].str());
+                TM.tm_year = Stoi(what[3].str());
+                TM.tm_hour = Stoi(what[4].str());
+                TM.tm_min = Stoi(what[5].str());
+                TM.tm_sec = Stoi(what[6].str());
+
+                std::tm tm = TM;
+                tm.tm_year -= 1900;
+                tm.tm_mon -= 1;
+                return mktime(&tm);
+            }
+        }
     } catch(...) {}
 
     return 0;
 }
 
-time_t DataTimeOfString(std::string str, std::string format)
+time_t DataTimeOfString(std::string str)
 {
     try
     {
-        std::tm TM;
-        TM.tm_year = 0; TM.tm_mon = 0; TM.tm_mday = 0; TM.tm_hour = 0; TM.tm_min = 0; TM.tm_sec = 0;
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
-        boost::regex xRegEx(format);
         boost::match_results<std::string::const_iterator> what;
 
-        if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
+        boost::regex xRegEx(FORMATTIME1);
+        if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
-            size_t size = what.size();
-            if(size >= 1)TM.tm_year = Stoi(what[1].str());
-            if(size >= 2)TM.tm_mon = Stoi(what[2].str());
-            if(size >= 3)TM.tm_mday = Stoi(what[3].str());
-            if(size >= 4)TM.tm_hour = Stoi(what[4].str());
-            if(size >= 5)TM.tm_min = Stoi(what[5].str());
-            if(size >= 6)TM.tm_sec = Stoi(what[6].str());
-            TM.tm_year -= 1900;
-            TM.tm_mon -= 1;
+            std::tm TM;
+            TM.tm_year = Stoi(what[1].str()) - 1900;
+            TM.tm_mon = Stoi(what[2].str()) - 1;
+            TM.tm_mday = Stoi(what[3].str());
+            TM.tm_hour = Stoi(what[4].str());
+            TM.tm_min = Stoi(what[5].str());
+            TM.tm_sec = Stoi(what[6].str());
             return mktime(&TM);
+        }
+        else
+        {
+            boost::regex xRegEx(FORMATTIME2);
+            if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
+            {
+                std::tm TM;
+                TM.tm_mday = Stoi(what[1].str());
+                TM.tm_mon = Stoi(what[2].str()) - 1;
+                TM.tm_year = Stoi(what[3].str()) - 1900;
+                TM.tm_hour = Stoi(what[4].str());
+                TM.tm_min = Stoi(what[5].str());
+                TM.tm_sec = Stoi(what[6].str());
+                return mktime(&TM);
+            }
         }
     }
     catch(...) {}
 
     return 0;
 }
-time_t DataTimeDiff(std::string str1, std::string str2, std::string format)
+time_t DataTimeDiff(std::string str1, std::string str2)
 {
     std::tm TM;
-    time_t tm1 = DataTimeOfString(str1, TM, format);
-    time_t tm2 = DataTimeOfString(str2, TM, format);
+    time_t tm1 = DataTimeOfString(str1, TM);
+    time_t tm2 = DataTimeOfString(str2, TM);
     return (time_t)difftime(tm1, tm2);
 }
 
@@ -370,7 +415,9 @@ std::string GetDataTimeStr(std::string str)
 {
     std::string outDate = "";
     std::string outTime = "";
-    boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
+    
+    boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2})*");
+    //boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2})*");
     boost::match_results<std::string::const_iterator>what;
     boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
     if(what.size() > 4)
