@@ -1394,13 +1394,13 @@ namespace KPVL {
                                 co << " WHERE delete_at IS NULL AND id = " << id << ";";
 #pragma endregion
                                 SETUPDATESQL(SQLLogger, conn, co);
-                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                             }
                             else
-                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                         }
                         else
-                            LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                            LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
 
                         //LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                         HMISheetData.SaveDone->Set_Value(true);

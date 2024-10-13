@@ -477,7 +477,7 @@ void PLC_KPVL::Run(int count)
         SetWindowText(winmap(hEditMode1), "InitTag");
         InitTag();
 
-        LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
         DataChangeKPVL.InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
@@ -493,7 +493,7 @@ void PLC_KPVL::Run(int count)
             {
                 if(++NewDataVal > 5)    //5 цыклов по 1 секунде
                 {
-                    LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)", FUNCTION_LINE_NAME);
+                    LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
                     //LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                     KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
                     //HMISheetData.SaveDone->Set_Value(true);

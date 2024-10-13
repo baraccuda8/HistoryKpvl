@@ -363,7 +363,7 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "InitTag");
         InitTag();
 
-        LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
         DataChangeS107.InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
