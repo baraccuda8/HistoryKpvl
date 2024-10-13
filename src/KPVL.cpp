@@ -490,7 +490,7 @@ namespace KPVL {
             return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
         }
 
-                //Получаем ID листа
+        //Получаем ID листа
         std::string GetIdSheet(PGConnection& conn, T_PlateData& PD)
         {
             std::string id = "0";

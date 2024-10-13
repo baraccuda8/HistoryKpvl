@@ -50,8 +50,8 @@ LRESULT Quit()
 }
 
 
-uint32_t SizeLogger = 104857600;
-uint32_t CountLogger = 1000;
+uint32_t SizeLogger = 104857600;    //Размер лог файда
+uint32_t CountLogger = 1000;        //Количество лог файлов
 int CountWatchDogWait  = TIME_OUT / 1000;
 
 //Глобальный Instance программы
@@ -69,19 +69,15 @@ std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut)
         if(!Logger.get())
         {
             std::string FileName = lpLogDir + "\\" + LoggerOut + ".log";
-
-            std::ofstream s(FileName, std::ios::binary | std::ios::out | std::ios::app);
-            if(s.is_open())
+            std::ofstream l(FileName, std::ios::binary | std::ios::out | std::ios::app);
+            if(l.is_open())
             {
-                s << std::endl << std::endl;
-                s.close();
+                l << std::endl << std::endl;
+                l.close();
             }
-
             Logger = spdlog::rotating_logger_mt(LoggerOut, FileName, SizeLogger, CountLogger);
         }
         Logger->set_level(spdlog::level::level_enum::info);
-        LOG_INFO(Logger, "");
-        LOG_INFO(Logger, "");
         LOG_INFO(Logger, "{:90}| Старт программы", FUNCTION_LINE_NAME);
         return Logger;
     }
@@ -218,16 +214,17 @@ time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
         boost::match_results<std::string::const_iterator> what;
+        boost::regex xRegEx;
 
-        boost::regex xRegEx(FORMATTIME1);
+        xRegEx = FORMATTIME1;
         if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
-            d1 = atoi(what[1].str().c_str());
-            d2 = atoi(what[2].str().c_str());
-            d3 = atoi(what[3].str().c_str());
-            d4 = atoi(what[4].str().c_str());
-            d5 = atoi(what[5].str().c_str());
-            d6 = atoi(what[6].str().c_str());
+            d1 = Stoi(what[1]);
+            d2 = Stoi(what[2]);
+            d3 = Stoi(what[3]);
+            d4 = Stoi(what[4]);
+            d5 = Stoi(what[5]);
+            d6 = Stoi(what[6]);
             tm.tm_year = d1 - 1900;
             tm.tm_mon = d2 - 1;
             tm.tm_mday = d3;
@@ -238,15 +235,15 @@ time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int
         }
         else
         {
-            boost::regex xRegEx(FORMATTIME2);
+            xRegEx = FORMATTIME2;
             if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
             {
-                d3 = atoi(what[1].str().c_str());
-                d2 = atoi(what[2].str().c_str());
-                d1 = atoi(what[3].str().c_str());
-                d4 = atoi(what[4].str().c_str());
-                d5 = atoi(what[5].str().c_str());
-                d6 = atoi(what[6].str().c_str());
+                d3 = Stoi(what[1]);
+                d2 = Stoi(what[2]);
+                d1 = Stoi(what[3]);
+                d4 = Stoi(what[4]);
+                d5 = Stoi(what[5]);
+                d6 = Stoi(what[6]);
 
                 tm.tm_year = d1 - 1900;
                 tm.tm_mon = d2 - 1;
@@ -270,16 +267,17 @@ time_t DataTimeOfString(std::string str, std::tm& TM)
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
         boost::match_results<std::string::const_iterator> what;
+        boost::regex xRegEx;
 
-        boost::regex xRegEx(FORMATTIME1);
+        xRegEx = FORMATTIME1;
         if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
-            TM.tm_year = Stoi(what[1].str());
-            TM.tm_mon = Stoi(what[2].str());
-            TM.tm_mday = Stoi(what[3].str());
-            TM.tm_hour = Stoi(what[4].str());
-            TM.tm_min = Stoi(what[5].str());
-            TM.tm_sec = Stoi(what[6].str());
+            TM.tm_year = Stoi(what[1]);
+            TM.tm_mon = Stoi(what[2]);
+            TM.tm_mday = Stoi(what[3]);
+            TM.tm_hour = Stoi(what[4]);
+            TM.tm_min = Stoi(what[5]);
+            TM.tm_sec = Stoi(what[6]);
 
             std::tm tm = TM;
             tm.tm_year -= 1900;
@@ -288,15 +286,15 @@ time_t DataTimeOfString(std::string str, std::tm& TM)
         }
         else
         {
-            boost::regex xRegEx(FORMATTIME2);
-            if(boost::regex_search(start, end, what, xRegEx, boost::match_default)) 
+            xRegEx = FORMATTIME2;
+            if(boost::regex_search(start, end, what, xRegEx, boost::match_default))
             {
-                TM.tm_mday = Stoi(what[1].str());
-                TM.tm_mon = Stoi(what[2].str());
-                TM.tm_year = Stoi(what[3].str());
-                TM.tm_hour = Stoi(what[4].str());
-                TM.tm_min = Stoi(what[5].str());
-                TM.tm_sec = Stoi(what[6].str());
+                TM.tm_mday = Stoi(what[1]);
+                TM.tm_mon = Stoi(what[2]);
+                TM.tm_year = Stoi(what[3]);
+                TM.tm_hour = Stoi(what[4]);
+                TM.tm_min = Stoi(what[5]);
+                TM.tm_sec = Stoi(what[6]);
 
                 std::tm tm = TM;
                 tm.tm_year -= 1900;
@@ -316,31 +314,32 @@ time_t DataTimeOfString(std::string str)
         std::string::const_iterator start = str.begin();
         std::string::const_iterator end = str.end();
         boost::match_results<std::string::const_iterator> what;
+        boost::regex xRegEx;
 
-        boost::regex xRegEx(FORMATTIME1);
+        xRegEx = FORMATTIME1;
         if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
         {
             std::tm TM;
-            TM.tm_year = Stoi(what[1].str()) - 1900;
-            TM.tm_mon = Stoi(what[2].str()) - 1;
-            TM.tm_mday = Stoi(what[3].str());
-            TM.tm_hour = Stoi(what[4].str());
-            TM.tm_min = Stoi(what[5].str());
-            TM.tm_sec = Stoi(what[6].str());
+            TM.tm_year = Stoi(what[1]) - 1900;
+            TM.tm_mon = Stoi(what[2]) - 1;
+            TM.tm_mday = Stoi(what[3]);
+            TM.tm_hour = Stoi(what[4]);
+            TM.tm_min = Stoi(what[5]);
+            TM.tm_sec = Stoi(what[6]);
             return mktime(&TM);
         }
         else
         {
-            boost::regex xRegEx(FORMATTIME2);
+            xRegEx = FORMATTIME2;
             if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
             {
                 std::tm TM;
-                TM.tm_mday = Stoi(what[1].str());
-                TM.tm_mon = Stoi(what[2].str()) - 1;
-                TM.tm_year = Stoi(what[3].str()) - 1900;
-                TM.tm_hour = Stoi(what[4].str());
-                TM.tm_min = Stoi(what[5].str());
-                TM.tm_sec = Stoi(what[6].str());
+                TM.tm_mday = Stoi(what[1]);
+                TM.tm_mon = Stoi(what[2]) - 1;
+                TM.tm_year = Stoi(what[3]) - 1900;
+                TM.tm_hour = Stoi(what[4]);
+                TM.tm_min = Stoi(what[5]);
+                TM.tm_sec = Stoi(what[6]);
                 return mktime(&TM);
             }
         }
@@ -381,32 +380,11 @@ std::string GetDataTimeStr(std::string str, std::string& outDate, std::string& o
     outTime = "";
     boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2}).*");
     boost::match_results<std::string::const_iterator>what;
-    boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
-    if(what.size() > 4)
+    if(boost::regex_search(str, what, xRegEx, boost::match_default) && what.size() > 4)
     {
-        std::string year = what[1].str();
-        std::string month = what[2].str();
-        std::string day = what[3].str();
-        if(what[4].length())
-            outTime = what[4].str();
-        if(day.length() && month.length() && year.length())
-            outDate = day + "-" + month + "-" + year;
-    }
-    if(outDate.length() && outTime.length())
+        outTime = what[4];
+        outDate = what[3] + "-" + what[2] + "-" + what[1];
         return outDate + " " + outTime;
-    else
-    {
-        if(outDate.length())
-        {
-            return outDate;
-        }
-        else
-        {
-            if(outTime.length())
-            {
-                outTime;
-            }
-        }
     }
     return "";
 }
@@ -417,35 +395,41 @@ std::string GetDataTimeStr(std::string str)
     std::string outTime = "";
     
     boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2})*");
-    //boost::regex xRegEx("^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}:\\d{2}:\\d{2})*");
     boost::match_results<std::string::const_iterator>what;
-    boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
-    if(what.size() > 4)
+    if(boost::regex_search(str, what, xRegEx, boost::match_default) && what.size() > 4)
     {
-        std::string year = what[1].str();
-        std::string month = what[2].str();
-        std::string day = what[3].str();
-        if(what[4].length())
-            outTime = what[4].str();
-        if(day.length() && month.length() && year.length())
-            outDate = day + "-" + month + "-" + year;
-    }
-    if(outDate.length() && outTime.length())
+        outTime = what[4];
+        outDate = what[3] + "-" + what[2] + "-" + what[1];
         return outDate + " " + outTime;
-    else
-    {
-        if(outDate.length())
-        {
-            return outDate;
-        }
-        else
-        {
-            if(outTime.length())
-            {
-                outTime;
-            }
-        }
     }
+
+    //boost::regex_search(str, what, xRegEx, boost::match_default) && what.size();
+    //if(what.size() > 4)
+    //{
+    //    std::string year = what[1].str();
+    //    std::string month = what[2].str();
+    //    std::string day = what[3].str();
+    //    if(what[4].length())
+    //        outTime = what[4].str();
+    //    if(day.length() && month.length() && year.length())
+    //        outDate = day + "-" + month + "-" + year;
+    //}
+    //if(outDate.length() && outTime.length())
+    //    return outDate + " " + outTime;
+    //else
+    //{
+    //    if(outDate.length())
+    //    {
+    //        return outDate;
+    //    }
+    //    else
+    //    {
+    //        if(outTime.length())
+    //        {
+    //            outTime;
+    //        }
+    //    }
+    //}
     return "";
 }
 //Вывод строки ошибки выполнения программы
@@ -718,7 +702,7 @@ int Run()
     {
 
 #if FULLRUN
-        AllLogger = InitLogger("All Debug");
+        AllLogger = InitLogger("All_Debug");
         if(!AllLogger.get())
         {
             WinErrorExit(NULL, "Программа уже запущена");

@@ -708,12 +708,9 @@ bool InitSQL()
             if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
             if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
         }
-        LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
-
-//#ifndef TESTWIN
+        //LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
         InitTag();
-//#endif
-        LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
+        //LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
 
 
     }

@@ -444,8 +444,8 @@ void Value::Set_Value(OpcUa::Variant var)
                     else
                     {
                         Val = var;
-                        if(Patch.find("WDG") == std::string::npos)
-                            LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
+                        //if(Patch.find("WDG") == std::string::npos)
+                        //    LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
                         Node.SetValue(Val);
                     }
                 }
@@ -453,8 +453,8 @@ void Value::Set_Value(OpcUa::Variant var)
                 {
                     Val = var;
                     //#ifndef _DEBUG
-                    if(Patch.find("WDG") == std::string::npos)
-                        LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
+                    //if(Patch.find("WDG") == std::string::npos)
+                    //    LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
                     Node.SetValue(Val);
                     //#endif
                 }

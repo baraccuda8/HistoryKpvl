@@ -373,6 +373,7 @@ namespace S107
                 std::stringstream sd;
                 sd << "SELECT min(create_at) FROM todos WHERE create_at >= '" << CD.Run_at << "' AND content = 'false' AND id_name = " << ID;
                 std::string comand = sd.str();
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -385,6 +386,7 @@ namespace S107
                     {
                         std::stringstream sf;
                         sf << "UPDATE cassette SET end_at = '" << CD.End_at << "' WHERE id = " << id;
+                        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sf.str());
                         SETUPDATESQL(SQLLogger, conn, sf);
                             
                         //Если небыло финиша
@@ -405,6 +407,8 @@ namespace S107
                                     localtime_s(&TM, &tt2);
                                     CD.Finish_at = GetDataTimeString(TM);
                                     sf << "UPDATE cassette SET Finish_at = '" << CD.Finish_at << "' WHERE id = " << id;
+                                    LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sf.str());
+                                    SETUPDATESQL(SQLLogger, conn, sf);
                                 }
                             #pragma endregion
 
@@ -412,6 +416,7 @@ namespace S107
                             {
                                 std::stringstream sf;
                                 sf << "UPDATE cassette SET event = 5, finish_at = '" << CD.Finish_at << "' WHERE id = " << id;
+                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sf.str());
                                 SETUPDATESQL(SQLLogger, conn, sf);
                             }
                         }
@@ -428,120 +433,127 @@ namespace S107
 
         void GetIsPos(PGConnection& conn, TCassette& CD)
         {
-            if(IsCassette(CD))
+            try
             {
-                int id = GetId(conn, CD);
-
-                if(id)
+                if(IsCassette(CD))
                 {
-                    //Отпуск на 1й - печи
-                    if(isCasseteFurn(AppFurn1.Cassette, CD))
-                    {
-                        if(CD.Event != "3" || CD.Peth != "1")
-                        {
+                    int id = GetId(conn, CD);
 
-                            std::stringstream ss;
-                            ss << "UPDATE cassette SET event = 3, peth = 1, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(SQLLogger, conn, ss);
-                            CD.Event = 3;
-                            CD.Peth = 1;
-                            CD.End_at = "";
-                            CD.Finish_at = "";
-                        }
-                    }
-                    //Отпуск на 2й - печи
-                    else if(isCasseteFurn(AppFurn2.Cassette, CD)) //Отпуск на 2й - печи
+                    if(id)
                     {
-                        if(CD.Event != "3" || CD.Peth != "2")
+                        //Отпуск на 1й - печи
+                        if(isCasseteFurn(AppFurn1.Cassette, CD))
                         {
-                            std::stringstream ss;
-                            ss << "UPDATE cassette SET event = 3, peth = 2, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(SQLLogger, conn, ss);
-                            CD.Event = 3;
-                            CD.Peth = 2;
-                            CD.End_at = "";
-                            CD.Finish_at = "";
-                        }
-                    }
-                    //Касета на контовке
-                    else if(isCasseteCant(HMISheetData.Cassette, CD))
-                    {
-                        if(CD.Event != "1")
-                        {
-                            std::stringstream ss;
-                            ss << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, error_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
-                            SETUPDATESQL(SQLLogger, conn, ss);
-                            CD.Event = 1;
-                            CD.Peth = 1;
-                            CD.Run_at = "";
-                            CD.Error_at = "";
-                            CD.End_at = "";
-                            CD.Finish_at = "";
-                        }
-                    }
-                    //Если был старт отпуска 
-                    else if(CD.Run_at.length())
-                    {
-                        //Ищем конец отпуска или ошибку
-                        if(!CD.End_at.length() && !CD.Error_at.length())
-                        {
-                            //Поиск конца процесса
-                            SearthEnd_at(conn, CD, id);
-                        }
-
-                        int ID = 0;
-                        int Peth = Stoi(CD.Peth);
-                        if(Peth == 1) ID = AppFurn1.ProcFault->ID;
-                        else if(Peth == 2) ID = AppFurn2.ProcFault->ID;
-
-                        //Если нет времени ошибки
-                        if(ID && !CD.Error_at.length() && CD.Run_at.length() && CD.End_at.length())
-                        {
-                            std::stringstream sd;
-                            sd << "SELECT DISTINCT ON (id) create_at FROM todos WHERE";
-                            sd << " create_at >= '" << CD.Run_at << "'";
-                            sd << " AND create_at <= '" << CD.End_at << "'";
-                            sd << " AND content = 'true' AND id_name = " << ID;
-                            sd << " ORDER BY id ASC LIMIT 1";
-                            std::string comand = sd.str();
-                            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                            PGresult* res = conn.PGexec(comand);
-                            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                            if(CD.Event != "3" || CD.Peth != "1")
                             {
-                                int line = PQntuples(res);
-                                if(line)
-                                    CD.Error_at = conn_spis.PGgetvalue(res, line - 1, 0);
-                            }
-                            else
-                                LOG_ERR_SQL(SQLLogger, res, comand);
-                            PQclear(res);
 
-                            if(CD.Error_at.length())
+                                std::stringstream ss;
+                                ss << "UPDATE cassette SET event = 3, peth = 1, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
+                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                SETUPDATESQL(SQLLogger, conn, ss);
+                                CD.Event = 3;
+                                CD.Peth = 1;
+                                CD.End_at = "";
+                                CD.Finish_at = "";
+                            }
+                        }
+                        //Отпуск на 2й - печи
+                        else if(isCasseteFurn(AppFurn2.Cassette, CD)) //Отпуск на 2й - печи
+                        {
+                            if(CD.Event != "3" || CD.Peth != "2")
+                            {
+                                std::stringstream ss;
+                                ss << "UPDATE cassette SET event = 3, peth = 2, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
+                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                SETUPDATESQL(SQLLogger, conn, ss);
+                                CD.Event = 3;
+                                CD.Peth = 2;
+                                CD.End_at = "";
+                                CD.Finish_at = "";
+                            }
+                        }
+                        //Касета на контовке
+                        else if(isCasseteCant(HMISheetData.Cassette, CD))
+                        {
+                            if(CD.Event != "1")
+                            {
+                                std::stringstream ss;
+                                ss << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, error_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT WHERE id = " << id;
+                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                SETUPDATESQL(SQLLogger, conn, ss);
+                                CD.Event = 1;
+                                CD.Peth = 1;
+                                CD.Run_at = "";
+                                CD.Error_at = "";
+                                CD.End_at = "";
+                                CD.Finish_at = "";
+                            }
+                        }
+                        //Если был старт отпуска 
+                        else if(CD.Run_at.length())
+                        {
+                            //Ищем конец отпуска или ошибку
+                            if(!CD.End_at.length() && !CD.Error_at.length())
+                            {
+                                //Поиск конца процесса
+                                SearthEnd_at(conn, CD, id);
+                            }
+
+                            int ID = 0;
+                            int Peth = Stoi(CD.Peth);
+                            if(Peth == 1) ID = AppFurn1.ProcFault->ID;
+                            else if(Peth == 2) ID = AppFurn2.ProcFault->ID;
+
+                            ////Если нет времени ошибки
+                            //if(isRun && ID && !CD.Error_at.length() && CD.Run_at.length() && CD.End_at.length())
+                            //{
+                            //    std::stringstream sd;
+                            //    sd << "SELECT create_at FROM todos WHERE";
+                            //    sd << " create_at >= '" << CD.Run_at << "'";
+                            //    sd << " AND create_at <= '" << CD.End_at << "'";
+                            //    sd << " AND content = 'true' AND id_name = " << ID;
+                            //    sd << " ORDER BY id ASC LIMIT 1";
+                            //    std::string comand = sd.str();
+                            //    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                            //    PGresult* res = conn.PGexec(comand);
+                            //    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                            //    {
+                            //        int line = PQntuples(res);
+                            //        if(line)
+                            //        {
+                            //            CD.Error_at = conn_spis.PGgetvalue(res, 0, 0);
+                            //            std::stringstream sf;
+                            //            sf << "UPDATE cassette SET event = 4, error_at = '" << CD.Error_at << "' WHERE id = " << id;
+                            //            SETUPDATESQL(SQLLogger, conn, sf);
+                            //        }
+                            //        PQclear(res);
+                            //    }
+                            //    else
+                            //    {
+                            //        LOG_ERR_SQL(SQLLogger, res, comand);
+                            //        PQclear(res);
+                            //    }
+                            //}
+
+                        }
+                        else
+                        {
+                            if(CD.Delete_at.length())
                             {
                                 std::stringstream sf;
-                                sf << "UPDATE cassette SET event = 4, error_at = '" << CD.Error_at << "' WHERE id = " << id;
+                                sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
+                                SETUPDATESQL(SQLLogger, conn, sf);
+                            }
+                            else if(CD.Event != "2" && !CD.Delete_at.length())
+                            {
+                                std::stringstream sf;
+                                sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
                                 SETUPDATESQL(SQLLogger, conn, sf);
                             }
                         }
-
-                    }
-                    else
-                    {
-                        if(CD.Delete_at.length())
-                        {
-                            std::stringstream sf;
-                            sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
-                            SETUPDATESQL(SQLLogger, conn, sf);
-                        }
-                        else if(CD.Event != "2" && !CD.Delete_at.length())
-                        {
-                            std::stringstream sf;
-                            sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
-                            SETUPDATESQL(SQLLogger, conn, sf);
-                        }
                     }
                 }
-            }
+            }CATCH(AllLogger, "");
         }
     };
 

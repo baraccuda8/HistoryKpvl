@@ -67,32 +67,6 @@ extern int CountWatchDogWait;
 
 #define atoi_t(_t, _f, _s) static_cast<_t>(_f(_s.c_str()))
 
-
-//namespace PlcType{
-//    enum Type{
-//        NOT = 0,
-//        KPVL = 1,
-//        S107 = 2,
-//    };
-//};
-
-
-//typedef struct Plc{
-//    std::string URI = "";
-//    uint32_t SizeLogger = 1048576;
-//    uint32_t CountLogger = 1000;
-//    int CountWatchDogWait  = TIME_OUT / 1000;
-//    int CountLastSheet = 500;
-//    //spdlog::level::level_enum LogType = spdlog::level::level_enum::info;
-//    std::string Comment = "";
-//}Pls;
-
-
-//extern std::map<PlcType::Type, Plc> PLC;
-//
-//#define KPVLTYPE PLC[PlcType::Type::KPVL]
-//#define S107TYPE PLC[PlcType::Type::S107]
-
 #define winmap(_s) mapWindow[_s].hWnd
 
 
@@ -126,25 +100,8 @@ inline int Stoi(std::string input)
      catch(...) { }
      return 0.0;
  }
-//extern std::map<HWNDCLIENT, structWindow>mapWindow;
 
-
-////Черная заливка
-//extern HBRUSH TitleBrush0;
-//
-////Белая заливка
-//extern HBRUSH TitleBrush1;
-//
-////темносиняя заливка
-//extern HBRUSH TitleBrush2;
-//
-////Светлосиняя заливка
-//extern HBRUSH TitleBrush3;
-//
-////Зеленая заливка
-//extern HBRUSH TitleBrush4;
-//extern std::map<int, HICON>Icon;
-typedef struct MYHICON{
+ typedef struct MYHICON{
     HICON icon;
     int size;
 };

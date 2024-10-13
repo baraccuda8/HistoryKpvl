@@ -119,6 +119,7 @@ namespace PDF
 
 		std::string TimeTest = "";		//Для тестов
 		std::string DataTime = "";		//Старт нашрева
+		std::string Correct = "";		//Корректировка
 
 		int Melt = 0;					//Плавка
 		int Pack = 0;					//Пачка
@@ -1750,7 +1751,7 @@ namespace PDF
 
 	PdfClass::PdfClass(TCassette& TC, bool end)
 	{
-		if(!PdfLog)PdfLog = InitLogger("Pdf Debug");
+		if(!PdfLog)PdfLog = InitLogger("Pdf_Debug");
 		try
 		{
 			if(!conn.connection())
@@ -1930,7 +1931,7 @@ namespace PDF
 	//Автоматическое создание по кассете
 	void PrintCassettePdfAuto(TCassette& TC)
 	{
-		if(!PdfLog)PdfLog = InitLogger("Pdf Debug");
+		if(!PdfLog)PdfLog = InitLogger("Pdf_Debug");
 		try
 		{
 			if(TC.Run_at.length() && TC.Finish_at.length())
@@ -1985,7 +1986,7 @@ namespace PDF
 			boost::regex_search(Hour, what, xRegEx, boost::match_default);
 			if(what.size())
 			{
-				int hour = Stoi(what[1].str());
+				int hour = Stoi(what[1]);
 				shour = std::to_string(hour);
 			}
 			return shour;
@@ -1995,7 +1996,7 @@ namespace PDF
 			try
 			{
 				//std::string comand = "SELECT id, run_at  FROM cassette WHERE pdf IS NULL AND run_at > (now() - interval '7 day') AND CAST(event AS integer) = 5 ORDER BY run_at;";
-				std::string comand = "SELECT id, run_at  FROM cassette WHERE delete_at IS NULL AND pdf IS NULL AND correct IS NOT NULL ORDER BY run_at;";
+				std::string comand = "SELECT id FROM cassette WHERE delete_at IS NULL AND pdf IS NULL AND correct IS NOT NULL ORDER BY run_at;";
 				//std::string comand = "SELECT id, run_at FROM cassette WHERE CAST(event AS integer) >= 5 ORDER BY run_at;";
 				PGresult* res = conn.PGexec(comand);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -2016,7 +2017,7 @@ namespace PDF
 
 		void HendCassettePDF(PGConnection& conn)
 		{
-			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette Debug");
+			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette_Debug");
 			try
 			{
 				std::vector <std::string> IDS;
@@ -3173,7 +3174,7 @@ namespace PDF
 
 		GetCassettes::GetCassettes()
 		{
-			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette Debug");
+			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette_Debug");
 			try
 			{
 				conn.connection();
@@ -3850,7 +3851,7 @@ namespace PDF
 			try
 			{
 				std::stringstream ssd;
-				ssd << "SELECT id, day, month, year, hour, cassetteno, sheetincassette, pos, news FROM sheet ";
+				ssd << "SELECT id, day, month, year, hour, cassetteno, sheetincassette, pos, news, correct FROM sheet ";
 				ssd << "WHERE melt = " << td.Melt;
 				ssd << " AND partno = " << td.PartNo;
 				ssd << " AND pack = " << td.Pack;
@@ -3871,6 +3872,7 @@ namespace PDF
 					td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 6));
 					td.Pos = Stoi(conn.PGgetvalue(res, 0, 7));
 					td.news = Stoi(conn.PGgetvalue(res, 0, 8));
+					td.Correct = GetStringData(conn.PGgetvalue(res, 0, 8));
 
 				}
 				PQclear(res);
@@ -3963,13 +3965,13 @@ namespace PDF
 					ssd << ", pos = " << td.Pos;
 					ssd << ", news = " << td.news;
 					ssd << ", delete_at = DEFAULT";
-					ssd << ", correct = now(), pdf = ''	WHERE id = " << td.id; //delete_at IS NULL AND 
+					ssd << ", correct = now(), pdf = '' WHERE id = " << td.id; //delete_at IS NULL AND 
 					SetWindowText(hWndDebug, ssd.str().c_str());
 
 
 					fUpdateSheet << ssd.str() << std::endl;
 					fUpdateSheet.flush();
-					//LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
 					SETUPDATESQL(SheetLogger, conn, ssd);
 
 					//if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
@@ -4091,6 +4093,7 @@ namespace PDF
 					fUpdateSheet.flush();
 
 
+					LOG_INFO(SheetLogger, ssd.str());
 					SETUPDATESQL(SQLLogger, conn, ssd);
 
 
@@ -4102,7 +4105,6 @@ namespace PDF
 					ssf << " AND pack = " << td.Pack;
 					ssf << " AND sheet = " << td.Sheet;
 					ssf << " AND subsheet = " << td.SubSheet;
-					ssf << " ORDER BY id DESC LIMIT 1";
 
 					LOG_INFO(SheetLogger, ssf.str());
 					PGresult* res = conn.PGexec(ssf.str());
@@ -4114,6 +4116,7 @@ namespace PDF
 					else
 						LOG_ERR_SQL(SheetLogger, res, ssf.str());
 					PQclear(res);
+					LOG_INFO(SheetLogger, "{:90}| Sheet ID = {}", FUNCTION_LINE_NAME, td.id);
 
 					//if(td.day && td.month && td.year && td.cassetteno)
 					//{
@@ -4365,8 +4368,8 @@ namespace PDF
 
 
 				GetSheetCassette(conn, ids);
-				SaveBodyCsv(ss1, ids, "");
 
+				SaveBodyCsv(ss1, ids, "");
 				UpdateSheet(conn, ids);
 				Ids6.push_back(ids);
 			}CATCH(SheetLogger, "");
@@ -4459,7 +4462,7 @@ namespace PDF
 
 		GetSheets::GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
 		{
-			if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
+			if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
 			try
 			{
 				StartSheet = datestart;
@@ -4701,7 +4704,7 @@ namespace PDF
 
 	void CorrectSheetDebug(PGConnection& conn)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
+		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
 		try
 		{
 			std::stringstream ssd;
@@ -4759,7 +4762,7 @@ namespace PDF
 
 	DWORD CorrectSheet(LPVOID)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
+		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
 
 		//LOG_INFO(SheetLogger, "Старт корректировки листов: " + GetDataTimeString());
 
@@ -4804,7 +4807,7 @@ namespace PDF
 #ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet Debug");
+		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
 
 		LOG_INFO(SheetLogger, "Старт корректировки листов");
 
@@ -4830,7 +4833,7 @@ namespace PDF
 
 	DWORD CorrectCassette(LPVOID)
 	{
-		if(!CassetteLogger)CassetteLogger = InitLogger("Cassette Debug");
+		if(!CassetteLogger)CassetteLogger = InitLogger("Cassette_Debug");
 		//LOG_INFO(CassetteLogger, "Старт корректировки кассет");
 
 		if(isCorrectCassette) return 0;
@@ -4854,7 +4857,7 @@ namespace PDF
 		try
 		{
 
-			if(!CorrectLog)CorrectLog = InitLogger("Correct Debug");
+			if(!CorrectLog)CorrectLog = InitLogger("Correct_Debug");
 
 
 #if HENDINSERT

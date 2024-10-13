@@ -494,7 +494,7 @@ void PLC_KPVL::Run(int count)
                 if(++NewDataVal > 5)    //5 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)", FUNCTION_LINE_NAME);
-                    LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                    //LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                     KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
                     //HMISheetData.SaveDone->Set_Value(true);
                     //PlateData[5].Sheet->Set_Value((int32_t)0);

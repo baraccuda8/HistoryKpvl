@@ -1025,6 +1025,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                         it.Event = "2";
                         std::stringstream sd;
                         sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
+                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
                     else
@@ -1034,6 +1035,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                         it.Delete_at = GetDataTimeString(st);
                         std::stringstream sd;
                         sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << it.Id;
+                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
                 }
@@ -1063,13 +1065,15 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                         it.Event = "5";
                         std::stringstream sd;
                         sd << "UPDATE cassette SET event = 5 WHERE id = " << it.Id;
+                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
-                    else
+                    else if(!it.End_at.length())
                     {
                         it.Event = "2";
                         std::stringstream sd;
                         sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
+                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
                 }
@@ -1179,7 +1183,7 @@ void Open_FURN()
 
 void Close_FURN()
 {
-    WaitCloseTheread(hSQL, "hSQL");
     WaitCloseTheread(hS107URI, "hS107URI");
     WaitCloseTheread(hS107SQL, "hS107SQL");
+    WaitCloseTheread(hSQL, "hSQL");
 }
