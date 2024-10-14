@@ -1361,8 +1361,9 @@ namespace KPVL {
                         if(IsSheet(PD))
                         {
                             std::string id = GetIdSheet(conn, PD);
-                            if(id.length() && Stoi(id) != 0)
+                            if(Stoi(id) != 0)
                             {
+                                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
 
 #pragma region comand = "UPDATE sheet SET"
                                 std::stringstream co;
@@ -1391,7 +1392,7 @@ namespace KPVL {
                                 co << ", year = " << Cassette.Year->GetInt();
                                 co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
                                 co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
-                                co << " WHERE delete_at IS NULL AND id = " << id << ";";
+                                co << " WHERE id = " << id << ";";
 #pragma endregion
                                 SETUPDATESQL(SQLLogger, conn, co);
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());

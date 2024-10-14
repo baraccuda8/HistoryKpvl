@@ -923,7 +923,7 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 		TM_Temp.tm_year -= 1900;
 		TM_Temp.tm_mon -= 1;
 
-		tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
+		tStop1 = mktime(&TM_Temp) + (60 * 15); //15 минут
 		localtime_s(&TM_Temp, &tStop1); 
 
 		std::stringstream sdw;
@@ -941,7 +941,6 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 		DataTimeOfString(sEndTime, TM_Temp);
 		TM_Temp.tm_year -= 1900;
 		TM_Temp.tm_mon -= 1;
-
 		tStop1 = mktime(&TM_Temp);
 	}
 

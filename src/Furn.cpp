@@ -349,13 +349,83 @@ namespace S107
             PGresult* res = conn_spic.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
-                int nFields = PQnfields(res);
-                id = Stoi(conn_spis.PGgetvalue(res, 0, 0));
+                if(PQnfields(res))
+                    id = Stoi(conn_spis.PGgetvalue(res, 0, 0));
             }
             else
                 LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
             return id;
+        }
+
+        std::string GetRun_At(PGConnection& conn, T_cassette& CD)
+        {
+            std::string run_at = "";
+            std::stringstream ss;
+            ss << "SELECT run_at FROM cassette WHERE";
+            ss << " hour = " << CD.Hour->GetString();
+            ss << " AND day = " << CD.Day->GetString();
+            ss << " AND month = " << CD.Month->GetString();
+            ss << " AND year = " << CD.Year->GetString();
+            ss << " AND cassetteno = " << CD.CassetteNo->GetString();
+            std::string comand = ss.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn_spic.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                if(PQnfields(res))
+                    run_at = conn_spis.PGgetvalue(res, 0, 0);
+            }
+            else
+                LOG_ERR_SQL(SQLLogger, res, comand);
+            PQclear(res);
+            return run_at;
+        }
+        std::string GetEnd_At(PGConnection& conn, T_cassette& CD)
+        {
+            std::string run_at = "";
+            std::stringstream ss;
+            ss << "SELECT end_at FROM cassette WHERE";
+            ss << " hour = " << CD.Hour->GetString();
+            ss << " AND day = " << CD.Day->GetString();
+            ss << " AND month = " << CD.Month->GetString();
+            ss << " AND year = " << CD.Year->GetString();
+            ss << " AND cassetteno = " << CD.CassetteNo->GetString();
+            std::string comand = ss.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn_spic.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                if(PQnfields(res))
+                    run_at = conn_spis.PGgetvalue(res, 0, 0);
+            }
+            else
+                LOG_ERR_SQL(SQLLogger, res, comand);
+            PQclear(res);
+            return run_at;
+        }
+        int GetEvent(PGConnection& conn, T_cassette& CD)
+        {
+            int events = 0;
+            std::stringstream ss;
+            ss << "SELECT event FROM cassette WHERE";
+            ss << " hour = " << CD.Hour->GetString();
+            ss << " AND day = " << CD.Day->GetString();
+            ss << " AND month = " << CD.Month->GetString();
+            ss << " AND year = " << CD.Year->GetString();
+            ss << " AND cassetteno = " << CD.CassetteNo->GetString();
+            std::string comand = ss.str();
+            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            PGresult* res = conn_spic.PGexec(comand);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                if(PQnfields(res))
+                    events = Stoi(conn_spis.PGgetvalue(res, 0, 0));
+            }
+            else
+                LOG_ERR_SQL(SQLLogger, res, comand);
+            PQclear(res);
+            return events;
         }
 
         void SearthEnd_at(PGConnection& conn, TCassette& CD, int id)
@@ -604,46 +674,30 @@ namespace S107
         T_cassette& CD = Furn.Cassette;
         if(IsCassete1(CD))
         {
-            std::stringstream sd;
-            sd << "UPDATE cassette SET ";
-            sd << "peth = " << Peth;
-            sd << ", run_at = now()";
-            sd << ", end_at = DEFAULT";
-            sd << ", finish_at = DEFAULT";
-            sd << ", correct = DEFAULT";
-            sd << ", pdf = DEFAULT";
-            sd << ", error_at = DEFAULT";
+            if(SQL::GetEvent(conn, CD) != 3)
+            {
+                std::stringstream sd;
+                sd << "UPDATE cassette SET";
+                sd << " peth = " << Peth;
+                sd << ", run_at = now()";
+                sd << ", end_at = DEFAULT";
+                sd << ", finish_at = DEFAULT";
+                sd << ", correct = DEFAULT";
+                sd << ", pdf = DEFAULT";
+                sd << ", error_at = DEFAULT";
 
-            sd << ", event = 3";
-            sd << ", tempref = " << Furn.TempRef->GetFloat();//GetFloat(); //GetString();
-            sd << ", pointtime_1 = " << Furn.PointTime_1->GetFloat();//GetFloat(); //GetString();
-            sd << ", pointref_1 = " << Furn.PointRef_1->GetFloat();//GetFloat(); //GetString();
-            sd << ", timeprocset = " << Furn.TimeProcSet->GetFloat();//GetFloat(); //GetString();
-            sd << ", pointdtime_2 = " << Furn.PointDTime_2->GetFloat();//GetFloat(); //GetString();
+                sd << ", event = 3";
+                sd << ", tempref = " << Furn.TempRef->GetFloat();//GetFloat(); //GetString();
+                sd << ", pointtime_1 = " << Furn.PointTime_1->GetFloat();//GetFloat(); //GetString();
+                sd << ", pointref_1 = " << Furn.PointRef_1->GetFloat();//GetFloat(); //GetString();
+                sd << ", timeprocset = " << Furn.TimeProcSet->GetFloat();//GetFloat(); //GetString();
+                sd << ", pointdtime_2 = " << Furn.PointDTime_2->GetFloat();//GetFloat(); //GetString();
 
-            sd << " WHERE";
-            sd << AddCD(CD);
-            //sd << " hour = " << Stoi(Furn.Cassette.Hour->GetString());//Furn.Cassette.Hour->GetInt(); //GetString();
-            //sd << " AND day = " << Stoi(Furn.Cassette.Day->GetString());//GetInt(); //GetString();
-            //sd << " AND month = " << Stoi(Furn.Cassette.Month->GetString());//GetInt(); //GetString();
-            //sd << " AND year = " << Stoi(Furn.Cassette.Year->GetString());//GetInt(); //GetString();
-            //sd << " AND cassetteno = " << Stoi(Furn.Cassette.CassetteNo->GetString());//GetInt(); //GetString();
-            SETUPDATESQL(SQLLogger, conn, sd);
-            
-            //sd = std::stringstream("");
-            //sd << "UPDATE cassette SET ";
-            //sd << "error_at = DEFAULT, ";
-            //sd << "end_at = DEFAULT";
-            //sd << " WHERE" << AddCD(CD);
-            ////sd << " hour = " << Stoi(CD.Hour->GetString());//Furn.Cassette.Hour->GetInt(); //GetString();
-            ////sd << " AND day = " << Stoi(CD.Day->GetString());//GetInt(); //GetString();
-            ////sd << " AND month = " << Stoi(CD.Month->GetString());//GetInt(); //GetString();
-            ////sd << " AND year = " << Stoi(CD.Year->GetString());//GetInt(); //GetString();
-            ////sd << " AND cassetteno = " << Stoi(CD.CassetteNo->GetString());//GetInt(); //GetString();
-            //SETUPDATESQL(SQLLogger, conn, sd);
-
-            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
-                     FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
+                sd << " WHERE" << AddCD(CD);
+                SETUPDATESQL(SQLLogger, conn, sd);
+                LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
+                         FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
+            }
         }
         else if(DEB)
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
@@ -658,7 +712,7 @@ namespace S107
             std::stringstream sd;
             sd << "UPDATE cassette SET ";
             sd << "end_at = now()";
-            sd << ", event = 5";
+            //sd << ", event = 5";
             sd << " WHERE";
             //sd << " end_at IS NULL";
             sd << " peth = " << Peth;
@@ -693,8 +747,8 @@ namespace S107
             //sd << " AND month = " << Stoi(CD.Month->GetString());//GetInt(); //GetString();
             //sd << " AND year = " << Stoi(CD.Year->GetString());//GetInt(); //GetString();
             //sd << " AND cassetteno = " << Stoi(CD.CassetteNo->GetString());//GetInt(); //GetString();
-            SETUPDATESQL(SQLLogger, conn, sd);
-            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+            //SETUPDATESQL(SQLLogger, conn, sd);
+            LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 4",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
         }
         else if(DEB)

@@ -576,7 +576,7 @@ void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
 void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
 {
     int ev = atoi(TC.Event.c_str());
-    if(ev == evCassete::Nul || ev == evCassete::Rel || ev == evCassete::Fill) return;
+    if(ev == evCassete::Nul || /*ev == evCassete::Rel ||*/ ev == evCassete::Fill) return;
     if(!TC.Run_at.length() || TC.Finish_at.length())
         return;
 
@@ -662,7 +662,7 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     if(!tmp_at.length())tmp_at = err_at;
 
 
-    if(tmp_at.length())
+    if(tmp_at.length() && !TC.Finish_at.length())
     {
         std::tm TM_Temp ={0};
         time_t tmp_at2 = DataTimeOfString(tmp_at, TM_Temp);
@@ -672,33 +672,22 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
         time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
         localtime_s(&TM_Temp, &tStop1);
 
-        time_t tStop2 = time(NULL);
+        time_t tCur = time(NULL);
         tm curr_tm;
-        localtime_s(&curr_tm, &tStop2);
+        localtime_s(&curr_tm, &tCur);
 
-        //GetDataTimeString(tStop2);
-
-        if(tStop2 >= tStop1)
+        if(tCur >= tStop1)
         {
-            std::string finish_at = GetDataTimeString(TM_Temp);
-            //std::stringstream sdw;
-            //sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
-            //sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
-            //sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
-            //sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
-            //sdw << boost::format("%|02|:") % TM_Temp.tm_min;
-            //sdw << boost::format("%|02|") % TM_Temp.tm_sec;
-            //std::string finish_at = sdw.str();
+            TC.Finish_at = GetDataTimeString(TM_Temp);
 
             std::stringstream sdf;
-            sdf << "UPDATE cassette SET finish_at = '" << finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
+            sdf << "UPDATE cassette SET finish_at = '" << TC.Finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
             sdf << "hour = " << TC.Hour << " AND ";
             sdf << "day = " << TC.Day << " AND ";
             sdf << "month = " << TC.Month << " AND ";
             sdf << "year = " << TC.Year << " AND ";
             sdf << "cassetteno = " << TC.CassetteNo << ";";
             SETUPDATESQL(SQLLogger, conn_spic, sdf);
-            TC.Finish_at = finish_at;
 
             //comand = sdf.str();
             //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
