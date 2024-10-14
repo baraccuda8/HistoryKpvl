@@ -665,24 +665,31 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     if(tmp_at.length())
     {
         std::tm TM_Temp ={0};
-        DataTimeOfString(tmp_at, TM_Temp);
+        time_t tmp_at2 = DataTimeOfString(tmp_at, TM_Temp);
         TM_Temp.tm_year -= 1900;
         TM_Temp.tm_mon -= 1;
 
         time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
         localtime_s(&TM_Temp, &tStop1);
 
-        std::stringstream sdw;
-        sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
-        sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
-        sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
-        sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
-        sdw << boost::format("%|02|:") % TM_Temp.tm_min;
-        sdw << boost::format("%|02|") % TM_Temp.tm_sec;
-        std::string finish_at = sdw.str();
+        time_t tStop2 = time(NULL);
+        tm curr_tm;
+        localtime_s(&curr_tm, &tStop2);
 
-        if(finish_at <= GetDataTimeString())
+        //GetDataTimeString(tStop2);
+
+        if(tStop2 >= tStop1)
         {
+            std::string finish_at = GetDataTimeString(TM_Temp);
+            //std::stringstream sdw;
+            //sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
+            //sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
+            //sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
+            //sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
+            //sdw << boost::format("%|02|:") % TM_Temp.tm_min;
+            //sdw << boost::format("%|02|") % TM_Temp.tm_sec;
+            //std::string finish_at = sdw.str();
+
             std::stringstream sdf;
             sdf << "UPDATE cassette SET finish_at = '" << finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
             sdf << "hour = " << TC.Hour << " AND ";
