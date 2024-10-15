@@ -1354,10 +1354,10 @@ typedef struct TCassette{
     std::string End_at = "";
     std::string Delete_at = "";
     std::string TempRef = "";           //Заданное значение температуры
-    std::string PointTime_1 = "";       //Время разгона
     std::string PointRef_1 = "";        //Уставка температуры
+    std::string PointTime_1 = "";       //Время разгона
+    std::string PointTime_2 = "";      //Время выдержки
     std::string TimeProcSet = "";       //Полное время процесса (уставка), мин
-    std::string PointDTime_2 = "";      //Время выдержки
     std::string facttemper = "";          //Факт температуры за 5 минут до конца отпуска
     std::string Finish_at = "";         //Завершение процесса + 15 минут
     std::string HeatAcc = "";           //Факт время нагрева

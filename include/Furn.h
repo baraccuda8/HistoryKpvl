@@ -37,7 +37,7 @@ namespace S107
         extern int PointTime_1;       //Время разгона
         extern int PointRef_1;        //Уставка температуры
         extern int TimeProcSet;       //Полное время процесса (уставка), мин
-        extern int PointDTime_2;      //Время выдержки
+        extern int PointTime_2;      //Время выдержки
         extern int facttemper;          //Факт температуры за 5 минут до конца отпуска
         extern int Finish_a;
     };
@@ -101,7 +101,7 @@ namespace S107
         //DWORD PointRef_1(Value* value);
         //
         ////REAL Время выдержки
-        //DWORD PointDTime_2(Value* value);
+        //DWORD PointTime_2(Value* value);
         //
         ////REAL Полное время процесса (уставка), мин
         //DWORD TimeProcSet(Value* value);
@@ -179,7 +179,7 @@ namespace S107
         //DWORD PointRef_1(Value* value);
         //
         ////REAL Время выдержки
-        //DWORD PointDTime_2(Value* value);
+        //DWORD PointTime_2(Value* value);
         //
         ////REAL Полное время процесса (уставка), мин
         //DWORD TimeProcSet(Value* value);

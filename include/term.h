@@ -29,21 +29,21 @@ public:
 
 #define AppFurn1 ForBase_RelFurn_1
 #define AppFurn2 ForBase_RelFurn_2
-#define AppCassette cassetteArray.cassette
-#define AppSelected1 cassetteArray.selected_cassetFurn1
-#define AppSelected2 cassetteArray.selected_cassetFurn2
-#define AppCassette1 cassetteArray.cassette[0]
-#define AppCassette2 cassetteArray.cassette[1]
-#define AppCassette3 cassetteArray.cassette[2]
-#define AppCassette4 cassetteArray.cassette[3]
-#define AppCassette5 cassetteArray.cassette[4]
-#define AppCassette6 cassetteArray.cassette[5]
-#define AppCassette7 cassetteArray.cassette[6]
+#define AppCassette FcassetteArray.cassette
+#define AppSelected1 FcassetteArray.selected_cassetFurn1
+#define AppSelected2 FcassetteArray.selected_cassetFurn2
+#define AppCassette1 FcassetteArray.cassette[0]
+#define AppCassette2 FcassetteArray.cassette[1]
+#define AppCassette3 FcassetteArray.cassette[2]
+#define AppCassette4 FcassetteArray.cassette[3]
+#define AppCassette5 FcassetteArray.cassette[4]
+#define AppCassette6 FcassetteArray.cassette[5]
+#define AppCassette7 FcassetteArray.cassette[6]
 
 #define PathPeth std::string("|var|SPK107 (M01).Application.")
 #define StrFurn1 std::string("|var|SPK107 (M01).Application.ForBase_RelFurn_1.Data.")
 #define StrFurn2 std::string("|var|SPK107 (M01).Application.ForBase_RelFurn_2.Data.")
-//#define StrCassette PathPeth + "cassetteArray.data.cassette"
+//#define StrCassette PathPeth + "FcassetteArray.data.cassette"
 #define StrSelected1 std::string("|var|SPK107 (M01).Application.cassetteArray.data.selected_cassetFurn1")
 #define StrSelected2 std::string("|var|SPK107 (M01).Application.cassetteArray.data.selected_casset")
 
@@ -55,7 +55,7 @@ public:
 #define StrCassette6 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[6].")
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
-typedef struct T_cassette{
+typedef struct T_Fcassette{
     //DINT Час ID листа
     Value* Hour;
 
@@ -83,14 +83,14 @@ typedef struct T_ForBase_RelFurn{
     //BOOL
     Value* WDG_fromBase;
 
-    //REAL Задание Время разгона
-    Value* PointTime_1;
-
     //REAL Уставка температуры
     Value* PointRef_1;
 
+    //REAL Задание Время разгона
+    Value* PointTime_1;
+
     //REAL Задание Время выдержки
-    Value* PointDTime_2;
+    Value* PointTime_2;
 
     //BOOL Работа
     Value* ProcRun;
@@ -134,7 +134,7 @@ typedef struct T_ForBase_RelFurn{
     //Возврат касеты в список
     Value* ReturnCassetteCmd;
 
-    T_cassette Cassette;
+    T_Fcassette Cassette;
 };
 
 extern std::deque<TCassette> AllCassette;
@@ -187,7 +187,7 @@ namespace casCassette{
         facttemper,           //Факт температуры за 5 минут до конца отпуска
         PointTime_1,        //Время разгона
         TimeProcSet,        //Полное время процесса (уставка), мин
-        PointDTime_2,       //Время выдержки
+        PointTime_2,       //Время выдержки
     };
 };
 
@@ -216,7 +216,7 @@ namespace S107
 //    extern int PointTime_1;       //Время разгона
 //    extern int PointRef_1;        //Уставка температуры
 //    extern int TimeProcSet;       //Полное время процесса (уставка), мин
-//    extern int PointDTime_2;      //Время выдержки
+//    extern int PointTime_2;      //Время выдержки
 //    extern int facttemper;          //Факт температуры за 5 минут до конца отпуска
 //    extern int Finish_at;
 //#pragma endregion

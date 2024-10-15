@@ -34,13 +34,13 @@ std::deque<TCassette> AllCassette;
 T_ForBase_RelFurn ForBase_RelFurn_1;
 T_ForBase_RelFurn ForBase_RelFurn_2;
 
-struct T_cassetteArray{
+struct T_FcassetteArray{
     //struct _data{
-        T_cassette cassette[7];
+        T_Fcassette cassette[7];
         Value* selected_cassetFurn1;
         Value* selected_cassetFurn2;
     //}data;
-}cassetteArray;
+}FcassetteArray;
 
 //SPK107 (M01).Application.AppFurn1.PointTime_1
 
@@ -60,9 +60,9 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.WDG_toBase            = new Value(StrFurn1 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_1,          S107::Furn1::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог")}, //вачдог
     {AppFurn1.WDG_fromBase          = new Value(StrFurn1 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
-    {AppFurn1.PointTime_1           = new Value(StrFurn1 + "PointTime_1",           HWNDCLIENT::RelF1_Edit_PointTime_1,     0, &conn_temp)}, //: REAL; //Время разгона
     {AppFurn1.PointRef_1            = new Value(StrFurn1 + "PointRef_1",            HWNDCLIENT::RelF1_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;  //Уставка температуры
-    {AppFurn1.PointDTime_2          = new Value(StrFurn1 + "PointDTime_2",          HWNDCLIENT::RelF1_Edit_PointDTime_2,    0, &conn_temp)}, //: REAL;//Время выдержки
+    {AppFurn1.PointTime_1           = new Value(StrFurn1 + "PointTime_1",           HWNDCLIENT::RelF1_Edit_PointTime_1,     0, &conn_temp)}, //: REAL; //Время разгона
+    {AppFurn1.PointTime_2           = new Value(StrFurn1 + "PointDTime_2",          HWNDCLIENT::RelF1_Edit_PointDTime_2,    0, &conn_temp)}, //: REAL;//Время выдержки
 
     {AppFurn1.ProcRun               = new Value(StrFurn1 + "ProcRun",               HWNDCLIENT::RelF1_Edit_ProcRun,         S107::Furn1::ProcRun, &conn_temp)}, //: BOOL;//Работа
     {AppFurn1.ProcEnd               = new Value(StrFurn1 + "ProcEnd",               HWNDCLIENT::RelF1_Edit_ProcEnd,         S107::Furn1::ProcEnd, &conn_temp)}, //: BOOL;//Окончание процесса
@@ -92,9 +92,9 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false,  "Вачдог")}, //вачдог
     {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
-    {AppFurn2.PointTime_1           = new Value(StrFurn2 + "PointTime_1",           HWNDCLIENT::RelF2_Edit_PointTime_1,     0, &conn_temp)}, //: REAL;//Время разгона
     {AppFurn2.PointRef_1            = new Value(StrFurn2 + "PointRef_1",            HWNDCLIENT::RelF2_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;//Уставка температуры
-    {AppFurn2.PointDTime_2          = new Value(StrFurn2 + "PointDTime_2",          HWNDCLIENT::RelF2_Edit_PointDTime_2,    0, &conn_temp)}, //: REAL;//Время выдержки
+    {AppFurn2.PointTime_1           = new Value(StrFurn2 + "PointTime_1",           HWNDCLIENT::RelF2_Edit_PointTime_1,     0, &conn_temp)}, //: REAL;//Время разгона
+    {AppFurn2.PointTime_2          = new Value(StrFurn2 + "PointDTime_2",          HWNDCLIENT::RelF2_Edit_PointDTime_2,    0, &conn_temp)}, //: REAL;//Время выдержки
 
     {AppFurn2.ProcRun               = new Value(StrFurn2 + "ProcRun",               HWNDCLIENT::RelF2_Edit_ProcRun,         S107::Furn2::ProcRun, &conn_temp)}, //: BOOL;//Работа
     {AppFurn2.ProcEnd               = new Value(StrFurn2 + "ProcEnd",               HWNDCLIENT::RelF2_Edit_ProcEnd,         S107::Furn2::ProcEnd, &conn_temp)}, //: BOOL;//Окончание процесса
@@ -573,44 +573,22 @@ void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
     }
 }
 
-void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
+void GetCasseteData(PGConnection& conn, T_ForBase_RelFurn& app, TCassette& TC)
 {
+    if(!isRun) return;
     int ev = atoi(TC.Event.c_str());
     if(ev == evCassete::Nul || /*ev == evCassete::Rel ||*/ ev == evCassete::Fill) return;
-    if(!TC.Run_at.length() || TC.Finish_at.length())
-        return;
+    if(!TC.Run_at.length() || TC.Finish_at.length()) return;
 
-    
-    PGresult* res = NULL;
-    std::string comand = "";
     std::string end_at = "";
-    std::string err_at = "";
-    std::string tmp_at = "";
-
     std::stringstream sddEnd;
-    sddEnd << "SELECT min(create_at) FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcEnd->ID << " AND content = 'true';";
-    comand = sddEnd.str();
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    res = conn_spic.PGexec(comand);
+    sddEnd << "SELECT create_at FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcEnd->ID << " AND content = 'true' ORDER BY id DESC LIMIT 1;";
+    std::string comand = sddEnd.str();
+    PGresult* res = conn.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         if(PQntuples(res))
-            end_at = conn_spic.PGgetvalue(res, 0, 0);
-    }
-    else
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
-
-    std::stringstream sddErr;
-    sddErr << "SELECT min(create_at) FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcFault->ID << " AND content = 'true';";
-
-    comand = sddErr.str();
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    res = conn_spic.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        if(PQntuples(res))
-            err_at = conn_spic.PGgetvalue(res, 0, 0);
+            end_at = conn.PGgetvalue(res, 0, 0);
     }
     else
         LOG_ERR_SQL(SQLLogger, res, comand);
@@ -620,86 +598,43 @@ void GetCasseteData(T_ForBase_RelFurn& app, TCassette& TC)
     {
         TC.End_at = end_at;
         std::stringstream sde;
-        sde << "UPDATE cassette SET end_at = '" << TC.End_at << "' WHERE ";
-        sde << "end_at IS NULL AND ";
-        sde << "hour = " << TC.Hour << " AND ";
-        sde << "day = " << TC.Day << " AND ";
-        sde << "month = " << TC.Month << " AND ";
-        sde << "year = " << TC.Year << " AND ";
-        sde << "cassetteno = " << TC.CassetteNo << ";";
-
-        comand = sde.str();
-        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        res = conn_spic.PGexec(comand);
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
-        PQclear(res);
+        sde << "UPDATE cassette SET end_at = '" << TC.End_at << "' WHERE end_at IS NULL AND id = " << TC.Id;
+        SETUPDATESQL(SQLLogger, conn, sde);
+        //sde << "hour = " << TC.Hour << " AND ";
+        //sde << "day = " << TC.Day << " AND ";
+        //sde << "month = " << TC.Month << " AND ";
+        //sde << "year = " << TC.Year << " AND ";
+        //sde << "cassetteno = " << TC.CassetteNo << ";";
     }
 
-    if(!TC.Error_at.length() && err_at.length())
-    {
-        TC.Error_at = err_at;
-        std::stringstream sde;
-        sde << "UPDATE cassette SET err_at = '" << err_at << "' WHERE ";
-        sde << "err_at IS NULL AND ";
-        sde << "hour = " << TC.Hour << " AND ";
-        sde << "day = " << TC.Day << " AND ";
-        sde << "month = " << TC.Month << " AND ";
-        sde << "year = " << TC.Year << " AND ";
-        sde << "cassetteno = " << TC.CassetteNo << ";";
-
-        comand = sde.str();
-        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        res = conn_spic.PGexec(comand);
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
-        PQclear(res);
-
-        //GetCasseteTimeRun(app, TC);
-    }
-
-    tmp_at = end_at;
-    if(!tmp_at.length())tmp_at = err_at;
-
-
-    if(tmp_at.length() && !TC.Finish_at.length())
+    if(TC.End_at.length() && !TC.Finish_at.length())
     {
         std::tm TM_Temp ={0};
-        time_t tmp_at2 = DataTimeOfString(tmp_at, TM_Temp);
+        time_t tmp_at2 = DataTimeOfString(TC.End_at, TM_Temp);
         TM_Temp.tm_year -= 1900;
         TM_Temp.tm_mon -= 1;
 
-        time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //15 сминут
+        time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //+15 минут
         localtime_s(&TM_Temp, &tStop1);
 
         time_t tCur = time(NULL);
         tm curr_tm;
         localtime_s(&curr_tm, &tCur);
 
+        //Финализируем если прошло 15 минут после конца отпуска
         if(tCur >= tStop1)
         {
             TC.Finish_at = GetDataTimeString(TM_Temp);
-
             std::stringstream sdf;
-            sdf << "UPDATE cassette SET finish_at = '" << TC.Finish_at << "', event = 5 WHERE finish_at IS NULL AND ";
-            sdf << "hour = " << TC.Hour << " AND ";
-            sdf << "day = " << TC.Day << " AND ";
-            sdf << "month = " << TC.Month << " AND ";
-            sdf << "year = " << TC.Year << " AND ";
-            sdf << "cassetteno = " << TC.CassetteNo << ";";
-            SETUPDATESQL(SQLLogger, conn_spic, sdf);
-
-            //comand = sdf.str();
-            //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            //res = conn_spic.PGexec(comand);
-            //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            //    LOG_ERR_SQL(SQLLogger, res, comand);
-            //PQclear(res);
-            //PrintPdfAuto(TC);
-            
+            sdf << "UPDATE cassette SET finish_at = '" << TC.Finish_at << "', event = 5 WHERE finish_at IS NULL AND id = " << TC.Id;
+            SETUPDATESQL(SQLLogger, conn, sdf);
+            //sdf << "hour = " << TC.Hour << " AND ";
+            //sdf << "day = " << TC.Day << " AND ";
+            //sdf << "month = " << TC.Month << " AND ";
+            //sdf << "year = " << TC.Year << " AND ";
+            //sdf << "cassetteno = " << TC.CassetteNo << ";";
         }
     }
-
 }
 
 
@@ -988,6 +923,8 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
         for(auto& TC : AllCassette)
         {
+            if(!isRun) return 0;
+
             if(TC.Finish_at.length() && Stoi(TC.Event) != 5 && Stoi(TC.Event) != 7)
             {
                 std::stringstream sdf;
@@ -997,9 +934,9 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             }
 
             if(atoi(TC.Peth.c_str()) == 1)
-                GetCasseteData(AppFurn1, TC);
+                GetCasseteData(conn_spic, AppFurn1, TC);
             if(atoi(TC.Peth.c_str()) == 2)
-                GetCasseteData(AppFurn2, TC);
+                GetCasseteData(conn_spic, AppFurn2, TC);
         }
 #pragma endregion
 
@@ -1007,6 +944,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         
         for(auto& it : AllCassette)
         {
+            if(!isRun) return 0;
             if(it.Event == "1")
             {
                 if(HMISheetData.Cassette.CassetteNo->GetInt() != Stoi(it.CassetteNo) ||
@@ -1121,6 +1059,8 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         bool b = false;
         for(int i = 0; i < CountCaseteInRel; i++)
         {
+            if(!isRun) return 0;
+
             if(OldSCassett[i] != SCassett[i]) b = true;
             OldSCassett[i] = SCassett[i];
         }
@@ -1169,7 +1109,7 @@ void Open_FURN()
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
     hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #else
-    hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
+    //hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #endif
 
 

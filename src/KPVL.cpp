@@ -405,7 +405,8 @@ namespace KPVL {
                 if(TS.Start_at.length())
                 {
                     std::stringstream co;
-                    co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                    //co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                    co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
@@ -422,7 +423,8 @@ namespace KPVL {
                 if(next_at.length())
                 {
                     std::stringstream co;
-                    co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                    co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '3' AND create_at > '" << next_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                    //co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
@@ -755,6 +757,7 @@ namespace KPVL {
                 sd << " AND subsheet = " << TS.SubSheet;
                 sd << " AND slab = " << TS.Slab;
                 sd << ";";
+                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(SQLLogger, conn, sd);
 
                 //std::string comand = sd.str();
@@ -791,6 +794,7 @@ namespace KPVL {
                 sd << " AND subsheet = " << PD.SubSheet->GetInt();
                 sd << " AND slab = " << PD.Slab->GetInt();
                 sd << ";";
+                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(SQLLogger, conn, sd);
 
                 //std::string comand = sd.str();
@@ -824,13 +828,10 @@ namespace KPVL {
         //Установка позиции листа
         void UpdateSQLPos(PGConnection& conn, std::string id, int pos, int Pos)
         {
-            
-            LOG_INFO(HardLogger, "{:90}| SheetId={}, OldPos={} --> NewPos={}", FUNCTION_LINE_NAME, id, pos, Pos);
-
             std::stringstream sd;
-            sd << "UPDATE sheet SET pos = " << Pos;
+            sd << "UPDATE sheet SET pos = " << Pos << ", correct = DEFAULT, pdf = DEFAULT";
             sd << " WHERE id = " << id;
-            //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+            LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
             SETUPDATESQL(SQLLogger, conn, sd);
         }
 
@@ -841,7 +842,7 @@ namespace KPVL {
             std::stringstream sr;
             sr << "SELECT id FROM sheet WHERE pos = 6 AND id <> " << id << " ORDER BY id DESC";
             std::string comand = sr.str();
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -1093,8 +1094,11 @@ namespace KPVL {
                     update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                     SetUpdateSheet(conn_kpvl, PD, update, "");
 
-                    
-                    SetUpdateSheet(conn_kpvl, PD, " start_at = (SELECT MAX(create_at) FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND (content = '3' OR content = '4' OR content = '5'))", " start_at IS NULL AND ");
+                    std::stringstream ssd;
+                    ssd << " start_at = (";
+                    ssd << "SELECT create_at FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND (content = '3' OR content = '4' OR content = '5')";
+                    ssd << " ORDER BY id DESC LIMIT 1)";
+                    SetUpdateSheet(conn_kpvl, PD, ssd.str(), " start_at IS NULL AND ");
 
                     DeleteNullSgeet(conn_kpvl, PD, Pos);
                 }
@@ -1392,6 +1396,7 @@ namespace KPVL {
                                 co << ", year = " << Cassette.Year->GetInt();
                                 co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
                                 co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
+                                co << ", correct = DEFAULT, pdf = DEFAULT";
                                 co << " WHERE id = " << id << ";";
 #pragma endregion
                                 SETUPDATESQL(SQLLogger, conn, co);
@@ -1519,32 +1524,20 @@ namespace KPVL {
                     std::stringstream co;
                     co << "SELECT id FROM cassette WHERE";
                     //if(!CD.Hour->Val.IsNul())
-                    try
-                    {
-                        co << " hour = " << CD.Hour->GetInt() << " AND";
-                    }CATCH(HardLogger, "");
-                    try
-                    {
-                        co << " day = " << CD.Day->GetInt();
-                    }CATCH(HardLogger, "");
-                    try
-                    {
-                        co << " AND month = " << CD.Month->GetInt();
-                    }CATCH(HardLogger, "");
-                    try
-                    {
-                        co << " AND year = " << CD.Year->GetInt();
-                    }CATCH(HardLogger, "");
-                    try
-                    {
-                        co << " AND cassetteno = " << CD.CassetteNo->GetInt();
-                    }CATCH(HardLogger, "");
+                    co << " hour = " << CD.Hour->GetInt() << " AND";
+                    co << " day = " << CD.Day->GetInt();
+                    co << " AND month = " << CD.Month->GetInt();
+                    co << " AND year = " << CD.Year->GetInt();
+                    co << " AND cassetteno = " << CD.CassetteNo->GetInt();
                     co << " LIMIT 1;";
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
-                    if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-                        id = Stoi(conn.PGgetvalue(res, 0, 0));
+                    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                    {
+                        if(PQntuples(res))
+                            id = Stoi(conn.PGgetvalue(res, 0, 0));
+                    }
                     else
                         LOG_ERR_SQL(SQLLogger, res, comand);
                     PQclear(res);

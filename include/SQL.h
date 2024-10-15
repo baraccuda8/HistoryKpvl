@@ -91,11 +91,11 @@ public:
             ::PQexec(m_connection, cp1251_to_utf8(std).c_str());
     };
 
-    PGresult* MyPQexec(std::string std){
-        if(!connections) return 0;
-        return
-            ::PQexec(m_connection, std.c_str());
-    };
+    //PGresult* MyPQexec(std::string std){
+    //    if(!connections) return 0;
+    //    return
+    //        ::PQexec(m_connection, std.c_str());
+    //};
 
     std::string PGgetvalue(PGresult* res, int l, int i)
     {

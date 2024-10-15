@@ -273,7 +273,7 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
 
 void GetPetch(S107::T_cass& tc, int p)
 {
-    std::string comand = "SELECT max(id) FROM cassette2 WHERE peth = " + std::to_string(p);
+    std::string comand = "SELECT id FROM cassette2 WHERE peth = " + std::to_string(p) + " ORDER BY id ASC LIMIT 1";
     PGresult* res = conn_spis.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {

@@ -2262,12 +2262,13 @@ void InitInstance()
     //}
 
     InitGrafWindow(Global1);
-
     ShowWindow(Global0, SW_SHOW);
     ShowWindow(Global1, SW_SHOW);
     UpdateWindow(Global0);
     UpdateWindow(Global1);
 
+    SetWindowPos(Global0, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowPos(Global0, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
     return;
 }

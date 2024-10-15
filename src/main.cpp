@@ -30,7 +30,7 @@ std::string CurrentDirPatch = "";
 std::string lpLogDir = "Log";
 std::string lpLogPdf = "Pdf";
 #if _DEBUG
-//std::string lpLogPdf2 = "Pdf2";
+std::string lpLogPdf2 = "Pdf2";
 #endif
 
 //Глобальный Run

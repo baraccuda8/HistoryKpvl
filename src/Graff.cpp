@@ -6,8 +6,8 @@
 
 #include "Graff.h"
 
-const int64_t SecCount1 = 60 * 60 * 24; //12 часов
-const int64_t SecCount2 = 60 * 30; //1 час
+const int64_t SecCount1 = 60 * 60 * 24; //24 часов
+const int64_t SecCount2 = 60 * 60 * 1; //1 час
 
 HANDLE hGGraff1 = NULL;
 HANDLE hGGraff2 = NULL;
@@ -577,10 +577,10 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 	std::string sBegTime = sdw.str();
 
 	std::stringstream sde;
-	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+	sde << "SELECT create_at FROM todos WHERE id_name = " << val->ID;
 	sde << " AND create_at <= '";
 	sde << sBegTime;
-	sde << "';";
+	sde << "' ORDER BY id ASC LIMIT 1;";
 	std::string sBegTime2 = sBegTime;
 	std::string comand = sde.str();
 	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -662,10 +662,10 @@ void GetGrTempFURN(Graff& gr, T_ForBase_RelFurn& app)
 std::string SqlTempKPVL2(std::string sBegTime)
 {
 	std::stringstream sde;
-	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqFromHmi.TempSet1->ID;
+	sde << "SELECT create_at FROM todos WHERE id_name = " << GenSeqFromHmi.TempSet1->ID;
 	sde << " AND create_at <= '";
 	sde << sBegTime;
-	sde << "';";
+	sde << "' ORDER BY id ASC LIMIT 1;";
 	std::string sBegTime2 = sBegTime;
 	std::string comand = sde.str();
 	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -876,67 +876,62 @@ DWORD WINAPI Open_GRAFF_KPVL(LPVOID)
 void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFurn& app, TCassette& TC)
 {
 	st.erase(st.begin(), st.end());
-
-	//std::tm TM_End ={0};
-	//std::tm TM_Beg ={0};
 	std::tm TM_Temp ={0};
-	//std::string TecTime;
-	//time_t tStop1 = time(NULL);
-	//localtime_s(&TM_End, &tStop1);
-	std::string sBegTime = TC.Run_at;
-	if(!sBegTime.length())
-	{
-		return;
-	}
-
 	time_t tStop1 = 0;
+
+	std::string sBegTime = TC.Run_at;
+	if(!sBegTime.length()) return;
+
 	std::string sEndTime = TC.Finish_at;
-	if(!sEndTime.length())
-	{
-		std::string sTempTime = TC.End_at;
+	if(!sEndTime.length()) sEndTime = TC.End_at;
+	if(!sEndTime.length()) sEndTime = GetDataTimeString();
 
-		//if(!sTempTime.length())sTempTime = TC.Error_at;
-		//if(!sTempTime.length())
-		{
-			//Поиск конца процесса
-			std::stringstream sdd;
-			sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << ") AND content = 'true';"; // OR id_name = " << app.ProcFault->ID << "
-			std::string comand = sdd.str();
-			if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			PGresult* res = conn->PGexec(comand);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				if(PQntuples(res))
-					sTempTime = conn->PGgetvalue(res, 0, 0);
-			}
-			else
-				LOG_ERR_SQL(SQLLogger, res, comand);
-			PQclear(res);
-			if(!sTempTime.length())
-				return;
-
-			//sdd = std::stringstream("");
-			//sdd << "UPDATE cassette SET "
-		}
-
-		DataTimeOfString(sTempTime, TM_Temp);
-		TM_Temp.tm_year -= 1900;
-		TM_Temp.tm_mon -= 1;
-
-		tStop1 = mktime(&TM_Temp) + (60 * 15); //15 минут
-		localtime_s(&TM_Temp, &tStop1); 
-
-		std::stringstream sdw;
-		sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
-		sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
-		sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
-		sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
-		sdw << boost::format("%|02|:") % TM_Temp.tm_min;
-		sdw << boost::format("%|02|") % TM_Temp.tm_sec;
-		std::string sEndTime = sdw.str();
-
-	}
-	else
+	//if(!sEndTime.length())
+	//{
+	//	std::string sTempTime = TC.End_at;
+	//
+	//	//if(!sTempTime.length())sTempTime = TC.Error_at;
+	//	//if(!sTempTime.length())
+	//	{
+	//		//Поиск конца процесса
+	//		std::stringstream sdd;
+	//		sdd << "SELECT min(create_at) FROM todos WHERE create_at > '" << sBegTime << "' AND (id_name = " << app.ProcEnd->ID << ") AND content = 'true';"; // OR id_name = " << app.ProcFault->ID << "
+	//		std::string comand = sdd.str();
+	//		if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+	//		PGresult* res = conn->PGexec(comand);
+	//		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+	//		{
+	//			if(PQntuples(res))
+	//				sTempTime = conn->PGgetvalue(res, 0, 0);
+	//		}
+	//		else
+	//			LOG_ERR_SQL(SQLLogger, res, comand);
+	//		PQclear(res);
+	//		if(!sTempTime.length())
+	//			return;
+	//
+	//		//sdd = std::stringstream("");
+	//		//sdd << "UPDATE cassette SET "
+	//	}
+	//
+	//	DataTimeOfString(sTempTime, TM_Temp);
+	//	TM_Temp.tm_year -= 1900;
+	//	TM_Temp.tm_mon -= 1;
+	//
+	//	tStop1 = mktime(&TM_Temp) + (60 * 15); //15 минут
+	//	localtime_s(&TM_Temp, &tStop1); 
+	//
+	//	std::stringstream sdw;
+	//	sdw << boost::format("%|04|-") % (TM_Temp.tm_year + 1900);
+	//	sdw << boost::format("%|02|-") % (TM_Temp.tm_mon + 1);
+	//	sdw << boost::format("%|02| ") % TM_Temp.tm_mday;
+	//	sdw << boost::format("%|02|:") % TM_Temp.tm_hour;
+	//	sdw << boost::format("%|02|:") % TM_Temp.tm_min;
+	//	sdw << boost::format("%|02|") % TM_Temp.tm_sec;
+	//	std::string sEndTime = sdw.str();
+	//
+	//}
+	//else
 	{
 		DataTimeOfString(sEndTime, TM_Temp);
 		TM_Temp.tm_year -= 1900;
@@ -960,10 +955,11 @@ void SqlTempFURN0(PGConnection* conn, T_SqlTemp& st, Value* val, T_ForBase_RelFu
 	//std::string sBegTime = sdw.str();
 
 	std::stringstream sde;
-	sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+	//sde << "SELECT max(create_at) FROM todos WHERE id_name = " << val->ID;
+	sde << "SELECT create_at FROM todos WHERE id_name = " << val->ID;
 	sde << " AND create_at <= '";
 	sde << sBegTime;
-	sde << "';";
+	sde << "' ORDER BY id ASC LIMIT 1;";
 	std::string sBegTime2 = sBegTime;
 	std::string comand = sde.str();
 	if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);

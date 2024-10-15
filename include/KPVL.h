@@ -260,20 +260,20 @@ namespace KPVL {
             //Давление в верхнем коллекторе 
             //через 5 сек после state2=5
         //DWORD LaminPressTop(Value* value);
-
+        //
         //Давление воды закалка коллектор низ
         //Давление нижнем коллекторе
         //через 5 сек после state2=5
         //DWORD LaminPressBot(Value* value);
-
+        //
         //Температура воды в поддоне
         //state2=5
         //DWORD LAM_TE1(Value* value);
-
+        //
         //Температура воды в баке
         //state2=5
         //DWORD Za_TE3(Value* value);
-
+        //
         //Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
         //state2=5
         //DWORD Za_PT3(Value* value);
