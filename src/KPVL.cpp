@@ -2,6 +2,7 @@
 
 #include "win.h"
 #include "main.h"
+#include "StringData.h"
 #include "file.h"
 #include "ClCodeSys.h"
 #include "SQL.h"
@@ -112,6 +113,7 @@ int Col_Sheet_correct = 0;
 int Col_Sheet_SecondPos_at = 0;
 int Col_Sheet_hour = 0;
 int Col_Sheet_delete_at = 0;
+int Col_Sheet_Cassette = 0;
 //};
 #pragma endregion
 
@@ -189,6 +191,7 @@ namespace KPVL {
                     else if(l == "correct") Col_Sheet_correct = j;
                     else if(l == "secondpos_at") Col_Sheet_SecondPos_at = j;
                     else if(l == "delete_at") Col_Sheet_delete_at = j;
+                    else if(l == "cassette") Col_Sheet_Cassette = j;
                     
                     
                     
@@ -267,6 +270,7 @@ namespace KPVL {
                 sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_correct));
                 sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_SecondPos_at));
                 sheet.Delete_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_delete_at));
+                sheet.Cassette = conn.PGgetvalue(res, l, Col_Sheet_Cassette);
                 Sheet.push_back(sheet);
             }
         }
@@ -492,7 +496,6 @@ namespace KPVL {
             return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
         }
 
-        //Получаем ID листа
         std::string GetIdSheet(PGConnection& conn, T_PlateData& PD)
         {
             std::string id = "0";
@@ -1354,13 +1357,14 @@ namespace KPVL {
                     T_Side Top_Side = HMISheetData.Top_Side;
                     T_Side Bot_Side = HMISheetData.Bot_Side;
                     T_CassetteData Cassette = HMISheetData.Cassette;
+                    
 
                     T_PlateData PD = PlateData[Pos];
                     //if(!IsSheet(PD))
                     //    PD = PlateData[5];
                     //LOG_INFO(HardLogger, "{:90}", FUNCTION_LINE_NAME);
 
-                    if(HMISheetData.NewData->Val.As<bool>()) //GetBool())
+                    if(HMISheetData.NewData->GetBool())
                     {
                         if(IsSheet(PD))
                         {
@@ -1368,11 +1372,13 @@ namespace KPVL {
                             if(Stoi(id) != 0)
                             {
                                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-
+                                int casseteId = KPVL::Cassette::GetIdCassette(conn, Cassette);
 #pragma region comand = "UPDATE sheet SET"
+                                
                                 std::stringstream co;
                                 co << "UPDATE sheet SET";
                                 co << " pos = 7";
+                                co << ", cassette = " << casseteId;
                                 co << ", news = 1";
                                 co << ", top1 = " << Top_Side.h1->GetFloat();
                                 co << ", top2 = " << Top_Side.h2->GetFloat();
@@ -1506,9 +1512,9 @@ namespace KPVL {
                 int32_t Month = CD.Month->GetInt();
                 int32_t Year = CD.Year->GetInt();
                 int32_t CassetteNo = CD.CassetteNo->GetInt();
-                int16_t SheetInCassette = CD.SheetInCassette->GetInt();
+                //int16_t SheetInCassette = CD.SheetInCassette->GetInt();
 
-                return Day && Month && Year && CassetteNo && SheetInCassette;
+                return Day && Month && Year && CassetteNo /*&& SheetInCassette*/;
             }CATCH(HardLogger, "");
             return false;
         }
@@ -1523,9 +1529,8 @@ namespace KPVL {
                 {
                     std::stringstream co;
                     co << "SELECT id FROM cassette WHERE";
-                    //if(!CD.Hour->Val.IsNul())
-                    co << " hour = " << CD.Hour->GetInt() << " AND";
-                    co << " day = " << CD.Day->GetInt();
+                    co << " hour = " << CD.Hour->GetInt();
+                    co << " AND day = " << CD.Day->GetInt();
                     co << " AND month = " << CD.Month->GetInt();
                     co << " AND year = " << CD.Year->GetInt();
                     co << " AND cassetteno = " << CD.CassetteNo->GetInt();
@@ -1560,9 +1565,14 @@ namespace KPVL {
                     co << CD.Year->GetInt() << ", ";
                     co << CD.Month->GetInt() << ", ";
                     co << CD.Day->GetInt() << ", ";
-                    co << CD.Hour->GetInt() << ", ";    //CD.Hour->GetInt() << ", ";
+                    co << CD.Hour->GetInt() << ", ";
                     co << CD.CassetteNo->GetInt() << ", ";
-                    co << CD.SheetInCassette->GetInt() << ");";
+                    int count = CD.SheetInCassette->GetInt();
+                    if(count)
+                        co << count << ");";
+                    else
+                        co << CD.SheetInCassette->GetInt() << " -1);";
+
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
@@ -1593,7 +1603,12 @@ namespace KPVL {
                 co << " day = " << CD.Day->GetInt() << ", ";
                 co << " hour = " << CD.Hour->GetInt();//CD.Hour->GetInt() << ", ";
                 co << " cassetteno = " << CD.CassetteNo->GetInt() << ", ";
-                co << " sheetincassette = " << CD.SheetInCassette->GetInt() << ",";
+                int count = CD.SheetInCassette->GetInt();
+                if(count)
+                    co << " sheetincassette = " << count << ",";
+                else
+                    co << " sheetincassette = -1,";
+
                 co << " close_at = DEFAULT, event = 1";
                 co << " WHERE id = " << id;
                 co << ";";
@@ -1662,9 +1677,10 @@ namespace KPVL {
                 int d = value->GetInt();
                 sprintf_s(ss, 256, "%d", d + 1);
                 MySetWindowText(winmap(value->winId), ss);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 //if(!HMISheetData.CasseteIsFill->Val.IsNul())
-                bool b = HMISheetData.CasseteIsFill->Val.As<bool>();
-                if(b) // GetBool())
+                //bool b = HMISheetData.CasseteIsFill->Val.As<bool>();
+                if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     //LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, d/*GetInt()*/, OldCassette.Id, id);
@@ -1681,6 +1697,7 @@ namespace KPVL {
             {
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 MySetWindowText(value);
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
@@ -1697,6 +1714,7 @@ namespace KPVL {
             try
             {
                 MySetWindowText(value);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -1712,6 +1730,7 @@ namespace KPVL {
             try
             {
                 MySetWindowText(value);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -1727,6 +1746,7 @@ namespace KPVL {
             try
             {
                 MySetWindowText(value);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -1742,6 +1762,7 @@ namespace KPVL {
             try
             {
                 MySetWindowText(value);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -1758,8 +1779,17 @@ namespace KPVL {
         {
             try
             {
-                MySetWindowText(value);
-                bool b = value->Val.As<bool>();// GetBool();
+                std::map<bool, std::string>TextOut ={
+                    {false, "Ждем кассету"},
+                    {true, "Кассета набирается"},
+                };
+
+                bool b = value->Val.As<bool>();
+
+                SetWindowText(winmap(value->winId), TextOut[b].c_str());
+                InvalidateRect(winmap(value->winId), NULL, false);
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
+
                 if(b)
                 {
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
@@ -2210,108 +2240,4 @@ namespace KPVL {
 
 #pragma endregion
 };
-
-
-//void KPVL_SQL_Cassette(PGConnection& conn, std::deque<TSheet>& Sheet, std::string start_at, std::string stop_at)
-//{
-//    Sheet.erase(Sheet.begin(), Sheet.end());
-//
-//    //std::time_t stop = time(NULL);
-//    //std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 10)); //7-е суток
-//    //std::string start_at = "";  //GetDataTimeString(&statr);
-//    //std::string stop_at = "";
-//
-//    std::stringstream FilterComand;
-//    FilterComand << "SELECT * FROM sheet ";
-//    FilterComand << "WHERE  create_at > '" << start_at << "'";
-//    FilterComand << " AND id <= " << stop_at;
-//    FilterComand << " ORDER BY ORDER BY id;";
-//    //FilterSheet();
-//    //bFilterData = TRUE;
-//    std::string comand = FilterComand.str();
-//    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-//    PGresult* res = conn.PGexec(comand);
-//    //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
-//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-//    {
-//        KPVL::SQL::GetCollumn(res);
-//
-//        int line = PQntuples(res);
-//        for(int l = 0; l < line; l++)
-//        {
-//            TSheet sheet;
-//            sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
-//            sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
-//            sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
-//            sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
-//            sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
-//            sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
-//            sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
-//            sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
-//            sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
-//            sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
-//            sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
-//            sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
-//            sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
-//            sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
-//            sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
-//
-//            sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
-//            sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
-//
-//            sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
-//            sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
-//            sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
-//            sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
-//            sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
-//
-//            sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
-//            sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
-//            sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
-//            sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
-//
-//            sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
-//            sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
-//            sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
-//            sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
-//            sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
-//            sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
-//            sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
-//            sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
-//            sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
-//            sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
-//
-//            sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
-//            sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
-//            sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
-//            sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
-//            sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
-//            sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
-//            sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
-//            sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
-//
-//            sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
-//            sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
-//            sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
-//            sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
-//            sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
-//
-//            sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
-//            sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
-//            sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
-//            sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
-//
-//
-//            Sheet.push_back(sheet);
-//        }
-//
-//    }
-//    else
-//        LOG_ERR_SQL(SQLLogger, res, comand);
-//    PQclear(res);
-//
-//    //AddHistoriSheet(true, (int)sheet.size());
-//    int t = 0;
-//}
-
 

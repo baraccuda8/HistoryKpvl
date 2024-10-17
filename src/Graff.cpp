@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "win.h"
 #include "main.h"
+#include "StringData.h"
 #include "hard.h"
 #include "term.h"
 

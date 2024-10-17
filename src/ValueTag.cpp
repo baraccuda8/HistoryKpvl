@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "main.h"
+#include "StringData.h"
 #include "file.h"
 #include "win.h"
 #include "ClCodeSys.h"
@@ -10,6 +11,38 @@
 //extern PGConnection conn;
 
 extern std::shared_ptr<spdlog::logger> SQLLogger;
+
+std::string ToString(const OpcUa::DateTime& t)
+{
+    std::time_t st = OpcUa::DateTime::ToTimeT(t);
+    tm curr_tm;
+    localtime_s(&curr_tm, &st);
+
+    std::stringstream sdt;
+    sdt << boost::format("%|04|-") % (curr_tm.tm_year + 1900);
+    sdt << boost::format("%|02|-") % (curr_tm.tm_mon + 1);
+    sdt << boost::format("%|02| ") % curr_tm.tm_mday;
+    sdt << boost::format("%|02|:") % curr_tm.tm_hour;
+    sdt << boost::format("%|02|:") % curr_tm.tm_min;
+    sdt << boost::format("%|02|") % curr_tm.tm_sec;
+    return sdt.str();
+}
+
+time_t ToTimeT(OpcUa::DateTime dateTime)
+{
+    const int64_t daysBetween1601And1970 = 134774;
+    const int64_t secsFrom1601To1970 = daysBetween1601And1970 * 24 * 3600LL;
+
+    if(dateTime.Value < secsFrom1601To1970)
+    {
+        std::stringstream stream;
+        stream << "Дата и время не могут быть меньше " << secsFrom1601To1970;
+        throw std::invalid_argument(stream.str());
+    }
+
+    const int64_t secsFrom1970 = dateTime.Value / 10000000LL - secsFrom1601To1970;
+    return secsFrom1970;
+}
 
 std::string GetValString(OpcUa::Variant& Val, float coeff, std::string format = "")
 {
@@ -594,9 +627,21 @@ std::string Value::GetString()
 
 bool Value::GetBool()
 {
-    std::string ss = Val.ToString();
-    return ss == "true";
+    try
+    {
+        return Val.As<bool>();
+    }
+    catch(std::runtime_error& exc)
+    {
+        LOG_ERROR(AllLogger, "{:90}| Error {}, Patch = {}", FUNCTION_LINE_NAME, exc.what(), Patch);
+    }
+    catch(...)
+    {
+        LOG_ERROR(AllLogger, "{:90}| Unknown error, Patch = {}", FUNCTION_LINE_NAME, Patch);
+    }
+    return false;
 }
+
 int Value::GetInt()
 {
     return Stoi(GetString());

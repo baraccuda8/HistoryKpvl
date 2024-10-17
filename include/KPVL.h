@@ -192,6 +192,9 @@ namespace KPVL {
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD);
 
+        //Получаем ID Кассеты
+        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD);
+
         //Обновляем данные по кассете если кассета есть или добовляем новую
         int32_t CassettePos(PGConnection& conn, T_CassetteData& CD);
 

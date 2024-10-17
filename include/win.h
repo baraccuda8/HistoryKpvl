@@ -1009,8 +1009,9 @@ extern std::map<HWNDCLIENT, structWindow>mapWindow;
 namespace casSheet{
     enum cas{
         NN = 0,
-        ID = 1,
-        DataTime = 2,
+        Cassette = 1,
+        ID = 2,
+        DataTime = 3,
         Start_at,
         SecondPos_at,
         DataTime_End,
@@ -1149,6 +1150,7 @@ namespace cas{
 typedef struct _TSheet{
 
     std::string id = "";
+    std::string Cassette = "";
     std::string DataTime = "";
     std::string Start_at = "";
     std::string DataTime_End = "";
@@ -1222,6 +1224,7 @@ typedef struct _TSheet{
 
     void Clear()
     {
+        Cassette = "";
         id = "";
         DataTime = "";
         Start_at = "";

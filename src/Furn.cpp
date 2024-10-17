@@ -2,6 +2,7 @@
 
 #include "win.h"
 #include "main.h"
+#include "StringData.h"
 #include "file.h"
 #include "SQL.h"
 #include "ValueTag.h"
@@ -227,7 +228,7 @@ namespace S107
                         PQclear(res);
                     }
 
-                    if(Stoi(CD.SheetInCassette) != count)
+                    if(Stoi(CD.SheetInCassette) != count && !(Stoi(CD.SheetInCassette) == -1 && count == 0))
                     {
                         std::stringstream ss;
                         ss << "UPDATE cassette SET";
@@ -476,8 +477,10 @@ namespace S107
                 PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
-                    int nFields = PQnfields(res);
-                    CD.End_at = GetStringData(conn.PGgetvalue(res, 0, 0));
+                    //int nFields = PQnfields(res);
+                    int line = PQntuples(res);
+                    if(line)
+                        CD.End_at = GetStringData(conn.PGgetvalue(res, 0, 0));
                     PQclear(res);
 
                     if(CD.End_at.length())
@@ -577,7 +580,7 @@ namespace S107
                             if(Stoi(CD.Event) != 1)
                             {
                                 std::stringstream ss;
-                                ss << "UPDATE cassette SET event = 1, peth = 0, run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << id;
+                                ss << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << id;
                                 LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
                                 SETUPDATESQL(SQLLogger, conn, ss);
                                 CD.Event = 1;

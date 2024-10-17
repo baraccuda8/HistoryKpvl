@@ -2,6 +2,7 @@
 
 #include "win.h"
 #include "main.h"
+#include "StringData.h"
 #include "file.h"
 #include "SQL.h"
 #include "ValueTag.h"
@@ -884,9 +885,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 {
     size_t old_count = 0;
 
-#ifdef _INITPDF
-    LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
-#endif
+//#ifdef _INITPDF
+
+    if(!SQLLogger)LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
+//#endif
+    //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, "Start");
 
     while(isRun)
     {
@@ -894,6 +897,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 #pragma region Выводим список кассет
 
         S107::SQL::FURN_SQL(conn_spic, AllCassette);
+        //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, "Start");
 
         size_t count = AllCassette.size();
 
@@ -954,7 +958,8 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                    HMISheetData.Cassette.Year->GetInt() != Stoi(it.Year)
                    )
                 {
-                    if(Stoi(it.SheetInCassette))
+                    int SheetInCassette = Stoi(it.SheetInCassette);
+                    if(SheetInCassette > 0)
                     {
                         it.Event = "2";
                         std::stringstream sd;
@@ -962,7 +967,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                         LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
                         SETUPDATESQL(PethLogger, conn_spic, sd);
                     }
-                    else
+                    else if(SheetInCassette > 0)
                     {
                         it.Event = "7";
                         std::time_t st;
@@ -1091,7 +1096,7 @@ void Open_FURN()
 {
     //Сортировка переменных по имени
     std::sort(AllTagPeth.begin(), AllTagPeth.end(), cmpAllTagPeth);
-    PethLogger = InitLogger("PLC_S107");
+    if(!PethLogger)    PethLogger = InitLogger("PLC_S107");
 
 #ifndef TESTSPIS
 #ifndef TESTWIN

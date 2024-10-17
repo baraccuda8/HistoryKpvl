@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "main.h"
 #include "win.h"
+#include "StringData.h"
 #include "Graff.h"
 
 #include "file.h"
@@ -130,7 +131,8 @@ HBRUSH TitleBrush4 = CreateSolidBrush(RGB(0, 99, 177));
 
 //Заголовки колонок окна листов
 std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
-    {casSheet::NN, { "№", 30 }},
+    {casSheet::NN, { "№", 60 }},
+    {casSheet::Cassette, { "Кассета", 60 }},
     {casSheet::ID, { "ID", 50 }},
     {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
@@ -1406,6 +1408,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     try
                     {
                         if(subItem == casSheet::NN)         lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
+                        ELSEIF (casSheet::Cassette, p.Cassette);
                         ELSEIF (casSheet::ID, p.id);
                         ELSEIF (casSheet::DataTime, GetDataTimeStr(p.DataTime));
                         ELSEIF (casSheet::Start_at, GetDataTimeStr(p.Start_at));

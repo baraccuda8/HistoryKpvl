@@ -10,6 +10,10 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 
 #define SETALLTAG(_p, _t, _f, _e, _s,  _d) {_t = new Value(_p + #_t, _f, _s, _e, _d)}
 
+std::string ToString(const OpcUa::DateTime& t);
+
+time_t ToTimeT(OpcUa::DateTime dateTime);
+
 
 class Client;
 

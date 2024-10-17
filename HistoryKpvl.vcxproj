@@ -173,6 +173,7 @@ time /T &gt;&gt;rc\date.txt</Command>
     <ClCompile Include="src\process.cpp" />
     <ClCompile Include="src\Service.cpp" />
     <ClCompile Include="src\SQL.cpp" />
+    <ClCompile Include="src\StringData.cpp" />
     <ClCompile Include="src\Subscript.cpp" />
     <ClCompile Include="src\term.cpp" />
     <ClCompile Include="src\ValueTag.cpp" />
@@ -194,6 +195,7 @@ time /T &gt;&gt;rc\date.txt</Command>
     <ClInclude Include="include\Pdf.h" />
     <ClInclude Include="include\Service.h" />
     <ClInclude Include="include\SQL.h" />
+    <ClInclude Include="include\StringData.h" />
     <ClInclude Include="include\Subscript.h" />
     <ClInclude Include="include\term.h" />
     <ClInclude Include="include\ValueTag.h" />

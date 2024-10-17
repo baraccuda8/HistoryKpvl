@@ -2,6 +2,7 @@
 
 #include "win.h"
 #include "main.h"
+#include "StringData.h"
 #include "file.h"
 #include "ClCodeSys.h"
 #include "SQL.h"
@@ -100,7 +101,7 @@ std::deque<Value*> AllTagKpvl = {
 #pragma region Касеты и листы
     {HMISheetData.NewData            = new Value(AppHMISheetData + "NewData",            HWNDCLIENT::hGroup05, KPVL::Sheet::Z6::NewSheetData,       &conn_kpvl)},   //Новые лист в касету
     {HMISheetData.SaveDone           = new Value(AppHMISheetData + "SaveDone",           HWNDCLIENT::hNull,    0, &conn_kpvl)},                                     //Ответ Новые лист в касету
-    {HMISheetData.CasseteIsFill      = new Value(AppHMISheetData + "CasseteIsFill",      HWNDCLIENT::hNull,    KPVL::Cassette::CasseteIsFill,       &conn_kpvl)},   //Кассета наполяентся
+    {HMISheetData.CasseteIsFill      = new Value(AppHMISheetData + "CasseteIsFill",      HWNDCLIENT::hStatSheet_CassetteIsFull,    KPVL::Cassette::CasseteIsFill,       &conn_kpvl)},   //Кассета наполяентся
     //{HMISheetData.StartNewCassette   = new Value(AppHMISheetData + "StartNewCassette",   HWNDCLIENT::hNull,    KPVL::Cassette::StartNewCassette,    &conn_kpvl)},   //Начать новую кассету
     //{HMISheetData.CassetteIsComplete = new Value(AppHMISheetData + "CassetteIsComplete", HWNDCLIENT::hNull,    KPVL::Cassette::CassetteIsComplete,    &conn_kpvl)},   //Кассета готова
 #pragma endregion
