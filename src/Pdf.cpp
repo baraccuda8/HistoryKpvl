@@ -2049,13 +2049,13 @@ namespace PDF
 			try
 			{
 				//std::string comand = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
-				std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
+				std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND delete_at IS NULL AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
 				comand1 += peth;
-				comand1 += " ORDER BY run_at ASC LIMIT 1";
+				comand1 += " ORDER BY run_at ASC LIMIT 1) ";
 				
 				std::string comand = "SELECT run_at";
 				comand += " - TIME '06:00:00'";	//Минус 6 часов
-				comand += "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND run_at >= "; //delete_at IS NULL AND 
+				comand += "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND delete_at IS NULL AND run_at >= "; //delete_at IS NULL AND 
 				comand += comand1;
 				comand += peth;
 				comand += " ORDER BY run_at ASC LIMIT 1;";

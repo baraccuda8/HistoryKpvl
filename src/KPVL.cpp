@@ -1424,14 +1424,18 @@ namespace KPVL {
             //Новые лист в касету, Кассета наполяентся
             DWORD NewSheetData(Value* value)
             {
-                const char* ss = WaitKant;
-                if(value->Val.As<bool>()) //GetBool())                   //Если лист новый
+                std::map<bool, const char*>TextOut ={
+                    {false, WaitKant},
+                    {true, WaitResv},
+                };
+                bool b = value->GetBool();// Val.As<bool>();
+                MySetWindowText(winmap(value->winId), TextOut[b]);
+                if(b) //Если лист новый
                 {
                     try
                     {
                         Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
                         SetSaveDone(conn_kpvl);
-                        ss = WaitResv;
                         PalletSheet[Pos - 1].Clear();
                         PalletSheet[Pos].Clear();
                     }
@@ -1440,8 +1444,6 @@ namespace KPVL {
                     //Коррекция листа
                     CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
                 }
-                MySetWindowText(winmap(value->winId), ss);
-                
                 return 0;
             }
         }
@@ -1779,14 +1781,14 @@ namespace KPVL {
         {
             try
             {
-                std::map<bool, std::string>TextOut ={
-                    {false, "Ждем кассету"},
-                    {true, "Кассета набирается"},
+                std::map<bool, const char*>TextOut ={
+                    {false, WaitCassette},
+                    {true, FillCassette },
                 };
 
                 bool b = value->Val.As<bool>();
 
-                SetWindowText(winmap(value->winId), TextOut[b].c_str());
+                SetWindowText(winmap(value->winId), TextOut[b]);
                 InvalidateRect(winmap(value->winId), NULL, false);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
 

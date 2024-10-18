@@ -20,6 +20,7 @@
 extern std::string lpLogDir;
 
 std::shared_ptr<spdlog::logger> PethLogger = NULL;
+std::shared_ptr<spdlog::logger> FurnLogger = NULL;
 
 bool isInitPLC_S107 = false;
 
@@ -878,16 +879,74 @@ bool cmpCasete(TCassette& first, TCassette& second)
     return first.Create_at < second.Create_at;
 }
 
-int32_t SCassett[CountCaseteInRel];
-int32_t OldSCassett[CountCaseteInRel];
+
+int SCassett[CountCaseteInRel];
+int OldSCassett[CountCaseteInRel];
+
+typedef struct _cassette{
+    int Year = 0;
+    int Month = 0;
+    int Day = 0;
+    int Hour = 0;
+    int CassetteNo = 0;
+
+    _cassette()
+    {
+        Year = 0;
+        Month = 0;
+        Day = 0;
+        Hour = 0;
+        CassetteNo = 0;
+    }
+    _cassette(T_Fcassette& c)
+    {
+        Year = c.Year->GetInt();
+        Month = c.Month->GetInt();
+        Day = c.Day->GetInt();
+        Hour = c.Hour->GetInt();
+        CassetteNo = c.CassetteNo->GetInt();
+    }
+    _cassette(T_CassetteData& c)
+    {
+        Year = c.Year->GetInt();
+        Month = c.Month->GetInt();
+        Day = c.Day->GetInt();
+        Hour = c.Hour->GetInt();
+        CassetteNo = c.CassetteNo->GetInt();
+    }
+    _cassette(TCassette& c)
+    {
+        Year = Stoi(c.Year);
+        Month = Stoi(c.Month);
+        Day = Stoi(c.Day);
+        Hour = Stoi(c.Hour);
+        CassetteNo = Stoi(c.CassetteNo);
+    }
+
+    bool operator == (_cassette& T)
+    {
+        return Year == T.Year && Month == T.Month && Day == T.Day && Hour == T.Hour && CassetteNo == T.CassetteNo;
+    }
+    bool operator != (_cassette& T)
+    {
+        return Year != T.Year || Month != T.Month || Day != T.Day || Hour != T.Hour || CassetteNo != T.CassetteNo;
+    }
+}_cassette;
+
+_cassette Sheet;
+_cassette Furn1;
+_cassette Furn2;
+_cassette SheetIT;
 
 DWORD WINAPI Open_FURN_SQL(LPVOID)
 {
     size_t old_count = 0;
 
 //#ifdef _INITPDF
+    
+    if(!FurnLogger)    FurnLogger = InitLogger("SheetFurn");
+    LOG_INFO(FurnLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 
-    if(!SQLLogger)LOG_INFO(SQLLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 //#endif
     //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, "Start");
 
@@ -895,6 +954,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
     {
 
 #pragma region Выводим список кассет
+        if(!isRun) return 0;
 
         S107::SQL::FURN_SQL(conn_spic, AllCassette);
         //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, "Start");
@@ -923,112 +983,91 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
 #ifndef _DEBUG
 
-#pragma region Вычисляем дату финала
-
-        for(auto& TC : AllCassette)
+        for(auto iCD = AllCassette.begin(); iCD != AllCassette.end();)
         {
             if(!isRun) return 0;
 
-            if(TC.Finish_at.length() && Stoi(TC.Event) != 5 && Stoi(TC.Event) != 7)
+            //bool r = S107::SQL::GetCountSheet(conn_spic, *iCD);
+            //if(r)
+            //    iCD = AllCassette.erase(iCD);
+            //else
             {
-                std::stringstream sdf;
-                sdf << "UPDATE cassette SET event = 5 WHERE id = " << TC.Id;
-                TC.Event = 5;
-                SETUPDATESQL(SQLLogger, conn_spic, sdf);
+                S107::SQL::GetIsPos(conn_spic, *iCD);
+                ++iCD;
             }
-
-            if(atoi(TC.Peth.c_str()) == 1)
-                GetCasseteData(conn_spic, AppFurn1, TC);
-            if(atoi(TC.Peth.c_str()) == 2)
-                GetCasseteData(conn_spic, AppFurn2, TC);
         }
-#pragma endregion
-
+        Sheet = _cassette(HMISheetData.Cassette);
+        Furn1 = _cassette(AppFurn1.Cassette);
+        Furn2 = _cassette(AppFurn2.Cassette);
         std::deque<TCassette> CIl;
-        
+
         for(auto& it : AllCassette)
         {
             if(!isRun) return 0;
+
+#pragma region Вычисляем дату финала
+            if(Stoi(it.Peth) == 1) GetCasseteData(conn_spic, AppFurn1, it);
+            if(Stoi(it.Peth) == 2) GetCasseteData(conn_spic, AppFurn2, it);
+#pragma endregion
+
+            SheetIT = _cassette(it);
+
             if(it.Event == "1")
             {
-                if(HMISheetData.Cassette.CassetteNo->GetInt() != Stoi(it.CassetteNo) ||
-                   HMISheetData.Cassette.Hour->GetInt() != Stoi(it.Hour) ||
-                   HMISheetData.Cassette.Day->GetInt() != Stoi(it.Day) ||
-                   HMISheetData.Cassette.Month->GetInt() != Stoi(it.Month) ||
-                   HMISheetData.Cassette.Year->GetInt() != Stoi(it.Year)
-                   )
+                if(Sheet != SheetIT)
                 {
                     int SheetInCassette = Stoi(it.SheetInCassette);
                     if(SheetInCassette > 0)
                     {
                         it.Event = "2";
-                        std::stringstream sd;
-                        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
-                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                        std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
+                        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
+                        SETUPDATESQL(FurnLogger, conn_spic, sd);
                     }
-                    else if(SheetInCassette > 0)
+                    else
                     {
                         it.Event = "7";
                         std::time_t st;
                         it.Delete_at = GetDataTimeString(st);
-                        std::stringstream sd;
-                        sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << it.Id;
-                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                        std::stringstream sd("UPDATE cassette SET event = 7, delete_at = now() WHERE id = " + it.Id);
+                        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
+                        SETUPDATESQL(FurnLogger, conn_spic, sd);
                     }
                 }
             }
             if(it.Event == "3")
             {
-                if(
-                    !(
-                    AppFurn1.Cassette.CassetteNo->GetInt() == Stoi(it.CassetteNo) &&
-                    AppFurn1.Cassette.Hour->GetInt() == Stoi(it.Hour) &&
-                    AppFurn1.Cassette.Day->GetInt() == Stoi(it.Day) &&
-                    AppFurn1.Cassette.Month->GetInt() == Stoi(it.Month) &&
-                    AppFurn1.Cassette.Year->GetInt() == Stoi(it.Year)
-                    )
-                    &&
-                    !(
-                    AppFurn2.Cassette.CassetteNo->GetInt() == Stoi(it.CassetteNo) &&
-                    AppFurn2.Cassette.Hour->GetInt() == Stoi(it.Hour) &&
-                    AppFurn2.Cassette.Day->GetInt() == Stoi(it.Day) &&
-                    AppFurn2.Cassette.Month->GetInt() == Stoi(it.Month) &&
-                    AppFurn2.Cassette.Year->GetInt() == Stoi(it.Year)
-                    )
-                    )
+                if(Furn1 != SheetIT && Furn2 != SheetIT)
                 {
                     if(it.End_at.length() && it.Finish_at.length())
                     {
                         it.Event = "5";
-                        std::stringstream sd;
-                        sd << "UPDATE cassette SET event = 5 WHERE id = " << it.Id;
-                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                        std::stringstream sd("UPDATE cassette SET event = 5 WHERE id = " + it.Id);
+                        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                        SETUPDATESQL(FurnLogger, conn_spic, sd);
                     }
                     else if(!it.End_at.length())
                     {
                         it.Event = "2";
-                        std::stringstream sd;
-                        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
-                        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                        SETUPDATESQL(PethLogger, conn_spic, sd);
+                        std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
+                        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                        SETUPDATESQL(FurnLogger, conn_spic, sd);
                     }
                 }
             }
-
-            //if(/*it->Close_at.size() &&*/
-            //   !it->End_at.size() &&
-            //   (!it->Run_at.size() || (it->Run_at.size() && it->Error_at.size()))
-            //   )
-
             if(it.Event == "2" && !it.Delete_at.length())
             {
                 CIl.push_back(it);
             }
+            if(it.Finish_at.length() && Stoi(it.Event) != 5 && Stoi(it.Event) != 7)
+            {
+                it.Event = 5;
+                std::stringstream sdf("UPDATE cassette SET event = 5 WHERE id = " + it.Id);
+                SETUPDATESQL(FurnLogger, conn_spic, sdf);
+            }
         }
 
+#pragma region Заполняем таблицу кассет для печей отпуска
         std::sort(CIl.begin(), CIl.end(), cmpCasete);
         for(int i = 0; i < CountCaseteInRel; i++)
         {
@@ -1060,33 +1099,30 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 }
             }
         }
+#pragma endregion
 
-        bool b = false;
-        for(int i = 0; i < CountCaseteInRel; i++)
+#pragma region Сохраняем таблицу кассет для печей отпуска в файл для анализа
+        if(memcmp(OldSCassett, SCassett, sizeof(SCassett)))
         {
-            if(!isRun) return 0;
-
-            if(OldSCassett[i] != SCassett[i]) b = true;
-            OldSCassett[i] = SCassett[i];
-        }
-
-        if(b)
-        {
-            std::time_t st;
+            memcpy(OldSCassett, SCassett, sizeof(SCassett));
             std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
-            fSpCassette << " " << GetDataTimeString(st) << ";";
+            fSpCassette << " " << GetDataTimeString() << ";";
 
-            for(int i = 0; i < CountCaseteInRel; i++)
+            for(int i = 0; i < CountCaseteInRel; i++) 
                 fSpCassette << SCassett[i] << ";";
-
             fSpCassette << std::endl;
             fSpCassette.close();
         }
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+#pragma endregion
+
+        if(!isRun) return 0;
+        int f = 20;
+        while(--f)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 #else
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    int f = 10;
+    while(--f)std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
 #endif
+
 
     };
     return 0;

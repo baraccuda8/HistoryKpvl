@@ -186,20 +186,14 @@ namespace S107
             else
                 LOG_ERR_SQL(SQLLogger, res, comand);
             PQclear(res);
+            for(auto& a : allCassette)
+                GetCountSheet(conn, a);
 
-            for(auto iCD = allCassette.begin(); iCD != allCassette.end();)
-            {
-                if(!isRun) return;
-
-                bool r = GetCountSheet(conn, *iCD);
-                if(r)
-                    iCD = allCassette.erase(iCD);
-                else
-                {
-                    GetIsPos(conn, *iCD);
-                    ++iCD;
-                }
-            }
+            //allCassette.erase(std::remove_if(allCassette.begin(), allCassette.end(),
+            //[](auto& x)
+            //{
+            //    return Stoi(x.SheetInCassette) == -1;
+            //}), allCassette.end());
         }
 
         bool GetCountSheet(PGConnection& conn, TCassette& CD)
@@ -213,83 +207,43 @@ namespace S107
                 ss << " AND month = '" << CD.Month << "'";
                 ss << " AND year = '" << CD.Year << "'";
                 ss << " AND cassetteno = " << CD.CassetteNo;
-
                 std::string comand = ss.str();
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
                 PGresult* res = conn.PGexec(comand);
-                //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     int count = -1;
                     int line =  PQntuples(res);
                     if(line)
-                    {
                         count = Stoi(conn.PGgetvalue(res, 0, 0));
-                        PQclear(res);
-                    }
 
-                    if(Stoi(CD.SheetInCassette) != count && !(Stoi(CD.SheetInCassette) == -1 && count == 0))
+                    PQclear(res);
+
+                    if(count == 0 && Stoi(CD.SheetInCassette) != -1)
                     {
+                        CD.SheetInCassette = "-1";
                         std::stringstream ss;
-                        ss << "UPDATE cassette SET";
-                        ss << " sheetincassette = " << count;
-                        ss << " WHERE";
-                        //ss << " hour = " << CD.Hour;
-                        //ss << " AND day = " << CD.Day;
-                        //ss << " AND month = " << CD.Month;
-                        //ss << " AND year = " << CD.Year;
-                        ss << " id = " << CD.Id;
-                        std::string comand = ss.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        PGresult* res = conn_spic.PGexec(comand);
-                        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            LOG_ERR_SQL(SQLLogger, res, comand);
-                        PQclear(res);
+                        ss << "UPDATE cassette SET sheetincassette = " << count;
+                        ss << " WHERE id = " << CD.Id;
+                        SETUPDATESQL(SQLLogger, conn, ss);
                         return false;
                     }
 
-                    if(line)
-                    {
-                        
-                        if(!isCasseteCant(HMISheetData.Cassette, CD))
-                        if(!count && !Stoi(CD.Peth) && Stoi(CD.Event) > 1)
-                        {
-                            CD.Event = "7";
-                            std::time_t st;
-                            CD.Delete_at = GetDataTimeString(st);
-                            std::stringstream sd;
-                            sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE ";
-                            sd << " hour = " << CD.Hour;
-                            sd << " AND day = " << CD.Day;
-                            sd << " AND month = " << CD.Month;
-                            sd << " AND year = " << CD.Year;
-                            sd << " AND cassetteno = " << CD.CassetteNo;
-                            LOG_INFO(SQLLogger, "{:90}| count = {} {}", FUNCTION_LINE_NAME, count, sd.str() );
-                            SETUPDATESQL(SQLLogger, conn, sd);
-                            return true;
-                        }
-                        
-                        //else
-                        //if(Stoi(CD.SheetInCassette) != count)
-                        //{
-                        //    std::stringstream ss;
-                        //    ss << "UPDATE cassette SET";
-                        //    ss << " sheetincassette = " << count;
-                        //    ss << " WHERE";
-                        //    ss << " hour = " << CD.Hour;
-                        //    ss << " AND day = " << CD.Day;
-                        //    ss << " AND month = " << CD.Month;
-                        //    ss << " AND year = " << CD.Year;
-                        //    ss << " AND cassetteno = " << CD.CassetteNo;
-                        //    std::string comand = ss.str();
-                        //    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        //    PGresult* res = conn_spic.PGexec(comand);
-                        //    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        //        LOG_ERR_SQL(SQLLogger, res, comand);
-                        //    PQclear(res);
-                        //    return false;
-                        //}
-                    }
+                    //if(line)
+                    //{
+                    //    int Event = Stoi(CD.Event);
+                    //    if(!isCasseteCant(HMISheetData.Cassette, CD))
+                    //    if(count == 0 && !Stoi(CD.Peth) && Event > 1 && Event != 7)
+                    //    {
+                    //        CD.Event = "7";
+                    //        std::time_t st;
+                    //        CD.Delete_at = GetDataTimeString(st);
+                    //        std::stringstream sd("UPDATE cassette SET event = 7, delete_at = now() WHERE id = " + CD.Id);
+                    //        LOG_INFO(SQLLogger, "{:90}| count = {} {}", FUNCTION_LINE_NAME, count, sd.str() );
+                    //        SETUPDATESQL(SQLLogger, conn, sd);
+                    //        return true;
+                    //    }
+                    //}
                 }
                 else
                 {

@@ -7,6 +7,9 @@
 
 #define WaitKant "Ожидание кантовки листа"
 #define WaitResv "Ожидание ответа от ПЛС"
+#define WaitCassette "Ожидание кассеты"
+#define FillCassette "Кассета набирается"
+
 
 extern std::string MaskKlapan1;
 extern std::string MaskKlapan2;
