@@ -466,7 +466,7 @@ OpcUa::Variant Value::GetValue()
 {
     if(isRun)
     {
-        try
+        //try
         {
             if(!Codesys)
                 throw std::runtime_error("Error Codesys = NULL");
@@ -483,7 +483,7 @@ OpcUa::Variant Value::GetValue()
                 throw std::runtime_error("Error Type Variant is NULL");
             GetString();
         }
-        CATCH(AllLogger, Patch);
+        //CATCH(AllLogger, Patch);
     }
     return Val;
 };

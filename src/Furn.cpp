@@ -136,6 +136,9 @@ namespace S107
     namespace SQL{
         void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette)
         {
+            //while(!AppFurn1.Cassette.Hour->Codesys)
+            //    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
             AppFurn1.Cassette.Hour->GetValue();
             AppFurn1.Cassette.Day->GetValue();
             AppFurn1.Cassette.Month->GetValue();
@@ -166,9 +169,8 @@ namespace S107
             ss << boost::format("%|02|'") % TM_Beg.tm_sec;
             ss << " AND delete_at IS NULL ORDER BY event ASC, create_at DESC;"; //DESC
             std::string comand = ss.str();
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
             PGresult* res = conn.PGexec(comand);
-            //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, sMaxId);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
 
@@ -298,7 +300,6 @@ namespace S107
             ss << " AND hour = " << CD.Hour;
             ss << " AND cassetteno = " << CD.CassetteNo;
             std::string comand = ss.str();
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn_spic.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -321,7 +322,6 @@ namespace S107
             ss << " AND cassetteno = " << CD.CassetteNo->GetString();
             ss << " AND hour = " << CD.Hour->GetString();
             std::string comand = ss.str();
-            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -392,7 +392,7 @@ namespace S107
             ss << " AND cassetteno = " << CD.CassetteNo->GetString();
             std::string comand = ss.str();
 
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -421,8 +421,8 @@ namespace S107
                 //sd << "SELECT min(create_at) FROM todos WHERE create_at >= '" << CD.Run_at << "' AND content = 'false' AND id_name = " << ID;
                 sd << "SELECT create_at FROM todos WHERE create_at >= '" << CD.Run_at << "' AND content = 'false' AND id_name = " << ID << " ORDER BY id DESC LIMIT 1";
                 std::string comand = sd.str();
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+
                 PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
@@ -500,7 +500,7 @@ namespace S107
                             {
                                 std::stringstream ss;
                                 ss << "UPDATE cassette SET event = 3, peth = 1, run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << id;
-                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
                                 SETUPDATESQL(SQLLogger, conn, ss);
                                 CD.Event = 3;
                                 CD.Peth = 1;
@@ -515,7 +515,7 @@ namespace S107
                             {
                                 std::stringstream ss;
                                 ss << "UPDATE cassette SET event = 3, peth = 2, run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << id;
-                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
                                 SETUPDATESQL(SQLLogger, conn, ss);
                                 CD.Event = 3;
                                 CD.Peth = 2;
@@ -530,7 +530,7 @@ namespace S107
                             {
                                 std::stringstream ss;
                                 ss << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << id;
-                                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
+                                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, ss.str());
                                 SETUPDATESQL(SQLLogger, conn, ss);
                                 CD.Event = 1;
                                 CD.Peth = 1;
@@ -550,11 +550,11 @@ namespace S107
                                 SearthEnd_at(conn, CD, id);
                             }
 
-                            int ID = 0;
-                            int Peth = Stoi(CD.Peth);
-                            if(Peth == 1) ID = AppFurn1.ProcFault->ID;
-                            else if(Peth == 2) ID = AppFurn2.ProcFault->ID;
-
+                            //int ID = 0;
+                            //int Peth = Stoi(CD.Peth);
+                            //if(Peth == 1) ID = AppFurn1.ProcFault->ID;
+                            //else if(Peth == 2) ID = AppFurn2.ProcFault->ID;
+                            // 
                             ////Если нет времени ошибки
                             //if(isRun && ID && !CD.Error_at.length() && CD.Run_at.length() && CD.End_at.length())
                             //{
@@ -589,18 +589,19 @@ namespace S107
                         }
                         else
                         {
-                            if(CD.Delete_at.length())
-                            {
-                                std::stringstream sf;
-                                sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
-                                SETUPDATESQL(SQLLogger, conn, sf);
-                            }
-                            else if(CD.Event != "2" && !CD.Delete_at.length())
-                            {
-                                std::stringstream sf;
-                                sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
-                                SETUPDATESQL(SQLLogger, conn, sf);
-                            }
+                            //if(CD.Delete_at.length() && Stoi(CD.Event) != 7)
+                            //{
+                            //    std::stringstream sf;
+                            //    sf << "UPDATE cassette SET event = 7 WHERE id = " << id;
+                            //    SETUPDATESQL(SQLLogger, conn, sf);
+                            //}
+                            //else
+                            //if(!CD.Delete_at.length() && CD.Event != "2")
+                            //{
+                            //    std::stringstream sf;
+                            //    sf << "UPDATE cassette SET event = 2 WHERE id = " << id;
+                            //    SETUPDATESQL(SQLLogger, conn, sf);
+                            //}
                         }
                     }
                 }
@@ -670,7 +671,7 @@ namespace S107
                 sd << ", error_at = DEFAULT";
                 sd << ", event = 3";
                 sd << " WHERE id = " << id;
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(SQLLogger, conn, sd);
             }
 
@@ -683,8 +684,8 @@ namespace S107
             sd << ", timeprocset = " << Furn.TimeProcSet->GetFloat();//GetFloat(); //GetString();
             sd << " WHERE id = " << id;
 
-            LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
             SETUPDATESQL(SQLLogger, conn, sd);
+            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
             LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
                      FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
 
@@ -1031,6 +1032,7 @@ namespace S107
 
             return 0;
         }
+
         DWORD Hour(Value* value)
         {
             MySetWindowText(value);

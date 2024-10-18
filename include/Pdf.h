@@ -18,7 +18,7 @@ namespace PDF
 	namespace Cassette
 	{
 		//Автоматическое создание по кассете
-		void PrintCassettePdfAuto(TCassette& TC);
+		//void PrintCassettePdfAuto(TCassette& TC);
 
 		//Открывается по клику на лист
 		//void PrintCassettePdfAuto(TSheet& Sheet);
@@ -27,7 +27,7 @@ namespace PDF
 	namespace SHEET
 	{
 		DWORD WINAPI RunAllPdf(LPVOID);
-		void GetRawSheet(PGConnection& conn);
+		//void GetRawSheet(PGConnection& conn);
 	};
 
 	//Поток автоматической корректировки

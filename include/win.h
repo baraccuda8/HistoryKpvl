@@ -1053,7 +1053,7 @@ namespace casSheet{
         PosClapanBot,
         PresToStartComp,  //Уставка давления для запуска комперссора
 
-        Mask,
+        //Mask,
 
         Lam1PosClapanTop,
         Lam1PosClapanBot,

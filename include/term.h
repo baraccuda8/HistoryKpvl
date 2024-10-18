@@ -5,6 +5,9 @@
 #include "ValueTag.h"
 
 
+extern std::shared_ptr<spdlog::logger> PethLogger;
+extern std::shared_ptr<spdlog::logger> FurnLogger;
+
 class ClassDataChangeS107: public ClassDataChange
 {
 public:
@@ -72,6 +75,33 @@ typedef struct T_Fcassette{
     Value* CassetteNo;
 
     std::string facttemper = "0";
+
+    bool TestNull(){
+
+        bool b = false;
+        try
+        {
+            b = CassetteNo->GetInt() != 0 ||
+                //AppCassette[i].Hour->GetInt() != 0 ||
+                Day->GetInt() != 0 ||
+                Month->GetInt() != 0 ||
+                Year->GetInt() != 0;
+        }CATCH(PethLogger, "");
+        return b;
+    }
+
+    void SetNull()
+    {
+        //Отбравляем в печь
+        try
+        {
+            Year->Set_Value(int32_t(0));
+            Month->Set_Value(int32_t(0));
+            Day->Set_Value(int32_t(0));
+            Hour->Set_Value(uint16_t(0));
+            CassetteNo->Set_Value(int32_t(0));
+        }CATCH(PethLogger, "");
+    }
 };
 
 typedef struct T_ForBase_RelFurn{

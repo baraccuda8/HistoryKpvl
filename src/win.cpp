@@ -174,7 +174,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::LamPressBot, { "Давление\nв нижнем\nколлекторе", LL2 }},
     {casSheet::PosClapanTop, { "Скоростная\nклапан верх", LL2 }},
     {casSheet::PosClapanBot, { "Скоростная\nклапан низ", LL2 }},
-    {casSheet::Mask, { "Маскирование", 140 }},
+
     {casSheet::Lam1PosClapanTop, { "Ламинарная 1\nКлапан верх", LL1 }},
     {casSheet::Lam1PosClapanBot, { "Ламинарная 1\nКлапан низ", LL1 }},
     {casSheet::Lam2PosClapanTop, { "Ламинарная 2\nКлапан верх", LL1 }},
@@ -182,6 +182,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
 
     {casSheet::Lam_TE1, { "Температура\nводы\nв поддоне. С°", LL1 }},
 
+    //{casSheet::Mask, { "Маскирование", 140 }},
     //{casSheet::Top1, { "До\nкантовки\n1", L2 }},
     //{casSheet::Top2, { "До\nкантовки\n2", L2 }},
     //{casSheet::Top3, { "До\nкантовки\n3", L2 }},
@@ -1453,7 +1454,6 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         
                         ELSEIF (casSheet::PosClapanTop, p.PosClapanTop);
                         ELSEIF (casSheet::PosClapanBot, p.PosClapanBot);
-                        ELSEIF (casSheet::Mask, p.Mask);
                         ELSEIF (casSheet::Lam1PosClapanTop, p.Lam1PosClapanTop);
                         ELSEIF (casSheet::Lam1PosClapanBot, p.Lam1PosClapanBot);
                         ELSEIF (casSheet::Lam2PosClapanTop, p.Lam2PosClapanTop);
@@ -1461,7 +1461,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         
                         ELSEIF (casSheet::Lam_TE1, p.LAM_TE1);
                         
-                        
+                        //ELSEIF (casSheet::Mask, p.Mask);
                         //ELSEIF (casSheet::Top1, p.Top1);
                         //ELSEIF (casSheet::Top2, p.Top2);
                         //ELSEIF (casSheet::Top3, p.Top3);
@@ -1470,7 +1470,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         //ELSEIF (casSheet::Top6, p.Top6);
                         //ELSEIF (casSheet::Top7, p.Top7);
                         //ELSEIF (casSheet::Top8, p.Top8);
-                        
+                        //
                         //ELSEIF (casSheet::Bot1, p.Bot1);
                         //ELSEIF (casSheet::Bot2, p.Bot2);
                         //ELSEIF (casSheet::Bot3, p.Bot3);
