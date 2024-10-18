@@ -862,7 +862,7 @@ void Open_KPVL()
     //PlateData[5] = &GenSeqToHmi.PlateData_Z5;
     //PlateData[6] = &PlateData[6];
 
-    HardLogger = InitLogger("PLC_KPVL");
+    InitLogger(HardLogger);
 
     
 #ifndef TESTSPIS

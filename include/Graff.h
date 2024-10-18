@@ -34,11 +34,7 @@ public:
 	int64_t maxd = 0LL;
 	//std::map<std::string, float>Temper;
 	PGConnection* conn = NULL;
-	Graff(std::string n):Name(n)
-	{
-		stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
-		stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-	};
+	Graff(std::string n);
 
 	void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat&);
 
@@ -53,16 +49,8 @@ public:
 	void DrawGraf(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG);
 	void Paint(HWND hWnd);
 
-	//void SqlTemp(T_SqlTemp& st, Value* val);
-	//void GetGrTemp(T_ForBase_RelFurn& app);
-
 };
 
 void InitGrafWindow(HWND hWnd);
 void Open_GRAFF_FURN(TCassette& p);
 void StopGraff();
-
-
-//extern Graff GraffKPVL;
-//extern Graff GraffFurn1;
-//extern Graff GraffFurn2;

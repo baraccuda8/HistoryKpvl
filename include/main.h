@@ -14,13 +14,60 @@ extern std::string Server;
 
 extern std::string szTitle;
 extern std::string lpLogDir;
-std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut);
+//std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut);
 
 extern const std::string FORMATTIME1;
 extern const std::string FORMATTIME2;
 
 
 extern std::shared_ptr<spdlog::logger> AllLogger;
+
+extern uint32_t SizeLogger;    //Размер лог файда
+extern uint32_t CountLogger;        //Количество лог файлов
+extern int CountWatchDogWait;
+
+inline void outF(std::string name)
+{
+    std::ofstream f(name, std::ios::binary | std::ios::out | std::ios::app);
+    if(f.is_open()) { f << std::endl << std::endl; f.close(); }
+}
+
+#define InitLogger(_l) {\
+try{if(!_l){\
+	_l = spdlog::details::registry::instance().get(#_l);\
+	if(!_l.get())\
+	{\
+        std::string _fn = lpLogDir + "\\" + #_l + ".log";\
+        outF(_fn);\
+		_l = spdlog::rotating_logger_mt(#_l, _fn, SizeLogger, CountLogger);\
+	}\
+	_l->set_level(spdlog::level::level_enum::info);\
+	LOG_INFO(_l, "{:90}| Старт программы", FUNCTION_LINE_NAME);\
+}}catch(...) {}}
+
+//inline std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut)\
+//{\
+//    try\
+//    {\
+//        std::shared_ptr<spdlog::logger> Logger = spdlog::details::registry::instance().get(LoggerOut);\
+//        if(!Logger.get())\
+//        {\
+//            std::string FileName = lpLogDir + "\\" + LoggerOut + ".log";\
+//            std::ofstream l(FileName, std::ios::binary | std::ios::out | std::ios::app);\
+//            if(l.is_open())\
+//            {\
+//                l << std::endl << std::endl;\
+//                l.close();\
+//            }\
+//            Logger = spdlog::rotating_logger_mt(LoggerOut, FileName, SizeLogger, CountLogger);\
+//        }\
+//        Logger->set_level(spdlog::level::level_enum::info);\
+//        LOG_INFO(Logger, "{:90}| Старт программы", FUNCTION_LINE_NAME);\
+//        return Logger;\
+//    }\
+//    catch(...) {}\
+//    return 0;\
+//}
 
 #ifdef _DEBUG
 //#define TESTTEMPER
@@ -32,10 +79,11 @@ extern std::shared_ptr<spdlog::logger> AllLogger;
 LRESULT Quit();
 
 #define CATCH(_l, _s) \
-    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s),  exc.what())} \
-    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
-    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| {} Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
-    catch(...){LOG_ERROR(_l, "{:89}| Error {} {}", FUNCTION_LINE_NAME, std::string(_s), "Unknown error")}
+    catch(std::invalid_argument& exc) { LOG_ERROR(_l, "{:89}| {} invalid_argument Error {}", FUNCTION_LINE_NAME, std::string(_s),  exc.what())} \
+    catch(std::filesystem::filesystem_error& exc) { LOG_ERROR(_l, "{:89}| {} filesystem_error Error {}", FUNCTION_LINE_NAME, std::string(_s),  exc.what())} \
+    catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| {} runtime_error Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
+    catch(std::exception& exc){LOG_ERROR(_l, "{:89}| {} exception Error {}", FUNCTION_LINE_NAME, std::string(_s), exc.what())} \
+    catch(...){LOG_ERROR(_l, "{:89}| {} ... Error {}", FUNCTION_LINE_NAME, std::string(_s), "Unknown error")}
 
 #define CATCH_RUN(_l) \
     catch(std::runtime_error& exc){LOG_ERROR(_l, "{:89}| Error {} countconnect = {}.{}", FUNCTION_LINE_NAME, exc.what(), countconnect1, countconnect2);\

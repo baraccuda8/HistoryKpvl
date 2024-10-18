@@ -131,8 +131,8 @@ HBRUSH TitleBrush4 = CreateSolidBrush(RGB(0, 99, 177));
 
 //Заголовки колонок окна листов
 std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
-    {casSheet::NN, { "№", 60 }},
-    {casSheet::Cassette, { "Кассета", 60 }},
+    {casSheet::NN, { "№", 30 }},
+    {casSheet::Cassette, { "ID\nкассеты", 60 }},
     {casSheet::ID, { "ID", 50 }},
     {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
@@ -1804,7 +1804,7 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if(cassette.Event == "2" || cassette.Event == "5")
             {
                 PGConnection conn;
-                conn.connection();
+                CONNECTION1(conn);
                 std::time_t st;
                 cassette.Event = "7";
                 cassette.Delete_at = GetDataTimeString(st);
@@ -1830,7 +1830,7 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if(cassette.Event == "7")
             {
                 PGConnection conn;
-                conn.connection();
+                CONNECTION1(conn);
                 std::stringstream sd;
                 if(cassette.Finish_at.length())
                 {

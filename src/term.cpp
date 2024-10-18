@@ -944,7 +944,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
 //#ifdef _INITPDF
     
-    if(!FurnLogger)    FurnLogger = InitLogger("SheetFurn");
+    InitLogger(FurnLogger);
     LOG_INFO(FurnLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 
 //#endif
@@ -1132,7 +1132,7 @@ void Open_FURN()
 {
     //Сортировка переменных по имени
     std::sort(AllTagPeth.begin(), AllTagPeth.end(), cmpAllTagPeth);
-    if(!PethLogger)    PethLogger = InitLogger("PLC_S107");
+    InitLogger(PethLogger);
 
 #ifndef TESTSPIS
 #ifndef TESTWIN

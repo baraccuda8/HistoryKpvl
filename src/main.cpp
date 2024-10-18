@@ -61,29 +61,6 @@ std::string Server = "";
 
 //std::map<PlcType::Type, Plc> PLC;
 
-std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut)
-{
-    try
-    {
-        std::shared_ptr<spdlog::logger> Logger = spdlog::details::registry::instance().get(LoggerOut);
-        if(!Logger.get())
-        {
-            std::string FileName = lpLogDir + "\\" + LoggerOut + ".log";
-            std::ofstream l(FileName, std::ios::binary | std::ios::out | std::ios::app);
-            if(l.is_open())
-            {
-                l << std::endl << std::endl;
-                l.close();
-            }
-            Logger = spdlog::rotating_logger_mt(LoggerOut, FileName, SizeLogger, CountLogger);
-        }
-        Logger->set_level(spdlog::level::level_enum::info);
-        LOG_INFO(Logger, "{:90}| Старт программы", FUNCTION_LINE_NAME);
-        return Logger;
-    }
-    catch(...) {}
-    return 0;
-}
 
 std::shared_ptr<spdlog::logger> AllLogger = NULL;
 
@@ -389,7 +366,7 @@ int Run()
     {
 
 #if FULLRUN
-        AllLogger = InitLogger("All_Debug");
+        InitLogger(AllLogger);
         if(!AllLogger.get())
         {
             WinErrorExit(NULL, "Программа уже запущена");
@@ -455,6 +432,9 @@ int Run()
     {
         WinErrorExit(NULL, exc.what());
     }
+    //catch(std::invalid_argument& exc) 
+    //{
+    //}
     catch(...)
     {
         WinErrorExit(NULL, "Unknown error.");

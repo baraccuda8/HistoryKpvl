@@ -218,32 +218,27 @@ namespace S107
                         count = Stoi(conn.PGgetvalue(res, 0, 0));
 
                     PQclear(res);
+                    if(count == 0) count = -1;
+                    int Count = Stoi(CD.SheetInCassette);
+                    //if(count == -1 && Count != -1)
+                    //{
+                    //    CD.SheetInCassette = "-1";
+                    //    std::stringstream ss;
+                    //    ss << "UPDATE cassette SET sheetincassette = -1";
+                    //    ss << " WHERE id = " << CD.Id;
+                    //    SETUPDATESQL(SQLLogger, conn, ss);
+                    //    return false;
+                    //}
 
-                    if(count == 0 && Stoi(CD.SheetInCassette) != -1)
+                    if(count != Count)
                     {
-                        CD.SheetInCassette = "-1";
+                        //CD.SheetInCassette = "-1";
                         std::stringstream ss;
                         ss << "UPDATE cassette SET sheetincassette = " << count;
                         ss << " WHERE id = " << CD.Id;
                         SETUPDATESQL(SQLLogger, conn, ss);
                         return false;
                     }
-
-                    //if(line)
-                    //{
-                    //    int Event = Stoi(CD.Event);
-                    //    if(!isCasseteCant(HMISheetData.Cassette, CD))
-                    //    if(count == 0 && !Stoi(CD.Peth) && Event > 1 && Event != 7)
-                    //    {
-                    //        CD.Event = "7";
-                    //        std::time_t st;
-                    //        CD.Delete_at = GetDataTimeString(st);
-                    //        std::stringstream sd("UPDATE cassette SET event = 7, delete_at = now() WHERE id = " + CD.Id);
-                    //        LOG_INFO(SQLLogger, "{:90}| count = {} {}", FUNCTION_LINE_NAME, count, sd.str() );
-                    //        SETUPDATESQL(SQLLogger, conn, sd);
-                    //        return true;
-                    //    }
-                    //}
                 }
                 else
                 {

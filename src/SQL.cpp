@@ -134,8 +134,7 @@ namespace LoginDlg
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT3), ss, 256);    m_dbname = ss;
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT4), ss, 256);    m_dbuser = ss;
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT5), ss, 256);    m_dbpass = ss;
-
-            conn_spis.connection();
+            CONNECTION1(conn_spis);
             if(conn_spis.connections)
             {
                 SaveConnect();
@@ -321,14 +320,6 @@ void GetPetch(S107::T_cass& tc, int p)
 
     }
 }
-
-
-//int id1ProcRun = 0;
-//int id1ProcEnd = 0;
-//int id1ProcError = 0;
-//int id2ProcRun = 0;
-//int id2ProcEnd = 0;
-//int id2ProcError = 0;
 
 
 void InitCurentTag()
@@ -687,33 +678,31 @@ bool InitSQL()
 {
     try
     {
-        SQLLogger = InitLogger("BASE_SQL");
+        InitLogger(SQLLogger);
         if(!LoginDlg::LoadConnect())
         {
             DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, LoginDlg::bagSave);
-            if(!conn_spis.connections && !conn_spis.connection())throw std::exception("Error SQL conn_spis connection");
 
-            if(!conn_kpvl.connection()) throw std::exception("Error SQL conn_kpvl connection");
-            if(!conn_dops.connection()) throw std::exception("Error SQL conn_dops connection");
-            if(!conn_temp.connection()) throw std::exception("Error SQL conn_temp connection");
-            if(!conn_spic.connection()) throw std::exception("Error SQL conn_spic connection");
-            if(!conn_kpvl2.connection()) throw std::exception("Error SQL conn_kpvl2 connection");
+            //#define CONNECTION(_n) if(!_n.connections && !_n.connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str());
+
+            CONNECTION1(conn_spis);
+            CONNECTION1(conn_kpvl);
+            CONNECTION1(conn_dops);
+            CONNECTION1(conn_temp);
+            CONNECTION1(conn_spic);
+            CONNECTION1(conn_kpvl2);
             LoginDlg::SaveConnect();
         }
         else
         {
-            if(!conn_spis.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spis connection")));
-            if(!conn_kpvl.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl connection")));
-            if(!conn_dops.connection()) throw std::exception(__FUN(std::string("Error SQL conn_dops connection")));
-            if(!conn_temp.connection()) throw std::exception(__FUN(std::string("Error SQL conn_temp connection")));
-            if(!conn_spic.connection()) throw std::exception(__FUN(std::string("Error SQL conn_spic connection")));
-            if(!conn_kpvl2.connection()) throw std::exception(__FUN(std::string("Error SQL conn_kpvl2 connection")));
+            CONNECTION1(conn_spis);
+            CONNECTION1(conn_kpvl);
+            CONNECTION1(conn_kpvl2);
+            CONNECTION1(conn_dops);
+            CONNECTION1(conn_temp);
+            CONNECTION1(conn_spic);
         }
-        //LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
         InitTag();
-        //LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
-
-
     }
     catch(std::exception& exc)
     {

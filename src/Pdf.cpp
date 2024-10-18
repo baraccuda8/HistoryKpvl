@@ -1738,11 +1738,10 @@ namespace PDF
 
 	PdfClass::PdfClass(TCassette& Cassette, bool end)
 	{
-		if(!PdfLog)PdfLog = InitLogger("Pdf_Debug");
+		InitLogger(PdfLog);
 		try
 		{
-			if(!conn.connection())
-				throw std::exception("Ошибка connection: ");
+			CONNECTION1(conn);
 
 #pragma region Готовим графики
 
@@ -1902,7 +1901,7 @@ namespace PDF
 	//Автоматическое создание по кассете
 	void PrintCassettePdfAuto(TCassette& TC)
 	{
-		if(!PdfLog)PdfLog = InitLogger("Pdf_Debug");
+		InitLogger(PdfLog);
 		try
 		{
 			if(TC.Run_at.length() && TC.Finish_at.length())
@@ -1988,7 +1987,7 @@ namespace PDF
 
 		void HendCassettePDF(PGConnection& conn)
 		{
-			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette_Debug");
+			InitLogger(CassetteLogger);
 			try
 			{
 				std::vector <std::string> IDS;
@@ -3184,11 +3183,11 @@ namespace PDF
 
 		GetCassettes::GetCassettes(std::string start, std::string stop)
 		{
-			if(!CassetteLogger)CassetteLogger = InitLogger("Cassette_Debug");
+			InitLogger(CassetteLogger);
 			try
 			{
 				PGConnection conn;
-				conn.connection();
+				CONNECTION1(conn);
 #if _DEBUG
 				//if(Server == "SERVER11")
 				//	DelAllPdf(lpLogPdf2);
@@ -4515,7 +4514,7 @@ namespace PDF
 
 		GetSheets::GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
 		{
-			if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
+			InitLogger(SheetLogger);
 			try
 			{
 				StartSheet = datestart;
@@ -4753,7 +4752,7 @@ namespace PDF
 
 	void CorrectSheetDebug(PGConnection& conn)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
+		InitLogger(SheetLogger);
 		try
 		{
 			std::stringstream ssd;
@@ -4813,7 +4812,7 @@ namespace PDF
 
 	DWORD CorrectSheet(LPVOID)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
+		InitLogger(SheetLogger);
 		//return 0;
 		//LOG_INFO(SheetLogger, "Старт корректировки листов: " + GetDataTimeString());
 
@@ -4823,7 +4822,7 @@ namespace PDF
 		try
 		{
 			PGConnection conn;
-			conn.connection();
+			CONNECTION1(conn);
 
 #ifndef _DEBUG
 			//if(!Gstart.length())SHEET::GetStartTime(conn);
@@ -4863,7 +4862,7 @@ namespace PDF
 #ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID)
 	{
-		if(!SheetLogger)SheetLogger = InitLogger("Sheet_Debug");
+		InitLogger(SheetLogger);
 
 		LOG_INFO(SheetLogger, "Старт корректировки листов");
 
@@ -4873,7 +4872,7 @@ namespace PDF
 		try
 		{
 			PGConnection conn;
-			conn.connection();
+			CONNECTION1(conn);
 			CorrectSheetDebug(conn);
 		}
 		CATCH(SheetLogger, "");
@@ -4914,7 +4913,7 @@ namespace PDF
 	{
 		try
 		{
-			if(!CorrectLog)CorrectLog = InitLogger("Correct_Debug");
+			InitLogger(CorrectLog);
 
 #if HENDINSERT
 
@@ -4923,7 +4922,7 @@ namespace PDF
 			std::string stop =  "2024-10-17 12:00:00";
 
 			PGConnection conn;
-			conn.connection();
+			CONNECTION1(conn);
 
 			SHEET::GetSheets (conn, start, stop);
 

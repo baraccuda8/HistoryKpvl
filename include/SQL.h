@@ -14,6 +14,9 @@ extern std::string m_dbname;
 extern std::string m_dbuser;
 extern std::string m_dbpass;
 
+#define CONNECTION1(_n) if(!_n.connections && !_n.connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
+#define CONNECTION2(_n) if(!_n->connections && !_n->connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
+
 #define SETUPDATESQL(_l, _c, _s) \
 {\
     std::string _comand = _s.str(); \
@@ -42,7 +45,7 @@ public:
         if(connections)PQfinish(m_connection); 
         connections = false; 
     };
-    bool connection(){
+    bool connection(std::string name){
         try
         {
             if(connections)return connections;
@@ -57,10 +60,10 @@ public:
                 //LOG_INFO(AllLogger, "{:90}| conn_kpvl {}", FUNCTION_LINE_NAME, errc);
             }
             PGresult* res = PGexec("set time zone 'Asia/Yekaterinburg';");
-            if(PQresultStatus(res) != ExecStatusType::PGRES_TUPLES_OK)
+            if(PQresultStatus(res) != ExecStatusType::PGRES_COMMAND_OK)
             {
                 std::string errc = utf8_to_cp1251(PQresultErrorMessage(res));
-                LOG_INFO(AllLogger, "{:90}| conn_kpvl {}", FUNCTION_LINE_NAME, errc);
+                LOG_INFO(AllLogger, "{:90}| {} {}", FUNCTION_LINE_NAME, name, errc);
             }
             PQclear(res);
 
@@ -68,12 +71,12 @@ public:
         }
         catch(std::runtime_error rt)
         {
-            LOG_INFO(AllLogger, "{:90}| error conn_kpvl {} {}", FUNCTION_LINE_NAME, rt.what());
+            LOG_INFO(AllLogger, "{:90}| error {} {} ", FUNCTION_LINE_NAME, name, rt.what());
             //MessageBox(NULL, rt.what(), "Error", 0);
         }
         catch(...)
         {
-            LOG_ERROR(AllLogger, "{:90}| Unknown error conn_kpvl {}", FUNCTION_LINE_NAME);
+            LOG_ERROR(AllLogger, "{:90}| Unknown error {} ", FUNCTION_LINE_NAME, name);
             //MessageBox(NULL, "Неизвестная ошибка", "Error", 0);
         }
         return connections;

@@ -199,7 +199,7 @@ namespace KPVL {
             }
         }
 
-                //Чтение листов
+        //Чтение листов
         void GetSheet(PGConnection& conn, PGresult* res, std::deque<TSheet>& Sheet)
         {
             int line = PQntuples(res);
@@ -1559,6 +1559,10 @@ namespace KPVL {
             int32_t id = 0;
             try
             {
+                //21:57:43.225 | Час кассеты за день = 21
+                //21:57:41.318 | Кассета наполяентся = true
+                //21:57:38.305 | Номер кассеты за день = 4
+                //21:57:26
                 if(IsCassette(CD))
                 {
                     std::stringstream co;
@@ -1567,7 +1571,7 @@ namespace KPVL {
                     co << CD.Year->GetInt() << ", ";
                     co << CD.Month->GetInt() << ", ";
                     co << CD.Day->GetInt() << ", ";
-                    co << CD.Hour->GetInt() << ", ";
+                    co << "TO_CHAR(now(), 'HH24')";         //CD.Hour->GetInt() << ", ";
                     co << CD.CassetteNo->GetInt() << ", ";
                     int count = CD.SheetInCassette->GetInt();
                     if(count)
