@@ -59,19 +59,19 @@ public:
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
 typedef struct T_Fcassette{
-    //DINT Час ID листа
+    //int23_t Час ID листа
     Value* Hour;
 
-    //DINT День
+    //int23_t День
     Value* Day;
 
-    //DINT Месяц
+    //int23_t Месяц
     Value* Month;
 
-    //DINT Год
+    //int23_t Год
     Value* Year;
 
-    //DINT Номер кассеты за день
+    //int23_t Номер кассеты за день
     Value* CassetteNo;
 
     std::string facttemper = "0";
@@ -102,70 +102,70 @@ typedef struct T_Fcassette{
             CassetteNo->Set_Value(int32_t(0));
         }CATCH(PethLogger, "");
     }
-};
+}T_Fcassette;
 
 typedef struct T_ForBase_RelFurn{
     time_t Furn_old_dt;
 
-    //BOOL
+    //bool
     Value* WDG_toBase;
 
-    //BOOL
+    //bool
     Value* WDG_fromBase;
 
-    //REAL Уставка температуры
+    //float Уставка температуры
     Value* PointRef_1;
 
-    //REAL Задание Время разгона
+    //float Задание Время разгона
     Value* PointTime_1;
 
-    //REAL Задание Время выдержки
+    //float Задание Время выдержки
     Value* PointTime_2;
 
-    //BOOL Работа
+    //bool Работа
     Value* ProcRun;
 
-    //BOOL Окончание процесса
+    //bool Окончание процесса
     Value* ProcEnd;
 
-    //BOOL Авария процесса
+    //bool Авария процесса
     Value* ProcFault;
 
-    //REAL Полное время процесса (уставка), мин
+    //float Полное время процесса (уставка), мин
     Value* TimeProcSet;
 
-    //REAL Время процесса, час (0..XX)
+    //float Время процесса, час (0..XX)
     Value* ProcTimeMin;
 
-    //REAL Время до окончания процесса, мин
+    //float Время до окончания процесса, мин
     Value* TimeToProcEnd;
 
-    //REAL Заданное значение температуры
+    //float Заданное значение температуры
     Value* TempRef;
 
-    //REAL Фактическое значение температуры
+    //float Фактическое значение температуры
     Value* TempAct;
 
-    //REAL Термопара 1
+    //float Термопара 1
     Value* T1;
 
-    //REAL Термопара 2
+    //float Термопара 2
     Value* T2;
 
-    //REAL Факт время нагрева
+    //float Факт время нагрева
     Value* ActTimeHeatAcc;
 
-    //REAL Факт время выдержки
+    //float Факт время выдержки
     Value* ActTimeHeatWait;
 
-    //REAL Факт общее время 
+    //float Факт общее время 
     Value* ActTimeTotal;
 
-    //Возврат касеты в список
+    //bool Возврат касеты в список
     Value* ReturnCassetteCmd;
 
     T_Fcassette Cassette;
-};
+}T_ForBase_RelFurn;
 
 extern std::deque<TCassette> AllCassette;
 

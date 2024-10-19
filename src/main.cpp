@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "main.h"
+#include "StringData.h"
+
 #include "file.h"
 #include "exel.h"
 #include "win.h"
@@ -56,8 +58,8 @@ int CountWatchDogWait  = TIME_OUT / 1000;
 
 //Глобальный Instance программы
 HINSTANCE hInstance = NULL;
-bool MyServer = false;
-std::string Server = "";
+//bool MyServer = false;
+//std::string Server = "";
 
 //std::map<PlcType::Type, Plc> PLC;
 
@@ -107,9 +109,8 @@ int WinErrorExit(HWND hWnd, const char* lpszFunction)
     lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
     StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s\r\nfailed with error %d:\r\n%s"), lpszFunction, dw, lpMsgBuf);
 
-    //if(AllLogger) AllLogger->error(std::string((char*)lpDisplayBuf));
-    //MessageBox(hWnd, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK | MB_SYSTEMMODAL | MB_ICONERROR);
-
+    LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
+    
     LocalFree(lpMsgBuf);
     LocalFree(lpDisplayBuf);
     PostQuitMessage(0);
@@ -221,26 +222,24 @@ void CheckDir(std::string dir)
 }
 
 
-void CheckAllDir()
-{
-    CheckDir(lpLogDir);
-    CheckDir(lpLogPdf);
-    std::string SERVER = "SERVER11";
-    char buffer[256];
-    DWORD size = 256;
-    GetComputerName(buffer, &size);
-    Server = buffer;
-    if(SERVER == Server)
-    {
-        MyServer = true;
+//void CheckAllDir()
+//{
+    //std::string SERVER = "SERVER11";
+    //char buffer[256];
+    //DWORD size = 256;
+    //GetComputerName(buffer, &size);
+    //Server = buffer;
+    //if(SERVER == Server)
+    //{
+        //MyServer = true;
         //std::Pathc patch = getDirContents (lpLogDir);
         //for(auto p : patch)
         //{
         //    if(p.string().length())
         //        remove(p.string().c_str());
         //}
-    }
-}
+    //}
+//}
 
 void GetVersionProg()
 {
@@ -345,22 +344,18 @@ int Run()
     DWORD pid = EnumProcess();
     if(pid)
     {
-        std::fstream s("err.txt", std::fstream::binary | std::fstream::out | std::fstream::app);
+        std::fstream s(lpLogDir + "\\Error.log", std::fstream::binary | std::fstream::out | std::fstream::app);
         if(s.is_open())
-            s << "Программа уже запущена. Pid = " << pid << std::endl;
+            s << "[" << GetDataTimeString() << "] " << FUNCTION_LINE_NAME << " Программа уже запущена. Pid = " << pid << std::endl;
         s.close();
         return 0;
     }
     SavePid();
 
+    //CheckAllDir();
+
     LOG_INFO(AllLogger, "{:90}|", FUNCTION_LINE_NAME);
-
-    //CheckDir(lpSheetDir);
-    //CheckDir(lpCassetteDir);
-    //CheckDir(lpLCassetteDir);
-    //CheckDir(lpLogDir);
-
-    CheckAllDir();
+    
 
     try
     {
@@ -369,8 +364,10 @@ int Run()
         InitLogger(AllLogger);
         if(!AllLogger.get())
         {
-            WinErrorExit(NULL, "Программа уже запущена");
-            return 0;
+            std::fstream s(lpLogDir + "\\Error.log", std::fstream::binary | std::fstream::out | std::fstream::app);
+            if(s.is_open())
+                s << "[" << GetDataTimeString() << "] " << FUNCTION_LINE_NAME << " Не могу создать AllLogger.log" << std::endl;
+            s.close();
         }
 #endif
         LOG_INFO(AllLogger, "{:90}| Старт программы {}", FUNCTION_LINE_NAME);
@@ -428,9 +425,6 @@ int Run()
     {
         WinErrorExit(NULL, exc.what());
     }
-    //catch(std::invalid_argument& exc) 
-    //{
-    //}
     catch(...)
     {
         WinErrorExit(NULL, "Unknown error.");
@@ -510,6 +504,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _I
     argv = (char**)malloc(argc * sizeof(char*));
 
     CurrentDir();
+    CheckDir(lpLogDir);
+    CheckDir(lpLogPdf);
+
 
     if(argc < 2)
     {

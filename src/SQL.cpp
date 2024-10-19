@@ -171,16 +171,16 @@ bool cmpMaxMin(Value* first, Value* second)
 void SetValue(OpcUa::VariantType type, Value* val, std::string value)
 {
     if(type == OpcUa::VariantType::BOOLEAN)        val->Val = (bool)(value == "true");      // atoi_t(bool, atoi, value);
-    else if(type == OpcUa::VariantType::SBYTE)     val->Val = int8_t(std::stoi(value)) / (int8_t)val->coeff;
-    else if(type == OpcUa::VariantType::BYTE)      val->Val = uint8_t(std::stoi(value)) / (uint8_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT16)     val->Val = int16_t(std::stoi(value)) / (int16_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT16)    val->Val = uint16_t(std::stoi(value)) / (uint16_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT32)     val->Val = int32_t(std::stoi(value)) / (int32_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT32)    val->Val = uint32_t(std::stoll(value)) / (uint32_t)val->coeff;
-    else if(type == OpcUa::VariantType::INT64)     val->Val = int64_t(std::stoll(value)) / (int64_t)val->coeff;
-    else if(type == OpcUa::VariantType::UINT64)    val->Val = uint64_t(std::stod(value)) / (uint64_t)val->coeff;
-    else if(type == OpcUa::VariantType::FLOAT)     val->Val = float(std::stof(value)) / (float)val->coeff;
-    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = double(std::stof(value)) / (double)val->coeff;
+    else if(type == OpcUa::VariantType::SBYTE)     val->Val = int8_t(int8_t(std::stoi(value)) / (int8_t)val->coeff);
+    else if(type == OpcUa::VariantType::BYTE)      val->Val = uint8_t(uint8_t(std::stoi(value)) / (uint8_t)val->coeff);
+    else if(type == OpcUa::VariantType::INT16)     val->Val = int16_t(int16_t(std::stoi(value)) / (int16_t)val->coeff);
+    else if(type == OpcUa::VariantType::UINT16)    val->Val = uint16_t(uint16_t(std::stoi(value)) / (uint16_t)val->coeff);
+    else if(type == OpcUa::VariantType::INT32)     val->Val = int32_t(int32_t(std::stoi(value)) / (int32_t)val->coeff);
+    else if(type == OpcUa::VariantType::UINT32)    val->Val = uint32_t(uint32_t(std::stoll(value)) / (uint32_t)val->coeff);
+    else if(type == OpcUa::VariantType::INT64)     val->Val = int64_t(int64_t(std::stoll(value)) / (int64_t)val->coeff);
+    else if(type == OpcUa::VariantType::UINT64)    val->Val = uint64_t(uint64_t(std::stod(value)) / (uint64_t)val->coeff);
+    else if(type == OpcUa::VariantType::FLOAT)     val->Val = float(float(std::stof(value)) / (float)val->coeff);
+    else if(type == OpcUa::VariantType::DOUBLE)    val->Val = double(double(std::stof(value)) / (double)val->coeff);
     else if(type == OpcUa::VariantType::STRING)    val->Val =  cp1251_to_utf8(value); // utf8_to_cp1251(value); //cp1251_to_utf8
     val->GetString();
     val->OldVal = val->Val;
@@ -212,20 +212,20 @@ namespace TODOS
 
 
 
-std::string GetType(OpcUa::VariantType type, std::string value)
+std::string GetType(OpcUa::VariantType type)
 {
-    if(type == OpcUa::VariantType::BOOLEAN)        return "(bool)" + value;
-    else if(type == OpcUa::VariantType::SBYTE)     return "(int8_t)" + value;
-    else if(type == OpcUa::VariantType::BYTE)      return "(uint8_t)" + value;
-    else if(type == OpcUa::VariantType::INT16)     return "(int16_t)" + value;
-    else if(type == OpcUa::VariantType::UINT16)    return "(uint16_t)" + value;
-    else if(type == OpcUa::VariantType::INT32)     return "(int32_t)" + value;
-    else if(type == OpcUa::VariantType::UINT32)    return "(uint32_t)" + value;
-    else if(type == OpcUa::VariantType::INT64)     return "(int64_t)" + value;
-    else if(type == OpcUa::VariantType::UINT64)    return "(uint64_t)" + value;
-    else if(type == OpcUa::VariantType::FLOAT)     return "(float)" + value;
-    else if(type == OpcUa::VariantType::DOUBLE)    return "(double)" + value;
-    else if(type == OpcUa::VariantType::STRING)    return "std::string(\"" + value + "\")";
+    if(type == OpcUa::VariantType::BOOLEAN)        return "bool";
+    else if(type == OpcUa::VariantType::SBYTE)     return "int8_t";
+    else if(type == OpcUa::VariantType::BYTE)      return "uint8_t";
+    else if(type == OpcUa::VariantType::INT16)     return "int16_t";
+    else if(type == OpcUa::VariantType::UINT16)    return "uint16_t";
+    else if(type == OpcUa::VariantType::INT32)     return "int32_t";
+    else if(type == OpcUa::VariantType::UINT32)    return "uint32_t";
+    else if(type == OpcUa::VariantType::INT64)     return "int64_t";
+    else if(type == OpcUa::VariantType::UINT64)    return "uint64_t";
+    else if(type == OpcUa::VariantType::FLOAT)     return "float";
+    else if(type == OpcUa::VariantType::DOUBLE)    return "double";
+    else if(type == OpcUa::VariantType::STRING)    return "string";
     return "";
 }
 
@@ -254,10 +254,11 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
             if(!ofs.bad())
                 ofs << val->ID << ";"
                 << "\"\"\"" << val->Patch << "\"\"\";" 
-                << (int)val->GetType() << ";" 
+                << GetType(type) << ";"
+                << static_cast<int>(type) << ";"
                 << val->Arhive << ";" 
                 << "\"\"\"" << val->Comment << "\"\"\";" 
-                << GetType(type, val->GetString()) << ";" 
+                << val->GetString() << ";" 
                 << val->coeff << ";" 
                 << val->hist << ";" 
                 << "\"\"\"" << val->format << "\"\"\";" 
@@ -326,9 +327,10 @@ void InitCurentTag()
 {
 #pragma region SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id 
     std::ofstream ofs("all_tag.csv", std::ios_base::binary | std::ios_base::out | std::ios_base::trunc);
-    ofs << "id;name;type;arhive;comment;content;coeff;hist;format;idsec" << std::endl;
+    if(!ofs.bad())
+        ofs << "id;name;type;type;arhive;comment;content;coeff;hist;format;idsec" << std::endl;
 
-    std::string comand = "SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY id;";
+    std::string comand = "SELECT id, name, type, arhive, comment, content, coeff, hist, format, idsec FROM tag ORDER BY type, name;";
 
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_spis.PGexec(comand);
@@ -416,6 +418,7 @@ void InitCurentTag()
 
     if(!ofs.bad())
         ofs.close();
+//    int tt = 0;
 #pragma endregion
 }
 

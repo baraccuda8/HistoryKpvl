@@ -9,8 +9,8 @@ extern bool isRun;
 
 //Ãכמבאכüםûי Instance ןנמדנאללû
 extern HINSTANCE hInstance;
-extern bool MyServer;
-extern std::string Server;
+//extern bool MyServer;
+//extern std::string Server;
 
 extern std::string szTitle;
 extern std::string lpLogDir;

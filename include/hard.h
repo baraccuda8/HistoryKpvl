@@ -44,152 +44,154 @@ public:
 //namespace {
     typedef struct T_PlateData{
         bool news = false;
-        //Char Код марки
+        //string Код марки
         Value* AlloyCodeText;
 
-        //Char код толщины. Зависит от марки стали.
+        //string код толщины. Зависит от марки стали.
         Value* ThiknessText;
 
-        //DINT номер плавки
+        //int32_t номер плавки
         Value* Melt;
 
-        //DINT Номер сляба
+        //int32_t Номер сляба
         Value* Slab;
 
-        //DINT номер партии
+        //int32_t номер партии
         Value* PartNo;
 
-        //DINT Пачка
+        //int32_t Пачка
         Value* Pack;
 
-        //DINT номер листа
+        //int32_t номер листа
         Value* Sheet;
 
-        //DINT подномер листа
+        //int32_t подномер листа
         Value* SubSheet;
     };
 
     typedef struct T_TopBot{
-        Value* Top;                  //REAL
-        Value* Bot;                  //REAL
+        //float
+        Value* Top;
+
+        //float
+        Value* Bot;
     };
     typedef struct T_Side{
-        //REAL высота листа в точке1
+        //float высота листа в точке1
         Value* h1;
 
-        //REAL высота листа в точке2
+        //float высота листа в точке2
         Value* h2;
 
-        //REAL высота листа в точке3
+        //float высота листа в точке3
         Value* h3;
 
-        //REAL высота листа в точке4
+        //float высота листа в точке4
         Value* h4;
 
-        //REAL высота листа в точке5
+        //float высота листа в точке5
         Value* h5;
 
-        //REAL высота листа в точке6
+        //float высота листа в точке6
         Value* h6;
 
-        //REAL высота листа в точке7
+        //float высота листа в точке7
         Value* h7;
 
-        //REAL высота листа в точке8
+        //float высота листа в точке8
         Value* h8;
     };
     typedef struct T_CassetteData{
-        //DINT Год ID листа
+        //int32_t Год ID листа
         Value* Year;
 
-        //DINT Месяц ID листа
+        //int32_t Месяц ID листа
         Value* Month;
 
-        //DINT День ID листа
+        //int32_t День ID листа
         Value* Day;
 
-        //UINT16 Час ID листа
+        //uint16_t Час ID листа
         Value* Hour;
 
-        //DINT Номер кассеты за день
+        //int32_t Номер кассеты за день
         Value* CassetteNo;
 
-        //INT Номер листа в касете
+        //uint16_t Номер листа в касете
         Value* SheetInCassette;
     };
 
-    typedef struct O_CassetteData{
-        //DINT ID кассеты
-        int32_t Id = 0;
-
-        //DINT Год ID листа
-        int32_t Year = 0;
-
-        //DINT Месяц ID листа
-        int32_t Month = 0;
-
-        //DINT День ID листа
-        int32_t Day = 0;
-
-        //DINT Час ID листа
-        int32_t Hour = 0;
-
-
-        //DINT Номер кассеты за день
-        int32_t CassetteNo = 0;
-
-        //INT Номер листа в касете
-        int16_t SheetInCassette = 0;
-    };
+    //typedef struct O_CassetteData{
+    //    //int32_t ID кассеты
+    //    int32_t Id = 0;
+    //
+    //    //int32_t Год ID листа
+    //    int32_t Year = 0;
+    //
+    //    //int32_t Месяц ID листа
+    //    int32_t Month = 0;
+    //
+    //    //int32_t День ID листа
+    //    int32_t Day = 0;
+    //
+    //    //int32_t Час ID листа
+    //    int32_t Hour = 0;
+    //
+    //    //int32_t Номер кассеты за день
+    //    int32_t CassetteNo = 0;
+    //
+    //    //int16_t Номер листа в касете
+    //    int16_t SheetInCassette = 0;
+    //};
 
 
     typedef struct T_Par_Gen{
-        //REAL Скорость выгрузки
+        //float Скорость выгрузки
         Value* UnloadSpeed;
 
-        //REAL Время сигнализации окончания нагрева, мин
+        //float Время сигнализации окончания нагрева, мин
         Value* TimeForPlateHeat;
 
-        //REAL Уставка давления для запуска комперссора
+        //float Уставка давления для запуска комперссора
         Value* PresToStartComp;
     };
 
     typedef struct T_AI_Hmi_210{
-        //REAL Давление воды закалка коллектор верх
+        //float Давление воды закалка коллектор верх
         Value* LaminPressTop;
 
-        //REAL Давление воды закалка коллектор низ
+        //float Давление воды закалка коллектор низ
         Value* LaminPressBot;
 
-        //REAL Температура воды в поддоне
+        //float Температура воды в поддоне
         Value* LAM_TE1;
 
-        //REAL Температура воды в баке
+        //float Температура воды в баке
         Value* Za_TE3;
 
-        //REAL Температура воды в баке
+        //float Температура воды в баке
         Value* Za_PT3;
 
-        //REAL Пирометр
+        //float Пирометр
         Value* Za_TE4;
     };
     typedef struct T_HMISheetData{
-        //DINT Счетчик циклов контроллера
+        //int32_t Счетчик циклов контроллера
         Value* WDG;
 
-        //BOOL Бит жизни для базы
+        //bool Бит жизни для базы
         Value* WDG_toBase;
 
-        //BOOL Обратный бит жизни для контроллера
+        //bool Обратный бит жизни для контроллера
         Value* WDG_fromBase;
 
-        //BOOL Новые лист в касету
+        //bool Новые лист в касету
         Value* NewData;
 
-        //BOOL Ответ Новые лист в касету
+        //bool Ответ Новые лист в касету
         Value* SaveDone;
 
-        //BOOL кассета наполяентся
+        //bool кассета наполяентся
         Value* CasseteIsFill;
 
         ////BOOL начать новую кассету
@@ -198,10 +200,10 @@ public:
         ////кассета готова
         //Value* CassetteIsComplete;        
 
-        //WORD Кларана верх
+        //uint16_t Кларана верх
         Value* Valve_1x;
 
-        //WORD Клапна низ
+        //uint16_t Клапна низ
         Value* Valve_2x;
 
         //Скоростная секция
@@ -227,55 +229,55 @@ public:
     };
 
     typedef struct T_GenSeqFromHmi{
-        //REAL Уставки температуры в печи
+        //float Уставки температуры в печи
         Value* TempSet1;
     };
 
     typedef struct T_GenSeqToHmi{
-        //INT Номер шага последовательности загрузки в печь
+        //int16_t Номер шага последовательности загрузки в печь
         Value* Seq_1_StateNo;
 
-        //INT Номер шага последовательности выгрузки в печи
+        //int16_t Номер шага последовательности выгрузки в печи
         Value* Seq_2_StateNo;
 
-        //INT Номер шага последовательности обработки в ламинарке
+        //int16_t Номер шага последовательности обработки в ламинарке
         Value* Seq_3_StateNo;
 
-        //REAL время нагрева в зоне 1
+        //float время нагрева в зоне 1
         Value* HeatTime_Z1;
 
-        //REAL время нагрева в зоне 2
+        //float время нагрева в зоне 2
         Value* HeatTime_Z2;
 
-        //REAL Сколько прошло времени охлаждения
+        //float Сколько прошло времени охлаждения
         Value* CoolTimeAct;
     };
 
     typedef struct T_Hmi210_1{
         float Temperature = 0;
 
-        //REAL Температура в зоне 1.1
+        //float Температура в зоне 1.1
         Value* Htr1_1;
 
-        //REAL Температура в зоне 1.2
+        //float Температура в зоне 1.2
         Value* Htr1_2;
 
-        //REAL Температура в зоне 1.3
+        //float Температура в зоне 1.3
         Value* Htr1_3;
 
-        //REAL Температура в зоне 1.4
+        //float Температура в зоне 1.4
         Value* Htr1_4;
 
-        //REAL Температура в зоне 2.1
+        //float Температура в зоне 2.1
         Value* Htr2_1;
 
-        //REAL Температура в зоне 2.2
+        //float Температура в зоне 2.2
         Value* Htr2_2;
 
-        //REAL Температура в зоне 2.3
+        //float Температура в зоне 2.3
         Value* Htr2_3;
 
-        //REAL Температура в зоне 2.4
+        //float Температура в зоне 2.4
         Value* Htr2_4;
     };
 

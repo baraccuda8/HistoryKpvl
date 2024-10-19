@@ -1091,7 +1091,7 @@ namespace KPVL {
 //Функции обработки и со сохранения истории кассет
 
 #pragma region Зоны печи закалки
-    O_CassetteData OldCassette;
+    //O_CassetteData OldCassette;
 
 
     //Зоны
@@ -1573,7 +1573,7 @@ namespace KPVL {
                         {
                             //int Hour = HMISheetData.Cassette.Hour->GetValue().As<int32_t>();
                             int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, HMISheetData.Cassette.Hour->GetInt());
-                            LOG_INFO(HardLogger, "{:90}| NewSheetData: OldCassette.Id = {} Id = {}", FUNCTION_LINE_NAME, OldCassette.Id, CasseteId);
+                            LOG_INFO(HardLogger, "{:90}| NewSheetData: Id = {}", FUNCTION_LINE_NAME, CasseteId);
 
                             SetSaveDone(conn_kpvl, CasseteId);
                             PalletSheet[Pos - 1].Clear();
@@ -1606,47 +1606,47 @@ namespace KPVL {
         //    }CATCH(HardLogger, "");
         //}
 
-        //Проверка на наличие кассеты
-        bool IsCassette(O_CassetteData& CD)
-        {
-            return CD.Day && CD.Month && CD.Year && CD.CassetteNo;
-        }
+        ////Проверка на наличие кассеты
+        //bool IsCassette(O_CassetteData& CD)
+        //{
+        //    return CD.Day && CD.Month && CD.Year && CD.CassetteNo;
+        //}
 
-        //Получаем ID кассеты
-        int32_t GetIdCassette(PGConnection& conn, O_CassetteData& CD)
-        {
-            int32_t id = 0;
-            try
-            {
-                if(IsCassette(CD))
-                {
-                    std::stringstream co;
-                    co << "SELECT id FROM cassette WHERE";
-                    co << " hour = " << CD.Hour;
-                    co << " AND day = " << CD.Day;
-                    co << " AND month = " << CD.Month;
-                    co << " AND year = " << CD.Year;
-                    co << " AND cassetteno = " << CD.CassetteNo;
-                    co << ";";
-                    std::string comand = co.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
-                    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-                    {
-                        if(PQntuples(res))//Линий
-                        {
-                            id = Stoi(conn.PGgetvalue(res, 0, 0));
-                        }
-                    }
-                    else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
-                    PQclear(res);
-                }
-            }
-            CATCH(HardLogger, "");
-            return id;
-
-        }
+        ////Получаем ID кассеты
+        //int32_t GetIdCassette(PGConnection& conn, O_CassetteData& CD)
+        //{
+        //    int32_t id = 0;
+        //    try
+        //    {
+        //        if(IsCassette(CD))
+        //        {
+        //            std::stringstream co;
+        //            co << "SELECT id FROM cassette WHERE";
+        //            co << " hour = " << CD.Hour;
+        //            co << " AND day = " << CD.Day;
+        //            co << " AND month = " << CD.Month;
+        //            co << " AND year = " << CD.Year;
+        //            co << " AND cassetteno = " << CD.CassetteNo;
+        //            co << ";";
+        //            std::string comand = co.str();
+        //            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        //            PGresult* res = conn.PGexec(comand);
+        //            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+        //            {
+        //                if(PQntuples(res))//Линий
+        //                {
+        //                    id = Stoi(conn.PGgetvalue(res, 0, 0));
+        //                }
+        //            }
+        //            else
+        //                LOG_ERR_SQL(SQLLogger, res, comand);
+        //            PQclear(res);
+        //        }
+        //    }
+        //    CATCH(HardLogger, "");
+        //    return id;
+        //
+        //}
 
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD)
@@ -1997,16 +1997,16 @@ namespace KPVL {
                     LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, id);
                     //SetOldCassette(HMISheetData.Cassette, id);
                 }
-                else
-                {
-                    if(OldCassette.Id)
-                    {
-                        LOG_INFO(HardLogger, "{:90}| OldCassette.Id = {}, OldCassette.Year = {}, OldCassette.Month = {}, OldCassette.Day = {}, OldCassette.Hour = {}, OldCassette.CassetteNo = {}, OldCassette.SheetInCassette = {}", FUNCTION_LINE_NAME,
-                                 OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.Hour, OldCassette.CassetteNo, OldCassette.SheetInCassette);
-                        //CloseCassete(conn_kpvl, OldCassette);
-                        //OldCassette = O_CassetteData();
-                    }
-                }
+                //else
+                //{
+                //    if(OldCassette.Id)
+                //    {
+                //        LOG_INFO(HardLogger, "{:90}| OldCassette.Id = {}, OldCassette.Year = {}, OldCassette.Month = {}, OldCassette.Day = {}, OldCassette.Hour = {}, OldCassette.CassetteNo = {}, OldCassette.SheetInCassette = {}", FUNCTION_LINE_NAME,
+                //                 OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.Hour, OldCassette.CassetteNo, OldCassette.SheetInCassette);
+                //        //CloseCassete(conn_kpvl, OldCassette);
+                //        //OldCassette = O_CassetteData();
+                //    }
+                //}
 
             }
             CATCH(HardLogger, "");
