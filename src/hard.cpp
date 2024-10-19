@@ -496,7 +496,9 @@ void PLC_KPVL::Run(int count)
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
                     //LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
+                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2, hour);
+
                     //HMISheetData.SaveDone->Set_Value(true);
                     //PlateData[5].Sheet->Set_Value((int32_t)0);
                 }
@@ -775,70 +777,71 @@ void TestSheet()
 DWORD WINAPI Open_KPVL_SQL(LPVOID)
 {
     size_t old_count = 0;
-    int f = 5;
     
     LOG_INFO(SQLLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
     while(isRun)
     {
-        TestSheet();
-
-        KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
-        for(auto& TS : AllSheet)
+        try
         {
-            int Pos = Stoi(TS.Pos);
-            if(Pos >= 20)
+            TestSheet();
+            KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
+            for(auto& TS : AllSheet)
             {
-                int pos1 = Pos % 10;
-                int pos2 = Pos / 10;
-                TS.Pos = std::to_string(pos1 + pos2);
-                std::stringstream sss;
-                sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE delete_at IS NULL AND id = " << TS.id;
-                LOG_INFO(HardLogger, "{:90}| {}", sss.str());
-                SETUPDATESQL(HardLogger, conn_spis, sss);
+                int Pos = Stoi(TS.Pos);
+                if(Pos >= 20)
+                {
+                    int pos1 = Pos % 10;
+                    int pos2 = Pos / 10;
+                    TS.Pos = std::to_string(pos1 + pos2);
+                    std::stringstream sss;
+                    sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE delete_at IS NULL AND id = " << TS.id;
+                    LOG_INFO(HardLogger, "{:90}| {}", sss.str());
+                    SETUPDATESQL(HardLogger, conn_spis, sss);
+                }
+    //#ifndef _DEBUG
+                KPVL::SQL::GetDataTime_All(conn_spis, TS);
+    //#endif
             }
-//#ifndef _DEBUG
-            KPVL::SQL::GetDataTime_All(conn_spis, TS);
-//#endif
-        }
 
-        //UpdateSheetPos();
+            //UpdateSheetPos();
 
-        size_t count = AllSheet.size();
-        if(old_count != count)
-        {
-            old_count = count;
+            size_t count = AllSheet.size();
+            if(old_count != count)
+            {
+                old_count = count;
 
-            ListView_DeleteAllItems(hwndSheet);
-            for(size_t i = 0; i < count; i++)
-                AddHistoriSheet(false);
-        }
-        else
-        {
-            int TopIndex = ListView_GetTopIndex(hwndSheet);
-            int Index = ListView_GetNextItem(hwndSheet, -1, LVNI_SELECTED);
+                ListView_DeleteAllItems(hwndSheet);
+                for(size_t i = 0; i < count; i++)
+                    AddHistoriSheet(false);
+            }
+            else
+            {
+                int TopIndex = ListView_GetTopIndex(hwndSheet);
+                int Index = ListView_GetNextItem(hwndSheet, -1, LVNI_SELECTED);
 
-            InvalidateRect(hwndSheet, NULL, false);
+                InvalidateRect(hwndSheet, NULL, false);
 
-            ListView_EnsureVisible(hwndSheet, TopIndex, FALSE);
-            ListView_SetItemState(hwndSheet, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
+                ListView_EnsureVisible(hwndSheet, TopIndex, FALSE);
+                ListView_SetItemState(hwndSheet, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
 
 #ifndef TESTGRAFF
 #else
-            InitCurentTag();
-            for(auto& val : AllTagKpvl)
-                MySetWindowText(winmap(val->winId), val->GetString().c_str());
+                InitCurentTag();
+                for(auto& val : AllTagKpvl)
+                    MySetWindowText(winmap(val->winId), val->GetString().c_str());
 
-            for(auto& val : AllTagPeth)
-                MySetWindowText(winmap(val->winId), val->GetString().c_str());
-            f = 2;
+                for(auto& val : AllTagPeth)
+                    MySetWindowText(winmap(val->winId), val->GetString().c_str());
 #endif
+            }
+            int f = 2;
+
+            while(isRun && (--f))
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
-
-        //while(isRun &&  f--)
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        CATCH(HardLogger, "");
     }
-
     LOG_INFO(SQLLogger, "{:90} Stop Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
     return 0;

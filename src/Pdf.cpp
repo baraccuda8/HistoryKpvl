@@ -4912,8 +4912,8 @@ namespace PDF
 #if HENDINSERT
 
 			//Для ручного тестирования
-			std::string start = "2024-10-17 07:00:0";
-			std::string stop =  "2024-10-17 12:00:00";
+			std::string start = "2024-10-19 00:00:00";
+			std::string stop =  "";// "2024-10-17 12:00:00";
 
 			PGConnection conn;
 			CONNECTION1(conn);

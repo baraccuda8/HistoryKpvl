@@ -373,9 +373,7 @@ int Run()
             return 0;
         }
 #endif
-
-        LOG_DEBUG(AllLogger, "{:90}| Старт программы", FUNCTION_LINE_NAME);
-
+        LOG_INFO(AllLogger, "{:90}| Старт программы {}", FUNCTION_LINE_NAME);
 
         isRun = true;
         GetVersionProg();
@@ -396,16 +394,14 @@ int Run()
         {
 
             InitWindow(hInstance);
-            //OpenAllParam();
 
-                // Цикл основного сообщения:
-            MSG msg;
-            //HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DATACOLLACTION));
 
 #if FULLRUN
             Start();
 #endif
 
+            // Цикл основного сообщения:
+            MSG msg;
             while(GetMessage(&msg, nullptr, 0, 0) && isRun)
             {
                 //if(!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))

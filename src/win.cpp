@@ -1794,63 +1794,63 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     //Удаление кассеты из списка
     if(command == ID_POP_40001)
     {
-        LV_ITEM lvi;
-        lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
-        if(lvi.iItem == -1) return FALSE;
+        //LV_ITEM lvi;
+        //lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
+        //if(lvi.iItem == -1) return FALSE;
 
-        if(lvi.iItem < AllCassette.size())
-        {
-            TCassette& cassette = AllCassette[lvi.iItem];
-            if(cassette.Event == "2" || cassette.Event == "5")
-            {
-                PGConnection conn;
-                CONNECTION1(conn);
-                std::time_t st;
-                cassette.Event = "7";
-                cassette.Delete_at = GetDataTimeString(st);
-                std::stringstream sd;
-                sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << cassette.Id;
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(SQLLogger, conn, sd);
-            }
-
-            //SetUpdateCassete(conn, cassette, "event = 7, delete_at = now(), event = 7 ", "");
-            //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
-        }
+        //if(lvi.iItem < AllCassette.size())
+        //{
+        //    TCassette& cassette = AllCassette[lvi.iItem];
+        //    if(cassette.Event == "2" || cassette.Event == "5")
+        //    {
+        //        PGConnection conn;
+        //        CONNECTION1(conn);
+        //        std::time_t st;
+        //        cassette.Event = "7";
+        //        cassette.Delete_at = GetDataTimeString(st);
+        //        std::stringstream sd;
+        //        sd << "UPDATE cassette SET event = 7, delete_at = now() WHERE id = " << cassette.Id;
+        //        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+        //        SETUPDATESQL(SQLLogger, conn, sd);
+        //    }
+        //
+        //    //SetUpdateCassete(conn, cassette, "event = 7, delete_at = now(), event = 7 ", "");
+        //    //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
+        //}
     }
     if(command == ID_POP_40002)
     {
-        LV_ITEM lvi;
-        lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
-        if(lvi.iItem == -1) return FALSE;
-
-        if(lvi.iItem < AllCassette.size())
-        {
-            TCassette& cassette = AllCassette[lvi.iItem];
-            if(cassette.Event == "7")
-            {
-                PGConnection conn;
-                CONNECTION1(conn);
-                std::stringstream sd;
-                if(cassette.Finish_at.length())
-                {
-                    cassette.Event = "5";
-                    cassette.Delete_at = "";
-                    sd << "UPDATE cassette SET event = 5, delete_at = DEFAULT WHERE id = " << cassette.Id;
-                }
-                else
-                {
-                    cassette.Event = "2";
-                    cassette.Delete_at = "";
-                    sd << "UPDATE cassette SET event = 2, delete_at = DEFAULT WHERE id = " << cassette.Id;
-                }
-                LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(SQLLogger, conn, sd);
-            }
-
-            //SetUpdateCassete(conn, cassette, "event = 2, delete_at = DEFAULT ", "");
-            //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
-        }
+        //LV_ITEM lvi;
+        //lvi.iItem = ListView_GetNextItem(hwndCassette, -1, LVNI_ALL | LVNI_FOCUSED);
+        //if(lvi.iItem == -1) return FALSE;
+        //
+        //if(lvi.iItem < AllCassette.size())
+        //{
+        //    TCassette& cassette = AllCassette[lvi.iItem];
+        //    if(cassette.Event == "7")
+        //    {
+        //        PGConnection conn;
+        //        CONNECTION1(conn);
+        //        std::stringstream sd;
+        //        if(cassette.Finish_at.length())
+        //        {
+        //            cassette.Event = "5";
+        //            cassette.Delete_at = "";
+        //            sd << "UPDATE cassette SET event = 5, delete_at = DEFAULT WHERE id = " << cassette.Id;
+        //        }
+        //        else
+        //        {
+        //            cassette.Event = "2";
+        //            cassette.Delete_at = "";
+        //            sd << "UPDATE cassette SET event = 2, delete_at = DEFAULT WHERE id = " << cassette.Id;
+        //        }
+        //        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+        //        SETUPDATESQL(SQLLogger, conn, sd);
+        //    }
+        //
+        //    //SetUpdateCassete(conn, cassette, "event = 2, delete_at = DEFAULT ", "");
+        //    //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
+        //}
     }
     if(command == 999)
     {

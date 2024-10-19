@@ -938,15 +938,14 @@ _cassette Furn1;
 _cassette Furn2;
 _cassette SheetIT;
 
-void TestEvent1(TCassette& it)
+void TestEvent1(TCassette& it, int SheetInCassette)
 {
-    int SheetInCassette = Stoi(it.SheetInCassette);
     if(SheetInCassette > 0)
     {
         it.Event = "2";
         std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
         LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-        SETUPDATESQL(FurnLogger, conn_spic, sd);
+        SETUPDATESQL(SQLLogger, conn_spic, sd);
     }
     else
     {
@@ -955,7 +954,7 @@ void TestEvent1(TCassette& it)
         it.Delete_at = GetDataTimeString(st);
         std::stringstream sd("UPDATE cassette SET event = 7, delete_at = now() WHERE id = " + it.Id);
         LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-        SETUPDATESQL(FurnLogger, conn_spic, sd);
+        SETUPDATESQL(SQLLogger, conn_spic, sd);
     }
 }
 
@@ -968,13 +967,13 @@ void TestEvent3(TCassette& it)
         LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
         SETUPDATESQL(FurnLogger, conn_spic, sd);
     }
-    else if(!it.End_at.length())
-    {
-        it.Event = "2";
-        std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
-        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-        SETUPDATESQL(FurnLogger, conn_spic, sd);
-    }
+    //else if(!it.End_at.length())
+    //{
+    //    it.Event = "2";
+    //    std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
+    //    LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+    //    SETUPDATESQL(FurnLogger, conn_spic, sd);
+    //}
 }
 
 DWORD WINAPI Open_FURN_SQL(LPVOID)
@@ -1024,6 +1023,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
 #ifndef _DEBUG
 
+
             Sheet = _cassette(HMISheetData.Cassette);
             Furn1 = _cassette(AppFurn1.Cassette);
             Furn2 = _cassette(AppFurn2.Cassette);
@@ -1034,6 +1034,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             {
                 if(!isRun) return 0;
 
+                int SheetInCassette = Stoi(it.SheetInCassette);
                 S107::SQL::GetIsPos(conn_spic, it);
 
 #pragma region Вычисляем дату финала
@@ -1045,7 +1046,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 int Event = Stoi(it.Event);
                 if(Event == 1 && Sheet != SheetIT)
                 {
-                    TestEvent1(it);
+                    TestEvent1(it, SheetInCassette);
                 }
                 if(Event == 3 && Furn1 != SheetIT && Furn2 != SheetIT)
                 {
@@ -1053,13 +1054,14 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
                 }
                 if(Event == 2 && !it.Delete_at.length())
                 {
-                    CIl.push_back(it);
+                    if(Stoi(it.SheetInCassette) > 0)
+                        CIl.push_back(it);
                 }
                 if(it.Finish_at.length() && Event != 5 && Event != 7)
                 {
                     it.Event = 5;
                     std::stringstream sdf("UPDATE cassette SET event = 5 WHERE id = " + it.Id);
-                    SETUPDATESQL(FurnLogger, conn_spic, sdf);
+                    SETUPDATESQL(SQLLogger, conn_spic, sdf);
                 }
             }
 
@@ -1103,8 +1105,9 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
         if(!isRun) return 0;
 
-        int f = 20;
-        while(--f)std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        int f = 2;
+        while(isRun && (--f))
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     return 0;
 }

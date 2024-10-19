@@ -182,7 +182,7 @@ namespace KPVL {
 
             //DWORD CassetteIsFill(Value* value);
 
-            void SetSaveDone(PGConnection& conn);
+            void SetSaveDone(PGConnection& conn, int32_t CasseteId);
 
         }
     }
@@ -193,10 +193,10 @@ namespace KPVL {
         bool IsCassette(T_CassetteData& CD);
 
         //Получаем ID Кассеты
-        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD);
+        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD, int Hour);
 
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD);
+        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD, int Hour);
 
         //Вывод Номер листа в касете
         DWORD Sheet_InCassette(Value* value);

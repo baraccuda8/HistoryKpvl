@@ -17,8 +17,7 @@ extern std::string m_dbpass;
 #define CONNECTION1(_n) if(!_n.connections && !_n.connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
 #define CONNECTION2(_n) if(!_n->connections && !_n->connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
 
-#define SETUPDATESQL(_l, _c, _s) \
-{\
+#define SETUPDATESQL(_l, _c, _s){\
     std::string _comand = _s.str(); \
     if(DEB)LOG_INFO(_l, "{:90}| {}", FUNCTION_LINE_NAME, _comand); \
     PGresult* _res = _c.PGexec(_comand); \
