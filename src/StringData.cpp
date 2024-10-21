@@ -134,6 +134,22 @@ std::string GetDataTimeString()
     return sdt.str();
 }
 
+std::string GetDataTimeStringMS()
+{
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    std::stringstream sdt;
+    sdt << boost::format("%|04|-") % st.wYear;
+    sdt << boost::format("%|02|-") % st.wMonth;
+    sdt << boost::format("%|02| ") % st.wDay;
+    sdt << boost::format("%|02|:") % st.wHour;
+    sdt << boost::format("%|02|:") % st.wMinute;
+    sdt << boost::format("%|02|.") % st.wSecond;
+    sdt << boost::format("%|02|") % st.wMilliseconds;
+
+    return sdt.str();
+}
+
 
 time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6)
 {

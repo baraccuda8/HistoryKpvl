@@ -44,6 +44,9 @@ inline std::string string_time(struct tm const* TM)
 bool TestDataTimeOfString(std::string str);
 
 std::string GetDataTimeString();
+std::string GetDataTimeStringMS();
+
+
 std::string GetDataTimeString(std::time_t& st);
 std::string GetDataTimeString(std::time_t* st);
 std::string GetDataTimeString(std::tm& st);

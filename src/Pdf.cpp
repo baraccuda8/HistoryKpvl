@@ -5026,7 +5026,7 @@ namespace PDF
 			SetWindowText(hWndDebug, "Стартанул");
 			PGConnection conn;
 			CONNECTION1(conn, CorrectLog);
-			std::string start = "21-10-2024 12:48:18";
+			std::string start = "22-10-2024 04:05:00";
 			std::string stop =  "";// "2024-10-17 12:00:00";
 			SHEET::GetSheets (conn, start, stop);
 

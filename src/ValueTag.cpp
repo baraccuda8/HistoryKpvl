@@ -257,7 +257,6 @@ void Value::SaveSQL()
     {
         if(!Arhive) return;
         if(!ID) TestValSQL();
-        std::string Create_at = GetDataTimeString();
 
         bool ifval = OldVal.IsNul();
         if(GetType() == OpcUa::VariantType::FLOAT)
@@ -268,6 +267,7 @@ void Value::SaveSQL()
             float f3 = std::abs(f1 - f2);
             if(f3 > hist || ifval)
             {
+                std::string Create_at = GetDataTimeStringMS();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '"<< Create_at << "', content = ";
                 sd << GetString();
@@ -293,6 +293,7 @@ void Value::SaveSQL()
             double f3 = std::abs(f1 - f2);
             if(f3 > hist || ifval)
             {
+                std::string Create_at = GetDataTimeStringMS();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << GetString();
@@ -317,7 +318,7 @@ void Value::SaveSQL()
             std::string s2 = GetValString(OldVal, coeff, format);
             if(ifval || s1 != s2)
             {
-
+                std::string Create_at = GetDataTimeStringMS();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << "'" << s1 << "'";
@@ -344,6 +345,7 @@ void Value::SaveSQL()
         //}
         else if(ifval || OldVal != Val)
         {
+            std::string Create_at = GetDataTimeStringMS();
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
             sd << GetString();
