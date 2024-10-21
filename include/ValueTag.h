@@ -50,7 +50,7 @@ public:
 
     bool Update = false;
     void UpdateVal();
-    void InsertValue();
+    void InsertValue(std::string& Create_at);
     void SaveSQL();
     void TestValSQL();
     void GetIdValSQL();

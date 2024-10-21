@@ -865,7 +865,7 @@ int SetCassetteInWait(PGConnection& conn, TCassette& it)
     {
         it.Event = "2";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = 2, peth = 0 WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
         std::string comand = sd.str();
         LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         SETUPDATESQL(PethLogger, conn, sd);
@@ -950,22 +950,18 @@ void FindEnd(PGConnection& conn, TCassette& it)
 
         std::string End_at1 = "";
         std::string End_at2 = "";
-
-
         {
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'true' AND ";
             sd << "id_name = " << ProcEndID;
-            sd << " ORDER BY id ASC LIMIT 1";
+            sd << " ORDER BY id DESC LIMIT 1";
             End_at1 = GetDataEnd(conn, sd.str());
         }
-
-        //SELECT create_at FROM todos WHERE create_at <=now() AND content = 'true' AND id_name = 21 ORDER BY id DESC LIMIT 1;
         {
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'false' AND ";
             sd << "id_name = " << ProcRunID;
-            sd << " ORDER BY id ASC LIMIT 1";
+            sd << " ORDER BY id DESC LIMIT 1";
             End_at2 = GetDataEnd(conn, sd.str());
         }
 
@@ -1039,108 +1035,139 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
         {
             if(!isRun) return;
 
+            int Event = Stoi(it.Event);
+            bool DeleteIT = (bool)it.Delete_at.length();
+
+            if((Event != 7 && DeleteIT) || (Event == 7 && !DeleteIT))
+            {
+                //В удаленные Event = 7
+                Event = SetCassetteInDelete(conn, it);
+            }
             int SheetInCassette = Stoi(it.SheetInCassette);
 
-            SheetIT = _cassette(it);
-            int Event = Stoi(it.Event);
-            int Peth = Stoi(it.Peth);
-
-            //Если кассета на кантовку
-            if(SheetIT == Sheet)
+            //Если кассета не удаленв
+            if(Event != 7)
             {
-                if(Event != 1 || Peth != 0)
-                {
-                    Peth = 0;
-                    //На кантовку Event = 1
-                    Event = SetCassetteInCant(conn, it);
-                }
-            }
+                SheetIT = _cassette(it);
+                int Peth = Stoi(it.Peth);
 
-            //Если кассета в 1-й печи отпукая
-            else if(SheetIT == Furn1)
-            {
-                if(Event != 3 || Peth != 1)
-                {
-                    Peth = 1;
-                    //В печь Event = 3
-                    Event = SetCassetteInFurn(conn, it, Peth);
-                }
-            }
+                bool YesSh = (SheetIT == Sheet);
+                bool YesF1 = (SheetIT == Furn1);
+                bool YesF2 = (SheetIT == Furn2);
 
-            //Если кассета во 2-й печи отпукая
-            else if(SheetIT == Furn2)
-            {
-                if(Event != 3 || Peth != 2)
+                //Если кассета на кантовку
+                if(YesSh)
                 {
-                    Peth = 2;
-                    //В печь Event = 3
-                    Event = SetCassetteInFurn(conn, it, Peth);
-                }
-            }
-
-            //Если кассета не на кантовке и не в печах отпуска
-            else if(Event != 5 && SheetIT != Sheet && SheetIT != Furn1 && SheetIT != Furn2)
-            {
-                //Если количество листов в касете не ноль
-                if(SheetInCassette > 0)
-                {
-                    if(it.Run_at.length())
+                    if(Event != 1 || Peth != 0)
                     {
-                        //Ищем конец
-                        if(!it.End_at.length())
-                            FindEnd(conn, it);
-
-                        //Ждем 15 минут финал
-                        if(it.End_at.length() && !it.Finish_at.length())
-                            FindFinish(conn, it);
-                    }
-
-                    //Если есть финал
-                    if(it.Finish_at.length())
-                    {
-                        //В финал Event = 5
-                        Event = SetCassetteInFinal(conn, it);
+                        Peth = 0;
+                        //На кантовку Event = 1
+                        Event = SetCassetteInCant(conn, it);
                     }
                 }
-            }
 
-            //Если не на кантовке и количество листов в касете ноль отправляем в потерянные
-            if(SheetIT != Sheet && SheetIT != Furn1 && SheetIT != Furn2)
-            {
-                //Если нет количества кассет оитправляем в удаленный
-                if(SheetInCassette <= 0)
+                //Если кассета в 1-й печи отпукая
+                else if(YesF1)
                 {
-                    Peth = 0;
-                    //В удаленные Event = 7
-                    Event = SetCassetteInDelete(conn, it);
+                    if(Event != 3 || Peth != 1)
+                    {
+                        Peth = 1;
+                        //В печь Event = 3
+                        Event = SetCassetteInFurn(conn, it, Peth);
+                    }
                 }
+
+                //Если кассета во 2-й печи отпукая
+                else if(YesF2)
+                {
+                    if(Event != 3 || Peth != 2)
+                    {
+                        Peth = 2;
+                        //В печь Event = 3
+                        Event = SetCassetteInFurn(conn, it, Peth);
+                    }
+                }
+
+                //Если кассета не на кантовке и не в печах отпуска
                 else
                 {
-                    //Если нет начала и нет конеца и не удален
-                    if(!it.Run_at.length() && !it.End_at.length() && !it.Delete_at.length())
+                    if(Event != 2 && Event != 5 && !YesSh && !YesF1 && !YesF2)
                     {
-                        //Если не в ожидании
-                        if(Event != 2)
+                        //Если количество листов в касете не ноль
+                        if(SheetInCassette > 0)
                         {
-                            //В ожидание Event = 2
-                            Event = SetCassetteInWait(conn, it);
+                            if(it.Run_at.length())
+                            {
+                                //Ищем конец
+                                if(!it.End_at.length())
+                                {
+                                    FindEnd(conn, it);
+                                }
+
+                                if(it.End_at.length())
+                                {
+                                    //Ждем 15 минут финал
+                                    if(!it.Finish_at.length())
+                                    {
+                                        //Финализируем
+                                        FindFinish(conn, it);
+                                    }
+                                }
+                                else
+                                {
+                                    //Если конец не найден отправляем в ожидание
+                                    Event = SetCassetteInWait(conn, it);
+                                }
+
+                            }
+
+                            //Если есть финал
+                            if(it.Finish_at.length())
+                            {
+                                //В финал Event = 5
+                                Event = SetCassetteInFinal(conn, it);
+                            }
                         }
                     }
                 }
-            }
 
-            //Не удален и не финализирован но есть Finish_at
-            if(Event != 5 && Event != 7 && it.Finish_at.length())
-            {
-                //В финал Event = 5
-                Event = SetCassetteInFinal(conn, it);
-            }
+                //Если не на кантовке и количество листов в касете ноль отправляем в потерянные
+                if(!YesSh && !YesF1 && !YesF2)
+                {
+                    //Если нет количества кассет оитправляем в удаленный
+                    if(SheetInCassette <= 0)
+                    {
+                        //В удаленные Event = 7
+                        Event = SetCassetteInDelete(conn, it);
+                    }
+                    else
+                    {
+                        //Если нет начала и нет конеца и не удален
+                        if(!it.Run_at.length() && !it.End_at.length() && !DeleteIT)
+                        {
+                            //Если не в ожидании
+                            if(Event != 2)
+                            {
+                                //В ожидание Event = 2
+                                Event = SetCassetteInWait(conn, it);
+                            }
+                        }
+                    }
+                }
 
-            //Наполняем структуру кассет для печей
-            if(Event == 2 && !it.Delete_at.length())
-            {
-                if(SheetInCassette > 0)
-                    CIl.push_back(it);
+                //Не удален и не финализирован но есть Finish_at
+                if(Event != 5 && Event != 7 && it.Finish_at.length())
+                {
+                    //В финал Event = 5
+                    Event = SetCassetteInFinal(conn, it);
+                }
+
+                //Наполняем структуру кассет для печей
+                if(Event == 2)
+                {
+                    if(SheetInCassette > 0)
+                        CIl.push_back(it);
+                }
             }
         }
     }CATCH(FurnLogger, "");

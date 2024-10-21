@@ -152,7 +152,7 @@ void Value::UpdateVal()
     CATCH(AllLogger, Patch);
 }
 
-void Value::InsertValue()
+void Value::InsertValue(std::string& Create_at)
 {
     try
     {
@@ -163,11 +163,12 @@ void Value::InsertValue()
             LOG_INFO(SQLLogger, "{:90}| Error ID {}", FUNCTION_LINE_NAME, Patch);
             return;
         }
+
         std::stringstream ssd;
         if(GetType() == OpcUa::VariantType::STRING)
-            ssd << "INSERT INTO todos (id_name, content) VALUES(" << ID << ", '" << GetString() << "');";
+            ssd << "INSERT INTO todos (create_at, id_name, content) VALUES('" << Create_at << "', " << ID << ", '" << GetString() << "');";
         else
-            ssd << "INSERT INTO todos (id_name, content) VALUES(" << ID << ", " << GetString() << ");";
+            ssd << "INSERT INTO todos (create_at, id_name, content) VALUES('" << Create_at << "', " << ID << ", " << GetString() << ");";
 
         SETUPDATESQL(SQLLogger, (*Conn), ssd);
 
@@ -256,6 +257,7 @@ void Value::SaveSQL()
     {
         if(!Arhive) return;
         if(!ID) TestValSQL();
+        std::string Create_at = GetDataTimeString();
 
         bool ifval = OldVal.IsNul();
         if(GetType() == OpcUa::VariantType::FLOAT)
@@ -267,7 +269,7 @@ void Value::SaveSQL()
             if(f3 > hist || ifval)
             {
                 std::stringstream sd;
-                sd << "UPDATE tag SET content_at = now(), content = ";
+                sd << "UPDATE tag SET content_at = '"<< Create_at << "', content = ";
                 sd << GetString();
                 sd << " WHERE id = " << ID;
                 //sd << " WHERE name = '" << Patch.c_str() << "';";
@@ -279,7 +281,7 @@ void Value::SaveSQL()
                 //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                 //    LOG_ERR_SQL(SQLLogger, res, comand);
                 //PQclear(res);
-                InsertValue();
+                InsertValue(Create_at);
                 OldVal = Val;
             }
         }
@@ -292,7 +294,7 @@ void Value::SaveSQL()
             if(f3 > hist || ifval)
             {
                 std::stringstream sd;
-                sd << "UPDATE tag SET content_at = now(), content = ";
+                sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << GetString();
                 sd << " WHERE id = " << ID;
                 //sd << " WHERE name = '" << Patch.c_str() << "';";
@@ -304,7 +306,7 @@ void Value::SaveSQL()
                 //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                 //    LOG_ERR_SQL(SQLLogger, res, comand);
                 //PQclear(res);
-                InsertValue();
+                InsertValue(Create_at);
                 OldVal = Val;
             }
         }
@@ -317,11 +319,11 @@ void Value::SaveSQL()
             {
 
                 std::stringstream sd;
-                sd << "UPDATE tag SET content_at = now(), content = ";
+                sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << "'" << s1 << "'";
                 sd << " WHERE id = " << ID;
                 SETUPDATESQL(SQLLogger, (*Conn), sd);
-                InsertValue();
+                InsertValue(Create_at);
                 OldVal = Val;
             }
         }
@@ -343,11 +345,11 @@ void Value::SaveSQL()
         else if(ifval || OldVal != Val)
         {
             std::stringstream sd;
-            sd << "UPDATE tag SET content_at = now(), content = ";
+            sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
             sd << GetString();
             sd << " WHERE id = " << ID;
             SETUPDATESQL(SQLLogger, (*Conn), sd);
-            InsertValue();
+            InsertValue(Create_at);
             OldVal = Val;
         }
     }
