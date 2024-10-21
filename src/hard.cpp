@@ -495,8 +495,8 @@ void PLC_KPVL::Run(int count)
                 if(++NewDataVal > 5)    //5 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
-                    //LOG_INFO(SQLLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    //LOG_INFO(Logger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2, hour);
 
                     //HMISheetData.SaveDone->Set_Value(true);
@@ -538,7 +538,9 @@ void PLC_KPVL::Run(int count)
     if(isRun)
     {
         LOG_INFO(Logger, "{:90}| Ждем 5 секунд... для {}", FUNCTION_LINE_NAME, Uri);
-        Sleep(5000);
+        int f = 5;
+        while(--f && isRun)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     try
@@ -697,7 +699,7 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
         {
             countconnect++;
             LOG_INFO(Logger, "{:90}| Повторяем попытку {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
-            Sleep(1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     }
     //SetWindowText(winmap(hEditMode1), "Удаление PLC");
@@ -711,37 +713,16 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
 void GetEndData(TSheet& sheet)
 {
     std::string comand = "SELECT FROM todos WHERE pos > 2 AND id = " + sheet.id;
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
     PGresult* res = conn_spis.PGexec(comand);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(SQLLogger, res, comand);
+        LOG_ERR_SQL(HardLogger, res, comand);
     PQclear(res);
 }
 
-
-void UpdateSheetPos()
-{
-    {
-        //std::
-        //std::string comand = "UPDATE FROM sheet WHERE pos >= 10";
-        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        //PGresult* res = conn_spis.PGexec(comand);
-        //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        //     LOG_ERR_SQL(SQLLogger, res, comand);
-        //PQclear(res);
-    }
-    {
-        std::string comand = "UPDATE sheet SET pos = 7 WHERE delete_at IS NULL AND news = 1;";
-        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        PGresult* res = conn_spis.PGexec(comand);
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
-        PQclear(res);
-    }
-}
 
 void TestSheet()
 {
@@ -778,7 +759,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
 {
     size_t old_count = 0;
     
-    LOG_INFO(SQLLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
+    LOG_INFO(HardLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
     while(isRun)
     {
@@ -803,8 +784,6 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
                 KPVL::SQL::GetDataTime_All(conn_spis, TS);
     //#endif
             }
-
-            //UpdateSheetPos();
 
             size_t count = AllSheet.size();
             if(old_count != count)
@@ -842,7 +821,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
         }
         CATCH(HardLogger, "");
     }
-    LOG_INFO(SQLLogger, "{:90} Stop Open_KPVL_SQL", FUNCTION_LINE_NAME);
+    LOG_INFO(HardLogger, "{:90} Stop Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
     return 0;
 }

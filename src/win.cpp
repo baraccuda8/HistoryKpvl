@@ -52,7 +52,8 @@ int CenterX = MaxTrackSizeX / 2 - borderX;
 bool FULLSCREEN = false;
 int Monitor = 1;
 
-//#define SIZEX 32
+#pragma region Region define
+
 #define SIZEX 0
 #define SIZEY 20
 
@@ -91,6 +92,7 @@ int Monitor = 1;
 #define  XL_X11 (XL_CX10 + XL_X10)
 #define  XL_X12 (XL_CX11 + XL_X11)
 #define  XL_X13 (XL_CX12 + XL_X12)
+#pragma endregion
 
 //События листа
 std::map<std::string, std::string> NamePos ={
@@ -263,6 +265,7 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 {hEditDiagnose, {szStat,   Stat03Flag, {150, 0, 0, 21}, "Информацмя"}},
 {hEditTimes,    {szStat,   Stat03Flag, {0, 0, 150, 21}, "00:00:00"}},
 {hEditszButt,   {szButt,   Butt5Flag, {0, 0, 21, 21}, "Информацмя"}},
+
 
 #pragma region Задание: Время закалки, Давление воды
     {hGroup365, {szTem1,   Temp1Flag, {1650, 170, 215, 66}, "Задание"}},
@@ -947,6 +950,54 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 #pragma endregion
 
 };
+
+
+LRESULT OldSubProc = NULL;
+char buff[MAX_STRING];
+LRESULT APIENTRY SubProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    //if(message == WM_CHAR)
+    if(message == WM_KEYDOWN)
+    {
+        if(wParam == VK_RETURN)
+        {
+            std::string* p = (std::string*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            if(p)
+            {
+                try
+                {
+                    memset(buff, 0, MAX_STRING);
+                    GetWindowText(hWnd, buff, MAX_STRING);
+                    *p = buff;
+                }
+                CATCH(AllLogger, "");
+            }
+            SetFocus(GetParent(hWnd));
+        }
+        if(wParam == VK_ESCAPE)
+        {
+            std::string* p = (std::string*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            if(p)
+            {
+                try
+                {
+                    SetWindowText(hWnd, p->c_str());
+                }
+                CATCH(AllLogger, "");
+            }
+            SetFocus(GetParent(hWnd));
+        }
+        //case VK_ESCAPE: //Отмена
+        //    return DestroyWindow(hWnd);
+        //    break;
+    }
+
+    //if(message == WM_KILLFOCUS)return DestroyWindow(hWnd);
+
+    return CallWindowProc((WNDPROC)OldSubProc, hWnd, message, wParam, lParam);
+}
+
+
 
 //Рисуем заголовок ListBox
 LRESULT OnPaintHeadListView(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -1858,8 +1909,6 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
-
-
 
 LRESULT CALLBACK WndProc1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

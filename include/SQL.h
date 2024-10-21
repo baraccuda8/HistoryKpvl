@@ -14,8 +14,8 @@ extern std::string m_dbname;
 extern std::string m_dbuser;
 extern std::string m_dbpass;
 
-#define CONNECTION1(_n) if(!_n.connections && !_n.connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
-#define CONNECTION2(_n) if(!_n->connections && !_n->connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str())
+#define CONNECTION1(_n, _l) {try{if(!_n.connections  && !_n.Ñonnection(#_n) )throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str());}CATCH(_l, "");}
+#define CONNECTION2(_n, _l) {try{if(!_n->connections && !_n->Ñonnection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str());}CATCH(_l, "");}
 
 #define SETUPDATESQL(_l, _c, _s){\
     std::string _comand = _s.str(); \
@@ -26,90 +26,24 @@ extern std::string m_dbpass;
     PQclear(_res);\
 }
 
+std::string PGgetvalue(PGresult * res, int l, int i);
 
 class PGConnection
 {
 public:
-    PGconn* m_connection;
+    PGconn* m_connection = NULL;
     bool connections = false;
-    std::string Name = "";
-    PGConnection() { };
-    //void PGDisConnection() 
-    //{ 
-    //    if(connections)PQfinish(m_connection); 
-    //    connections = false; 
-    //};
-    ~PGConnection()
-    { 
-        if(connections)PQfinish(m_connection); 
-        connections = false; 
-    };
-    bool connection(std::string name){
-        try
-        {
-            if(connections)return connections;
+    PGConnection();
+    ~PGConnection();
+    bool Ñonnection(std::string name);
 
-            m_connection = PQsetdbLogin(m_dbhost.c_str(), m_dbport.c_str(), nullptr, nullptr, m_dbname.c_str(), m_dbuser.c_str(), m_dbpass.c_str());
+    PGresult* PGexec(std::string std);
+    PGresult* PGexec(std::stringstream std);
 
-            //if(PQstatus(m_connection) == CONNECTION_OK && PQsetnonblocking(m_connection, 1) != 0)
-            if(PQstatus(m_connection) != CONNECTION_OK && PQsetnonblocking(m_connection, 1) != 0)
-            {
-                connections = false;
-                throw std::runtime_error(PQerrorMessage(m_connection));
-                //LOG_INFO(AllLogger, "{:90}| conn_kpvl {}", FUNCTION_LINE_NAME, errc);
-            }
-            PGresult* res = PGexec("set time zone 'Asia/Yekaterinburg';");
-            if(PQresultStatus(res) != ExecStatusType::PGRES_COMMAND_OK)
-            {
-                std::string errc = utf8_to_cp1251(PQresultErrorMessage(res));
-                LOG_INFO(AllLogger, "{:90}| {} {}", FUNCTION_LINE_NAME, name, errc);
-            }
-            PQclear(res);
+    std::string PGgetvalue(PGresult* res, int l, int i);
 
-            connections = true;
-        }
-        catch(std::runtime_error rt)
-        {
-            LOG_INFO(AllLogger, "{:90}| error {} {} ", FUNCTION_LINE_NAME, name, rt.what());
-            //MessageBox(NULL, rt.what(), "Error", 0);
-        }
-        catch(...)
-        {
-            LOG_ERROR(AllLogger, "{:90}| Unknown error {} ", FUNCTION_LINE_NAME, name);
-            //MessageBox(NULL, "Íåèçâåñòíàÿ îøèáêà", "Error", 0);
-        }
-        return connections;
-    }
-    
-    int PQntuples(PGresult* res)
-    {
-        if(!connections) return 0;
-        return ::PQntuples(res);
-    }
-
-    PGresult* PGexec(std::string std){ 
-        if(!connections) return 0;
-        return 
-            ::PQexec(m_connection, cp1251_to_utf8(std).c_str());
-    };
-
-    //PGresult* MyPQexec(std::string std){
-    //    if(!connections) return 0;
-    //    return
-    //        ::PQexec(m_connection, std.c_str());
-    //};
-
-    std::string PGgetvalue(PGresult* res, int l, int i)
-    {
-        if(!connections) return "";
-        std::string ss = PQgetvalue(res, l, i);
-        if(!ss.empty())
-            return utf8_to_cp1251(ss);
-        else return "";
-    }
-
+    int PQntuples(PGresult* res);
 };
-
 
 namespace CollTag{
     extern int Id;

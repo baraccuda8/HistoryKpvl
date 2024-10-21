@@ -10,6 +10,12 @@ typedef std::map<std::string, std::pair<int64_t, float>> T_SqlTemp;
 class Graff{
 public:
 	HWND gHwnd;
+	HWND tHwnd;
+	HWND bHwnd;
+	std::string AddTime = "";
+	std::string StartKPVL = "";
+	std::string StopKPVL = "";
+
 	bool full = false;
 	int64_t MaxSecCount = 0LL;
 	T_SqlTemp TempRef ={}; 	//Задание

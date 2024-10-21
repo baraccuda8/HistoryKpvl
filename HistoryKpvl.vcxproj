@@ -9,6 +9,14 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="TestDebug|x64">
+      <Configuration>TestDebug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="TestRelease|x64">
+      <Configuration>TestRelease</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -25,7 +33,21 @@
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestDebug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestRelease|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -40,7 +62,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='TestDebug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='TestRelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -52,13 +80,29 @@
     </LinkKeyFile>
     <LinkDelaySign>false</LinkDelaySign>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestDebug|x64'">
+    <OutDir>$(SolutionDir)Build\</OutDir>
+    <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)_dt</TargetName>
+    <LinkKeyFile />
+    <LinkDelaySign>false</LinkDelaySign>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\</OutDir>
     <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
     <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)</TargetName>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>
+    </LinkIncremental>
     <LinkKeyFile>
     </LinkKeyFile>
+    <LinkDelaySign>false</LinkDelaySign>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestRelease|x64'">
+    <OutDir>$(SolutionDir)Build\</OutDir>
+    <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)_t</TargetName>
+    <LinkIncremental />
+    <LinkKeyFile />
     <LinkDelaySign>false</LinkDelaySign>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -78,15 +122,17 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
-;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru_$(PlatformArchitecture)_$(Configuration).lib;Psapi.lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>2097152</StackReserveSize>
       <LargeAddressAware>true</LargeAddressAware>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
@@ -106,6 +152,55 @@ time /T &gt;&gt;rc\date.txt</Command>
       <UpdateFileHashes />
     </Manifest>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestDebug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>NOSQL;DEBUG;_WIN64;%(PreprocessorDefinitions);WIN32_WINDOWS;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <AdditionalIncludeDirectories>../../../KPVL/PostgreSQL/16/include;../FreeOpcUa/include;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BuildStlModules>true</BuildStlModules>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>
+      </Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru_$(PlatformArchitecture)_$(Configuration).lib;Psapi.lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>2097152</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <WindowsMetadataFile>HistoryKpvl64v143</WindowsMetadataFile>
+      <SetChecksum>
+      </SetChecksum>
+      <Version>2.1</Version>
+    </Link>
+    <PreBuildEvent>
+      <Command>date /T &gt;rc\date.txt
+time /T &gt;&gt;rc\date.txt</Command>
+    </PreBuildEvent>
+    <ResourceCompile>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+    <Manifest>
+      <UpdateFileHashes>
+      </UpdateFileHashes>
+    </Manifest>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -123,6 +218,8 @@ time /T &gt;&gt;rc\date.txt</Command>
       <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <Optimization />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,13 +228,14 @@ time /T &gt;&gt;rc\date.txt</Command>
       <OptimizeReferences>
       </OptimizeReferences>
       <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Psapi.lib;opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+      <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
-;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru$(PlatformArchitecture)$(PlatformToolset)_$(Configuration).lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru_$(PlatformArchitecture)_$(Configuration).lib;Psapi.lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <StackReserveSize>2097152</StackReserveSize>
-      <IgnoreSpecificDefaultLibraries>MSVCRTD.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <WindowsMetadataFile>HistoryKpvl64v143</WindowsMetadataFile>
       <SetChecksum>true</SetChecksum>
@@ -148,10 +246,67 @@ time /T &gt;&gt;rc\date.txt</Command>
 time /T &gt;&gt;rc\date.txt</Command>
     </PreBuildEvent>
     <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <LinkLibraryDependencies>
+      </LinkLibraryDependencies>
     </ProjectReference>
     <Manifest>
       <UpdateFileHashes />
+    </Manifest>
+    <ResourceCompile>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestRelease|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>NOSQL;_WIN64;%(PreprocessorDefinitions);WIN32_WINDOWS;NDEBUG;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0600</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <AdditionalIncludeDirectories>../../../KPVL/PostgreSQL/16/include;../FreeOpcUa/include;../Haru/include;../Exel/LibXL_4.0.4/include_cpp;../boost_1_81_0;Include;Rc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4091;4459;4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <Optimization>
+      </Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>
+      </OptimizeReferences>
+      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
+;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
+;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru_$(PlatformArchitecture)_$(Configuration).lib;Psapi.lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <StackReserveSize>2097152</StackReserveSize>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.LIB</IgnoreSpecificDefaultLibraries>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <WindowsMetadataFile>HistoryKpvl64v143</WindowsMetadataFile>
+      <SetChecksum>true</SetChecksum>
+      <Version>2.1</Version>
+    </Link>
+    <PreBuildEvent>
+      <Command>date /T &gt;rc\date.txt
+time /T &gt;&gt;rc\date.txt</Command>
+    </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>
+      </LinkLibraryDependencies>
+    </ProjectReference>
+    <Manifest>
+      <UpdateFileHashes>
+      </UpdateFileHashes>
     </Manifest>
     <ResourceCompile>
       <Culture>0x0419</Culture>

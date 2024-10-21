@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "main.h"
+#include "win.h"
 #include "StringData.h"
 #include "file.h"
 #include "exel.h"
@@ -9,7 +10,57 @@
 #include "SQL.h"
 #include "Event.h"
 
-
+bool TestDataTimeOfString(std::string str)
+{
+    bool b = false;
+    try
+    {
+        //2024-10-19
+        //19-10-2024 01:01:01
+        //boost::regex xRegEx("^((0?[1-9]|[12][0-9]|3[01])[\\/\\-\\.](0?[1-9]|1[012])[ \\/\\.\\-])");
+        //((([0]?[1-9]|1[0-2])(:|\\.)[0-5][0-9]((:|\\.)[0-5][0-9])?( )?(AM|am|aM|Am|PM|pm|pM|Pm))|(([0]?[0-9]|1[0-9]|2[0-3])(:|\\.)[0-5][0-9]((:|\\.)[0-5][0-9])?))$
+        //boost::regex xRegEx("^
+        //                    (?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[1,3-9]|1[0-2])\\2))
+        //                    (?:(?:1[6-9]|[2-9]\\d)?\\d{2})$
+        //                    |^(?:29(\\/|-|\\.)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$
+        //                    |^(?:0?[1-9]|1\\d|2[0-8])
+        //                    (\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})
+        //                    ");
+        // 12/01/2002 12:32:10
+        // ^(([0-2]\\d|[3][0-1])[\\/-]
+        // ([0]\\d|[1][0-2])[\\/-]
+        // [2][0]\\d{2}\\s
+        // ([0-1]\\d|[2][0-3])\\:[0-5]\\d\\:[0-5]\\d)$
+        //
+        std::string Spl = "[\\/-]";
+        std::string Day = "([0-2]\\d|[3][0-1])";
+        std::string Mon = "([0]\\d|[1][0-2])";
+        std::string Yar = "[2][0]\\d{2}";
+        std::string Tim = " (([0-1]\\d|[2][0-3])\\:[0-5]\\d\\:[0-5]\\d)$";
+        boost::regex xRegEx("(^(" + Day + Spl + Mon + Spl + Yar + ")|" + "^(" + Yar + Spl + Mon + Spl + Day + "))" + Tim);
+        b = boost::regex_match(str, xRegEx);
+        if(b)
+        {
+            int tt = 0;
+        }
+    }
+    catch(std::invalid_argument& exc) { 
+        SetWindowText(hWndDebug, (FUNCTION_LINE_NAME + ": " + exc.what()).c_str());
+    }
+    catch(std::filesystem::filesystem_error& exc) { 
+        SetWindowText(hWndDebug, (FUNCTION_LINE_NAME + ": " + exc.what()).c_str());
+    }
+    catch(std::runtime_error& exc) { 
+        SetWindowText(hWndDebug, (FUNCTION_LINE_NAME + ": " + exc.what()).c_str());
+    }
+    catch(std::exception& exc) {
+        SetWindowText(hWndDebug, (FUNCTION_LINE_NAME + ": " + exc.what()).c_str());
+    }
+    catch(...) { 
+        SetWindowText(hWndDebug, (FUNCTION_LINE_NAME + ": " + "Unknown error").c_str());
+    }
+    return b;
+}
 
 std::string GetDataTimeString(std::time_t& st)
 {
@@ -186,6 +237,42 @@ time_t DataTimeOfString(std::string str, std::tm& TM)
     catch(...) {}
 
     return 0;
+}
+
+std::string DataYarDaySwap(std::string str)
+{
+    std::string::const_iterator start = str.begin();
+    std::string::const_iterator end = str.end();
+    boost::match_results<std::string::const_iterator> what;
+    boost::regex xRegEx;
+    xRegEx = FORMATTIME1;
+    if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
+    {
+        std::stringstream sdt;
+        sdt << boost::format("%|04|-") % Stoi(what[1]);
+        sdt << boost::format("%|02|-") % Stoi(what[2]);
+        sdt << boost::format("%|02| ") % Stoi(what[3]);
+        sdt << boost::format("%|02|:") % Stoi(what[4]);
+        sdt << boost::format("%|02|:") % Stoi(what[5]);
+        sdt << boost::format("%|02|")  % Stoi(what[6]);
+        return sdt.str();
+    }
+    else
+    {
+        xRegEx = FORMATTIME2;
+        if(boost::regex_search(start, end, what, xRegEx, boost::match_default) && what.size() > 6)
+        {
+            std::stringstream sdt;
+            sdt << boost::format("%|04|-") % Stoi(what[3]);
+            sdt << boost::format("%|02|-") % Stoi(what[2]);
+            sdt << boost::format("%|02| ") % Stoi(what[1]);
+            sdt << boost::format("%|02|:") % Stoi(what[4]);
+            sdt << boost::format("%|02|:") % Stoi(what[5]);
+            sdt << boost::format("%|02|")  % Stoi(what[6]);
+            return sdt.str();
+        }
+    }
+
 }
 
 time_t DataTimeOfString(std::string str)

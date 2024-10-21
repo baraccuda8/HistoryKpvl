@@ -153,6 +153,9 @@ namespace evCassete
 #define List1Flag WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_NOSORTHEADER 
 #define List2Flag WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_NOSORTHEADER | LVS_OWNERDATA
 
+extern LRESULT OldSubProc;
+LRESULT APIENTRY SubProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 //Структура заголовков колонок окон ListBox
 typedef struct {
     std::string title;
@@ -178,7 +181,6 @@ enum HWNDCLIENT{
     hEdit_Sheet = 1002,
     hEdit_Cassette  = 1003,
 
-    hID1002 = 1003,
     hID1003 = 1004,
     hID1004 = 1005,
     hID1005 = 1006,

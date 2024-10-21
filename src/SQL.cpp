@@ -134,7 +134,7 @@ namespace LoginDlg
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT3), ss, 256);    m_dbname = ss;
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT4), ss, 256);    m_dbuser = ss;
             GetWindowText(GetDlgItem(hWnd, IDC_EDIT5), ss, 256);    m_dbpass = ss;
-            CONNECTION1(conn_spis);
+            CONNECTION1(conn_spis, SQLLogger);
             if(conn_spis.connections)
             {
                 SaveConnect();
@@ -160,6 +160,94 @@ namespace LoginDlg
         return (0);
     }
 };
+
+
+#pragma region class PGConnection
+
+std::string PGgetvalue(PGresult* res, int l, int i)
+{
+    std::string ss = ::PQgetvalue(res, l, i);
+    if(!ss.empty())
+        return utf8_to_cp1251(ss);
+    else return "";
+}
+
+
+PGConnection::PGConnection() :m_connection(NULL), connections(false)
+{
+};
+
+PGConnection::~PGConnection()
+{
+    if(connections)::PQfinish(m_connection);
+    connections = false;
+};
+
+bool PGConnection::Ñonnection(std::string name){
+    if(connections)return connections;
+
+    m_connection = ::PQsetdbLogin(m_dbhost.c_str(), m_dbport.c_str(), nullptr, nullptr, m_dbname.c_str(), m_dbuser.c_str(), m_dbpass.c_str());
+
+    ConnStatusType st = ::PQstatus(m_connection);
+    if(st != CONNECTION_OK && ::PQsetnonblocking(m_connection, 1) != 0)
+    {
+        connections = false;
+        throw std::runtime_error(::PQerrorMessage(m_connection));
+    }
+
+    PGresult* res = ::PQexec(m_connection, "set time zone 'Asia/Yekaterinburg'");
+    ExecStatusType sd = ::PQresultStatus(res);
+    if(sd != PGRES_COMMAND_OK)
+    {
+        std::string errc = utf8_to_cp1251(::PQresultErrorMessage(res));
+        throw std::runtime_error(errc);
+    }
+    PQclear(res);
+
+    connections = true;
+
+    return connections;
+}
+
+int PGConnection::PQntuples(PGresult* res)
+{
+    if(!connections) return 0;
+    return ::PQntuples(res);
+}
+
+PGresult* PGConnection::PGexec(std::string std){
+    if(!connections) return NULL;
+#ifdef NOSQL 
+    std::string st = std;
+    boost::to_upper(st);
+    if(st.find("SELECT ") != 0)
+        return NULL;
+#endif
+    return ::PQexec(m_connection, cp1251_to_utf8(std).c_str());
+
+};
+
+PGresult* PGConnection::PGexec(std::stringstream std){
+    if(!connections) return NULL;
+#ifdef NOSQL 
+    std::string st = std.str();
+    boost::to_upper(st);
+    if(st.find("SELECT ") != 0)
+        return NULL;
+#endif
+    return ::PQexec(m_connection, cp1251_to_utf8(std.str()).c_str());
+};
+
+std::string PGConnection::PGgetvalue(PGresult* res, int l, int i)
+{
+    if(!connections) return "";
+    std::string ss = ::PQgetvalue(res, l, i);
+    if(!ss.empty())
+        return utf8_to_cp1251(ss);
+    else return "";
+}
+
+#pragma endregion
 
 
 bool cmpMaxMin(Value* first, Value* second)
@@ -272,55 +360,55 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
     }
 }
 
-void GetPetch(S107::T_cass& tc, int p)
-{
-    std::string comand = "SELECT id FROM cassette2 WHERE peth = " + std::to_string(p) + " ORDER BY id ASC LIMIT 1";
-    PGresult* res = conn_spis.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        int line = PQntuples(res);
-        if(line)
-        {
-            std::string sid = conn_spis.PGgetvalue(res, line - 1, 0);
-            if(sid.length())
-                tc.id = Stoi(sid);
-        }
-    }
-    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
-
-    if(tc.id)
-    {
-        std::string comand = "SELECT day, month, year, cassetteno, run_at, error_at, end_at FROM cassette2 WHERE id = " + std::to_string(tc.id);
-        PGresult* res = conn_spis.PGexec(comand);
-        if(PQresultStatus(res) == PGRES_TUPLES_OK)
-        {
-            int line = PQntuples(res);
-            if(line)
-            {
-                tc.End_at = conn_spis.PGgetvalue(res, line - 1, 6);
-                if(tc.End_at.size())
-                    tc = S107::T_cass();
-                else
-                {
-                    tc.Day = Stoi(conn_spis.PGgetvalue(res, line - 1, 0));
-                    tc.Month = Stoi(conn_spis.PGgetvalue(res, line - 1, 1));
-                    tc.Year = Stoi(conn_spis.PGgetvalue(res, line - 1, 2));
-                    tc.CassetteNo = Stoi(conn_spis.PGgetvalue(res, line - 1, 3));
-                    tc.Run_at = conn_spis.PGgetvalue(res, line - 1, 4);
-                    tc.Err_at = conn_spis.PGgetvalue(res, line - 1, 5);
-                }
-            }
-        }
-
-        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
-        PQclear(res);
-
-
-    }
-}
+//void GetPetch(S107::T_cass& tc, int p)
+//{
+//    std::string comand = "SELECT id FROM cassette2 WHERE peth = " + std::to_string(p) + " ORDER BY id ASC LIMIT 1";
+//    PGresult* res = conn_spis.PGexec(comand);
+//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+//    {
+//        int line = PQntuples(res);
+//        if(line)
+//        {
+//            std::string sid = conn_spis.PGgetvalue(res, line - 1, 0);
+//            if(sid.length())
+//                tc.id = Stoi(sid);
+//        }
+//    }
+//    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+//        LOG_ERR_SQL(SQLLogger, res, comand);
+//    PQclear(res);
+//
+//    if(tc.id)
+//    {
+//        std::string comand = "SELECT day, month, year, cassetteno, run_at, error_at, end_at FROM cassette2 WHERE id = " + std::to_string(tc.id);
+//        PGresult* res = conn_spis.PGexec(comand);
+//        if(PQresultStatus(res) == PGRES_TUPLES_OK)
+//        {
+//            int line = PQntuples(res);
+//            if(line)
+//            {
+//                tc.End_at = conn_spis.PGgetvalue(res, line - 1, 6);
+//                if(tc.End_at.size())
+//                    tc = S107::T_cass();
+//                else
+//                {
+//                    tc.Day = Stoi(conn_spis.PGgetvalue(res, line - 1, 0));
+//                    tc.Month = Stoi(conn_spis.PGgetvalue(res, line - 1, 1));
+//                    tc.Year = Stoi(conn_spis.PGgetvalue(res, line - 1, 2));
+//                    tc.CassetteNo = Stoi(conn_spis.PGgetvalue(res, line - 1, 3));
+//                    tc.Run_at = conn_spis.PGgetvalue(res, line - 1, 4);
+//                    tc.Err_at = conn_spis.PGgetvalue(res, line - 1, 5);
+//                }
+//            }
+//        }
+//
+//        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+//            LOG_ERR_SQL(SQLLogger, res, comand);
+//        PQclear(res);
+//
+//
+//    }
+//}
 
 
 void InitCurentTag()
@@ -412,13 +500,13 @@ void InitCurentTag()
         val->UpdateVal();
     }
 
-    GetPetch(S107::Furn1::Petch, 1);
-    GetPetch(S107::Furn2::Petch, 2);
+    //GetPetch(S107::Furn1::Petch, 1);
+    //GetPetch(S107::Furn2::Petch, 2);
 
 
     if(!ofs.bad())
         ofs.close();
-//    int tt = 0;
+    int tt = 0;
 #pragma endregion
 }
 
@@ -677,6 +765,17 @@ void InitTag()
 
 }
 
+
+void ConnectSQL()
+{
+    CONNECTION1(conn_spis, SQLLogger);
+    CONNECTION1(conn_kpvl, SQLLogger);
+    CONNECTION1(conn_kpvl2, SQLLogger);
+    CONNECTION1(conn_dops, SQLLogger);
+    CONNECTION1(conn_temp, SQLLogger);
+    CONNECTION1(conn_spic, SQLLogger);
+}
+
 bool InitSQL()
 {
     try
@@ -686,24 +785,12 @@ bool InitSQL()
         {
             DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, LoginDlg::bagSave);
 
-            //#define CONNECTION(_n) if(!_n.connections && !_n.connection(#_n))throw std::exception((std::string("Error SQL ") + #_n + " connection").c_str());
-
-            CONNECTION1(conn_spis);
-            CONNECTION1(conn_kpvl);
-            CONNECTION1(conn_dops);
-            CONNECTION1(conn_temp);
-            CONNECTION1(conn_spic);
-            CONNECTION1(conn_kpvl2);
+            ConnectSQL();
             LoginDlg::SaveConnect();
         }
         else
         {
-            CONNECTION1(conn_spis);
-            CONNECTION1(conn_kpvl);
-            CONNECTION1(conn_kpvl2);
-            CONNECTION1(conn_dops);
-            CONNECTION1(conn_temp);
-            CONNECTION1(conn_spic);
+            ConnectSQL();
         }
         InitTag();
     }

@@ -299,9 +299,9 @@ namespace KPVL {
                 //FilterSheet();
                 //bFilterData = TRUE;
                 std::string comand = FilterComand.str();
-                if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
-                //LOG_INFO(SQLLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
+                //LOG_INFO(HardLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     GetCollumn(res);
@@ -309,7 +309,7 @@ namespace KPVL {
 
                 }
                 else
-                    LOG_ERR_SQL(SQLLogger, res, comand);
+                    LOG_ERR_SQL(HardLogger, res, comand);
                 PQclear(res);
 
                 //AddHistoriSheet(true, (int)sheet.size());
@@ -330,7 +330,7 @@ namespace KPVL {
                 //    std::stringstream co;
                 //    co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
                 //    std::string comand = co.str();
-                //    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 //    PGresult* res = conn.PGexec(comand);
                 //    if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 //    {
@@ -338,7 +338,7 @@ namespace KPVL {
                 //            next_at = conn.PGgetvalue(res, 0, 0);
                 //    }
                 //    else
-                //        LOG_ERR_SQL(SQLLogger, res, comand);
+                //        LOG_ERR_SQL(HardLogger, res, comand);
                 //    PQclear(res);
                 //}
 
@@ -348,7 +348,7 @@ namespace KPVL {
                     //co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
                     co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "' ORDER BY id DESC LIMIT 1";
                     std::string comand = co.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -356,7 +356,7 @@ namespace KPVL {
                             sout = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
 
@@ -376,7 +376,7 @@ namespace KPVL {
                 {
                     std::stringstream sd;
                     sd << "SELECT start_at FROM sheet WHERE id = " << TS.id;
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     PGresult* res = conn.PGexec(sd.str());
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -384,7 +384,7 @@ namespace KPVL {
                             TS.Start_at = GetStringData(conn.PGgetvalue(res, 0, 0));
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, sd.str());
+                        LOG_ERR_SQL(HardLogger, res, sd.str());
                     PQclear(res);
                 }
 
@@ -400,7 +400,7 @@ namespace KPVL {
                     sa << "SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3'";
 
                     std::string comand = sa.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -408,7 +408,7 @@ namespace KPVL {
                             TS.Start_at = GetStringData(conn.PGgetvalue(res, 0, 0));
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
 
@@ -426,7 +426,7 @@ namespace KPVL {
                         //co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         std::string comand = co.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK)
                         {
@@ -434,7 +434,7 @@ namespace KPVL {
                                 next_at = conn.PGgetvalue(res, 0, 0);
                         }
                         else
-                            LOG_ERR_SQL(SQLLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, comand);
                         PQclear(res);
                     }
 
@@ -444,7 +444,7 @@ namespace KPVL {
                         co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '3' AND create_at > '" << next_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         //co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         std::string comand = co.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK)
                         {
@@ -452,7 +452,7 @@ namespace KPVL {
                                 enddata_at = conn.PGgetvalue(res, 0, 0);
                         }
                         else
-                            LOG_ERR_SQL(SQLLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, comand);
                         PQclear(res);
                     }
                     if(enddata_at.length())
@@ -464,11 +464,11 @@ namespace KPVL {
                         std::stringstream co;
                         co << "UPDATE sheet SET datatime_end = '" << enddata_at << "', datatime_all = " << HeatTime_Z2 << " WHERE delete_at IS NULL AND id = " << Id;
                         std::string comand = co.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
-                        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            LOG_ERR_SQL(SQLLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, comand);
                         PQclear(res);
                     }
 
@@ -541,7 +541,7 @@ namespace KPVL {
                     sd << " AND sheet = " << PD.Sheet->GetInt();
                     sd << " AND subsheet = " << PD.SubSheet->GetInt();
                     std::string comand = sd.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                     PGresult* res = conn.PGexec(comand);
 
@@ -553,7 +553,7 @@ namespace KPVL {
                         }
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -614,7 +614,7 @@ namespace KPVL {
                     co << " AND slab = " << Slab;
                     co << ";";
                     std::string comand = co.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                     PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -623,7 +623,7 @@ namespace KPVL {
                             id = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -650,7 +650,7 @@ namespace KPVL {
                     co << " AND slab = " << Slab;
                     co << ";";
                     std::string comand = co.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -658,7 +658,7 @@ namespace KPVL {
                             id = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -774,12 +774,12 @@ namespace KPVL {
                         LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                         SETUPDATESQL(HardLogger, conn, sd);
                         //std::string comand = sd.str();
-                        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         //PGresult* res = conn.PGexec(comand);
                         ////LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         //
                         //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        //    LOG_ERR_SQL(SQLLogger, res, comand);
+                        //    LOG_ERR_SQL(HardLogger, res, comand);
                         //PQclear(res);
                     }
                 }
@@ -806,17 +806,17 @@ namespace KPVL {
                     sd << " AND subsheet = " << TS.SubSheet;
                     sd << " AND slab = " << TS.Slab;
                     sd << ";";
-                    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                    SETUPDATESQL(SQLLogger, conn, sd);
+                    //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                    SETUPDATESQL(HardLogger, conn, sd);
 
                     //std::string comand = sd.str();
-                    //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //PGresult* res = conn.PGexec(comand);
-                    ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //
                     //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     //{
-                    //    LOG_ERR_SQL(SQLLogger, res, comand);
+                    //    LOG_ERR_SQL(HardLogger, res, comand);
                     //}
                     //else
                     //{
@@ -847,17 +847,17 @@ namespace KPVL {
                     sd << " AND subsheet = " << PD.SubSheet->GetInt();
                     sd << " AND slab = " << PD.Slab->GetInt();
                     sd << ";";
-                    //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                    SETUPDATESQL(SQLLogger, conn, sd);
+                    //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                    SETUPDATESQL(HardLogger, conn, sd);
 
                     //std::string comand = sd.str();
-                    //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //PGresult* res = conn.PGexec(comand);
-                    ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     //
                     //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     //{
-                    //    LOG_ERR_SQL(SQLLogger, res, comand);
+                    //    LOG_ERR_SQL(HardLogger, res, comand);
                     //}
                     //else
                     //{
@@ -879,7 +879,7 @@ namespace KPVL {
                 std::stringstream sd;
                 sd << "UPDATE sheet SET pos = 16 WHERE id = " << id;
                 LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(SQLLogger, conn, sd);
+                SETUPDATESQL(HardLogger, conn, sd);
             }
             CATCH(HardLogger, "");
         }
@@ -892,7 +892,7 @@ namespace KPVL {
                 sd << "UPDATE sheet SET pos = " << Pos << ", correct = DEFAULT, pdf = DEFAULT";
                 sd << " WHERE id = " << id;
                 LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(SQLLogger, conn, sd);
+                SETUPDATESQL(HardLogger, conn, sd);
             }
             CATCH(HardLogger, "");
         }
@@ -906,7 +906,7 @@ namespace KPVL {
                 std::stringstream sr;
                 sr << "SELECT id FROM sheet WHERE pos = 6 AND id <> " << id << " ORDER BY id DESC";
                 std::string comand = sr.str();
-                //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                 PGresult* res = conn.PGexec(comand);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
@@ -915,7 +915,7 @@ namespace KPVL {
                         oldid.push_back(conn.PGgetvalue(res, 0, 0));
                 }
                 else
-                    LOG_ERR_SQL(SQLLogger, res, comand);
+                    LOG_ERR_SQL(HardLogger, res, comand);
                 PQclear(res);
 
                 for(auto& a : oldid)
@@ -941,12 +941,12 @@ namespace KPVL {
                         std::stringstream se;
                         se << "SELECT pos FROM sheet WHERE id = " << sid;
                         std::string comand = se.str();
-                        if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
                             pos = Stoi(conn.PGgetvalue(res, 0, 0));
                         else
-                            LOG_ERR_SQL(SQLLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, comand);
                         PQclear(res);
 
 
@@ -1019,7 +1019,7 @@ namespace KPVL {
                         {
                             int iPos = -1;
                             std::string comand = "SELECT pos FROM sheet WHERE id = " + sId;
-                            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                             PGresult* res = conn.PGexec(comand);
                             if(PQresultStatus(res) == PGRES_TUPLES_OK)
                             {
@@ -1038,21 +1038,21 @@ namespace KPVL {
                                         std::stringstream sd;
                                         sd << "UPDATE sheet SET pos = " << iPos;
                                         sd << " WHERE news <> 1 AND id = " << sId;
-                                        SETUPDATESQL(SQLLogger, conn, sd);
+                                        SETUPDATESQL(HardLogger, conn, sd);
                                         //comand = sd.str();
-                                        //if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                                         //res = conn.PGexec(comand);
-                                        ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                        ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                                         //
                                         //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                        //    LOG_ERR_SQL(SQLLogger, res, comand);
+                                        //    LOG_ERR_SQL(HardLogger, res, comand);
                                         //PQclear(res);
                                     }
 
                                 }
                             }
                             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                LOG_ERR_SQL(SQLLogger, res, comand);
+                                LOG_ERR_SQL(HardLogger, res, comand);
                         }
 
                         PalletSheet[Pos].Slab = "";
@@ -1507,7 +1507,11 @@ namespace KPVL {
                             if(id != 0)
                             {
                                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                                if(CasseteId < 1) CasseteId = KPVL::Cassette::GetIdCassette(conn, Cassette, Cassette.Hour->GetInt());
+                                if(CasseteId < 1)
+                                {
+                                    uint16_t hour = Cassette.Hour->GetValue().As<uint16_t>();
+                                    CasseteId = KPVL::Cassette::GetIdCassette(conn, Cassette, hour);
+                                }
 #pragma region comand = "UPDATE sheet SET"
                                 
                                 std::stringstream co;
@@ -1540,7 +1544,7 @@ namespace KPVL {
                                 co << ", correct = DEFAULT, pdf = DEFAULT";
                                 co << " WHERE id = " << id << ";";
 #pragma endregion
-                                SETUPDATESQL(SQLLogger, conn, co);
+                                SETUPDATESQL(HardLogger, conn, co);
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                             }
                             else
@@ -1571,8 +1575,8 @@ namespace KPVL {
                     {
                         try
                         {
-                            //int Hour = HMISheetData.Cassette.Hour->GetValue().As<int32_t>();
-                            int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, HMISheetData.Cassette.Hour->GetInt());
+                            uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                            int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                             LOG_INFO(HardLogger, "{:90}| NewSheetData: Id = {}", FUNCTION_LINE_NAME, CasseteId);
 
                             SetSaveDone(conn_kpvl, CasseteId);
@@ -1629,7 +1633,7 @@ namespace KPVL {
         //            co << " AND cassetteno = " << CD.CassetteNo;
         //            co << ";";
         //            std::string comand = co.str();
-        //            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        //            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         //            PGresult* res = conn.PGexec(comand);
         //            if(PQresultStatus(res) == PGRES_TUPLES_OK)
         //            {
@@ -1639,7 +1643,7 @@ namespace KPVL {
         //                }
         //            }
         //            else
-        //                LOG_ERR_SQL(SQLLogger, res, comand);
+        //                LOG_ERR_SQL(HardLogger, res, comand);
         //            PQclear(res);
         //        }
         //    }
@@ -1694,7 +1698,7 @@ namespace KPVL {
                     co << " AND cassetteno = " << CD.CassetteNo->GetInt();
                     co << " LIMIT 1;";
                     std::string comand = co.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -1702,7 +1706,7 @@ namespace KPVL {
                             id = Stoi(conn.PGgetvalue(res, 0, 0));
                     }
                     else
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -1729,7 +1733,7 @@ namespace KPVL {
 
                 if(IsCassette(CD))
                 {
-                    int hour = CD.Hour->GetInt();
+                    //int hour = CD.Hour->GetValue().As<uint16_t>();// GetInt();
                     
                     std::stringstream co;
                     co << "INSERT INTO cassette ";
@@ -1751,7 +1755,7 @@ namespace KPVL {
                         co << "-1);";
 
                     LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
-                    SETUPDATESQL(SQLLogger, conn, co);
+                    SETUPDATESQL(HardLogger, conn, co);
 
                     id = GetIdCassette(conn, CD, Hour);
                 }
@@ -1782,8 +1786,8 @@ namespace KPVL {
         //        co << " WHERE id = " << id;
         //        co << ";";
         //
-        //        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
-        //        SETUPDATESQL(SQLLogger, conn, co);
+        //        //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
+        //        SETUPDATESQL(HardLogger, conn, co);
         //    }
         //    CATCH(HardLogger, "");
         //}
@@ -1829,10 +1833,10 @@ namespace KPVL {
         //            co << "UPDATE cassette SET close_at = now(), event = 2 WHERE close_at IS NULL AND id = " << id;
         //
         //            std::string comand = co.str();
-        //            if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        //            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         //            PGresult* res = conn.PGexec(comand);
         //            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        //                LOG_ERR_SQL(SQLLogger, res, comand);
+        //                LOG_ERR_SQL(HardLogger, res, comand);
         //            PQclear(res);
         //        }
         //    }
@@ -1855,7 +1859,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1878,7 +1882,7 @@ namespace KPVL {
                 MySetWindowText(value);
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1898,7 +1902,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1919,7 +1923,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1939,7 +1943,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1962,7 +1966,7 @@ namespace KPVL {
                 {
                     //int Hour = HMISheetData.Cassette.Hour->GetValue().As<int32_t>();
                     //OpcUa::VariantType Variant = HMISheetData.Cassette.Hour->GetType();
-                    int hour = value->GetValue().As<uint16_t>();
+                    uint16_t hour = value->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteHour = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1992,7 +1996,7 @@ namespace KPVL {
 
                 if(b)
                 {
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -2037,7 +2041,7 @@ namespace KPVL {
     namespace ZState{
         DWORD WINAPI ThreadState2(LPVOID)
         {
-            //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, 1);
+            //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, 1);
             try
             {
                 PGresult* res = NULL;
@@ -2074,11 +2078,11 @@ namespace KPVL {
                     ss1 << " id = " << Id;
 
                     std::string comand = ss1.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                     res = conn_dops.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
 
                     std::stringstream ss2;
@@ -2089,11 +2093,11 @@ namespace KPVL {
                     ss2 << " id = " << Id;
 
                     comand = ss2.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 
                     res = conn_dops.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
 
                     int r = 5;
@@ -2116,10 +2120,10 @@ namespace KPVL {
                     ss4 << " id = " << Id;
 
                     comand = ss4.str();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     res = conn_dops.PGexec(comand);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(SQLLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, comand);
                     PQclear(res);
                 }
             }
@@ -2434,7 +2438,7 @@ namespace KPVL {
                 {
                     std::stringstream up;
                     up << f.first << " = " << value->GetFloat();
-                    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
                     Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
                 }
             }
@@ -2449,7 +2453,7 @@ namespace KPVL {
             //        char s = value->Patch[l + 13];
             //        std::stringstream up;
             //        up << " top" << value->Patch[l + find.length()] << " = " << value->GetFloat();
-            //        LOG_INFO(SQLLogger, "{:90}| {}", up.str());
+            //        LOG_INFO(HardLogger, "{:90}| {}", up.str());
             //        Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
             //    }
             //}

@@ -41,6 +41,8 @@ inline std::string string_time(struct tm const* TM)
 }
 
 
+bool TestDataTimeOfString(std::string str);
+
 std::string GetDataTimeString();
 std::string GetDataTimeString(std::time_t& st);
 std::string GetDataTimeString(std::time_t* st);
@@ -51,6 +53,8 @@ time_t DataTimeDiff(std::string str1, std::string str2);
 time_t DataTimeOfString(std::string str, int& d1, int& d2, int& d3, int& d4, int& d5, int& d6);
 time_t DataTimeOfString(std::string str, std::tm& TM);
 time_t DataTimeOfString(std::string str);
+
+std::string DataYarDaySwap(std::string str);
 
 std::string GetStringData(std::string d);
 std::string Formats(float f, int n = 1);

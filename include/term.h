@@ -59,19 +59,19 @@ public:
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
 typedef struct T_Fcassette{
-    //int23_t Час ID листа
+    //uint16_t Час ID листа
     Value* Hour;
 
-    //int23_t День
+    //int32_t День
     Value* Day;
 
-    //int23_t Месяц
+    //int32_t Месяц
     Value* Month;
 
-    //int23_t Год
+    //int32_t Год
     Value* Year;
 
-    //int23_t Номер кассеты за день
+    //int32_t Номер кассеты за день
     Value* CassetteNo;
 
     std::string facttemper = "0";

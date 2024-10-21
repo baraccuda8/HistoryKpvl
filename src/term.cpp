@@ -48,12 +48,12 @@ struct T_FcassetteArray{
 
 #define SETALLTAG2(_t, _f, _e, _s,  _d) SETALLTAG(PathPeth, _t, _f, _e, _s,  _d)
 
-std::string sdTemp = "";
-DWORD Temp(Value* value)
-{
-    //sdTemp = value->GetString();
-    return 0;
-}
+//std::string sdTemp = "";
+//DWORD Temp(Value* value)
+//{
+//    //sdTemp = value->GetString();
+//    return 0;
+//}
 
 //template<>
 std::deque<Value*> AllTagPeth = {
@@ -176,7 +176,12 @@ std::deque<Value*> AllTagPeth = {
 
 bool cmpAllTagPeth(Value* first, Value* second)
 {
-    return first->Patch < second->Patch;
+    try
+    {
+        return first->Patch < second->Patch;
+    }
+    CATCH(PethLogger, "");
+    return false;
 }
 
 
@@ -230,16 +235,17 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
 
             SetWindowText(winmap(hEditMode2), "Жду данные...");
         }
-        catch(std::runtime_error& exc)
-        {
-            SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
-            LOG_ERROR(PethLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
-        }
-        catch(...)
-        {
-            SetWindowText(winmap(hEditMode1), "Unknown error");
-            LOG_ERROR(PethLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
-        };
+        CATCH(PethLogger, "");
+        //catch(std::runtime_error& exc)
+        //{
+        //    SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
+        //    LOG_ERROR(PethLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
+        //}
+        //catch(...)
+        //{
+        //    SetWindowText(winmap(hEditMode1), "Unknown error");
+        //    LOG_ERROR(PethLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
+        //};
 
     }
 }
@@ -248,29 +254,35 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
 
 void PLC_S107::InitNodeId()
 {
-    LOG_INFO(Logger, "{:90}| Инициализация узлов... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    LOG_INFO(Logger, "{:90}| Проверка Patch = Server_ServerStatus_CurrentTime", FUNCTION_LINE_NAME);
-
-    nodeCurrentTime = GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime); //Node текущее время
-
-    if(nodeCurrentTime.IsValid())
+    try
     {
-        OpcUa::Variant val = nodeCurrentTime.GetValue();
-        S107::ServerDataTime = val.ToString();
-        SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-        //SetWindowText(winmap(hEditTime_2), (S107::ServerDataTime + " (" + std::to_string(dataCangeS107.WatchDogWait) + ")").c_str());
-    }
+        LOG_INFO(Logger, "{:90}| Инициализация узлов... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        LOG_INFO(Logger, "{:90}| Проверка Patch = Server_ServerStatus_CurrentTime", FUNCTION_LINE_NAME);
 
-    LOG_INFO(Logger, "{:90}| Инициализация NodeId", FUNCTION_LINE_NAME);
-    for(auto& a : AllTagPeth)
-    {
-        a->InitNodeId(this);
+        nodeCurrentTime = GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime); //Node текущее время
+
+        if(nodeCurrentTime.IsValid())
+        {
+            OpcUa::Variant val = nodeCurrentTime.GetValue();
+            S107::ServerDataTime = val.ToString();
+            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+            //SetWindowText(winmap(hEditTime_2), (S107::ServerDataTime + " (" + std::to_string(dataCangeS107.WatchDogWait) + ")").c_str());
+        }
+
+        LOG_INFO(Logger, "{:90}| Инициализация NodeId", FUNCTION_LINE_NAME);
+        for(auto& a : AllTagPeth)
+        {
+            a->InitNodeId(this);
+        }
     }
+    CATCH(PethLogger, "");
 }
 
 void PLC_S107::InitTag()
 {
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
+
     try
     {
         //Создание Subscribe
@@ -293,20 +305,30 @@ void PLC_S107::InitTag()
         LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
         throw;
     }
-
-
-    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
-    for(auto& a : AllTagPeth)
+    try
     {
-        //if(a->TestNode(this))
-        if(a->Sec)
-            avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
-        else 
+        for(auto& a : AllTagPeth)
         {
-            int t = 0;
+            //if(a->TestNode(this))
+            if(a->Sec)
+                avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
+            else
+            {
+                int t = 0;
+            }
+            //else
+            //    LOG_WARN(Logger, "{:90}| Error tag {}", FUNCTION_LINE_NAME, a->Patch);
         }
-        //else
-        //    LOG_WARN(Logger, "{:90}| Error tag {}", FUNCTION_LINE_NAME, a->Patch);
+    }
+    catch(std::runtime_error& exc)
+    {
+        LOG_ERROR(Logger, "{:90}| ", FUNCTION_LINE_NAME, exc.what());
+        throw std::runtime_error(exc);
+    }
+    catch(...)
+    {
+        LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
+        throw;
     }
 
 
@@ -403,7 +425,8 @@ void PLC_S107::Run(int count)
     if(isRun)
     {
         LOG_INFO(Logger, "{:90}| Ждем 5 секунд... для {}", FUNCTION_LINE_NAME, Uri);
-        Sleep(5000);
+        int f = 5;
+        while(--f && isRun) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     try
@@ -520,7 +543,7 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
         {
             countconnect++;
             LOG_INFO(Logger, "{:90}| Повторяем попытку {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
-            Sleep(1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     }
     //SetWindowText(winmap(hEditMode2), "Удаление PLC");
@@ -531,113 +554,52 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
     return 0;
 }
 
-float GetTime(std::string comand)
-{
-    float f = 0;
-    if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    PGresult* res = conn_spic.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        if(PQntuples(res))
-            f = Stof(conn_spic.PGgetvalue(res, 0, 0));
-    }
-    else
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
-    return f;
-}
+//float GetTime(std::string comand)
+//{
+//    float f = 0;
+//    PGresult* res = conn_spic.PGexec(comand);
+//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+//    {
+//        if(PQntuples(res))
+//            f = Stof(conn_spic.PGgetvalue(res, 0, 0));
+//    }
+//    else
+//        LOG_ERR_SQL(PethLogger, res, comand);
+//    PQclear(res);
+//    return f;
+//}
 
-void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
-{
-    //std::string comand = "";
-    std::stringstream sd1;
-    std::stringstream sd2;
-    if(!TC.Run_at.length() || !TC.Finish_at.length()) return;
-
-    //AppFurn1.ActTimeHeatAcc        // Факт время нагрева
-    sd1 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID;
-    sd1 << " AND create_at >= '" << TC.Run_at << "'";
-    sd1 << " AND create_at <= '" << TC.Finish_at << "'";
-    sd1 << ");";
-
-    float f1 = GetTime(sd1.str());
-
-    //AppFurn1.ActTimeHeatWait        // Факт время нагрева
-    sd2 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID;
-    sd2 << " AND create_at >= '" << TC.Run_at << "'";
-    sd2 << " AND create_at <= '" << TC.Finish_at << "'";
-    sd2 << ");";
-
-    float f2 = GetTime(sd2.str());
-    if(f1 || f2)
-    {
-        int tt = 0;
-    }
-}
-
-void GetCasseteData(PGConnection& conn, T_ForBase_RelFurn& app, TCassette& TC)
-{
-    if(!isRun) return;
-    int ev = atoi(TC.Event.c_str());
-    if(ev == evCassete::Nul || /*ev == evCassete::Rel ||*/ ev == evCassete::Fill) return;
-    if(!TC.Run_at.length() || TC.Finish_at.length()) return;
-
-    std::string end_at = "";
-    std::stringstream sddEnd;
-    sddEnd << "SELECT create_at FROM todos WHERE create_at > '" << TC.Run_at << "' AND id_name = " << app.ProcEnd->ID << " AND content = 'true' ORDER BY id DESC LIMIT 1;";
-    std::string comand = sddEnd.str();
-    PGresult* res = conn.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        if(PQntuples(res))
-            end_at = conn.PGgetvalue(res, 0, 0);
-    }
-    else
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
-
-    if(!TC.End_at.length() && end_at.length())
-    {
-        TC.End_at = end_at;
-        std::stringstream sde;
-        sde << "UPDATE cassette SET end_at = '" << TC.End_at << "' WHERE end_at IS NULL AND id = " << TC.Id;
-        SETUPDATESQL(SQLLogger, conn, sde);
-        //sde << "hour = " << TC.Hour << " AND ";
-        //sde << "day = " << TC.Day << " AND ";
-        //sde << "month = " << TC.Month << " AND ";
-        //sde << "year = " << TC.Year << " AND ";
-        //sde << "cassetteno = " << TC.CassetteNo << ";";
-    }
-
-    if(TC.End_at.length() && !TC.Finish_at.length())
-    {
-        std::tm TM_Temp ={0};
-        time_t tmp_at2 = DataTimeOfString(TC.End_at, TM_Temp);
-        TM_Temp.tm_year -= 1900;
-        TM_Temp.tm_mon -= 1;
-
-        time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //+15 минут
-        localtime_s(&TM_Temp, &tStop1);
-
-        time_t tCur = time(NULL);
-        tm curr_tm;
-        localtime_s(&curr_tm, &tCur);
-
-        //Финализируем если прошло 15 минут после конца отпуска
-        if(tCur >= tStop1)
-        {
-            TC.Finish_at = GetDataTimeString(TM_Temp);
-            std::stringstream sdf;
-            sdf << "UPDATE cassette SET finish_at = '" << TC.Finish_at << "', event = 5 WHERE finish_at IS NULL AND id = " << TC.Id;
-            SETUPDATESQL(SQLLogger, conn, sdf);
-            //sdf << "hour = " << TC.Hour << " AND ";
-            //sdf << "day = " << TC.Day << " AND ";
-            //sdf << "month = " << TC.Month << " AND ";
-            //sdf << "year = " << TC.Year << " AND ";
-            //sdf << "cassetteno = " << TC.CassetteNo << ";";
-        }
-    }
-}
+//void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
+//{
+//    try
+//    {
+// //std::string comand = "";
+//        std::stringstream sd1;
+//        std::stringstream sd2;
+//        if(!TC.Run_at.length() || !TC.Finish_at.length()) return;
+//
+//        //AppFurn1.ActTimeHeatAcc        // Факт время нагрева
+//        sd1 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID;
+//        sd1 << " AND create_at >= '" << TC.Run_at << "'";
+//        sd1 << " AND create_at <= '" << TC.Finish_at << "'";
+//        sd1 << ");";
+//
+//        float f1 = GetTime(sd1.str());
+//
+//        //AppFurn1.ActTimeHeatWait        // Факт время нагрева
+//        sd2 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID;
+//        sd2 << " AND create_at >= '" << TC.Run_at << "'";
+//        sd2 << " AND create_at <= '" << TC.Finish_at << "'";
+//        sd2 << ");";
+//
+//        float f2 = GetTime(sd2.str());
+//        if(f1 || f2)
+//        {
+//            int tt = 0;
+//        }
+//    }
+//    CATCH(PethLogger, "");
+//}
 
 
 typedef struct isrun_s{
@@ -663,181 +625,27 @@ std::vector<isrun_s>ISRUN;
 
 void InsertIsRun(PGConnection& conn, isrun& IR)
 {
-    if(IR.day && IR.month && IR.year && IR.cassetteno)
+    try
     {
-        std::stringstream sd;
-        sd << "INSERT INTO isrun (create_at, day, month, year, cassetteno, run_pr, error_pr, end_pr, peth) VALUES (";
-        sd << "'" << IR.create_at << "', ";
-        sd << IR.day << ", ";
-        sd << IR.month << ", ";
-        sd << IR.year << ", ";
-        sd << IR.cassetteno << ", ";
-        sd << IR.run_pr << ", ";
-        sd << IR.error_pr << ", ";
-        sd << IR.end_pr << ", ";
-        sd << IR.peth << ");";
+        if(IR.day && IR.month && IR.year && IR.cassetteno)
+        {
+            std::stringstream sd;
+            sd << "INSERT INTO isrun (create_at, day, month, year, cassetteno, run_pr, error_pr, end_pr, peth) VALUES (";
+            sd << "'" << IR.create_at << "', ";
+            sd << IR.day << ", ";
+            sd << IR.month << ", ";
+            sd << IR.year << ", ";
+            sd << IR.cassetteno << ", ";
+            sd << IR.run_pr << ", ";
+            sd << IR.error_pr << ", ";
+            sd << IR.end_pr << ", ";
+            sd << IR.peth << ");";
 
-        SETUPDATESQL(SQLLogger, conn, sd);
+            SETUPDATESQL(PethLogger, conn, sd);
+        }
     }
+    CATCH(PethLogger, "");
 }
-
-//#define _INITPDF
-#ifdef _INITPDF
-void FURN_SQL()
-{
-    //std::stringstream sd;
-
-    LOG_INFO(AllLogger, "{:90}| Start PrintPdfAuto", FUNCTION_LINE_NAME);
-    std::deque<TCassette> AC = AllCassette;
-    for(auto ct : AC)
-    {
-        if(!isRun)return;
-        PrintPdfAuto(ct);
-    }
-    LOG_INFO(AllLogger, "{:90}| Stop PrintPdfAuto", FUNCTION_LINE_NAME);
-}
-
-#endif
-
-#ifdef _FURN_SQL
-void FURN_SQL()
-{
-    PGConnection conn;
-    conn.connection();
-    if(!conn.connections) return;
-    
-    ISRUN.erase(ISRUN.begin(), ISRUN.end());
-    std::stringstream sf("DELETE FROM isrun;");
-    SETUPDATESQL(conn, sf);
-
-    //SELECT create_at, id_name, content, (SELECT name FROM tag WHERE tag.id = todos.id_name) FROM todos WHERE id_name = 19 OR id_name = 21 OR id_name = 20 OR id_name = 27 OR id_name = 26 OR id_name = 25 OR id_name = 28 OR id_name = 5 OR id_name = 7 OR id_name = 6 OR id_name = 13 OR id_name = 12 OR id_name = 11 OR id_name = 14 ORDER BY id;
-    std::stringstream sd;
-    sd << "SELECT create_at, id_name, content FROM todos WHERE";
-    sd << " id_name = " << AppFurn1.ProcRun->ID;
-    sd << " OR id_name = " << AppFurn1.ProcEnd->ID;
-    sd << " OR id_name = " << AppFurn1.ProcFault->ID;
-    sd << " OR id_name = " << AppFurn1.Cassette.Hour->ID;
-    sd << " OR id_name = " << AppFurn1.Cassette.Day->ID;
-    sd << " OR id_name = " << AppFurn1.Cassette.Month->ID;
-    sd << " OR id_name = " << AppFurn1.Cassette.Year->ID;
-    sd << " OR id_name = " << AppFurn1.Cassette.CassetteNo->ID;
-
-    sd << " OR id_name = " << AppFurn2.ProcRun->ID;
-    sd << " OR id_name = " << AppFurn2.ProcEnd->ID;
-    sd << " OR id_name = " << AppFurn2.ProcFault->ID;
-    sd << " OR id_name = " << AppFurn2.Cassette.Hour->ID;
-    sd << " OR id_name = " << AppFurn2.Cassette.Day->ID;
-    sd << " OR id_name = " << AppFurn2.Cassette.Month->ID;
-    sd << " OR id_name = " << AppFurn2.Cassette.Year->ID;
-    sd << " OR id_name = " << AppFurn2.Cassette.CassetteNo->ID;
-    sd << " ORDER BY id;";
-
-    std::string comand = sd.str();
-
-    PGresult* res = conn.PGexec(comand);
-    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        int line =  PQntuples(res);
-
-        for(int l = 0; l < line; l++)
-        {
-            isrun_s IR;
-            IR.create_at = GetStringData(conn_spis.PGgetvalue(res, l, 0));
-            IR.id_name = Stoi(conn_spis.PGgetvalue(res, l, 1));
-            IR.content = conn_spis.PGgetvalue(res, l, 2);
-            ISRUN.push_back(IR);
-        }
-    }
-    else
-        LOG_ERR_SQL(SQLLogger, res, comand);
-    PQclear(res);
-
-    isrun IR1;
-    isrun IR2;
-    IR1.peth = 1;
-    IR2.peth = 2;
-    for(auto& R : ISRUN)
-    { 
-        if(R.id_name == AppFurn1.Cassette.Hour->ID)IR1.hour = Stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.Day->ID)IR1.day = Stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.Month->ID)IR1.month = Stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.Year->ID)IR1.year = Stoi(R.content);
-        if(R.id_name == AppFurn1.Cassette.CassetteNo->ID)IR1.cassetteno = Stoi(R.content);
-
-        bool insert1 = false;
-        if(R.id_name == AppFurn1.ProcRun->ID)
-        {
-            bool t = R.content == "true";
-            if(IR1.run_pr != t)
-            {
-                IR1.create_at = R.create_at;
-                IR1.run_pr = t;
-                InsertIsRun(conn, IR1);
-            }
-        }
-        if(R.id_name == AppFurn1.ProcEnd->ID)
-        {
-            bool t = R.content == "true";
-            if(IR1.end_pr != t)
-            {
-                IR1.create_at = R.create_at;
-                IR1.end_pr = t;
-                InsertIsRun(conn, IR1);
-            }
-        }
-        if(R.id_name == AppFurn1.ProcFault->ID)
-        {
-            bool t = R.content == "true";
-            if(IR1.error_pr != t) 
-            {
-                IR1.create_at = R.create_at;
-                IR1.error_pr = t;
-                InsertIsRun(conn, IR1);
-            }
-        }
-
-
-        if(R.id_name == AppFurn2.Cassette.Hour->ID)IR2.hour = Stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.Day->ID)IR2.day = Stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.Month->ID)IR2.month = Stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.Year->ID)IR2.year = Stoi(R.content);
-        if(R.id_name == AppFurn2.Cassette.CassetteNo->ID)IR2.cassetteno = Stoi(R.content);
-
-        if(R.id_name == AppFurn2.ProcRun->ID)
-        {
-            bool t = R.content == "true";
-            if(IR2.run_pr != t)
-            {
-                IR2.create_at = R.create_at;
-                IR2.run_pr = t;
-                InsertIsRun(conn, IR2);
-            }
-        }
-        if(R.id_name == AppFurn2.ProcEnd->ID)
-        {
-            bool t = R.content == "true";
-            if(IR2.end_pr != t)
-            {
-
-                IR2.create_at = R.create_at;
-                IR2.end_pr = t;
-                InsertIsRun(conn, IR2);
-            }
-        }
-        if(R.id_name == AppFurn2.ProcFault->ID)
-        {
-            bool t = R.content == "true";
-            if(IR2.error_pr != t)
-            {
-                IR2.create_at = R.create_at;
-                IR2.error_pr = t;
-                InsertIsRun(conn, IR2);
-            }
-        }
-    }
-    int tt = 0;
-}
-#endif
 
 
 #define CountCaseteInRel 7
@@ -854,24 +662,27 @@ TCassette CassetteInRel[CountCaseteInRel] ={
 
 void SetCassetteToBase(int i)
 {
-    int32_t Year = Stoi(CassetteInRel[i].Year);
-    int32_t Month = Stoi(CassetteInRel[i].Month);
-    int32_t Day = Stoi(CassetteInRel[i].Day);
-    uint16_t Hour = Stoi(CassetteInRel[i].Hour);
-    int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
+    try
+    {
+        int32_t Year = Stoi(CassetteInRel[i].Year);
+        int32_t Month = Stoi(CassetteInRel[i].Month);
+        int32_t Day = Stoi(CassetteInRel[i].Day);
+        uint16_t Hour = Stoi(CassetteInRel[i].Hour);
+        int32_t CassetteNo = Stoi(CassetteInRel[i].CassetteNo);
 
-    int32_t aYear = AppCassette[i].Year->GetInt();
-    int32_t aMonth = AppCassette[i].Month->GetInt();
-    int32_t aDay = AppCassette[i].Day->GetInt();
-    uint16_t aHour = AppCassette[i].Hour->GetInt();
-    int32_t aCassetteNo = AppCassette[i].CassetteNo->GetInt();
+        int32_t aYear = AppCassette[i].Year->Val.As<int32_t>();
+        int32_t aMonth = AppCassette[i].Month->Val.As<int32_t>();
+        int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
+        uint16_t aHour = AppCassette[i].Hour->Val.As<uint16_t>();
+        int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
 
-    if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
-    if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
-    if(aDay != Day)              AppCassette[i].Day->Set_Value(Day);
-    if(aHour != Hour)            AppCassette[i].Hour->Set_Value(Hour);
-    if(aCassetteNo != CassetteNo)AppCassette[i].CassetteNo->Set_Value(CassetteNo);
-
+        if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
+        if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
+        if(aDay != Day)              AppCassette[i].Day->Set_Value(Day);
+        if(aHour != Hour)            AppCassette[i].Hour->Set_Value(Hour);
+        if(aCassetteNo != CassetteNo)AppCassette[i].CassetteNo->Set_Value(CassetteNo);
+    }
+    CATCH(FurnLogger, "");
 }
 
 bool cmpCasete(TCassette& first, TCassette& second)
@@ -900,27 +711,39 @@ typedef struct _cassette{
     }
     _cassette(T_Fcassette& c)
     {
-        Year = c.Year->GetInt();
-        Month = c.Month->GetInt();
-        Day = c.Day->GetInt();
-        Hour = c.Hour->GetInt();
-        CassetteNo = c.CassetteNo->GetInt();
+        try
+        {
+            Year = c.Year->Val.As<int32_t>();
+            Month = c.Month->Val.As<int32_t>();
+            Day = c.Day->Val.As<int32_t>();
+            Hour = c.Hour->Val.As<uint16_t>();
+            CassetteNo = c.CassetteNo->Val.As<int32_t>();
+        }
+        CATCH(FurnLogger, "");
     }
     _cassette(T_CassetteData& c)
     {
-        Year = c.Year->GetInt();
-        Month = c.Month->GetInt();
-        Day = c.Day->GetInt();
-        Hour = c.Hour->GetInt();
-        CassetteNo = c.CassetteNo->GetInt();
+        try
+        {
+            Year = c.Year->Val.As<int32_t>();
+            Month = c.Month->Val.As<int32_t>();
+            Day = c.Day->Val.As<int32_t>();
+            Hour = c.Hour->Val.As<uint16_t>();
+            CassetteNo = c.CassetteNo->Val.As<int32_t>();
+        }
+        CATCH(FurnLogger, "");
     }
     _cassette(TCassette& c)
     {
-        Year = Stoi(c.Year);
-        Month = Stoi(c.Month);
-        Day = Stoi(c.Day);
-        Hour = Stoi(c.Hour);
-        CassetteNo = Stoi(c.CassetteNo);
+        try
+        {
+            Year = Stoi(c.Year);
+            Month = Stoi(c.Month);
+            Day = Stoi(c.Day);
+            Hour = Stoi(c.Hour);
+            CassetteNo = Stoi(c.CassetteNo);
+        }
+        CATCH(FurnLogger, "");
     }
 
     bool operator == (_cassette& T)
@@ -938,50 +761,402 @@ _cassette Furn1;
 _cassette Furn2;
 _cassette SheetIT;
 
-void TestEvent1(TCassette& it, int SheetInCassette)
+
+
+//Заполняем таблицу кассет для печей отпуска
+void CaseteInRel(std::deque<TCassette>& CIl)
 {
-    if(SheetInCassette > 0)
+    try
     {
-        it.Event = "2";
-        std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
-        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-        SETUPDATESQL(SQLLogger, conn_spic, sd);
+        std::sort(CIl.begin(), CIl.end(), cmpCasete);
+        for(int i = 0; i < CountCaseteInRel; i++)
+        {
+            if((int)CIl.size() > i)
+            {
+                CassetteInRel[i] = CIl[i];
+                SetCassetteToBase(i); //Отбравляем в печь
+                SCassett[i] = Stoi(CassetteInRel[i].Id);
+            }
+            else
+            {
+                CassetteInRel[i] = TCassette();
+                if(AppCassette[i].TestNull())
+                {
+                    AppCassette[i].SetNull(); //Отбравляем в печь
+                    SCassett[i] = 0;
+                }
+            }
+        }
+
+#pragma region Сохраняем таблицу кассет для печей отпуска в файл для анализа
+        if(memcmp(OldSCassett, SCassett, sizeof(SCassett)))
+        {
+            memcpy(OldSCassett, SCassett, sizeof(SCassett));
+            std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
+            fSpCassette << " " << GetDataTimeString() << ";";
+
+            for(int i = 0; i < CountCaseteInRel; i++)
+                fSpCassette << SCassett[i] << ";";
+            fSpCassette << std::endl;
+            fSpCassette.close();
+        }
+#pragma endregion
+
     }
-    else
-    {
-        it.Event = "7";
-        std::time_t st;
-        it.Delete_at = GetDataTimeString(st);
-        std::stringstream sd("UPDATE cassette SET event = 7, delete_at = now() WHERE id = " + it.Id);
-        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str())
-        SETUPDATESQL(SQLLogger, conn_spic, sd);
-    }
+    CATCH(FurnLogger, "");
 }
 
-void TestEvent3(TCassette& it)
+//Выводим список кассет
+void OutListCassette(size_t& old_count)
 {
-    if(it.End_at.length() && it.Finish_at.length())
+    try
+    {
+        size_t count = AllCassette.size();
+        if(old_count != count)
+        {
+            old_count = count;
+
+            ListView_DeleteAllItems(hwndCassette);
+            for(size_t i = 0; i < count; i++)
+                AddHistoriCassette(false);
+        }
+        else
+        {
+            int TopIndex = ListView_GetTopIndex(hwndCassette);
+            int Index = ListView_GetNextItem(hwndCassette, -1, LVNI_SELECTED);
+
+            InvalidateRect(hwndCassette, NULL, false);
+
+            ListView_EnsureVisible(hwndCassette, TopIndex, FALSE);
+            ListView_SetItemState(hwndCassette, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
+        }
+    }
+    CATCH(FurnLogger, "");
+}
+
+//На кантовку Event = 1
+int SetCassetteInCant(PGConnection& conn, TCassette& it)
+{
+    try
+    {
+        it.Event = "1";
+        it.Peth = "0";
+        it.Run_at = "";
+        it.Error_at = "";
+        it.End_at = "";
+        it.Finish_at = "";
+        it.Correct = "";
+        it.Pdf = "";
+
+        std::stringstream sd;
+        sd << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
+        std::string comand = sd.str();
+        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(PethLogger, conn, sd);
+    }
+    CATCH(FurnLogger, "");
+    return Stoi(it.Event);
+}
+
+//В ожидание Event = 2
+int SetCassetteInWait(PGConnection& conn, TCassette& it)
+{
+    try
+    {
+        it.Event = "2";
+        std::stringstream sd;
+        sd << "UPDATE cassette SET event = 2, peth = 0 WHERE id = " << it.Id;
+        std::string comand = sd.str();
+        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(PethLogger, conn, sd);
+    }
+    CATCH(FurnLogger, "");
+    return Stoi(it.Event);
+}
+
+//В печь Event = 3
+int SetCassetteInFurn(PGConnection& conn, TCassette& it, int Peth)
+{
+    try
+    {
+        it.Event = "3";
+        it.Peth = std::to_string(Peth);
+        it.End_at = "";
+        it.Finish_at = "";
+        it.Correct = "";
+        it.Pdf = "";
+        std::stringstream sd;
+        sd << "UPDATE cassette SET event = 3, peth = " << it.Peth << ", run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
+        std::string comand = sd.str();
+        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(PethLogger, conn, sd);
+    }
+    CATCH(FurnLogger, "");
+    return Stoi(it.Event);
+}
+
+//В удаленные Event = 7
+int SetCassetteInDelete(PGConnection& conn, TCassette& it)
+{
+    try
+    {
+        it.Event = "7";
+        it.Delete_at = GetDataTimeString();
+        std::stringstream sd;
+        sd << "UPDATE cassette SET event = 7, peth = 0, ";
+        sd << "delete_at = '" << it.Delete_at << "' ";
+        sd << "WHERE id = " + it.Id;
+        std::string comand = sd.str();
+        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(PethLogger, conn, sd);
+    }
+    CATCH(FurnLogger, "");
+    return Stoi(it.Event);
+}
+
+
+std::string GetDataEnd(PGConnection& conn, std::string sd)
+{
+    std::string at = "";
+    try
+    {
+        PGresult* res = conn.PGexec(sd);
+        if(PQresultStatus(res) == PGRES_TUPLES_OK)
+        {
+            if(PQntuples(res))
+                at = conn.PGgetvalue(res, 0, 0);
+        }
+        else
+            LOG_ERR_SQL(PethLogger, res, sd);
+        PQclear(res);
+    }
+    CATCH(FurnLogger, "");
+    return at;
+}
+
+//Ищем конец
+void FindEnd(PGConnection& conn, TCassette& it)
+{
+    try
+    {
+        T_ForBase_RelFurn* Furn = NULL;
+        if(it.Peth == "1")Furn = &AppFurn1;
+        if(it.Peth == "2")Furn = &AppFurn2;
+        if(!Furn) return;
+
+        int ProcEndID = Furn->ProcEnd->ID;
+        int ProcRunID = Furn->ProcRun->ID;
+        if(!ProcEndID) return; //Если неизвестна печь отпуска
+
+        std::string End_at1 = "";
+        std::string End_at2 = "";
+
+
+        {
+            std::stringstream sd;
+            sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'true' AND ";
+            sd << "id_name = " << ProcEndID;
+            sd << " ORDER BY id ASC LIMIT 1";
+            End_at1 = GetDataEnd(conn, sd.str());
+        }
+
+        //SELECT create_at FROM todos WHERE create_at <=now() AND content = 'true' AND id_name = 21 ORDER BY id DESC LIMIT 1;
+        {
+            std::stringstream sd;
+            sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'false' AND ";
+            sd << "id_name = " << ProcRunID;
+            sd << " ORDER BY id ASC LIMIT 1";
+            End_at2 = GetDataEnd(conn, sd.str());
+        }
+
+        if(End_at1 > End_at2)
+            it.End_at = End_at1;
+        else
+            it.End_at = End_at1;
+
+        if(it.End_at.length())
+        {
+            std::stringstream sd;
+            sd << "UPDATE cassette SET end_at = '" << it.End_at << "' WHERE end_at IS NULL AND id = " << it.Id;
+            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+            SETUPDATESQL(PethLogger, conn, sd);
+        }
+    }
+    CATCH(FurnLogger, "");
+}
+
+//Ждем 15 минут финал
+void FindFinish(PGConnection& conn, TCassette& it)
+{
+    try
+    {
+ //Если нет конца отпуска
+        std::tm TM_Temp ={0};
+        time_t tmp_at2 = DataTimeOfString(it.End_at, TM_Temp);
+        TM_Temp.tm_year -= 1900;
+        TM_Temp.tm_mon -= 1;
+
+        time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //+15 минут
+        localtime_s(&TM_Temp, &tStop1);
+
+        time_t tCur = time(NULL);
+        tm curr_tm;
+        localtime_s(&curr_tm, &tCur);
+
+        //Финализируем если прошло 15 минут после конца отпуска
+        if(tCur >= tStop1)
+            it.Finish_at = GetDataTimeString(TM_Temp);
+    }
+    CATCH(FurnLogger, "");
+}
+
+//В финал Event = 5
+int SetCassetteInFinal(PGConnection& conn, TCassette& it)
+{
+    try
     {
         it.Event = "5";
-        std::stringstream sd("UPDATE cassette SET event = 5 WHERE id = " + it.Id);
-        LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-        SETUPDATESQL(FurnLogger, conn_spic, sd);
+        std::stringstream sd;
+        sd << "UPDATE cassette SET event = 5, finish_at = '" << it.Finish_at << "' WHERE id = " << it.Id;
+        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+        SETUPDATESQL(PethLogger, conn, sd);
     }
-    //else if(!it.End_at.length())
-    //{
-    //    it.Event = "2";
-    //    std::stringstream sd("UPDATE cassette SET event = 2 WHERE id = " + it.Id);
-    //    LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-    //    SETUPDATESQL(FurnLogger, conn_spic, sd);
-    //}
+    CATCH(FurnLogger, "");
+
+    return Stoi(it.Event);
+}
+
+
+void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
+{
+    try
+    {
+        Sheet = _cassette(HMISheetData.Cassette);
+        Furn1 = _cassette(AppFurn1.Cassette);
+        Furn2 = _cassette(AppFurn2.Cassette);
+
+        for(auto& it : AllCassette)
+        {
+            if(!isRun) return;
+
+            int SheetInCassette = Stoi(it.SheetInCassette);
+
+            SheetIT = _cassette(it);
+            int Event = Stoi(it.Event);
+            int Peth = Stoi(it.Peth);
+
+            //Если кассета на кантовку
+            if(SheetIT == Sheet)
+            {
+                if(Event != 1 || Peth != 0)
+                {
+                    Peth = 0;
+                    //На кантовку Event = 1
+                    Event = SetCassetteInCant(conn, it);
+                }
+            }
+
+            //Если кассета в 1-й печи отпукая
+            else if(SheetIT == Furn1)
+            {
+                if(Event != 3 || Peth != 1)
+                {
+                    Peth = 1;
+                    //В печь Event = 3
+                    Event = SetCassetteInFurn(conn, it, Peth);
+                }
+            }
+
+            //Если кассета во 2-й печи отпукая
+            else if(SheetIT == Furn2)
+            {
+                if(Event != 3 || Peth != 2)
+                {
+                    Peth = 2;
+                    //В печь Event = 3
+                    Event = SetCassetteInFurn(conn, it, Peth);
+                }
+            }
+
+            //Если кассета не на кантовке и не в печах отпуска
+            else if(Event != 5 && SheetIT != Sheet && SheetIT != Furn1 && SheetIT != Furn2)
+            {
+                //Если количество листов в касете не ноль
+                if(SheetInCassette > 0)
+                {
+                    if(it.Run_at.length())
+                    {
+                        //Ищем конец
+                        if(!it.End_at.length())
+                            FindEnd(conn, it);
+
+                        //Ждем 15 минут финал
+                        if(it.End_at.length() && !it.Finish_at.length())
+                            FindFinish(conn, it);
+                    }
+
+                    //Если есть финал
+                    if(it.Finish_at.length())
+                    {
+                        //В финал Event = 5
+                        Event = SetCassetteInFinal(conn, it);
+                    }
+                }
+            }
+
+            //Если не на кантовке и количество листов в касете ноль отправляем в потерянные
+            if(SheetIT != Sheet && SheetIT != Furn1 && SheetIT != Furn2)
+            {
+                //Если нет количества кассет оитправляем в удаленный
+                if(SheetInCassette <= 0)
+                {
+                    Peth = 0;
+                    //В удаленные Event = 7
+                    Event = SetCassetteInDelete(conn, it);
+                }
+                else
+                {
+                    //Если нет начала и нет конеца и не удален
+                    if(!it.Run_at.length() && !it.End_at.length() && !it.Delete_at.length())
+                    {
+                        //Если не в ожидании
+                        if(Event != 2)
+                        {
+                            //В ожидание Event = 2
+                            Event = SetCassetteInWait(conn, it);
+                        }
+                    }
+                }
+            }
+
+            //Не удален и не финализирован но есть Finish_at
+            if(Event != 5 && Event != 7 && it.Finish_at.length())
+            {
+                //В финал Event = 5
+                Event = SetCassetteInFinal(conn, it);
+            }
+
+            //Наполняем структуру кассет для печей
+            if(Event == 2 && !it.Delete_at.length())
+            {
+                if(SheetInCassette > 0)
+                    CIl.push_back(it);
+            }
+        }
+    }CATCH(FurnLogger, "");
 }
 
 DWORD WINAPI Open_FURN_SQL(LPVOID)
 {
+#pragma region Начало while(isRun)
+
+    size_t old_count = 0;
     InitLogger(FurnLogger);
     LOG_INFO(FurnLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 
-    size_t old_count = 0;
+    PGConnection conn;
+    CONNECTION1(conn, FurnLogger);
+    
 
     while(isRun)
     {
@@ -989,118 +1164,31 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
         try
         {
+#pragma endregion
+
 #pragma region Запрашиваем список кассет
             try
             {
-                S107::SQL::FURN_SQL(conn_spic, AllCassette);
-                //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, "Start");
+                S107::SQL::FURN_SQL(conn, AllCassette);
             }
             catch(...) {}
-            size_t count = AllCassette.size();
-            if(!count) continue;
 #pragma endregion
-
-#pragma region Выводим список кассет
-            if(old_count != count)
-            {
-                old_count = count;
-
-                ListView_DeleteAllItems(hwndCassette);
-                for(size_t i = 0; i < count; i++)
-                    AddHistoriCassette(false);
-            }
-            else
-            {
-                int TopIndex = ListView_GetTopIndex(hwndCassette);
-                int Index = ListView_GetNextItem(hwndCassette, -1, LVNI_SELECTED);
-
-                InvalidateRect(hwndCassette, NULL, false);
-
-                ListView_EnsureVisible(hwndCassette, TopIndex, FALSE);
-                ListView_SetItemState(hwndCassette, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
-            }
-#pragma endregion
-
-#ifndef _DEBUG
-
-
-            Sheet = _cassette(HMISheetData.Cassette);
-            Furn1 = _cassette(AppFurn1.Cassette);
-            Furn2 = _cassette(AppFurn2.Cassette);
 
             std::deque<TCassette> CIl;
 
-            for(auto& it : AllCassette)
-            {
-                if(!isRun) return 0;
-
-                int SheetInCassette = Stoi(it.SheetInCassette);
-                S107::SQL::GetIsPos(conn_spic, it);
-
-#pragma region Вычисляем дату финала
-                if(Stoi(it.Peth) == 1) GetCasseteData(conn_spic, AppFurn1, it);
-                if(Stoi(it.Peth) == 2) GetCasseteData(conn_spic, AppFurn2, it);
-#pragma endregion
-
-                SheetIT = _cassette(it);
-                int Event = Stoi(it.Event);
-                if(Event == 1 && Sheet != SheetIT)
-                {
-                    TestEvent1(it, SheetInCassette);
-                }
-                if(Event == 3 && Furn1 != SheetIT && Furn2 != SheetIT)
-                {
-                    TestEvent3(it);
-                }
-                if(Event == 2 && !it.Delete_at.length())
-                {
-                    if(Stoi(it.SheetInCassette) > 0)
-                        CIl.push_back(it);
-                }
-                if(it.Finish_at.length() && Event != 5 && Event != 7)
-                {
-                    it.Event = 5;
-                    std::stringstream sdf("UPDATE cassette SET event = 5 WHERE id = " + it.Id);
-                    SETUPDATESQL(SQLLogger, conn_spic, sdf);
-                }
-            }
-
-#pragma region Заполняем таблицу кассет для печей отпуска
-            std::sort(CIl.begin(), CIl.end(), cmpCasete);
-            for(int i = 0; i < CountCaseteInRel; i++)
-            {
-                if((int)CIl.size() > i)
-                {
-                    CassetteInRel[i] = CIl[i];
-                    SetCassetteToBase(i); //Отбравляем в печь
-                    SCassett[i] = Stoi(CassetteInRel[i].Id);
-                }
-                else
-                {
-                    CassetteInRel[i] = TCassette();
-                    if(AppCassette[i].TestNull())
-                    {
-                        AppCassette[i].SetNull(); //Отбравляем в печь
-                        SCassett[i] = 0;
-                    }
-                }
-            }
-#pragma endregion
-
-#pragma region Сохраняем таблицу кассет для печей отпуска в файл для анализа
-            if(memcmp(OldSCassett, SCassett, sizeof(SCassett)))
-            {
-                memcpy(OldSCassett, SCassett, sizeof(SCassett));
-                std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
-                fSpCassette << " " << GetDataTimeString() << ";";
-
-                for(int i = 0; i < CountCaseteInRel; i++)
-                    fSpCassette << SCassett[i] << ";";
-                fSpCassette << std::endl;
-                fSpCassette.close();
-            }
-#pragma endregion
+#ifndef _DEBUG
+            TestCassete(conn, CIl);
 #endif
+
+            //Заполняем таблицу кассет для печей отпуска
+            CaseteInRel(CIl);
+
+            //Выводим на экран список кассет
+            OutListCassette(old_count);
+
+
+#pragma region Конец while(isRun)
+
         }CATCH(PethLogger, "");
 
         if(!isRun) return 0;
@@ -1109,6 +1197,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
         while(isRun && (--f))
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+#pragma endregion
     return 0;
 }
 

@@ -16,6 +16,7 @@ HANDLE hGGraff1 = NULL;
 HANDLE hGGraff2 = NULL;
 HANDLE hGGraff3 = NULL;
 
+
 HRESULT GetGdiplusEncoderClsid(const std::wstring& format, GUID* pGuid)
 {
 	try
@@ -611,40 +612,72 @@ void GetGrTempKPVLTempAct()
 {
 	try
 	{
+		if(GraffKPVL.AddTime.length())
+			GraffKPVL.MaxSecCount = Stoi(GraffKPVL.AddTime) * 60;
+		else
+			GraffKPVL.MaxSecCount = SecCount2;
+
+		
 		SqlTempFURN(GraffKPVL.conn, GraffKPVL.TempRef, GenSeqFromHmi.TempSet1, GraffKPVL.MaxSecCount);
 		int t = 0;
 
 		GraffKPVL.TempAct.erase(GraffKPVL.TempAct.begin(), GraffKPVL.TempAct.end()); //Синий; Фактическое значение температуры
 
-		std::tm TM_End ={0};
-		std::tm TM_Beg ={0};
+		std::string sBegTime = "";
+		std::string sEndTime = "";
+
 		std::tm TM_Temp ={0};
-		std::string TecTime;
-		time_t tStop1 = time(NULL);
-		localtime_s(&TM_End, &tStop1);
-		time_t tStop = _mkgmtime(&TM_End);
-		time_t tStart = (time_t)difftime(tStop, GraffKPVL.MaxSecCount);
-		gmtime_s(&TM_Beg, &tStart);
 
-		std::stringstream sdw;
-		sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
-		sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
-		sdw << boost::format("%|02| ") % TM_End.tm_mday;
-		sdw << boost::format("%|02|:") % TM_End.tm_hour;
-		sdw << boost::format("%|02|:") % TM_End.tm_min;
-		sdw << boost::format("%|02|") % TM_End.tm_sec;
-		//sdw << "+05";
-		std::string sEndTime = sdw.str();
+		if(TestDataTimeOfString(GraffKPVL.StartKPVL))
+		{
+			sBegTime = DataYarDaySwap(GraffKPVL.StartKPVL);
+			std::tm TM_End ={0};
+			sEndTime = "";
+			time_t tStart = DataTimeOfString(sBegTime);
+			time_t tStop1 = tStart + GraffKPVL.MaxSecCount;
+			localtime_s(&TM_End, &tStop1);
 
-		sdw.str(std::string());
-		sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
-		sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
-		sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
-		sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
-		sdw << boost::format("%|02|:") % TM_Beg.tm_min;
-		sdw << boost::format("%|02|") % TM_Beg.tm_sec;
-		//sdw << "+05";
-		std::string sBegTime = sdw.str();
+			std::stringstream sdw;
+			sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
+			sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
+			sdw << boost::format("%|02| ") % TM_End.tm_mday;
+			sdw << boost::format("%|02|:") % TM_End.tm_hour;
+			sdw << boost::format("%|02|:") % TM_End.tm_min;
+			sdw << boost::format("%|02|") % TM_End.tm_sec;
+			sEndTime = sdw.str();
+		}
+		else
+		{
+			std::tm TM_End ={0};
+			std::tm TM_Beg ={0};
+			std::string TecTime;
+			time_t tStop1 = time(NULL);
+			localtime_s(&TM_End, &tStop1);
+			time_t tStop = _mkgmtime(&TM_End);
+			time_t tStart = (time_t)difftime(tStop, GraffKPVL.MaxSecCount);
+			gmtime_s(&TM_Beg, &tStart);
+
+			std::stringstream sdw;
+			sdw << boost::format("%|04|-") % (TM_End.tm_year + 1900);
+			sdw << boost::format("%|02|-") % (TM_End.tm_mon + 1);
+			sdw << boost::format("%|02| ") % TM_End.tm_mday;
+			sdw << boost::format("%|02|:") % TM_End.tm_hour;
+			sdw << boost::format("%|02|:") % TM_End.tm_min;
+			sdw << boost::format("%|02|") % TM_End.tm_sec;
+			//sdw << "+05";
+			sEndTime = sdw.str();
+
+			sdw.str(std::string());
+			sdw << boost::format("%|04|-") % (TM_Beg.tm_year + 1900);
+			sdw << boost::format("%|02|-") % (TM_Beg.tm_mon + 1);
+			sdw << boost::format("%|02| ") % TM_Beg.tm_mday;
+			sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
+			sdw << boost::format("%|02|:") % TM_Beg.tm_min;
+			sdw << boost::format("%|02|") % TM_Beg.tm_sec;
+			//sdw << "+05";
+			sBegTime = sdw.str();
+			//SetWindowText(GraffKPVL.bHwnd, sBegTime.c_str());
+		}
 
 		//std::string sBegTime2 = SqlTempKPVL(sBegTime);
 
@@ -754,7 +787,7 @@ DWORD WINAPI Open_GRAFF_FURN1(LPVOID)
 {
 	try
 	{
-		CONNECTION2(GraffFurn1.conn);
+		CONNECTION2(GraffFurn1.conn, Graphics);
 		GraffFurn1.MaxSecCount = SecCount1;
 		while(isRun)
 		{
@@ -772,7 +805,7 @@ DWORD WINAPI Open_GRAFF_FURN2(LPVOID)
 {
 	try
 	{
-		CONNECTION2(GraffFurn2.conn);
+		CONNECTION2(GraffFurn2.conn, Graphics);
 		GraffFurn2.MaxSecCount = SecCount1;
 
 		while(isRun)
@@ -791,7 +824,7 @@ DWORD WINAPI Open_GRAFF_KPVL(LPVOID)
 {
 	try
 	{
-		CONNECTION2(GraffKPVL.conn);
+		CONNECTION2(GraffKPVL.conn, Graphics);
 		GraffKPVL.MaxSecCount = SecCount2;
 		while(isRun)
 		{
@@ -982,6 +1015,13 @@ void GetGrTempFURN0(Graff& gr, T_ForBase_RelFurn& app, TCassette& TC)
 //typedef std::shared_ptr<spdlog::logger>(std::string) loginit;
 
 
+void SetProc(HWND hWnd, std::string& p)
+{
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&p);
+	if(!OldSubProc)OldSubProc = SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)SubProc);
+	else SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)SubProc);
+}
+
 void InitGrafWindow(HWND hWnd)
 {
 	InitLogger(Graphics);
@@ -996,7 +1036,16 @@ void InitGrafWindow(HWND hWnd)
 
 		GRAGG::RegisterClassGraf();
 
+		GraffKPVL.AddTime = std::to_string(SecCount2 / 60);
+
 		GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
+		GraffKPVL.bHwnd = CreateWindowEx(0, "Edit", GraffKPVL.StartKPVL.c_str(), WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1350, 150, 140, 20, hWnd, (HMENU)5104, hInstance, 0);
+		GraffKPVL.tHwnd = CreateWindowEx(0, "Edit", GraffKPVL.AddTime.c_str(),   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1490, 150,  30, 20, hWnd, (HMENU)5105, hInstance, 0);
+
+		//GtHwnd = GraffKPVL.tHwnd;
+		SetProc(GraffKPVL.bHwnd, GraffKPVL.StartKPVL);
+		SetProc(GraffKPVL.tHwnd, GraffKPVL.AddTime);
+
 		GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
 		GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
 
@@ -1036,7 +1085,7 @@ void Open_GRAFF_FURN(TCassette& TC)
 
 	try
 	{
-		CONNECTION2(GraffFurn.conn);
+		CONNECTION2(GraffFurn.conn, Graphics);
 
 		GraffFurn.MaxSecCount = 0;// SecCount1;
 

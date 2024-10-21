@@ -509,8 +509,9 @@ void Value::Set_Value(OpcUa::Variant var)
 
             if(Val.IsNul())
                 throw std::runtime_error("Error Type Variant is NULL");
-
+#ifndef NOSQL
             Node.SetValue(Val);
+#endif
             if(Arhive)
             //if(Patch.find(".WDG_fromBase") == std::string::npos)
                 LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());
@@ -537,7 +538,9 @@ void Value::Set_Value(){
             if(Val.IsNul())
                 throw std::runtime_error("Error Type Variant is NULL");
 
+#ifndef NOSQL
             Node.SetValue(Val);
+#endif
             if(Arhive)
             ///if(Patch.find(".WDG_fromBase") == std::string::npos)
                 LOG_INFO(SQLLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, Patch, GetString());

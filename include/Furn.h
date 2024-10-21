@@ -2,17 +2,17 @@
 
 namespace S107
 {
-    typedef struct T_cass{
-        int id = 0;
-        std::string Run_at = "";
-        std::string End_at = "";
-        std::string Err_at = "";
-        int Hour = 0;
-        int Day = 0;
-        int Month = 0;
-        int Year = 0;
-        int CassetteNo = 0;
-    };
+    //typedef struct T_cass{
+    //    int id = 0;
+    //    std::string Run_at = "";
+    //    std::string End_at = "";
+    //    std::string Err_at = "";
+    //    int Hour = 0;
+    //    int Day = 0;
+    //    int Month = 0;
+    //    int Year = 0;
+    //    int CassetteNo = 0;
+    //};
 
     extern std::string URI;
     extern std::string ServerDataTime;
@@ -42,27 +42,27 @@ namespace S107
         extern int Finish_a;
     };
 
+#pragma region Функции с кассетами в базе
     void GetColl(PGresult* res);
+    bool IsCassette(TCassette& CD);
     void GetCassette(PGresult* res, TCassette& cassette, int line);
 
-
     namespace SQL{
-        bool isCasseteCant(T_CassetteData& Cassette, TCassette& CD);
 
         void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette);
-        void GetIsPos(PGConnection& conn, TCassette& CD);
-        bool GetCountSheet(PGConnection& conn, TCassette& CD);
+        //bool isCasseteCant(T_CassetteData& Cassette, TCassette& CD);
+        //bool isCasseteFurn(T_Fcassette& Cassette, TCassette& CD);
+        //void GetIsPos(PGConnection& conn, TCassette& CD);
+        //void SearthEnd_at(PGConnection& conn, TCassette& CD, int id);
+        //bool GetCountSheet(PGConnection& conn, TCassette& CD);
     };
 
-
-#pragma region Функции с кассетами в базе
-    bool IsCassette(TCassette& CD);
 
 #pragma endregion
 
     //Печ отпуска #1
     namespace Furn1{
-        extern T_cass Petch;
+        //extern T_cass Petch;
 
         DWORD Data_WDG_toBase(Value* value);
 
@@ -140,7 +140,7 @@ namespace S107
 
     //Печ отпуска #2
     namespace Furn2{
-        extern T_cass Petch;
+        //extern T_cass Petch;
 
         DWORD Data_WDG_toBase(Value* value);
 
