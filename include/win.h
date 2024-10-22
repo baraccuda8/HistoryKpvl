@@ -4,6 +4,7 @@
 #define szWindowClass0 "History Data Collection 0"
 #define szWindowClass1 "History Data Collection 1"
 
+extern bool NotCorrect;
 extern HWND Global0;
 extern HWND Global1;
 

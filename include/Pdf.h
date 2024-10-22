@@ -33,7 +33,7 @@ namespace PDF
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID);
 
-	DWORD CorrectCassette(LPVOID);
+	//DWORD CorrectCassette(LPVOID);
 	DWORD CorrectSheet(LPVOID);
 #ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID);

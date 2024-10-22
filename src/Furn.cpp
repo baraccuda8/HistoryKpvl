@@ -459,7 +459,7 @@ namespace S107
                 id = GetId(conn, CD);
                 std::stringstream sd;
                 sd << "UPDATE cassette SET end_at = now() WHERE id = " << id;
-                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                LOG_INFO(TestLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(PethLogger, conn, sd);
                 LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
                          FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
@@ -484,7 +484,7 @@ namespace S107
                 sd << ", event = 4";
                 sd << " WHERE";
                 sd << " id = " << id;
-                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                LOG_INFO(TestLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 //SETUPDATESQL(PethLogger, conn, sd);
                 LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 4",
                          FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
@@ -515,7 +515,7 @@ namespace S107
                 sd << " peth = " << nPetch;
                 sd << " WHERE id = " << id;
 
-                LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
+                LOG_INFO(TestLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(PethLogger, conn_temp, sd);
             }
         }

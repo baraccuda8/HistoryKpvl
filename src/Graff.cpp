@@ -493,7 +493,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 		sde << "SELECT create_at FROM todos WHERE id_name = " << val->ID;
 		sde << " AND create_at <= '";
 		sde << sBegTime;
-		sde << "' ORDER BY id ASC LIMIT 1;";
+		sde << "' ORDER BY id DESC LIMIT 1;";
 		std::string sBegTime2 = sBegTime;
 		std::string comand = sde.str();
 		if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);

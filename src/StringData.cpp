@@ -288,7 +288,7 @@ std::string DataYarDaySwap(std::string str)
             return sdt.str();
         }
     }
-
+    return "";
 }
 
 time_t DataTimeOfString(std::string str)

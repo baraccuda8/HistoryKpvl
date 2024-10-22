@@ -12,6 +12,12 @@
 
 //#include "Graff.h"
 //#include "ClCodeSys.h"
+#ifdef DEBUG
+bool NotCorrect = true;
+#else
+bool NotCorrect = false;
+#endif // DEBUG
+
 
 void InitGrafWindow(HWND hWnd);
 void Open_GRAFF_FURN(TCassette& p);
@@ -264,8 +270,11 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 
 {hEditDiagnose, {szStat,   Stat03Flag, {150, 0, 0, 21}, "Информацмя"}},
 {hEditTimes,    {szStat,   Stat03Flag, {0, 0, 150, 21}, "00:00:00"}},
-{hEditszButt,   {szButt,   Butt5Flag, {0, 0, 21, 21}, "Информацмя"}},
-
+#ifdef DEBUG
+{hEditszButt,   {szButt,   Butt5Flag, {0, 0, 50, 21}, "Неь"}},
+#else
+{hEditszButt,   {szButt,   Butt5Flag, {0, 0, 50, 21}, "Да"}},
+#endif
 
 #pragma region Задание: Время закалки, Давление воды
     {hGroup365, {szTem1,   Temp1Flag, {1650, 170, 215, 66}, "Задание"}},
@@ -1651,7 +1660,7 @@ LRESULT OnNotify(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //Команды групповыхо окон
 LRESULT CALLBACK CommandTemp1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    WORD command = LOWORD(wParam);
+    //WORD command = LOWORD(wParam);
     //if(command == IDM_ABOUT) return MessageBox(hWnd, "IDM_ABOUT", "IDM_ABOUT", 0);
     //if(command == hStatSheet_Data)      	return Sheet_NewSheet(HIWORD(wParam));
     //if(command == ID_StatSheet_Data)    	return Sheet_NewSheet(HIWORD(wParam));
@@ -1708,6 +1717,7 @@ LRESULT PaintTemp2(HWND hWnd)
     EndPaint(hWnd, &ps);
     return 0;
 }
+
 
 LRESULT CALLBACK WndProcTemp1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 //Сообщения групповых окон 2
@@ -1818,14 +1828,14 @@ LRESULT Size1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         MoveWindow(winmap(HWNDCLIENT::hEditDiagnose),   150, cy - 20, cx - 150, 20, true);
         MoveWindow(winmap(HWNDCLIENT::hEditTimes),      0, cy - 20, 150, 20, true);
         MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet),     0, ptLT1.y - 1, cx, y2, true);
-        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 21, 0, 21, 21, false);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 50, 0, 50, 21, false);
     }
     else
     {
         MoveWindow(winmap(HWNDCLIENT::hEditDiagnose),   150, 1007 - 20, cx - 150, 20, false);
         MoveWindow(winmap(HWNDCLIENT::hEditTimes),      0, 1007 - 20, 150, 20, false);
         MoveWindow(winmap(HWNDCLIENT::hEdit_Sheet),     0, 700, cx, 286, true);
-        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 21, 0, 21, 21, false);
+        MoveWindow(winmap(HWNDCLIENT::hEditszButt),     cx - 50, 0, 50, 21, false);
         
     }
     //SetWindowPos(winmap(HWNDCLIENT::hEdit_Sheet), HWND_TOP, 5, 0, cx - 10, y2, SWP_NOMOVE);
@@ -1903,8 +1913,11 @@ LRESULT Command1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //    //MessageBox(hWnd, ss.c_str(), "ID_POP_40001", 0);
         //}
     }
-    if(command == 999)
+    if(command == hEditszButt)
     {
+        NotCorrect = !NotCorrect;
+        SetWindowText(winmap(HWNDCLIENT::hEditszButt), NotCorrect ? "Нет":"Да");
+        //return MessageBox(hWnd, "hEditszButt0", "hEditszButt0", 0);
         //Временная кнопка для выполнения тестов
     }
     return DefWindowProc(hWnd, message, wParam, lParam);

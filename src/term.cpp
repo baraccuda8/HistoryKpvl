@@ -21,6 +21,7 @@ extern std::string lpLogDir;
 
 std::shared_ptr<spdlog::logger> PethLogger = NULL;
 std::shared_ptr<spdlog::logger> FurnLogger = NULL;
+std::shared_ptr<spdlog::logger> TestLogger = NULL;
 
 bool isInitPLC_S107 = false;
 
@@ -37,25 +38,14 @@ T_ForBase_RelFurn ForBase_RelFurn_1;
 T_ForBase_RelFurn ForBase_RelFurn_2;
 
 struct T_FcassetteArray{
-    //struct _data{
         T_Fcassette cassette[7];
         Value* selected_cassetFurn1;
         Value* selected_cassetFurn2;
-    //}data;
 }FcassetteArray;
-
-//SPK107 (M01).Application.AppFurn1.PointTime_1
 
 #define SETALLTAG2(_t, _f, _e, _s,  _d) SETALLTAG(PathPeth, _t, _f, _e, _s,  _d)
 
-//std::string sdTemp = "";
-//DWORD Temp(Value* value)
-//{
-//    //sdTemp = value->GetString();
-//    return 0;
-//}
 
-//template<>
 std::deque<Value*> AllTagPeth = {
 
     //Первая печь
@@ -803,7 +793,7 @@ void CaseteInRel(std::deque<TCassette>& CIl)
 #pragma endregion
 
     }
-    CATCH(FurnLogger, "");
+    CATCH(PethLogger, "");
 }
 
 //Выводим список кассет
@@ -831,11 +821,11 @@ void OutListCassette(size_t& old_count)
             ListView_SetItemState(hwndCassette, Index, LVIS_SELECTED, LVIS_OVERLAYMASK);
         }
     }
-    CATCH(FurnLogger, "");
+    CATCH(PethLogger, "");
 }
 
 //На кантовку Event = 1
-int SetCassetteInCant(PGConnection& conn, TCassette& it)
+int SetCassetteInCant(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
@@ -849,33 +839,33 @@ int SetCassetteInCant(PGConnection& conn, TCassette& it)
         it.Pdf = "";
 
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = 1, peth = 0, run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = " << it.Event <<", peth = " << it.Peth << ", run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
         std::string comand = sd.str();
-        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        SETUPDATESQL(PethLogger, conn, sd);
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(L, conn, sd);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
     return Stoi(it.Event);
 }
 
 //В ожидание Event = 2
-int SetCassetteInWait(PGConnection& conn, TCassette& it)
+int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
         it.Event = "2";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = 2 WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = " << it.Event << " WHERE id = " << it.Id;
         std::string comand = sd.str();
-        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        SETUPDATESQL(PethLogger, conn, sd);
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(L, conn, sd);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
     return Stoi(it.Event);
 }
 
 //В печь Event = 3
-int SetCassetteInFurn(PGConnection& conn, TCassette& it, int Peth)
+int SetCassetteInFurn(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it, int Peth)
 {
     try
     {
@@ -886,36 +876,36 @@ int SetCassetteInFurn(PGConnection& conn, TCassette& it, int Peth)
         it.Correct = "";
         it.Pdf = "";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = 3, peth = " << it.Peth << ", run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = " << it.Event << ", peth = " << it.Peth << ", run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
         std::string comand = sd.str();
-        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        SETUPDATESQL(PethLogger, conn, sd);
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(L, conn, sd);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
     return Stoi(it.Event);
 }
 
 //В удаленные Event = 7
-int SetCassetteInDelete(PGConnection& conn, TCassette& it)
+int SetCassetteInDelete(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
         it.Event = "7";
         it.Delete_at = GetDataTimeString();
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = 7, peth = 0, ";
+        sd << "UPDATE cassette SET event = " << it.Event << ", ";
         sd << "delete_at = '" << it.Delete_at << "' ";
         sd << "WHERE id = " + it.Id;
         std::string comand = sd.str();
-        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        SETUPDATESQL(PethLogger, conn, sd);
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        SETUPDATESQL(L, conn, sd);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
     return Stoi(it.Event);
 }
 
 
-std::string GetDataEnd(PGConnection& conn, std::string sd)
+std::string GetDataEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, std::string sd)
 {
     std::string at = "";
     try
@@ -927,15 +917,15 @@ std::string GetDataEnd(PGConnection& conn, std::string sd)
                 at = conn.PGgetvalue(res, 0, 0);
         }
         else
-            LOG_ERR_SQL(PethLogger, res, sd);
+            LOG_ERR_SQL(L, res, sd);
         PQclear(res);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
     return at;
 }
 
 //Ищем конец
-void FindEnd(PGConnection& conn, TCassette& it)
+void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
@@ -955,75 +945,104 @@ void FindEnd(PGConnection& conn, TCassette& it)
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'true' AND ";
             sd << "id_name = " << ProcEndID;
             sd << " ORDER BY id DESC LIMIT 1";
-            End_at1 = GetDataEnd(conn, sd.str());
+            End_at1 = GetDataEnd(L, conn, sd.str());
         }
         {
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'false' AND ";
             sd << "id_name = " << ProcRunID;
             sd << " ORDER BY id DESC LIMIT 1";
-            End_at2 = GetDataEnd(conn, sd.str());
+            End_at2 = GetDataEnd(L, conn, sd.str());
         }
 
         if(End_at1 > End_at2)
             it.End_at = End_at1;
         else
-            it.End_at = End_at1;
+            it.End_at = End_at2;
 
         if(it.End_at.length())
         {
             std::stringstream sd;
             sd << "UPDATE cassette SET end_at = '" << it.End_at << "' WHERE end_at IS NULL AND id = " << it.Id;
-            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-            SETUPDATESQL(PethLogger, conn, sd);
+            LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+            SETUPDATESQL(L, conn, sd);
         }
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
 }
 
 //Ждем 15 минут финал
-void FindFinish(PGConnection& conn, TCassette& it)
+void FindFinish(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
- //Если нет конца отпуска
-        std::tm TM_Temp ={0};
-        time_t tmp_at2 = DataTimeOfString(it.End_at, TM_Temp);
-        TM_Temp.tm_year -= 1900;
-        TM_Temp.tm_mon -= 1;
+        //Если нет конца отпуска
+        time_t tmp_at = DataTimeOfString(it.End_at);
+        time_t tStop1 = tmp_at + (60 * 15); //+15 минут
 
-        time_t tStop1 = mktime(&TM_Temp) + (60 * 15); //+15 минут
-        localtime_s(&TM_Temp, &tStop1);
-
-        time_t tCur = time(NULL);
-        tm curr_tm;
-        localtime_s(&curr_tm, &tCur);
+        std::string final = GetDataTimeString(&tStop1);;
+        std::string Currt = GetDataTimeString();
 
         //Финализируем если прошло 15 минут после конца отпуска
-        if(tCur >= tStop1)
-            it.Finish_at = GetDataTimeString(TM_Temp);
+        if(Currt >= final)
+            it.Finish_at = final;
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
 }
 
 //В финал Event = 5
-int SetCassetteInFinal(PGConnection& conn, TCassette& it)
+int SetCassetteInFinal(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
 {
     try
     {
         it.Event = "5";
         std::stringstream sd;
         sd << "UPDATE cassette SET event = 5, finish_at = '" << it.Finish_at << "' WHERE id = " << it.Id;
-        LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-        SETUPDATESQL(PethLogger, conn, sd);
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+        SETUPDATESQL(L, conn, sd);
     }
-    CATCH(FurnLogger, "");
+    CATCH(L, "");
 
     return Stoi(it.Event);
 }
 
+void OutLoggin(std::shared_ptr<spdlog::logger> L, std::string F, std::string st, TCassette& it)
+{
+#define id  it.Id
+#define Ev  it.Event
 
-void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
+#define Y   it.Year
+#define M   it.Month
+#define D   it.Day
+#define H   it.Hour
+#define N   it.CassetteNo
+
+#define Rn  it.Run_at
+#define Ed  it.End_at
+#define Fs  it.Finish_at
+#define Cr  it.Correct
+
+    LOG_INFO(L, 
+             "{:90}| id:{} {} EV:{} ID(Y:{} M:{} D:{} H:{} N:{}) Rn:{} Ed:{} Fs:{} Cr:{}", 
+              F,     id,   st,Ev,      Y,   M,   D,   H,   N,    Rn,   Ed,   Fs,   Cr)
+
+#undef id
+#undef Ev
+
+#undef Y 
+#undef M
+#undef D
+#undef H
+#undef n
+
+#undef Rn
+#undef Ed
+#undef Fs
+#undef Cr
+}
+
+
+void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::deque<TCassette>& CIl)
 {
     try
     {
@@ -1041,7 +1060,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
             if((Event != 7 && DeleteIT) || (Event == 7 && !DeleteIT))
             {
                 //В удаленные Event = 7
-                Event = SetCassetteInDelete(conn, it);
+                OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);
+                Event = SetCassetteInDelete(L, conn, it);
+                OutLoggin(L, FUNCTION_LINE_NAME, "<< В удаленные", it);
             }
             int SheetInCassette = Stoi(it.SheetInCassette);
 
@@ -1055,6 +1076,10 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                 bool YesF1 = (SheetIT == Furn1);
                 bool YesF2 = (SheetIT == Furn2);
 
+                //if(it.End_at.length())
+                //    FindFinish(L, conn, it);
+                 
+                
                 //Если кассета на кантовку
                 if(YesSh)
                 {
@@ -1062,7 +1087,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                     {
                         Peth = 0;
                         //На кантовку Event = 1
-                        Event = SetCassetteInCant(conn, it);
+                        OutLoggin(L, FUNCTION_LINE_NAME, ">> На кантовку", it);
+                        Event = SetCassetteInCant(L, conn, it);
+                        OutLoggin(L, FUNCTION_LINE_NAME, "<< На кантовку", it);
                     }
                 }
 
@@ -1073,7 +1100,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                     {
                         Peth = 1;
                         //В печь Event = 3
-                        Event = SetCassetteInFurn(conn, it, Peth);
+                        OutLoggin(L, FUNCTION_LINE_NAME, ">> В печь 1", it);
+                        Event = SetCassetteInFurn(L, conn, it, Peth);
+                        OutLoggin(L, FUNCTION_LINE_NAME, "<< В печь 1", it);
                     }
                 }
 
@@ -1084,7 +1113,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                     {
                         Peth = 2;
                         //В печь Event = 3
-                        Event = SetCassetteInFurn(conn, it, Peth);
+                        OutLoggin(L, FUNCTION_LINE_NAME, ">> В печь 2", it);
+                        Event = SetCassetteInFurn(L, conn, it, Peth);
+                        OutLoggin(L, FUNCTION_LINE_NAME, "<< В печь 2", it);
                     }
                 }
 
@@ -1101,7 +1132,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                                 //Ищем конец
                                 if(!it.End_at.length())
                                 {
-                                    FindEnd(conn, it);
+                                    OutLoggin(L, FUNCTION_LINE_NAME, ">> Ищем конец", it);
+                                    FindEnd(L, conn, it);
+                                    OutLoggin(L, FUNCTION_LINE_NAME, "<< Ищем конец", it);
                                 }
 
                                 if(it.End_at.length())
@@ -1110,13 +1143,17 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                                     if(!it.Finish_at.length())
                                     {
                                         //Финализируем
-                                        FindFinish(conn, it);
+                                        //OutLoggin(L, FUNCTION_LINE_NAME, ">> Финализируем", it);
+                                        FindFinish(L, conn, it);
+                                        //OutLoggin(L, FUNCTION_LINE_NAME, "<< Финализируем", it);
                                     }
                                 }
                                 else
                                 {
-                                    //Если конец не найден отправляем в ожидание
-                                    Event = SetCassetteInWait(conn, it);
+                                    //В ожидание
+                                    OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
+                                    Event = SetCassetteInWait(L, conn, it);
+                                    OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
                                 }
 
                             }
@@ -1125,20 +1162,24 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                             if(it.Finish_at.length())
                             {
                                 //В финал Event = 5
-                                Event = SetCassetteInFinal(conn, it);
+                                OutLoggin(L, FUNCTION_LINE_NAME, ">> В финал", it);
+                                Event = SetCassetteInFinal(L, conn, it);
+                                OutLoggin(L, FUNCTION_LINE_NAME, "<< В финал", it);
                             }
                         }
                     }
                 }
 
                 //Если не на кантовке и количество листов в касете ноль отправляем в потерянные
-                if(!YesSh && !YesF1 && !YesF2)
+                if(Event != 5 && !YesSh && !YesF1 && !YesF2)
                 {
                     //Если нет количества кассет оитправляем в удаленный
                     if(SheetInCassette <= 0)
                     {
                         //В удаленные Event = 7
-                        Event = SetCassetteInDelete(conn, it);
+                        OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);
+                        Event = SetCassetteInDelete(L, conn, it);
+                        OutLoggin(L, FUNCTION_LINE_NAME, "<< В удаленные", it);
                     }
                     else
                     {
@@ -1149,7 +1190,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                             if(Event != 2)
                             {
                                 //В ожидание Event = 2
-                                Event = SetCassetteInWait(conn, it);
+                                OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
+                                Event = SetCassetteInWait(L, conn, it);
+                                OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
                             }
                         }
                     }
@@ -1159,7 +1202,9 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                 if(Event != 5 && Event != 7 && it.Finish_at.length())
                 {
                     //В финал Event = 5
-                    Event = SetCassetteInFinal(conn, it);
+                    OutLoggin(L, FUNCTION_LINE_NAME, ">> В финал", it);
+                    Event = SetCassetteInFinal(L, conn, it);
+                    OutLoggin(L, FUNCTION_LINE_NAME, "<< В финал", it);
                 }
 
                 //Наполняем структуру кассет для печей
@@ -1170,7 +1215,7 @@ void TestCassete(PGConnection& conn, std::deque<TCassette>& CIl)
                 }
             }
         }
-    }CATCH(FurnLogger, "");
+    }CATCH(L, "");
 }
 
 DWORD WINAPI Open_FURN_SQL(LPVOID)
@@ -1179,7 +1224,9 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
     size_t old_count = 0;
     InitLogger(FurnLogger);
+    InitLogger(TestLogger);
     LOG_INFO(FurnLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
+    LOG_INFO(TestLogger, "{:90}| Start Open_FURN_SQL", FUNCTION_LINE_NAME);
 
     PGConnection conn;
     CONNECTION1(conn, FurnLogger);
@@ -1204,7 +1251,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             std::deque<TCassette> CIl;
 
 #ifndef _DEBUG
-            TestCassete(conn, CIl);
+            TestCassete(TestLogger, conn, CIl);
 #endif
 
             //Заполняем таблицу кассет для печей отпуска
@@ -1233,6 +1280,8 @@ void Open_FURN()
     //Сортировка переменных по имени
     std::sort(AllTagPeth.begin(), AllTagPeth.end(), cmpAllTagPeth);
     InitLogger(PethLogger);
+    LOG_INFO(PethLogger, "{:90}| Start Open_FURN", FUNCTION_LINE_NAME);
+
 
 #ifndef TESTSPIS
 #ifndef TESTWIN
