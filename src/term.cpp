@@ -1271,7 +1271,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
         if(!isRun) return 0;
 
-        int f = 2;
+        int f = 30; //30 секунд
         while(isRun && (--f))
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
