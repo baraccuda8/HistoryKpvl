@@ -639,6 +639,10 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
 {
     if(isRun)
     {
+        if(Val.Type() != v.Type()) //Val.Type() != v.Type())
+        {
+            LOG_WARN(AllLogger, "{:90}| Ошибка типа: SQL:{} != OPC:{} Tag: {}", FUNCTION_LINE_NAME, Val.Type(), v.Type(), Patch);
+        }
         Val = v;
         SaveSQL();
         if(FunctionCallbak)

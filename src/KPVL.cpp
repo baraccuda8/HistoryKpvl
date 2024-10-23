@@ -883,22 +883,22 @@ namespace KPVL {
             }
             CATCH(HardLogger, "");
         }
-        //Установка позиции листа
-        void UpdateSQLPos(PGConnection& conn, std::string id, int pos, int Pos)
-        {
-            try
-            {
-                std::stringstream sd;
-                sd << "UPDATE sheet SET pos = " << Pos << ", correct = DEFAULT, pdf = DEFAULT";
-                sd << " WHERE id = " << id;
-                LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(HardLogger, conn, sd);
-            }
-            CATCH(HardLogger, "");
-        }
+        ////Установка позиции листа
+        //void UpdateSQLPos(PGConnection& conn, std::string id, int Pos)
+        //{
+        //    try
+        //    {
+        //        std::stringstream sd;
+        //        sd << "UPDATE sheet SET pos = " << Pos << ", correct = DEFAULT, pdf = DEFAULT";
+        //        sd << " WHERE id = " << id;
+        //        LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+        //        SETUPDATESQL(HardLogger, conn, sd);
+        //    }
+        //    CATCH(HardLogger, "");
+        //}
 
         //Потерян на кантовке
-        void UpdateIdCant(PGConnection& conn, std::string id)
+        void UpdateIdOtherCant(PGConnection& conn, std::string id)
         {
             try
             {
@@ -925,7 +925,7 @@ namespace KPVL {
         }
 
         //Обновляем позицию листа
-        void UpdateSheetPos(PGConnection& conn, T_PlateData& PD, std::string sid, int Pos)
+        void UpdateSheetPos(PGConnection& conn, T_PlateData& PD, std::string id, int Pos)
         {
             try
             {
@@ -933,13 +933,13 @@ namespace KPVL {
                 {
                     int pos = 0;
 
-                    if(Stoi(sid))
+                    if(Stoi(id))
                     {
                         if(Pos == 6)
-                            UpdateIdCant(conn, sid);
+                            UpdateIdOtherCant(conn, id);
 
                         std::stringstream se;
-                        se << "SELECT pos FROM sheet WHERE id = " << sid;
+                        se << "SELECT pos FROM sheet WHERE id = " << id;
                         std::string comand = se.str();
                         if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
@@ -949,9 +949,18 @@ namespace KPVL {
                             LOG_ERR_SQL(HardLogger, res, comand);
                         PQclear(res);
 
-
                         if(pos != Pos && pos > 0 && pos < 7)
-                            UpdateSQLPos(conn, sid, pos, Pos);
+                            //UpdateSQLPos(conn, sid, Pos);
+                        {
+                            try
+                            {
+                                std::stringstream sd;
+                                sd << "UPDATE sheet SET pos = " << Pos << ", correct = DEFAULT, pdf = DEFAULT WHERE id = " << id;
+                                LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                                SETUPDATESQL(HardLogger, conn, sd);
+                            }
+                            CATCH(HardLogger, "");
+                        }
                     }
                 }
             }
@@ -1250,7 +1259,7 @@ namespace KPVL {
 
                     if(IsSheet(PD))
                     {
-                        SheetPos(conn_kpvl, PD, 2);
+                        SheetPos(conn_kpvl, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
                         SetUpdateSheet(conn_kpvl, PD, update, "");
@@ -1477,6 +1486,9 @@ namespace KPVL {
 
                     if(IsSheet(PD))
                     {
+                        std::string update = " incant_at = '" + GetDataTimeString() + "'";
+                        SetUpdateSheet(conn_kpvl, PD, update, " incant_at IS NULL  AND");
+
                         SheetPos(conn_kpvl, PD, Pos);
                         DeleteNullSgeet(conn_kpvl, PD, Pos);
                     }
@@ -1485,67 +1497,66 @@ namespace KPVL {
                 return 0;
             }
 
-            void SetSaveDone(PGConnection& conn, int32_t CasseteId)
+            void SetSaveDone(PGConnection& conn)
             {
                 try
                 {
                     T_Side Top_Side = HMISheetData.Top_Side;
                     T_Side Bot_Side = HMISheetData.Bot_Side;
                     T_CassetteData Cassette = HMISheetData.Cassette;
-                    
-
                     T_PlateData PD = PlateData[Pos];
-                    //if(!IsSheet(PD))
-                    //    PD = PlateData[5];
-                    //LOG_INFO(HardLogger, "{:90}", FUNCTION_LINE_NAME);
 
-                    if(HMISheetData.NewData->GetBool())
+                    if(HMISheetData.NewData->Val.As<bool>())
                     {
                         if(IsSheet(PD))
                         {
                             int32_t id = Stoi(GetIdSheet(conn, PD));
                             if(id != 0)
                             {
-                                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                                if(CasseteId < 1)
-                                {
-                                    uint16_t hour = Cassette.Hour->GetValue().As<uint16_t>();
-                                    CasseteId = KPVL::Cassette::GetIdCassette(conn, Cassette, hour);
-                                }
+                                uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                                std::string DataTime = GetDataTimeString();
+                                MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
+
 #pragma region comand = "UPDATE sheet SET"
-                                
                                 std::stringstream co;
                                 co << "UPDATE sheet SET";
                                 co << " pos = 7";
                                 co << ", cassette = " << CasseteId;
                                 co << ", news = 1";
-                                co << ", top1 = " << Top_Side.h1->GetFloat();
-                                co << ", top2 = " << Top_Side.h2->GetFloat();
-                                co << ", top3 = " << Top_Side.h3->GetFloat();
-                                co << ", top4 = " << Top_Side.h4->GetFloat();
-                                co << ", top5 = " << Top_Side.h5->GetFloat();
-                                co << ", top6 = " << Top_Side.h6->GetFloat();
-                                co << ", top7 = " << Top_Side.h7->GetFloat();
-                                co << ", top8 = " << Top_Side.h8->GetFloat();
-                                co << ", bot1 = " << Bot_Side.h1->GetFloat();
-                                co << ", bot2 = " << Bot_Side.h2->GetFloat();
-                                co << ", bot3 = " << Bot_Side.h3->GetFloat();
-                                co << ", bot4 = " << Bot_Side.h4->GetFloat();
-                                co << ", bot5 = " << Bot_Side.h5->GetFloat();
-                                co << ", bot6 = " << Bot_Side.h6->GetFloat();
-                                co << ", bot7 = " << Bot_Side.h7->GetFloat();
-                                co << ", bot8 = " << Bot_Side.h8->GetFloat();
-                                co << ", hour = " << Stoi(Cassette.Hour->GetString());// ->GetInt();
-                                co << ", day = " << Cassette.Day->GetInt();
-                                co << ", month = " << Cassette.Month->GetInt();
-                                co << ", year = " << Cassette.Year->GetInt();
-                                co << ", cassetteno = " << Cassette.CassetteNo->GetInt();
-                                co << ", sheetincassette = " << (Cassette.SheetInCassette->GetInt() + 1);
+                                co << ", top1 = " << Top_Side.h1->Val.As<float>();  // GetFloat();
+                                co << ", top2 = " << Top_Side.h2->Val.As<float>();  // GetFloat();
+                                co << ", top3 = " << Top_Side.h3->Val.As<float>();  // GetFloat();
+                                co << ", top4 = " << Top_Side.h4->Val.As<float>();  // GetFloat();
+                                co << ", top5 = " << Top_Side.h5->Val.As<float>();  // GetFloat();
+                                co << ", top6 = " << Top_Side.h6->Val.As<float>();  // GetFloat();
+                                co << ", top7 = " << Top_Side.h7->Val.As<float>();  // GetFloat();
+                                co << ", top8 = " << Top_Side.h8->Val.As<float>();  // GetFloat();
+                                co << ", bot1 = " << Bot_Side.h1->Val.As<float>();  // GetFloat();
+                                co << ", bot2 = " << Bot_Side.h2->Val.As<float>();  // GetFloat();
+                                co << ", bot3 = " << Bot_Side.h3->Val.As<float>();  // GetFloat();
+                                co << ", bot4 = " << Bot_Side.h4->Val.As<float>();  // GetFloat();
+                                co << ", bot5 = " << Bot_Side.h5->Val.As<float>();  // GetFloat();
+                                co << ", bot6 = " << Bot_Side.h6->Val.As<float>();  // GetFloat();
+                                co << ", bot7 = " << Bot_Side.h7->Val.As<float>();  // GetFloat();
+                                co << ", bot8 = " << Bot_Side.h8->Val.As<float>();  // GetFloat();
+                                try
+                                {
+                                    co << ", year = " << Cassette.Year->Val.As<int32_t>();
+                                    co << ", month = " << Cassette.Month->Val.As<int32_t>();
+                                    co << ", day = " << Cassette.Day->Val.As<int32_t>();
+                                    co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
+                                    co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
+                                    co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
+                                }
+                                CATCH(HardLogger, "");
+
+                                co << ", cant_at = '" << DataTime << "'";
                                 co << ", correct = DEFAULT, pdf = DEFAULT";
                                 co << " WHERE id = " << id << ";";
-#pragma endregion
                                 SETUPDATESQL(HardLogger, conn, co);
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+#pragma endregion
                             }
                             else
                                 LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
@@ -1573,17 +1584,16 @@ namespace KPVL {
                     MySetWindowText(winmap(value->winId), TextOut[b]);
                     if(b) //Если лист новый
                     {
-                        try
+                        T_PlateData PD = PlateData[Pos];
+                        if(IsSheet(PD))
                         {
-                            uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                            int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
-                            LOG_INFO(HardLogger, "{:90}| NewSheetData: Id = {}", FUNCTION_LINE_NAME, CasseteId);
+                            std::string update = " incant_at = '" + GetDataTimeString() + "'";
+                            SetUpdateSheet(conn_kpvl, PD, update, " incant_at IS NULL AND");
 
-                            SetSaveDone(conn_kpvl, CasseteId);
-                            PalletSheet[Pos - 1].Clear();
-                            PalletSheet[Pos].Clear();
+                            SetSaveDone(conn_kpvl);
                         }
-                        CATCH(HardLogger, "");
+                        PalletSheet[Pos - 1].Clear();
+                        PalletSheet[Pos].Clear();
 
                         //Коррекция листа
                         CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
@@ -1850,7 +1860,7 @@ namespace KPVL {
             try
             {
                 char ss[256];
-                int InCassette= value->GetInt();
+                int InCassette = value->GetInt();
                 sprintf_s(ss, 256, "%d", InCassette + 1);
                 MySetWindowText(winmap(value->winId), ss);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
@@ -1859,7 +1869,7 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
                     //SetOldCassette(HMISheetData.Cassette, id);

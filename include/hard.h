@@ -117,7 +117,7 @@ public:
         //int32_t Номер кассеты за день
         Value* CassetteNo;
 
-        //uint16_t Номер листа в касете
+        //int16_t Номер листа в касете
         Value* SheetInCassette;
     };
 

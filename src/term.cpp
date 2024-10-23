@@ -857,7 +857,10 @@ int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
         it.Event = "2";
         it.Run_at = "";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = " << it.Event << ", run_at = DEFAULT, return_at = '"<< run_at << "' WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = " << it.Event << ", run_at = DEFAULT";
+        if(run_at.length())
+            sd << ", return_at = '" << run_at << "'";
+        sd << " WHERE id = " << it.Id;
         std::string comand = sd.str();
         LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         SETUPDATESQL(L, conn, sd);

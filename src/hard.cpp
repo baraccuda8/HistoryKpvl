@@ -490,14 +490,14 @@ void PLC_KPVL::Run(int count)
         while(isRun)
         {
             //Проверяем на новый лист на кантовке
-            if(HMISheetData.NewData->GetBool())                   //Если лист новый
+            if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый
             {
-                if(++NewDataVal > 5)    //5 цыклов по 1 секунде
+                if(++NewDataVal > 10)    //10 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
                     //LOG_INFO(Logger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2, hour);
+                    //uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
 
                     //HMISheetData.SaveDone->Set_Value(true);
                     //PlateData[5].Sheet->Set_Value((int32_t)0);
@@ -513,7 +513,7 @@ void PLC_KPVL::Run(int count)
             if(WD())
                 throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
 
-            //задержка 1 секунда минус время затраченое на работу
+            //задержка 1 секунда, минус время затраченое на работу
             TestTimeRun(time1);
 
             //Считаем время работы

@@ -182,7 +182,7 @@ namespace KPVL {
 
             //DWORD CassetteIsFill(Value* value);
 
-            void SetSaveDone(PGConnection& conn, int32_t CasseteId);
+            void SetSaveDone(PGConnection& conn);
 
         }
     }
