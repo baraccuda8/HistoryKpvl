@@ -2087,6 +2087,7 @@ namespace PDF
 			void GetStopTime(PGConnection& conn, std::string Start, int ID);
 			std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at);
 			void GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn);
+			//void GetCassettes::GetFinish(PGConnection& conn, TCassette& P);
 			void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
 			void GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it);
 			void SaveFileSdg(MapRunn& CassetteTodos);
@@ -2207,13 +2208,11 @@ namespace PDF
 			try
 			{
 				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id) content"
-					//", (SELECT tag.comment FROM tag WHERE tag.id = todos.id_name)"
-					" FROM todos WHERE "
-					<< " id_name = " << ID 			//Фактическое значение температуры
-					<< " AND create_at >= '" << Run_at << "'"
-					<< " AND create_at < '" << End_at << "'"
-					<< " ORDER BY id DESC LIMIT 1";
+				sss << "SELECT DISTINCT ON (id) content FROM todos WHERE ";
+				sss << " id_name = " << ID; 			//Фактическое значение температуры
+				sss << " AND create_at >= '" << Run_at << "'";
+				sss << " AND create_at < '" << End_at << "'";
+				sss << " ORDER BY id DESC LIMIT 1";
 				std::string comand = sss.str();
 				PGresult* res = conn.PGexec(comand);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -2232,24 +2231,24 @@ namespace PDF
 			return f;
 		}
 
-		void GetCassettes::GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn)
+		void GetCassettes::GetVal(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
 		{
 			try
 			{
 #pragma region Готовим запрос в базу
 
 				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id_name) id_name, content"
-					", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)"
-					" FROM todos WHERE ("
-					<< " todos.id_name = " << Furn->ActTimeHeatAcc->ID << " OR"	    //Факт время нагрева
-					<< " todos.id_name = " << Furn->ActTimeHeatWait->ID << " OR"	//Факт время выдержки
-					<< " todos.id_name = " << Furn->ActTimeTotal->ID				//Факт общее время
-					<< ")"	//Факт время выдержки
-					<< " AND todos.create_at >= '" << P.Run_at << "'"
-					<< " AND todos.create_at < '" << P.End_at << "'"
-					<< " AND cast (content as numeric) <> 0"
-					<< " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 3
+				sss << "SELECT DISTINCT ON (id_name) id_name, content";
+				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+				sss << " FROM todos WHERE (";
+				sss << " todos.id_name = " << Furn->ActTimeHeatAcc->ID << " OR";	//Факт время нагрева
+				sss << " todos.id_name = " << Furn->ActTimeHeatWait->ID << " OR";	//Факт время выдержки
+				sss << " todos.id_name = " << Furn->ActTimeTotal->ID;				//Факт общее время
+				sss << ")";
+				sss << " AND todos.create_at >= '" << it.Run_at << "'";
+				sss << " AND todos.create_at < '" << it.End_at << "'";
+				sss << " AND cast (content as numeric) <> 0";
+				sss << " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 3
 
 #pragma endregion
 
@@ -2269,10 +2268,9 @@ namespace PDF
 
 						if(f.length())
 						{
-							if(id == Furn->PointRef_1->ID) P.PointRef_1 = f;
-							if(id == Furn->ActTimeHeatAcc->ID) P.HeatAcc = f;
-							if(id == Furn->ActTimeHeatWait->ID) P.HeatWait = f;
-							if(id == Furn->ActTimeTotal->ID) P.Total = f;
+							if(id == Furn->ActTimeHeatAcc->ID && !it.HeatAcc.length()) it.HeatAcc = f;
+							if(id == Furn->ActTimeHeatWait->ID && !it.HeatWait.length()) it.HeatWait = f;
+							if(id == Furn->ActTimeTotal->ID && !it.Total.length()) it.Total = f;
 						}
 					}
 				}
@@ -2291,16 +2289,16 @@ namespace PDF
 #pragma region Гогтвим запрос в базу
 
 				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id_name) id_name, content"
-					", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)"
-					" FROM todos WHERE ("
-					<< " todos.id_name = " << Furn->PointRef_1->ID << " OR"		//Уставка температуры
-					<< " todos.id_name = " << Furn->PointTime_1->ID << " OR"		//Задание Время нагрева
-					<< " todos.id_name = " << Furn->PointTime_2->ID << " OR"	//Задание Время выдержки
-					<< " todos.id_name = " << Furn->TimeProcSet->ID				//Полное время процесса (уставка), мин
-					<< ")"	//Факт время выдержки
-					<< " AND todos.create_at < '" << P.End_at << "'"
-					<< " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 4
+				sss << "SELECT DISTINCT ON (id_name) id_name, content";
+				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+				sss << " FROM todos WHERE (";
+				sss << " todos.id_name = " << Furn->PointRef_1->ID << " OR";		//Уставка температуры
+				sss << " todos.id_name = " << Furn->PointTime_1->ID << " OR";		//Задание Время нагрева
+				sss << " todos.id_name = " << Furn->PointTime_2->ID << " OR";	//Задание Время выдержки
+				sss << " todos.id_name = " << Furn->TimeProcSet->ID;				//Полное время процесса (уставка), мин
+				sss << ")";	//Факт время выдержки
+				sss << " AND todos.create_at < '" << it.End_at << "'";
+				sss << " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 4
 
 #pragma endregion
 
@@ -2320,10 +2318,10 @@ namespace PDF
 
 						if(f.length())
 						{
-							if(id == Furn->PointRef_1->ID)  P.PointRef_1 = f;
-							if(id == Furn->PointTime_1->ID) P.PointTime_1 = f;
-							if(id == Furn->PointTime_2->ID) P.PointTime_2 = f;
-							if(id == Furn->TimeProcSet->ID) P.TimeProcSet = f;
+							if(id == Furn->PointRef_1->ID && !it.PointRef_1.length())  it.PointRef_1 = f;
+							if(id == Furn->PointTime_1->ID && !it.PointTime_1.length()) it.PointTime_1 = f;
+							if(id == Furn->PointTime_2->ID && !it.PointTime_2.length()) it.PointTime_2 = f;
+							if(id == Furn->TimeProcSet->ID && !it.TimeProcSet.length()) it.TimeProcSet = f;
 						}
 					}
 				}
@@ -2339,18 +2337,15 @@ namespace PDF
 
 			try
 			{
-				std::tm TM;
-				time_t temp = DataTimeOfString(P.End_at, TM);
-				temp  = (time_t)difftime(temp, 5 * 60); //Вычисть 5 минут до конца отпуска
-				localtime_s(&TM, &temp);
-				std::string End_at  = GetDataTimeString(TM);
-				P.facttemper = GetVal(conn, Furn->TempAct->ID, P.Run_at, End_at);
+				time_t temp  = (time_t)difftime(DataTimeOfString(it.End_at), 5 * 60); //Вычисть 5 минут до конца отпуска
+				std::string End_at  = GetDataTimeString(&temp);
+				it.facttemper = GetVal(conn, Furn->TempAct->ID, it.Run_at, End_at);
 
 			}
 			CATCH(CassetteLogger, "");
 		}
-
-		void GetCassettes::EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1)
+		
+		void GetCassettes::EndCassette(PGConnection& conn, TCassette& it, int Petch, std::fstream& s1)
 		{
 			try
 			{
@@ -2362,55 +2357,63 @@ namespace PDF
 				if(Furn == NULL)
 					throw std::runtime_error(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
 
-				if(S107::IsCassette(P) && P.Run_at.length())
+				it.Peth = std::to_string(Petch);
+
+				if(S107::IsCassette(it) && it.Run_at.length())
 				{
-					std::tm TM_Run, TM_End, TM_All, TM_Fin;
-					//struct tm TM_All;
-					std::time_t tm_Fin;
+					GetVal(conn, it, Furn);
 
-					std::time_t tm_Run = DataTimeOfString(P.Run_at, TM_Run);
-					std::time_t tm_End = DataTimeOfString(P.End_at, TM_End);
-					std::time_t tm_All = (time_t)difftime(tm_End, tm_Run);
+					//std::tm TM_Run;
+					//std::tm TM_End;
+					//std::tm TM_All;
+					//std::tm TM_Fin;
+					////struct tm TM_All;
+					//std::time_t tm_Fin;
+					//
+					//std::time_t tm_Run = DataTimeOfString(P.Run_at, TM_Run);
+					//std::time_t tm_End1;
+					////std::time_t tm_End = DataTimeOfString(P.End_at, TM_End);
+					////std::time_t tm_All = (time_t)difftime(tm_End1, tm_Run);
+					//
+					////gmtime_s(&TM_All, &tm_All);
+					////TM_All.tm_year -= 1900;
+					////TM_All.tm_mday -= 1;
+					//
+					//tm_Fin = DataTimeOfString(P.End_at, TM_Fin);
+					//tm_Fin = tm_End1 + (60 * 15); //+15 минут
+					//localtime_s(&TM_Fin, &tm_Fin);
+					//
+					////P1.End_at
+					//P.Finish_at = GetDataTimeString(TM_Fin);
+					//
+					//std::stringstream sg2;
+					S107::GetFinishCassete(CassetteLogger, conn, it);
+					{
+						s1 << Stoi(it.Id) << ";";
+						s1 << " " << it.Run_at << ";";
+						s1 << " " << it.End_at << ";";
+						s1 << " " << it.Finish_at << ";";
+						s1 << Stoi(it.Year) << ";";
+						s1 << Stoi(it.Month) << ";";
+						s1 << Stoi(it.Day) << ";";
+						s1 << Stoi(it.Hour) << ";";
+						s1 << Stoi(it.CassetteNo) << ";";
+						s1 << Stoi(it.Peth) << ";";
+							//<< " " << P.Error_at << ";";
 
-					gmtime_s(&TM_All, &tm_All);
-					TM_All.tm_year -= 1900;
-					TM_All.tm_mday -= 1;
+						s1 << Stof(it.PointRef_1) << ";";		//Уставка температуры
+						s1 << Stof(it.facttemper) << ";";		//Фактическое значение температуры
 
-					tm_Fin = DataTimeOfString(P.End_at, TM_Fin);
-					tm_Fin = tm_End + (15 * 60);
-					localtime_s(&TM_Fin, &tm_Fin);
+						s1 << Stof(it.PointTime_1) << ";";		//Задание Время нагрева
+						s1 << Stof(it.HeatAcc) << ";";			//Факт время нагрева
+						s1 << Stof(it.PointTime_2) << ";";	//Задание Время выдержки
+						s1 << Stof(it.HeatWait) << ";";		//Факт время выдержки
 
-					//P1.End_at
-					P.Finish_at = GetDataTimeString(TM_Fin);
+						s1 << Stof(it.TimeProcSet) << ";";		//Полное время процесса (уставка), мин
+						s1 << Stof(it.Total) << ";";			//Факт общее время
 
-					std::stringstream sg2;
-					GetVal(conn, P, Furn);
-
-					P.Peth = std::to_string(Petch);
-
-					s1 << Stoi(P.Id) << ";";
-					s1 << " " << P.Run_at << ";";
-					s1 << " " << P.End_at << ";";
-					s1 << Stoi(P.Year) << ";";
-					s1 << Stoi(P.Month) << ";";
-					s1 << Stoi(P.Day) << ";";
-					s1 << Stoi(P.Hour) << ";";
-					s1 << Stoi(P.CassetteNo) << ";";
-					s1 << Stoi(P.Peth) << ";";
-						//<< " " << P.Error_at << ";";
-
-					s1 << Stof(P.PointRef_1) << ";";		//Уставка температуры
-					s1 << Stof(P.facttemper) << ";";		//Фактическое значение температуры
-
-					s1 << Stof(P.PointTime_1) << ";";		//Задание Время нагрева
-					s1 << Stof(P.HeatAcc) << ";";			//Факт время нагрева
-					s1 << Stof(P.PointTime_2) << ";";	//Задание Время выдержки
-					s1 << Stof(P.HeatWait) << ";";		//Факт время выдержки
-
-					s1 << Stof(P.TimeProcSet) << ";";		//Полное время процесса (уставка), мин
-					s1 << Stof(P.Total) << ";";			//Факт общее время
-
-					s1 << std::endl;
+						s1 << std::endl;
+					}
 
 
 				}
@@ -2799,7 +2802,6 @@ namespace PDF
 					//else ssg << "-1 ";
 				}
 
-
 				ssg << " AND day = " << it.Day;
 				ssg << " AND month = " << it.Month;
 				ssg << " AND year = " << it.Year;
@@ -2902,17 +2904,12 @@ namespace PDF
 					//SetWindowText(hWndDebug, sg.c_str());
 
 					GetCassetteData(conn, it.Id, ct, it);
+
 					if(ct.facttemper.length())	it.facttemper = ct.facttemper;
 					if(ct.Id.length())			it.Id = ct.Id;
 
-					if(!it.Finish_at.length())
-					{
-						std::tm TM;
-						time_t tm = DataTimeOfString(it.End_at, TM);
-						tm += (60 * 15);
-						it.Finish_at = GetDataTimeString(tm);
-					}
-					SaveDataBase(conn, ct, it);
+					if(S107::GetFinishCassete(CassetteLogger, conn, it))
+						SaveDataBase(conn, ct, it);
 				}
 			}CATCH(CassetteLogger, "");
 		}

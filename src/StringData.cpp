@@ -92,7 +92,6 @@ std::string GetDataTimeString(std::tm& st)
 
 std::string GetDataTimeString(std::time_t* st)
 {
-    //st = time(NULL);
     tm curr_tm;
     localtime_s(&curr_tm, st);
 

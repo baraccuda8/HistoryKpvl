@@ -358,6 +358,29 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 
+    bool GetFinishCassete(std::shared_ptr<spdlog::logger> Logger, PGConnection& conn, TCassette& it)
+    {
+        try
+        {
+            if(!it.End_at.length()) return false;
+            if(!it.Run_at.length()) return false;
+            if(it.Finish_at.length()) return true;
+            time_t tmp_at = DataTimeOfString(it.End_at);
+            time_t tFinish = tmp_at + (60 * 15); //+15 минут
+
+            std::string finish = GetDataTimeString(&tFinish);;
+            std::string Currt = GetDataTimeString();
+
+            //Финализируем если прошло 15 минут после конца отпуска
+            if(Currt >= finish)
+                it.Finish_at = finish;
+
+            return (bool)it.Finish_at.length();
+        }
+        CATCH(Logger, "");
+        return false;
+    }
+
     int UpdateCassetteProcRun(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
     {
         int id = 0;

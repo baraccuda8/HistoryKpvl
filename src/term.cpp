@@ -853,9 +853,11 @@ int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
 {
     try
     {
+        std::string run_at = it.Run_at;
         it.Event = "2";
+        it.Run_at = "";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = " << it.Event << " WHERE id = " << it.Id;
+        sd << "UPDATE cassette SET event = " << it.Event << ", run_at = DEFAULT, return_at = '"<< run_at << "' WHERE id = " << it.Id;
         std::string comand = sd.str();
         LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
         SETUPDATESQL(L, conn, sd);
@@ -971,24 +973,25 @@ void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& i
     CATCH(L, "");
 }
 
-//Ждем 15 минут финал
-void FindFinish(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
-{
-    try
-    {
-        //Если нет конца отпуска
-        time_t tmp_at = DataTimeOfString(it.End_at);
-        time_t tStop1 = tmp_at + (60 * 15); //+15 минут
-
-        std::string final = GetDataTimeString(&tStop1);;
-        std::string Currt = GetDataTimeString();
-
-        //Финализируем если прошло 15 минут после конца отпуска
-        if(Currt >= final)
-            it.Finish_at = final;
-    }
-    CATCH(L, "");
-}
+////Ждем 15 минут финал
+//void FindFinish(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+//{
+//    try
+//    {
+//        //Если нет конца отпуска
+//        S107::GetFinishCassete(conn, it);
+//        //time_t tmp_at = DataTimeOfString(it.End_at);
+//        //time_t tStop1 = tmp_at + (60 * 15); //+15 минут
+//        //
+//        //std::string final = GetDataTimeString(&tStop1);;
+//        //std::string Currt = GetDataTimeString();
+//        //
+//        //Финализируем если прошло 15 минут после конца отпуска
+//        //if(Currt >= final)
+//        //    it.Finish_at = final;
+//    }
+//    CATCH(L, "");
+//}
 
 //В финал Event = 5
 int SetCassetteInFinal(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
@@ -1144,7 +1147,8 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                                     {
                                         //Финализируем
                                         //OutLoggin(L, FUNCTION_LINE_NAME, ">> Финализируем", it);
-                                        FindFinish(L, conn, it);
+                                        S107::GetFinishCassete(L, conn, it);
+                                        //FindFinish(L, conn, it);
                                         //OutLoggin(L, FUNCTION_LINE_NAME, "<< Финализируем", it);
                                     }
                                 }

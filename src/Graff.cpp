@@ -475,7 +475,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 		sdw << boost::format("%|02|:") % TM_End.tm_hour;
 		sdw << boost::format("%|02|:") % TM_End.tm_min;
 		sdw << boost::format("%|02|") % TM_End.tm_sec;
-		sdw << "+05";
+		//sdw << "+05";
 		std::string sEndTime = sdw.str();
 
 
@@ -486,7 +486,7 @@ void SqlTempFURN(PGConnection* conn, T_SqlTemp& st, Value* val, int64_t SecCount
 		sdw << boost::format("%|02|:") % TM_Beg.tm_hour;
 		sdw << boost::format("%|02|:") % TM_Beg.tm_min;
 		sdw << boost::format("%|02|") % TM_Beg.tm_sec;
-		sdw << "+05";
+		//sdw << "+05";
 		std::string sBegTime = sdw.str();
 
 		std::stringstream sde;
