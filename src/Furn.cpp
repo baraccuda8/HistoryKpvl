@@ -397,7 +397,7 @@ namespace S107
 
                     if(GetEvent(conn, CD) != 3)
                     {
-                        sd << "peth = " << Peth;
+                        sd << "peth = " << Peth << ", ";
                         sd << "event = 3, ";
                         sd << "run_at = now(), ";
                         sd << "end_at = DEFAULT, ";
