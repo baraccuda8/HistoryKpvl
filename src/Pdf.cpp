@@ -243,6 +243,7 @@ namespace PDF
 			{11, "November"},
 			{12, "December"},
 	};
+
 	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& comand)
 	{
 
@@ -892,12 +893,16 @@ namespace PDF
 				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
 				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
 				ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name) ";
-				ssd << "FROM todos WHERE create_at < '" << Sheet.DataTime_End << "' AND (";
+				ssd << "FROM todos WHERE ";
+				ssd << "create_at > '" << Sheet.Start_at << "' AND";
+				ssd << "create_at < '" << Sheet.DataTime_End << "' AND ";
+				ssd << "(";
 				ssd << "id_name = " << Hmi210_1.Htr1_1->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_4->ID;
-				ssd << ") ORDER BY id_name, id DESC LIMIT 4;";
+				ssd << ") ";
+				ssd << "ORDER BY id_name, id DESC;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -4952,6 +4957,9 @@ namespace PDF
 			PGConnection conn;
 			CONNECTION1(conn, SheetLogger);
 
+			//Проверка и коррекция всех листов не имеющих метку correct
+			CorrectSheetDebug(conn);
+
 #ifndef _DEBUG
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop = "";
@@ -4967,9 +4975,6 @@ namespace PDF
 			//start = "2024-09-15 17:00:00";
 			if(start.length() )
 				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
-
-			//Проверка и коррекция всех листов не имеющих метку correct
-			CorrectSheetDebug(conn);
 
 
 			//Gstart = SHEET::GetStartTime2(conn);
