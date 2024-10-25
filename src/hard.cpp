@@ -329,7 +329,7 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                     }
                 }
 
-                SetWindowText(winmap(hEditMode1), "Жду данные...");
+                SetWindowText(winmap(hEditMode1), "Ждем данные...");
             }
             catch(std::runtime_error& exc)
             {
@@ -487,7 +487,7 @@ void PLC_KPVL::Run(int count)
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
         int  NewDataVal = 0;
-        while(isRun)
+        while(isRun && client->KeepAlive.Running)
         {
             //Проверяем на новый лист на кантовке
             if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый

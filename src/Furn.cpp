@@ -291,23 +291,28 @@ namespace S107
             return false;
         }
 
+        void ReadTag()
+        {
+            while(!AppFurn1.Cassette.Hour->Codesys)
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+            AppFurn1.Cassette.Hour->GetValue();
+            AppFurn1.Cassette.Day->GetValue();
+            AppFurn1.Cassette.Month->GetValue();
+            AppFurn1.Cassette.Year->GetValue();
+            AppFurn1.Cassette.CassetteNo->GetValue();
+            AppFurn2.Cassette.Hour->GetValue();
+            AppFurn2.Cassette.Day->GetValue();
+            AppFurn2.Cassette.Month->GetValue();
+            AppFurn2.Cassette.Year->GetValue();
+            AppFurn2.Cassette.CassetteNo->GetValue();
+        }
+
         void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette)
         {
+            ReadTag();
             try
             {
-                while(!AppFurn1.Cassette.Hour->Codesys)
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-                AppFurn1.Cassette.Hour->GetValue();
-                AppFurn1.Cassette.Day->GetValue();
-                AppFurn1.Cassette.Month->GetValue();
-                AppFurn1.Cassette.Year->GetValue();
-                AppFurn1.Cassette.CassetteNo->GetValue();
-                AppFurn2.Cassette.Hour->GetValue();
-                AppFurn2.Cassette.Day->GetValue();
-                AppFurn2.Cassette.Month->GetValue();
-                AppFurn2.Cassette.Year->GetValue();
-                AppFurn2.Cassette.CassetteNo->GetValue();
 
                 std::tm TM_End ={0};
                 std::tm TM_Beg ={0};

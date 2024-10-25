@@ -223,7 +223,7 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
                 }
             }
 
-            SetWindowText(winmap(hEditMode2), "Жду данные...");
+            SetWindowText(winmap(hEditMode2), "Ждем данные...");
         }
         CATCH(PethLogger, "");
         //catch(std::runtime_error& exc)
@@ -385,7 +385,8 @@ void PLC_S107::Run(int count)
         isInitPLC_S107 = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode2), "Чтение данных");
-        while(isRun)
+        
+        while(isRun && client->KeepAlive.Running)
         {
             HMISheetData.WDG_fromBase->Set_Value(true);
 
