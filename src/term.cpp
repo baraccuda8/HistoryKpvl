@@ -655,6 +655,7 @@ void SetCassetteToBase(int i)
 {
     try
     {
+        LOG_INFO(FurnLogger, "{:90}| ", FUNCTION_LINE_NAME);
         int32_t Year = Stoi(CassetteInRel[i].Year);
         int32_t Month = Stoi(CassetteInRel[i].Month);
         int32_t Day = Stoi(CassetteInRel[i].Day);
@@ -666,12 +667,22 @@ void SetCassetteToBase(int i)
         int32_t aDay = AppCassette[i].Day->Val.As<int32_t>();
         uint16_t aHour = AppCassette[i].Hour->Val.As<uint16_t>();
         int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
+        
+        LOG_INFO(FurnLogger, "{:90}| << {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
 
         if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
         if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
         if(aDay != Day)              AppCassette[i].Day->Set_Value(Day);
-        if(aHour != Hour)            AppCassette[i].Hour->Set_Value(Hour);
+        if(aHour != Hour)            AppCassette[i].Hour->Set_Value((uint16_t)Hour);
         if(aCassetteNo != CassetteNo)AppCassette[i].CassetteNo->Set_Value(CassetteNo);
+
+        aYear = AppCassette[i].Year->Val.As<int32_t>();
+        aMonth = AppCassette[i].Month->Val.As<int32_t>();
+        aDay = AppCassette[i].Day->Val.As<int32_t>();
+        aHour = AppCassette[i].Hour->Val.As<uint16_t>();
+        aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
+
+        LOG_INFO(FurnLogger, "{:90}| >> {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
     }
     CATCH(FurnLogger, "");
 }

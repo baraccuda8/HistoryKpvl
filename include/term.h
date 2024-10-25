@@ -61,6 +61,7 @@ public:
 #define StrCassette7 std::string("|var|SPK107 (M01).Application.cassetteArray.data.cassette[7].")
 
 typedef struct T_Fcassette{
+
     //uint16_t Час ID листа
     Value* Hour;
 
