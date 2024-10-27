@@ -177,7 +177,11 @@ namespace S107
             {
                 if(PQnfields(res))
                 {
-                    id = Stoi(conn.PGgetvalue(res, 0, 0));
+                    std::string s = conn.PGgetvalue(res, 0, 0);
+                    if(s.length())
+                        id = Stoi(s);
+                    else
+                        id = 0;
                 }
             }
             else
@@ -421,7 +425,12 @@ namespace S107
                     LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(PethLogger, conn, sd);
                     LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
-                             FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
+                             FUNCTION_LINE_NAME, Peth, 
+                             Furn.Cassette.Year->GetString(), 
+                             Furn.Cassette.Month->GetString(), 
+                             Furn.Cassette.Day->GetString(), 
+                             Furn.Cassette.Hour->GetString(), 
+                             Furn.Cassette.CassetteNo->GetString());
                 }
                 else
                 {

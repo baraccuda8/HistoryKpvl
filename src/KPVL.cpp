@@ -1514,7 +1514,7 @@ namespace KPVL {
                             if(id != 0)
                             {
                                 uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                                int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
                                 std::string DataTime = GetDataTimeString();
                                 MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
 

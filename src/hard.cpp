@@ -495,12 +495,9 @@ void PLC_KPVL::Run(int count)
                 if(++NewDataVal > 10)    //10 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
-                    //LOG_INFO(Logger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
-                    //uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                    KPVL::Sheet::Z6::SetSaveDone(conn_kpvl2);
-
-                    //HMISheetData.SaveDone->Set_Value(true);
-                    //PlateData[5].Sheet->Set_Value((int32_t)0);
+                    PGConnection conn_temp; 
+                    CONNECTION1(conn_spis, Logger);
+                    KPVL::Sheet::Z6::SetSaveDone(conn_temp);
                 }
             }
             else
