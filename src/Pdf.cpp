@@ -341,7 +341,7 @@ namespace PDF
 			HPDF_REAL Width = 0;
 			HPDF_REAL coeff = 0;
 			float SrTemp = 0.0f;
-			std::string strSrTemp = "";
+			//std::string strSrTemp = "";
 			std::string FileName;
 			int StepSec = 5;
 
@@ -924,7 +924,7 @@ namespace PDF
 					KPVL::Sheet::SetUpdateSheet(conn, Sheet, " temperature = " + oss.str(), "");
 
 					Sheet.Temperature = oss.str();
-					strSrTemp = Sheet.Temperature;
+					//strSrTemp = Sheet.Temperature;
 				}
 			}CATCH(SheetLogger, "");
 
@@ -1348,7 +1348,7 @@ namespace PDF
 				Y -= 25;
 				draw_text_rect (page, left + 0, Y, w, YP, "Температура закалки, °С");
 				draw_text_rect (page, left + 270, Y, XP, YP, Stof(Sheet.Temper));				//Задание Температуры закалки
-				draw_text_rect (page, left + 370, Y, XP, YP, Stof(strSrTemp));				//Факт Температуры закалки
+				draw_text_rect (page, left + 370, Y, XP, YP, Stof(Sheet.Temperature));				//Факт Температуры закалки
 
 				draw_rect(page, left + 310, Y, DXP - 10, YP);
 				draw_text (page, left + 327, Y, "±10");		// Доступное отклонение/диапазон
