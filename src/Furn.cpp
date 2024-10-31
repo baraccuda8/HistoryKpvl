@@ -146,11 +146,11 @@ namespace S107
             ss << " AND hour = " << CD.Hour;
             ss << " AND cassetteno = " << CD.CassetteNo;
             std::string comand = ss.str();
-            PGresult* res = conn_spic.PGexec(comand);
+            PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
-                if(PQnfields(res))
-                    id = Stoi(conn_spis.PGgetvalue(res, 0, 0));
+                if(PQntuples(res))
+                    id = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else
                 LOG_ERR_SQL(PethLogger, res, comand);
@@ -175,7 +175,8 @@ namespace S107
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
-                if(PQnfields(res))
+                   
+                if(PQntuples(res))
                 {
                     std::string s = conn.PGgetvalue(res, 0, 0);
                     if(s.length())
@@ -209,7 +210,7 @@ namespace S107
             PGresult* res = conn.PGexec(comand);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
-                if(PQnfields(res))
+                if(PQntuples(res))
                     events = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else

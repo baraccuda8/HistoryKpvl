@@ -972,6 +972,7 @@ namespace KPVL {
         {
             try
             {
+
                 std::string id = GetIdSheet(conn, PD);
 
                 if(Stoi(id) != 0)
@@ -1091,6 +1092,7 @@ namespace KPVL {
                 }
             }
             CATCH(HardLogger, "");
+
         }
     }
 
@@ -1822,7 +1824,9 @@ namespace KPVL {
                     
                     id = GetIdCassette(conn, CD, Hour);
                     if(!id)
+                    {
                         id = InsertCassette(conn, CD, Hour);
+                    }
                     //else
                     //    SetOldCassette(CD, id);
 }
@@ -1869,9 +1873,9 @@ namespace KPVL {
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
                     //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    int hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    int hour = HMISheetData.Cassette.Hour->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
-                    LOG_INFO(HardLogger, "{:90}| Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
+                    LOG_INFO(HardLogger, "{:90}| << Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
                     //SetOldCassette(HMISheetData.Cassette, id);
                 }
                 //LOG_INFO(HardLogger, "{:90} {}", FUNCTION_LINE_NAME, b);
@@ -1892,7 +1896,7 @@ namespace KPVL {
                 MySetWindowText(value);
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1912,7 +1916,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1933,7 +1937,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1953,7 +1957,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
                 if(HMISheetData.CasseteIsFill->GetBool())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
+                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);
@@ -1976,7 +1980,7 @@ namespace KPVL {
                 {
                     //int Hour = HMISheetData.Cassette.Hour->GetValue().As<int32_t>();
                     //OpcUa::VariantType Variant = HMISheetData.Cassette.Hour->GetType();
-                    uint16_t hour = value->GetValue().As<uint16_t>();
+                    uint16_t hour = value->GetInt();
                     int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
                     LOG_INFO(HardLogger, "{:90}| CassetteHour = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                     //SetOldCassette(HMISheetData.Cassette, id);

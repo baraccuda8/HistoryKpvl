@@ -811,8 +811,8 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
                     MySetWindowText(winmap(val->winId), val->GetString().c_str());
 #endif
             }
-            int f = 2;
 
+            int f = 30;
             while(isRun && (--f))
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }

@@ -1269,15 +1269,13 @@ namespace PDF
 			}CATCH(PdfLog, "");
 		}
 
-		
-
 		void PdfClass::DrawHeap(HPDF_REAL left, HPDF_REAL Y)
 		{
 			try
 			{
 				draw_text (page, left + 10, Y, "Параметры");
 				draw_text (page, left + 265, Y, "Задание");
-				draw_text (page, left + 370, Y, "Факт");
+				draw_text (page, left + 371, Y, "Факт");
 
 				HPDF_Page_SetFontAndSize (page, font, 8);
 				draw_text (page, left + 316, Y + 10, "Доступное");
@@ -2005,6 +2003,10 @@ namespace PDF
 		CATCH(PdfLog, "");
 	}
 		
+
+
+
+
 
 	namespace CASSETTE
 	{

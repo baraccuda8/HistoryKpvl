@@ -10,7 +10,7 @@
 std::shared_ptr<spdlog::logger> Graphics = NULL;
 
 const int64_t SecCount1 = 60 * 60 * 24; //24 часов
-const int64_t SecCount2 = 60 * 60 * 1; //1 час
+const int64_t SecCount2 = int64_t(60.0f * 60.0f * 0.5f); //1 час
 
 HANDLE hGGraff1 = NULL;
 HANDLE hGGraff2 = NULL;

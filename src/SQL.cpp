@@ -168,7 +168,7 @@ std::string PGgetvalue(PGresult* res, int l, int i)
 {
     try
     {
-        std::string ss = ::PQgetvalue(res, l, i);
+        std::string ss = PQgetvalue(res, l, i);
         if(!ss.empty())
             return utf8_to_cp1251(ss);
     }
@@ -248,7 +248,7 @@ std::string PGConnection::PGgetvalue(PGresult* res, int l, int i)
     if(!connections) return "";
     try
     {
-        std::string ss = ::PQgetvalue(res, l, i);
+        std::string ss = PQgetvalue(res, l, i);
         if(!ss.empty())
             return utf8_to_cp1251(ss);
     }
