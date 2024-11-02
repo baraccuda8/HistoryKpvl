@@ -1436,8 +1436,8 @@ namespace KPVL {
                 try
                 {
                     T_PlateData& PD = PlateData[Pos];
-                    if(!IsSheet(PD))
-                        PD = PlateData[Pos - 1];
+                    //if(!IsSheet(PD))
+                    //    PD = PlateData[Pos - 1];
 
                     MySetWindowText(value);
                     LocSheet(conn_kpvl, PD, Pos);
@@ -1480,8 +1480,8 @@ namespace KPVL {
                 {
                     T_PlateData PD = PlateData[Pos];
 
-                    if(!IsSheet(PD))
-                        PD = PlateData[5];
+                    //if(!IsSheet(PD))
+                    //    PD = PlateData[5];
 
                     MySetWindowText(value);
                     LocSheet(conn_kpvl, PD, Pos);
