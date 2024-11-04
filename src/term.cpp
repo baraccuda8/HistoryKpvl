@@ -668,7 +668,7 @@ void SetCassetteToBase(int i)
         uint16_t aHour = AppCassette[i].Hour->Val.As<uint16_t>();
         int32_t aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
         
-        LOG_INFO(FurnLogger, "{:90}| << {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
+        //LOG_INFO(FurnLogger, "{:90}| << {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
 
         if(aYear != Year)            AppCassette[i].Year->Set_Value(Year);
         if(aMonth != Month)          AppCassette[i].Month->Set_Value(Month);
@@ -682,7 +682,7 @@ void SetCassetteToBase(int i)
         aHour = AppCassette[i].Hour->Val.As<uint16_t>();
         aCassetteNo = AppCassette[i].CassetteNo->Val.As<int32_t>();
 
-        LOG_INFO(FurnLogger, "{:90}| >> {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
+        //LOG_INFO(FurnLogger, "{:90}| >> {:04}-{:02}-{:02}-{:02}-{:02}", FUNCTION_LINE_NAME, aYear, aMonth, aDay, aHour, aCassetteNo);
     }
     CATCH(FurnLogger, "");
 }
