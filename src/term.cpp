@@ -655,7 +655,7 @@ void SetCassetteToBase(int i)
 {
     try
     {
-        LOG_INFO(FurnLogger, "{:90}| ", FUNCTION_LINE_NAME);
+        //LOG_INFO(FurnLogger, "{:90}| ", FUNCTION_LINE_NAME);
         int32_t Year = Stoi(CassetteInRel[i].Year);
         int32_t Month = Stoi(CassetteInRel[i].Month);
         int32_t Day = Stoi(CassetteInRel[i].Day);
