@@ -15,25 +15,14 @@ namespace PDF
 	OpcUa::Variant GetVarVariant(OpcUa::VariantType Type, std::string value);
 	void TodosColumn(PGresult* res);
 
-	namespace Cassette
-	{
-		//Автоматическое создание по кассете
-		//void PrintCassettePdfAuto(TCassette& TC);
-
-		//Открывается по клику на лист
-		//void PrintCassettePdfAuto(TSheet& Sheet);
-
-	};
 	namespace SHEET
 	{
 		DWORD WINAPI RunAllPdf(LPVOID);
-		//void GetRawSheet(PGConnection& conn);
 	};
 
 	//Поток автоматической корректировки
 	DWORD WINAPI RunCassettelPdf(LPVOID);
 
-	//DWORD CorrectCassette(LPVOID);
 	DWORD CorrectSheet(LPVOID);
 #ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID);

@@ -25,7 +25,7 @@ std::shared_ptr<spdlog::logger> CassetteLogger = NULL;
 std::shared_ptr<spdlog::logger> CorrectLog = NULL;
 
 #if _DEBUG
-#define HENDINSERT 1
+#define HENDINSERT 0
 #else
 #define HENDINSERT 0
 #endif
@@ -371,6 +371,7 @@ namespace PDF
 			int64_t mind = 0LL;
 			int64_t maxd = 0LL;
 
+			PdfClass(TSheet& Sheet, bool end);
 			PdfClass(TCassette& TC, bool end = false);
 			~PdfClass()
 			{
@@ -418,48 +419,42 @@ namespace PDF
 			void UpdateTemperature(TSheet& d);
 			//void UpdateTemperature(T_SqlTemp& tr, TSheet& Sheet);
 			void GetSheet(TCassette& Cassette);
-			//void GetCassette(TCassette& cassette, TSheet& Sheet);
+			void GetCassette(TCassette& cassette, TSheet& Sheet);
 			void DrawHeap(HPDF_REAL left, HPDF_REAL Y);
 		};
 
-		//void PdfClass::GetCassette(TCassette& cassette, TSheet& Sheet)
-		//{
-		//	try
-		//	{
-		//		cassette = TCassette();
-		//		if(Sheet.Year.empty() || !Sheet.Year.length()) return;
-		//		if(Sheet.Month.empty() || !Sheet.Month.length()) return;
-		//		if(Sheet.Day.empty() || !Sheet.Day.length()) return;
-		//		if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
-		//			if(Sheet.Hour.empty() || !Sheet.Hour.length()) return;
-		//		if(Sheet.CassetteNo.empty() || !Sheet.CassetteNo.length()) return;
-		//
-		//		std::stringstream com;
-		//		com << "SELECT * FROM cassette WHERE";
-		//		com << " year = " + Stoi(Sheet.Year);
-		//		com << " AND month = " << Stoi(Sheet.Month);
-		//		com << " AND day = " << Stoi(Sheet.Day);
-		//		if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
-		//			com << " AND hour = " << Sheet.Hour;
-		//
-		//		com << " AND cassetteno = " << Sheet.CassetteNo;
-		//		com << " AND delete_at IS NULL";
-		//		com << " ORDER BY run_at DESC;";
-		//
-		//		std::string comand = com.str();
-		//		if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-		//		PGresult* res = conn.PGexec(comand);
-		//		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-		//		{
-		//			S107::GetColl(res);
-		//			if(conn.PQntuples(res))
-		//				S107::GetCassette(res, cassette, 0);
-		//		}
-		//		else
-		//			LOG_ERR_SQL(PdfLog, res, comand);
-		//		PQclear(res);
-		//	}CATCH(PdfLog, "");
-		//}
+		void PdfClass::GetCassette(TCassette& cassette, TSheet& Sheet)
+		{
+			try
+			{
+				cassette = TCassette();
+		
+				std::stringstream com;
+				com << "SELECT * FROM cassette WHERE";
+				com << " year = " << Stoi(Sheet.Year);
+				com << " AND month = " << Stoi(Sheet.Month);
+				com << " AND day = " << Stoi(Sheet.Day);
+				if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
+					com << " AND hour = " << Sheet.Hour;
+		
+				com << " AND cassetteno = " << Sheet.CassetteNo;
+				com << " AND delete_at IS NULL";
+				com << " ORDER BY run_at DESC;";
+		
+				std::string comand = com.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+				PGresult* res = conn.PGexec(comand);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				{
+					S107::GetColl(res);
+					if(conn.PQntuples(res))
+						S107::GetCassette(res, cassette, 0);
+				}
+				else
+					LOG_ERR_SQL(PdfLog, res, comand);
+				PQclear(res);
+			}CATCH(PdfLog, "");
+		}
 
 		void PdfClass::GetSheet(TCassette& Cassette)
 		{
@@ -1959,6 +1954,166 @@ namespace PDF
 							return;
 						}
 	#endif
+					}
+					remove(furnImage.c_str());
+				}
+				CATCH(PdfLog, "");
+
+				std::stringstream ssq;
+				ssq << "UPDATE cassette SET pdf = now() WHERE";
+				ssq << " year = '" << Stoi(Cassette.Year) << "' AND";
+				ssq << " month = '" << Stoi(Cassette.Month) << "' AND";
+				ssq << " day = '" << Stoi(Cassette.Day) << "' AND";
+				if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
+					ssq << " hour = " << Stoi(Cassette.Hour) << " AND";
+				ssq << " cassetteno = " << Stoi(Cassette.CassetteNo);
+				SETUPDATESQL(PdfLog, conn, ssq);
+			}
+			CATCH(CorrectLog, "");
+		};
+
+		PdfClass::PdfClass(TSheet& Sheet, bool end)
+		{
+			InitLogger(PdfLog);
+			TCassette Cassette;
+			try
+			{
+				CONNECTION1(conn, PdfLog);
+
+#pragma region Готовим графики
+
+#pragma region общий stringFormat для графиков
+				{
+					stringFormat.SetLineAlignment(Gdiplus::StringAlignmentFar);
+					stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
+				}
+#pragma endregion
+
+				if(!Sheet.Correct.length())
+					throw std::exception("Ошибка Sheet.Correct = 0");
+
+				try
+				{
+					GetCassette(Cassette, Sheet);
+					if(Cassette.Event != "5" || !Cassette.Correct.length())
+						throw std::exception(("Касета не готова: Event = " + Cassette.Event + "Correct = " + Cassette.Correct).c_str());
+#pragma region Номер печи для FurnRef и FurnAct
+
+
+#pragma region furnImage.jpg
+					std::stringstream ssd;
+					ssd << std::setw(4) << std::setfill('0') << Stoi(Cassette.Year) << "-";
+					ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Month) << "-";
+					ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Day) << "-";
+					ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.Hour) << "-";
+					ssd << std::setw(2) << std::setfill('0') << Stoi(Cassette.CassetteNo) << ".jpg";
+					furnImage = ssd.str();
+#pragma endregion
+
+					FurnRef.erase(FurnRef.begin(), FurnRef.end());
+					FurnAct.erase(FurnAct.begin(), FurnAct.end());
+
+					if(!Cassette.Run_at.length() || !Cassette.Finish_at.length()) return;
+
+					int Ref_ID = 0;
+					int Act_ID = 0;
+
+					int P = atoi(Cassette.Peth.c_str());
+					if(P == 1)//Первая отпускная печь
+					{
+						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
+						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+					}
+					else if(P == 2)//Вторая отпускная печь
+					{
+						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
+						Act_ID = ForBase_RelFurn_2.TempAct->ID;
+					}
+					else return;
+
+					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
+					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+
+
+
+					//Рисуем график FURN
+					time_t tF1 = DataTimeOfString(Cassette.Run_at);
+					time_t tF2 = DataTimeOfString(Cassette.Finish_at);
+					int tF = int(difftime(tF2, tF1));
+
+					PaintGraff(FurnAct, FurnRef, furnImage, tF, L"Температура С°", L"Время час");
+
+#pragma endregion
+
+#pragma endregion
+
+					//for(auto& Sheet : AllPfdSheet)
+					{
+						if(!isRun) 
+							throw std::exception("Завершение работы");
+
+#pragma region tempImage.jpg
+						std::stringstream ssh;
+						ssh << std::setw(6) << std::setfill('0') << Stoi(Sheet.Melt) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.PartNo) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.Pack) << "-";
+						ssh << std::setw(3) << std::setfill('0') << Stoi(Sheet.Sheet) << "-";
+						ssh << std::setw(2) << std::setfill('0') << Stoi(Sheet.SubSheet);
+						LOG_INFO(PdfLog, "{:90}| Паспорт для листа: {}", FUNCTION_LINE_NAME, ssh.str());
+						ssh << ".jpg";
+						tempImage = ssh.str();
+#pragma endregion				
+
+						OutDebugInfo(Cassette, Sheet);
+
+#pragma region Графики закалки
+						TempRef.erase(TempRef.begin(), TempRef.end());
+						TempAct.erase(TempAct.begin(), TempAct.end());
+
+						//Закалка
+						SqlTempActKPVL(TempAct, Sheet);
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+
+						//Рисуем график KPVL
+						time_t tK1 = DataTimeOfString(Sheet.Start_at);
+						time_t tK2 = DataTimeOfString(Sheet.DataTime_End);
+						int tK = int(difftime(tK2, tK1));
+
+						PaintGraff(TempAct, TempRef, tempImage, tK, L"Температура С°", L"Время мин");
+#pragma endregion
+
+#pragma region Создание PFD файла
+
+						if(NewPdf())
+						{
+							//Рисуем PDF заголовок
+							HPDF_REAL Y1 = DrawHeder(Sheet, 0, Height);
+
+							//Рисуем PDF Закалка
+							HPDF_REAL Y2 = DrawKpvlPDF(Sheet, 0, Y1) - 40;
+
+							//Рисуем PDF Отпуск
+							HPDF_REAL Y3 = DrawFurnPDF(Cassette, 0, Y2);
+
+							//auto index = a.index();
+							//Сохраняем PDF
+							SavePDF(Sheet);
+
+						}
+
+#pragma endregion
+
+						remove(tempImage.c_str());
+
+#if _DEBUG
+						if(end)
+						{
+							std::string url = FileName;
+							boost::replace_all(url, "/", "\\");
+							ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+							return;
+						}
+#endif
 					}
 					remove(furnImage.c_str());
 				}
@@ -4137,14 +4292,14 @@ namespace PDF
 					ssd << ", pos = " << td.Pos;
 					ssd << ", news = " << td.news;
 					ssd << ", delete_at = DEFAULT";
-					ssd << ", correct = now(), pdf = '' WHERE id = " << td.id; //delete_at IS NULL AND 
+					ssd << ", correct = now() WHERE id = " << td.id; //delete_at IS NULL AND 
+					SETUPDATESQL(SheetLogger, conn, ssd);
+
 					SetWindowText(hWndDebug, ssd.str().c_str());
-
-
 					fUpdateSheet << ssd.str() << std::endl;
 					fUpdateSheet.flush();
 					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-					SETUPDATESQL(SheetLogger, conn, ssd);
+					//SETUPDATESQL(SheetLogger, conn, ssd);
 
 					//if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
 					//{
@@ -4816,7 +4971,7 @@ namespace PDF
 					" - TIME '00:02:00'"						//Минут 2 минуты
 					" FROM sheet WHERE correct IS NULL AND start_at > ("
 					"SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1"
-					") AND CAST(pos AS integer) > 4 "
+					") AND CAST(pos AS integer) > 6 "
 					"ORDER BY start_at ASC LIMIT 1;";
 
 				PGresult* res = conn.PGexec(comand);
@@ -4886,7 +5041,7 @@ namespace PDF
 		try
 		{
 			std::stringstream ssd;
-			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct IS NULL AND pos >= 6 ORDER BY id, start_at;";
+			ssd << "SELECT id, start_at - INTERVAL '1 HOUR' FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY id, start_at;";
 			//ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct >= '14-10-2024 19:53:30' AND correct <= '14-10-2024 20:00:23' AND pos >= 6 ORDER BY id DESC, start_at;";
 			std::string comand = ssd.str();
 			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -4907,33 +5062,34 @@ namespace PDF
 			PQclear(res);
 	
 			if(sheet_at.size())
-				LOG_INFO(SheetLogger, "Принудительная корректировка листов");
-			for(auto& a : sheet_at)
 			{
-				std::string start = "";
-				std::string stop = "";
-				start = a.second;
-				time_t td = DataTimeOfString(a.second);
-				td += (long long)3600;
-				stop = GetDataTimeString(&td);
-	
-				if(a.first.length())
+				LOG_INFO(SheetLogger, "Принудительная корректировка листов");
+				for(auto& a : sheet_at)
 				{
-					SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
-					LOG_INFO(SheetLogger, "Корректировка листа id = {}", a.first);
-	
-					if(start.length() && stop.length())
-						SHEET::GetSheets (conn, start, stop);
-					else
-						LOG_INFO(SheetLogger, "Ошибка корректировки листа id = {}, start = {}, stop = {}", a.first, start, stop);
-	
-					std::stringstream ssd;
-					ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
-					SETUPDATESQL(SheetLogger, conn, ssd);
+					std::string start = "";
+					std::string stop = "";
+					start = a.second;
+					time_t td = DataTimeOfString(a.second);
+					td += (long long)7200;
+					stop = GetDataTimeString(&td);
+
+					if(a.first.length())
+					{
+						SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
+						LOG_INFO(SheetLogger, "Корректировка листа id = {}", a.first);
+
+						if(start.length() && stop.length())
+							SHEET::GetSheets (conn, start, stop);
+						else
+							LOG_INFO(SheetLogger, "Ошибка корректировки листа id = {}, start = {}, stop = {}", a.first, start, stop);
+
+						std::stringstream ssd;
+						ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
+						SETUPDATESQL(SheetLogger, conn, ssd);
+					}
 				}
-			}
-			if(sheet_at.size())
 				LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
+			}
 		}
 		CATCH(SheetLogger, "");
 
@@ -4941,7 +5097,31 @@ namespace PDF
 
 	}
 
-	std::string Gstart = "";
+	//std::string Gstart = "";
+	void DbugPdf(PGConnection& conn)
+	{
+		std::string deb = "SELECT * FROM sheet WHERE pdf = '' AND cassette <> '0' "
+			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette) IS NOT NULL "
+			"ORDER BY start_at DESC;";
+		std::deque<TSheet>MasSheet;
+		PGresult* res = conn.PGexec(deb);
+		if(PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			//TSheet Sheet;
+			KPVL::SQL::GetCollumn(res);
+			KPVL::SQL::GetSheet(conn, res, MasSheet);
+
+		}
+		else
+			LOG_ERR_SQL(CorrectLog, res, deb);
+		PQclear(res);
+
+		for(auto& Sheet : MasSheet)
+		{
+			PASSPORT::PdfClass t = PASSPORT::PdfClass(Sheet, false);
+		}
+
+	}
 
 	DWORD CorrectSheet(LPVOID)
 	{
@@ -4962,12 +5142,14 @@ namespace PDF
 			//Проверка и коррекция всех листов не имеющих метку correct
 			CorrectSheetDebug(conn);
 
+			DbugPdf(conn);
+
 #ifndef _DEBUG
-			std::string start = SHEET::GetStartTime(conn);
-			std::string stop = "";
+			//std::string start = SHEET::GetStartTime(conn);
+			//std::string stop = "";
 #else
-			std::string start = SHEET::GetStartTime(conn);
-			std::string stop = "";
+			//std::string start = SHEET::GetStartTime(conn);
+			//std::string stop = "";
 			//std::string start = "2024-04-01 00:00:00";
 			//std::string stop = "2024-09-27 07:50:00";
 #endif // DEBUG
@@ -4975,8 +5157,8 @@ namespace PDF
 
 
 			//start = "2024-09-15 17:00:00";
-			if(start.length() )
-				SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
+			//if(start.length() )
+			//	SHEET::GetSheets (conn, start, stop); // , "2024-03-30 00:00:00.00");// , "2024-05-19 01:00:00.00");
 
 
 			//Gstart = SHEET::GetStartTime2(conn);
@@ -5093,11 +5275,13 @@ namespace PDF
 				{
 					if(!NotCorrect)
 					{
-
+						
 						std::string out = "Запуск создание паспортов: " + GetDataTimeString();
 						SetWindowText(hWndDebug, out.c_str());
+						
+						////CorrectCassette(0);
 
-						//CorrectCassette(0);
+						CorrectSheet(0);
 						CASSETTE::GetCassettes cass("", "");
 						out = "Закончили создание паспортов: " + GetDataTimeString();
 
