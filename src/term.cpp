@@ -521,10 +521,13 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
             LOG_INFO(Logger, "{:90}| Создание класса PLC_S107 {}", FUNCTION_LINE_NAME, countconnect);
             //Динамичесокая работа памяти с умным unique_ptr
             SetWindowText(winmap(hEditMode2), "Создание объекта");
-            auto PLC = std::unique_ptr<PLC_S107>(new PLC_S107(S107::URI, PethLogger));
-
+            PLC_S107 PLC(S107::URI, Logger);
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
-            PLC->Run(countconnect);
+            PLC.Run(countconnect);
+
+            //auto PLC = std::unique_ptr<PLC_S107>(new PLC_S107(S107::URI, PethLogger));
+            //LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
+            //PLC->Run(countconnect);
         }
         CATCH_OPEN(Logger, S107::URI);
 

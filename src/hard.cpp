@@ -683,10 +683,13 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
             LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
 //Динамичесокая работа памяти с умным unique_ptr
             SetWindowText(winmap(hEditMode1), "Создание объекта");
-            auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
 
+            PLC_KPVL PLC(KPVL::URI, Logger);
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
-            PLC->Run(countconnect);
+            PLC.Run(countconnect);
+            //auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
+            //LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
+            //PLC->Run(countconnect);
         }
         CATCH_OPEN(Logger, KPVL::URI);
 
