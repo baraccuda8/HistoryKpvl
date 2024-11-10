@@ -346,7 +346,7 @@ namespace KPVL {
                 {
                     std::stringstream co;
                     //co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
-                    co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "' ORDER BY id DESC LIMIT 1";
+                    co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "' ORDER BY create_at DESC LIMIT 1";
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                     PGresult* res = conn.PGexec(comand);
@@ -424,7 +424,7 @@ namespace KPVL {
                     {
                         std::stringstream co;
                         //co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
-                        co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                        co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "' ORDER BY create_at LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         std::string comand = co.str();
                         if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
                         PGresult* res = conn.PGexec(comand);
@@ -441,7 +441,7 @@ namespace KPVL {
                     if(next_at.length())
                     {
                         std::stringstream co;
-                        co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '3' AND create_at > '" << next_at << "' ORDER BY id LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
+                        co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '3' AND create_at > '" << next_at << "' ORDER BY create_at LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         //co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         std::string comand = co.str();
                         if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -1206,7 +1206,7 @@ namespace KPVL {
                         std::stringstream ssd;
                         ssd << " start_at = (";
                         ssd << "SELECT create_at FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND (content = '3' OR content = '4' OR content = '5')";
-                        ssd << " ORDER BY id DESC LIMIT 1)";
+                        ssd << " ORDER BY create_at DESC LIMIT 1)";
                         SetUpdateSheet(conn_kpvl, PD, ssd.str(), " start_at IS NULL AND ");
 
                         DeleteNullSgeet(conn_kpvl, PD, Pos);

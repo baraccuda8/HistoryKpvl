@@ -964,14 +964,14 @@ void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& i
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'true' AND ";
             sd << "id_name = " << ProcEndID;
-            sd << " ORDER BY id DESC LIMIT 1";
+            sd << " ORDER BY create_at DESC LIMIT 1";
             End_at1 = GetDataEnd(L, conn, sd.str());
         }
         {
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'false' AND ";
             sd << "id_name = " << ProcRunID;
-            sd << " ORDER BY id DESC LIMIT 1";
+            sd << " ORDER BY create_at DESC LIMIT 1";
             End_at2 = GetDataEnd(L, conn, sd.str());
         }
 

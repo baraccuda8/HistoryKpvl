@@ -490,10 +490,10 @@ namespace PDF
 				std::tm TM_Temp ={0};
 				std::string sBegTime2 = Start;
 				std::stringstream sde;
-				sde << "SELECT DISTINCT ON (id) create_at FROM todos WHERE id_name = " << ID;
+				sde << "SELECT create_at FROM todos WHERE id_name = " << ID;
 				sde << " AND create_at <= '";
 				sde << Start;
-				sde << "' ORDER BY id DESC LIMIT 1;";
+				sde << "' ORDER BY create_at DESC LIMIT 1;";
 				std::string comand = sde.str();
 				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 				PGresult* res = conn.PGexec(comand);
@@ -508,11 +508,10 @@ namespace PDF
 
 
 				std::stringstream sdt;
-				sdt << "SELECT DISTINCT ON (id) create_at, content FROM todos WHERE id_name = " << ID;
-				if(sBegTime2.length())	sdt << " AND create_at >= '" << sBegTime2 << "'";
-				if(Stop.length())	sdt << " AND create_at <= '" << Stop << "'";
-
-				sdt << " ORDER BY id ASC;";
+				sdt << "SELECT create_at, content FROM todos WHERE id_name = " << ID;
+				if(sBegTime2.length()) sdt << " AND create_at >= '" << sBegTime2 << "'";
+				if(Stop.length()) sdt << " AND create_at <= '" << Stop << "'";
+				sdt << " ORDER BY create_at ASC;";
 
 				comand = sdt.str();
 				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -569,7 +568,7 @@ namespace PDF
 				sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
 
 				sdt << ") AND create_at <= '" << Stop;
-				sdt << "' ORDER BY id_name DESC, id ASC;";
+				sdt << "' ORDER BY id_name DESC, create_at ASC;";
 				std::string comand = sdt.str();
 				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 				PGresult* res = conn.PGexec(comand);
@@ -609,7 +608,7 @@ namespace PDF
 				sdt << "id_name = " << Hmi210_1.Htr1_4->ID;
 
 				sdt << ") AND create_at <= '" << Stop;
-				sdt << "' ORDER BY id_name DESC, id ASC;";
+				sdt << "' ORDER BY id_name DESC, create_at ASC;";
 				std::string comand = sdt.str();
 				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
 				PGresult* res = conn.PGexec(comand);
@@ -664,7 +663,7 @@ namespace PDF
 				sdt << "id_name = " << Hmi210_1.Htr2_4->ID;
 				sdt << ") AND create_at >= '" << Start;
 				sdt << "' AND create_at < '" << Stop;
-				sdt << "' ORDER BY id ASC;";
+				sdt << "' ORDER BY create_at ASC;";
 
 				std::string comand = sdt.str();
 				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -723,7 +722,7 @@ namespace PDF
 				sdt << "id_name = " << Hmi210_1.Htr1_4->ID;
 				sdt << ") AND create_at >= '" << Start;
 				sdt << "' AND create_at < '" << Stop;
-				sdt << "' ORDER BY id ASC;";
+				sdt << "' ORDER BY create_at ASC;";
 
 
 				std::string comand = sdt.str();
@@ -897,7 +896,7 @@ namespace PDF
 				ssd << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_4->ID;
 				ssd << ") ";
-				ssd << "ORDER BY id_name, id DESC;";
+				ssd << "ORDER BY id_name, create_at DESC;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -2348,7 +2347,7 @@ namespace PDF
 				" FROM todos WHERE id_name = " << ID	    //Конец отпуска
 				<< " AND create_at >= '" << Start << "'"
 				<< " AND content = 'true'"
-				<< " ORDER BY id DESC LIMIT 1"; // LIMIT 3
+				<< " ORDER BY create_at DESC LIMIT 1"; // LIMIT 3
 			std::string comand = sss.str();
 			PGresult* res = conn.PGexec(comand);
 			//Заполняем данные
@@ -2370,11 +2369,11 @@ namespace PDF
 			try
 			{
 				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id) content FROM todos WHERE ";
+				sss << "SELECT content FROM todos WHERE ";
 				sss << " id_name = " << ID; 			//Фактическое значение температуры
 				sss << " AND create_at >= '" << Run_at << "'";
 				sss << " AND create_at < '" << End_at << "'";
-				sss << " ORDER BY id DESC LIMIT 1";
+				sss << " ORDER BY create_at DESC LIMIT 1";
 				std::string comand = sss.str();
 				PGresult* res = conn.PGexec(comand);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -2403,14 +2402,14 @@ namespace PDF
 				sss << "SELECT DISTINCT ON (id_name) id_name, content";
 				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
 				sss << " FROM todos WHERE (";
-				sss << " todos.id_name = " << Furn->ActTimeHeatAcc->ID << " OR";	//Факт время нагрева
-				sss << " todos.id_name = " << Furn->ActTimeHeatWait->ID << " OR";	//Факт время выдержки
-				sss << " todos.id_name = " << Furn->ActTimeTotal->ID;				//Факт общее время
+				sss << " id_name = " << Furn->ActTimeHeatAcc->ID << " OR";	//Факт время нагрева
+				sss << " id_name = " << Furn->ActTimeHeatWait->ID << " OR";	//Факт время выдержки
+				sss << " id_name = " << Furn->ActTimeTotal->ID;				//Факт общее время
 				sss << ")";
-				sss << " AND todos.create_at >= '" << it.Run_at << "'";
-				sss << " AND todos.create_at < '" << it.End_at << "'";
+				sss << " AND create_at >= '" << it.Run_at << "'";
+				sss << " AND create_at < '" << it.End_at << "'";
 				sss << " AND cast (content as numeric) <> 0";
-				sss << " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 3
+				sss << " ORDER BY id_name, create_at DESC"; // LIMIT 3
 
 #pragma endregion
 
@@ -2454,13 +2453,13 @@ namespace PDF
 				sss << "SELECT DISTINCT ON (id_name) id_name, content";
 				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
 				sss << " FROM todos WHERE (";
-				sss << " todos.id_name = " << Furn->PointRef_1->ID << " OR";		//Уставка температуры
-				sss << " todos.id_name = " << Furn->PointTime_1->ID << " OR";		//Задание Время нагрева
-				sss << " todos.id_name = " << Furn->PointTime_2->ID << " OR";	//Задание Время выдержки
-				sss << " todos.id_name = " << Furn->TimeProcSet->ID;				//Полное время процесса (уставка), мин
+				sss << " id_name = " << Furn->PointRef_1->ID << " OR";		//Уставка температуры
+				sss << " id_name = " << Furn->PointTime_1->ID << " OR";		//Задание Время нагрева
+				sss << " id_name = " << Furn->PointTime_2->ID << " OR";	//Задание Время выдержки
+				sss << " id_name = " << Furn->TimeProcSet->ID;				//Полное время процесса (уставка), мин
 				sss << ")";	//Факт время выдержки
-				sss << " AND todos.create_at < '" << it.End_at << "'";
-				sss << " ORDER BY todos.id_name, todos.id DESC"; // LIMIT 4
+				sss << " AND create_at < '" << it.End_at << "'";
+				sss << " ORDER BY id_name, create_at DESC"; // LIMIT 4
 
 #pragma endregion
 
@@ -3269,7 +3268,7 @@ namespace PDF
 
 				{
 					std::stringstream ssd;
-					ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
+					ssd << "SELECT create_at, id, id_name, content";
 					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
 					ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
 					ssd << "FROM todos WHERE ";
@@ -3287,7 +3286,7 @@ namespace PDF
 					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
 					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
 					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
-					ssd << ") ORDER BY id DESC"; //AND content <> 'false' AND content <> '0' 
+					ssd << ") ORDER BY create_at DESC"; //AND content <> 'false' AND content <> '0' 
 
 					std::string comand = ssd.str();
 					PGresult* res = conn.PGexec(comand);
@@ -3761,7 +3760,7 @@ namespace PDF
 					ssd << ") AND ";
 					ssd << " create_at <= '" << Start << "'";
 					ssd << " AND content <> '0'";
-					ssd << "ORDER BY todos.id_name, todos.id DESC;";
+					ssd << "ORDER BY id_name, create_at DESC;";
 
 					std::string comand1 = ssd.str();
 
@@ -3791,7 +3790,7 @@ namespace PDF
 					ssd << ") AND ";
 					ssd << " create_at <= '" << Start << "'";
 					//ssd << " AND content <> '0'";
-					ssd << "ORDER BY todos.id_name, todos.id DESC;";
+					ssd << "ORDER BY id_name, create_at DESC;";
 
 					std::string comand = ssd.str();
 
@@ -3832,7 +3831,7 @@ namespace PDF
 				ssd << " (SELECT comment FROM tag WHERE tag.id = todos.id_name) FROM todos WHERE";
 				ssd << " id_name = " << Par_Gen.TimeForPlateHeat->ID;
 				ssd << " AND CAST(content AS DOUBLE PRECISION) <> 0.0";
-				ssd << " ORDER BY id DESC;";
+				ssd << " ORDER BY create_at DESC;";
 				std::string comand = ssd.str();
 
 				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -3902,7 +3901,7 @@ namespace PDF
 				ssd << "id_name = " << HMISheetData.LaminarSection2.Bot->ID << " OR ";
 				ssd << "id_name = " << HMISheetData.Valve_1x->ID << " OR ";
 				ssd << "id_name = " << HMISheetData.Valve_2x->ID << ") ";
-				ssd << "ORDER BY id_name, id DESC LIMIT 11;";
+				ssd << "ORDER BY id_name, create_at DESC LIMIT 11;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -3950,7 +3949,7 @@ namespace PDF
 				ssd << "id_name = " << AI_Hmi_210.Za_TE3->ID << " OR ";
 				ssd << "id_name = " << AI_Hmi_210.Za_PT3->ID << " OR ";
 				ssd << "id_name = " << AI_Hmi_210.LAM_TE1->ID;
-				ssd << ") ORDER BY id_name, id DESC LIMIT 3;";
+				ssd << ") ORDER BY id_name, create_at DESC LIMIT 3;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -3981,7 +3980,7 @@ namespace PDF
 				ssd << "FROM todos WHERE create_at < '" << Start << "' AND (";
 				ssd << "id_name = " << AI_Hmi_210.LaminPressTop->ID << " OR ";
 				ssd << "id_name = " << AI_Hmi_210.LaminPressBot->ID;
-				ssd << ") ORDER BY id_name, id DESC LIMIT 2;";
+				ssd << ") ORDER BY id_name, create_at DESC LIMIT 2;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -4009,7 +4008,7 @@ namespace PDF
 				//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
 				ssd << " AND create_at >= '" << StartSheet << "'";
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " ORDER BY id;";
+				ssd << " ORDER BY create_at;";
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, allSheetTodos, comand);
 			}CATCH(SheetLogger, "");
@@ -4028,7 +4027,7 @@ namespace PDF
 				ssd << " AND CAST(content AS integer) <> " << st2_4;
 				ssd << " AND create_at >= '" << StartSheet << "'";
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " ORDER BY id;";
+				ssd << " ORDER BY create_at;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, allSheetTodos, comand);
@@ -4049,7 +4048,7 @@ namespace PDF
 				ssd << " OR CAST(content AS integer) = " << st3_4;
 				ssd << " ) AND create_at >= '" << StartSheet << "'";
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " ORDER BY id;";
+				ssd << " ORDER BY create_at;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, allSheetTodos, comand);
@@ -4067,7 +4066,7 @@ namespace PDF
 				ssd << " id_name = " << HMISheetData.NewData->ID;
 				ssd << " AND create_at >= '" << StartSheet << "'";
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " AND content <> 'false'  ORDER BY id;";
+				ssd << " AND content <> 'false' ORDER BY create_at;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, allSheetTodos, comand);
@@ -4213,7 +4212,7 @@ namespace PDF
 				ssd << "id_name = " << Hmi210_1.Htr1_2->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_3->ID << " OR ";
 				ssd << "id_name = " << Hmi210_1.Htr1_4->ID;
-				ssd << ") ORDER BY id_name, id DESC LIMIT 4;";
+				ssd << ") ORDER BY id_name, create_at DESC LIMIT 4;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -4623,7 +4622,7 @@ namespace PDF
 				ssd << "id_name = " << HMISheetData.Cassette.Year->ID << " OR ";
 				ssd << "id_name = " << HMISheetData.Cassette.CassetteNo->ID << " OR ";
 				ssd << "id_name = " << HMISheetData.Cassette.SheetInCassette->ID << ") ";
-				ssd << "ORDER BY id_name, id DESC;";
+				ssd << "ORDER BY id_name, create_at DESC;";
 
 				std::string comand = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, comand);
@@ -4677,20 +4676,21 @@ namespace PDF
 				Get_ID_S(conn, ids);
 
 
-				std::stringstream sss;
-				sss << "InZone6 ";
-				sss << " Start1: " << ids.Start1;
-				sss << " Id: " << ids.id;
-				sss << " Melt: " << ids.Melt;
-				sss << " PartNo: " << ids.PartNo;
-				sss << " Pack: " << ids.Pack;
-				sss << " Slab: " << ids.Slab;
-				sss << " Sheet: " << ids.Sheet;
-				sss << " SubSheet: " << ids.SubSheet;
-				SetWindowText(hWndDebug, sss.str().c_str());
+				
+				{
+					std::stringstream sss;
+					sss << "InZone6 ";
+					sss << " Start1: " << ids.Start1;
+					sss << " Id: " << ids.id;
+					sss << " Melt: " << ids.Melt;
+					sss << " PartNo: " << ids.PartNo;
+					sss << " Pack: " << ids.Pack;
+					sss << " Slab: " << ids.Slab;
+					sss << " Sheet: " << ids.Sheet;
+					sss << " SubSheet: " << ids.SubSheet;
+					SetWindowText(hWndDebug, sss.str().c_str());
+				}
 
-
-				//if(!ids.DataTime_End.length()) return;
 				if(!ids.Start2.length())
 				{
 					std::tm TM;
@@ -4854,23 +4854,18 @@ namespace PDF
 
 					SaveStepBodyCsv(ff1, td);
 
-					if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID) //Загрузка в печь
+					//Загрузка в печь
+					if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID)
 					{
 						int16_t st = td.content.As<int16_t>();
-						if(st == st1_3) //Открыть входную дверь
+						//Открыть входную дверь
+						if(st == st1_3)
 						{
-							//if(!InZone1(conn, Ids1, td.create_at, count, i))
-							//{
-							//	if(!InZone2(conn, Ids1, Ids2, td.create_at))
-							//		if(!InZone3(conn, Ids1, Ids3, td.create_at))
-							//			InZone6(conn, Ids1, Ids6, allTime, ss1, td.create_at);
-							//
-							//	InZone1(conn, Ids1, td.create_at, count, i);
-							//}
 							InZone1(conn, td.create_at, count, i);
 							SaveT_IdSheetBodyCsv(ff2, Ids1);
 						}
-						else if(st == st1_4 || st == st1_5) //"Загрузка в печь" || "Закрыть входную дверь"
+						//"Загрузка в печь" || "Закрыть входную дверь"
+						else if(st == st1_4 || st == st1_5)
 						{
 							if(Ids1.CloseInDor.length())
 							{
@@ -4886,7 +4881,8 @@ namespace PDF
 								}
 							}
 						}
-						else if(st == st1_6) //"Нагрев листа"
+						//"Нагрев листа"
+						else if(st == st1_6)
 						{
 							if(!Ids1.Nagrev.length())
 							{
@@ -4902,14 +4898,9 @@ namespace PDF
 								}
 							}
 						}
-						else if(st == st1_7 || st == st1_8) 	//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
+						//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
+						else if(st == st1_7 || st == st1_8)
 						{
-							//if(!InZone2(conn, Ids1, Ids2, td.create_at))
-							//{
-							//	if(!InZone3(conn, Ids2, Ids3, td.create_at))
-							//		InZone6(conn, Ids2, Ids6, allTime, ss1, td.create_at);
-							//	InZone2(conn, Ids1, Ids2, td.create_at);
-							//}
 							InZone2(conn, td.create_at);
 						}
 					}
@@ -4919,22 +4910,10 @@ namespace PDF
 						int16_t st = td.content.As<int16_t>();
 						if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
 						{
-							//if(!InZone2(conn, Ids1, Ids2, td.create_at))
-							//{
-							//	if(!InZone3(conn, Ids2, Ids3, td.create_at))
-							//		InZone6(conn, Ids2, Ids6, allTime, ss1, td.create_at);
-							//
-							//	InZone2(conn, Ids1, Ids2, td.create_at);
-							//}
 							InZone2(conn, td.create_at);
 						}
 						else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
 						{
-							//if(!InZone3(conn, Ids2, Ids3, td.create_at))
-							//{
-							//	InZone6(conn, Ids3, Ids6, allTime, ss1, td.create_at);
-							//	InZone3(conn, Ids2, Ids3, td.create_at);
-							//}
 							InZone3(conn, td.create_at);
 						}
 					}
