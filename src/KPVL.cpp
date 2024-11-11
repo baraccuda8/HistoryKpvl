@@ -288,7 +288,7 @@ namespace KPVL {
                 Sheet.erase(Sheet.begin(), Sheet.end());
 
                 std::time_t stop = time(NULL);
-                std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 10)); //7-е суток
+                std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 1)); //1-е суток
                 std::string start_at = GetDataTimeString(&statr);
 
                 std::stringstream FilterComand;

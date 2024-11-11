@@ -1034,46 +1034,46 @@ void InitGrafWindow(HWND hWnd)
 		GetGdiplusEncoderClsid(L"image/tiff", &guidTiff);
 		GetGdiplusEncoderClsid(L"image/png", &guidPng);
 
-		GRAGG::RegisterClassGraf();
-
-		GraffKPVL.AddTime = std::to_string(SecCount2 / 60);
-
-		GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
-		GraffKPVL.bHwnd = CreateWindowEx(0, "Edit", GraffKPVL.StartKPVL.c_str(), WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1350, 150, 140, 20, hWnd, (HMENU)5104, hInstance, 0);
-		GraffKPVL.tHwnd = CreateWindowEx(0, "Edit", GraffKPVL.AddTime.c_str(),   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1490, 150,  30, 20, hWnd, (HMENU)5105, hInstance, 0);
-
-		//GtHwnd = GraffKPVL.tHwnd;
-		SetProc(GraffKPVL.bHwnd, GraffKPVL.StartKPVL);
-		SetProc(GraffKPVL.tHwnd, GraffKPVL.AddTime);
-
-		GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
-		GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
-
-		GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1424, 530, 469, 160, hWnd, (HMENU)5104, hInstance, 0);
-
-		SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
-		SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);
-		SetWindowLongPtr(GraffFurn2.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn2);
-		SetWindowLongPtr(GraffFurn.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn);
-
-		GraffKPVL.conn = &connKPVL;
-		GraffFurn1.conn = &connFurn1;
-		GraffFurn2.conn = &connFurn2;
-		GraffFurn.conn = &connFurn;
-
-
-		UpdateWindow(GraffKPVL.gHwnd);
-		UpdateWindow(GraffFurn1.gHwnd);
-		UpdateWindow(GraffFurn2.gHwnd);
-
-		UpdateWindow(GraffFurn.gHwnd);
-		//Open_GRAFF_FURN();
-
-	//#ifdef TESTGRAFF
-		hGGraff1 = CreateThread(0, 0, Open_GRAFF_KPVL, (LPVOID)0, 0, 0);
-		hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
-		hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
-	//#endif
+	//	GRAGG::RegisterClassGraf();
+	//
+	//	GraffKPVL.AddTime = std::to_string(SecCount2 / 60);
+	//
+	//	GraffKPVL.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1170, 170, Xsize, Ysize1, hWnd, (HMENU)5103, hInstance, 0);
+	//	GraffKPVL.bHwnd = CreateWindowEx(0, "Edit", GraffKPVL.StartKPVL.c_str(), WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1350, 150, 140, 20, hWnd, (HMENU)5104, hInstance, 0);
+	//	GraffKPVL.tHwnd = CreateWindowEx(0, "Edit", GraffKPVL.AddTime.c_str(),   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_CENTER, 1490, 150,  30, 20, hWnd, (HMENU)5105, hInstance, 0);
+	//
+	//	//GtHwnd = GraffKPVL.tHwnd;
+	//	SetProc(GraffKPVL.bHwnd, GraffKPVL.StartKPVL);
+	//	SetProc(GraffKPVL.tHwnd, GraffKPVL.AddTime);
+	//
+	//	GraffFurn1.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup200), (HMENU)5103, hInstance, 0);
+	//	GraffFurn2.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 505, 25, Xsize, Ysize2, winmap(hGroup300), (HMENU)5103, hInstance, 0);
+	//
+	//	GraffFurn.gHwnd = CreateWindowEx(0, "GrafClass", NULL, WS_CLIPCHILDREN | WS_BORDER | WS_CHILD | WS_VISIBLE, 1424, 530, 469, 160, hWnd, (HMENU)5104, hInstance, 0);
+	//
+	//	SetWindowLongPtr(GraffKPVL.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffKPVL);
+	//	SetWindowLongPtr(GraffFurn1.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn1);
+	//	SetWindowLongPtr(GraffFurn2.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn2);
+	//	SetWindowLongPtr(GraffFurn.gHwnd, GWLP_USERDATA, (LONG_PTR)&GraffFurn);
+	//
+	//	GraffKPVL.conn = &connKPVL;
+	//	GraffFurn1.conn = &connFurn1;
+	//	GraffFurn2.conn = &connFurn2;
+	//	GraffFurn.conn = &connFurn;
+	//
+	//
+	//	UpdateWindow(GraffKPVL.gHwnd);
+	//	UpdateWindow(GraffFurn1.gHwnd);
+	//	UpdateWindow(GraffFurn2.gHwnd);
+	//
+	//	UpdateWindow(GraffFurn.gHwnd);
+	//	//Open_GRAFF_FURN();
+	//
+	////#ifdef TESTGRAFF
+	//	hGGraff1 = CreateThread(0, 0, Open_GRAFF_KPVL, (LPVOID)0, 0, 0);
+	//	hGGraff2 = CreateThread(0, 0, Open_GRAFF_FURN1, (LPVOID)0, 0, 0);
+	//	hGGraff3 = CreateThread(0, 0, Open_GRAFF_FURN2, (LPVOID)0, 0, 0);
+	////#endif
 	}
 	CATCH(Graphics, "");
 	int t = 0;
@@ -1085,19 +1085,19 @@ void Open_GRAFF_FURN(TCassette& TC)
 
 	try
 	{
-		CONNECTION2(GraffFurn.conn, Graphics);
-
-		GraffFurn.MaxSecCount = 0;// SecCount1;
-
-		if(atoi(TC.Peth.c_str()) == 1)
-		{
-			GetGrTempFURN0(GraffFurn, AppFurn1, TC);
-		}
-		if(atoi(TC.Peth.c_str()) == 2)
-		{
-			GetGrTempFURN0(GraffFurn, AppFurn2, TC);
-		}
-		//GraffFurn.conn->PGDisConnection();
+		//CONNECTION2(GraffFurn.conn, Graphics);
+		//
+		//GraffFurn.MaxSecCount = 0;// SecCount1;
+		//
+		//if(atoi(TC.Peth.c_str()) == 1)
+		//{
+		//	GetGrTempFURN0(GraffFurn, AppFurn1, TC);
+		//}
+		//if(atoi(TC.Peth.c_str()) == 2)
+		//{
+		//	GetGrTempFURN0(GraffFurn, AppFurn2, TC);
+		//}
+		
 	}
 	CATCH(Graphics, "");
 }
@@ -1105,7 +1105,7 @@ void Open_GRAFF_FURN(TCassette& TC)
 
 void StopGraff()
 {
-	WaitCloseTheread(hGGraff1, "hGGraff1");
-	WaitCloseTheread(hGGraff2, "hGGraff1");
-	WaitCloseTheread(hGGraff3, "hGGraff1");
+	//WaitCloseTheread(hGGraff1, "hGGraff1");
+	//WaitCloseTheread(hGGraff2, "hGGraff1");
+	//WaitCloseTheread(hGGraff3, "hGGraff1");
 }
