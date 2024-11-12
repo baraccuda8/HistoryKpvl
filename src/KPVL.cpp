@@ -1514,7 +1514,7 @@ namespace KPVL {
                     T_CassetteData Cassette = HMISheetData.Cassette;
                     T_PlateData PD = PlateData[Pos];
 
-                    //if(HMISheetData.NewData->Val.As<bool>())
+                    if(HMISheetData.NewData->Val.As<bool>())
                     {
                         if(IsSheet(PD))
                         {
