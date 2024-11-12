@@ -1518,15 +1518,13 @@ namespace KPVL {
 
                         if(IsSheet(PD))
                         {
-                            //uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-
                             uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                             int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
                             std::string DataTime = GetDataTimeString();
 
                             {
                                 int32_t id = Stoi(GetIdSheet(conn, PD));
-#pragma region comand = "UPDATE sheet SET"
+#pragma region co = "UPDATE sheet SET"
                                 std::stringstream co;
                                 co << "UPDATE sheet SET";
                                 co << " pos = 7";
@@ -1557,7 +1555,7 @@ namespace KPVL {
                                 co << ", cant_at = '" << DataTime << "'";
                                 co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
 #pragma endregion
-
+#pragma region WHERE ...
                                 if(id != 0)
                                 {
                                     co << " id = " << id;
@@ -1574,6 +1572,7 @@ namespace KPVL {
                                     LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
                                     co << sd.str();
                                 }
+#pragma endregion
 
                                 SETUPDATESQL(HardLogger, conn, co);
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), CasseteId={}, Id={}, Melt={}, Slab={},PartNo={}, Pack={}, Sheet={}, SubSheet={}\r\n", FUNCTION_LINE_NAME, CasseteId, id, PD.Melt->GetString(), PD.Slab->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString(), PD.SubSheet->GetString());
