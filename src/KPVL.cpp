@@ -1509,13 +1509,13 @@ namespace KPVL {
             {
                 try
                 {
-                    T_Side Top_Side = HMISheetData.Top_Side;
-                    T_Side Bot_Side = HMISheetData.Bot_Side;
-                    T_CassetteData Cassette = HMISheetData.Cassette;
-                    T_PlateData PD = PlateData[Pos];
-
                     if(HMISheetData.NewData->Val.As<bool>())
                     {
+                        T_Side Top_Side = HMISheetData.Top_Side;
+                        T_Side Bot_Side = HMISheetData.Bot_Side;
+                        T_CassetteData Cassette = HMISheetData.Cassette;
+                        T_PlateData PD = PlateData[Pos];
+
                         if(IsSheet(PD))
                         {
                             //uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
