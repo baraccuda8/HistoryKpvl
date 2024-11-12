@@ -63,6 +63,8 @@ extern int Col_Sheet_correct;
 namespace KPVL {
     extern std::string ServerDataTime;
 
+    void UpdateCountSheet(PGConnection& conn, int id);
+
     namespace SQL
     {
         //Получаем список колонов в таблице sheet

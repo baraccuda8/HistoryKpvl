@@ -119,6 +119,12 @@ int Col_Sheet_Cassette = 0;
 
 //Печь закалки
 namespace KPVL {
+    void UpdateCountSheet(PGConnection& conn, int id)
+    {
+        std::stringstream sd;
+        sd << "SELECT updatesheetincassette(" << id << ");";
+        SETUPDATESQL(HardLogger, conn, sd);
+    }
 
     //Список последних 100 листов из базы
     namespace SQL
@@ -479,13 +485,6 @@ namespace KPVL {
             CATCH(HardLogger, "");
         }
 
-    }
-
-    void UpdateCountSheet(PGConnection& conn, int id)
-    {
-        std::stringstream sd;
-        sd << "SELECT updatesheetincassette(" << id << ");";
-        SETUPDATESQL(HardLogger, conn, sd);
     }
 
     std::string ServerDataTime = "";
