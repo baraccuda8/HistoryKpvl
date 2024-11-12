@@ -1499,6 +1499,12 @@ namespace KPVL {
                 return 0;
             }
 
+            void UpdateCountSheet(PGConnection& conn, int id)
+            {
+                std::stringstream sd;
+                sd << "SELECT updatesheetincassette(" << id << ");";
+                SETUPDATESQL(HardLogger, conn, sd);
+            }
             void SetSaveDone(PGConnection& conn)
             {
                 try
@@ -1508,18 +1514,18 @@ namespace KPVL {
                     T_CassetteData Cassette = HMISheetData.Cassette;
                     T_PlateData PD = PlateData[Pos];
 
-                    if(HMISheetData.NewData->Val.As<bool>())
+                    //if(HMISheetData.NewData->Val.As<bool>())
                     {
                         if(IsSheet(PD))
                         {
-                            int32_t id = Stoi(GetIdSheet(conn, PD));
-                            if(id != 0)
-                            {
-                                uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                                int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
-                                std::string DataTime = GetDataTimeString();
-                                MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
+                            //uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
 
+                            uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
+                            int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
+                            std::string DataTime = GetDataTimeString();
+
+                            {
+                                int32_t id = Stoi(GetIdSheet(conn, PD));
 #pragma region comand = "UPDATE sheet SET"
                                 std::stringstream co;
                                 co << "UPDATE sheet SET";
@@ -1542,31 +1548,41 @@ namespace KPVL {
                                 co << ", bot6 = " << Bot_Side.h6->Val.As<float>();  // GetFloat();
                                 co << ", bot7 = " << Bot_Side.h7->Val.As<float>();  // GetFloat();
                                 co << ", bot8 = " << Bot_Side.h8->Val.As<float>();  // GetFloat();
-                                try
-                                {
-                                    co << ", year = " << Cassette.Year->Val.As<int32_t>();
-                                    co << ", month = " << Cassette.Month->Val.As<int32_t>();
-                                    co << ", day = " << Cassette.Day->Val.As<int32_t>();
-                                    co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
-                                    co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                                    co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
-                                }
-                                CATCH(HardLogger, "");
-
+                                co << ", year = " << Cassette.Year->Val.As<int32_t>();
+                                co << ", month = " << Cassette.Month->Val.As<int32_t>();
+                                co << ", day = " << Cassette.Day->Val.As<int32_t>();
+                                co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
+                                co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
+                                co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
                                 co << ", cant_at = '" << DataTime << "'";
-                                co << ", correct = DEFAULT, pdf = DEFAULT";
-                                co << " WHERE id = " << id << ";";
-                                SETUPDATESQL(HardLogger, conn, co);
-                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                                co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
 #pragma endregion
+
+                                if(id != 0)
+                                {
+                                    co << " id = " << id;
+                                }
+                                else
+                                {
+                                    std::stringstream sd;
+                                    sd << " melt = " << PD.Melt->GetInt();
+                                    sd << " AND slab = " << PD.Slab->GetInt();
+                                    sd << " AND pack = " << PD.Pack->GetInt();
+                                    sd << " AND partno = " << PD.PartNo->GetInt();
+                                    sd << " AND sheet = " << PD.Sheet->GetInt();
+                                    sd << " AND subsheet = " << PD.SubSheet->GetInt();
+                                    LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
+                                    co << sd.str();
+                                }
+
+                                SETUPDATESQL(HardLogger, conn, co);
+                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), CasseteId={}, Id={}, Melt={}, Slab={},PartNo={}, Pack={}, Sheet={}, SubSheet={}\r\n", FUNCTION_LINE_NAME, CasseteId, id, PD.Melt->GetString(), PD.Slab->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString(), PD.SubSheet->GetString());
+                                UpdateCountSheet(conn, CasseteId);
                             }
-                            else
-                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), id={}, Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, id, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                            MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
                         }
                         else
                             LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
-
-                        //LOG_INFO(HardLogger, "{:90}| SaveDone->Set_Value(true)", FUNCTION_LINE_NAME);
                         HMISheetData.SaveDone->Set_Value(true);
                     }
                 }
