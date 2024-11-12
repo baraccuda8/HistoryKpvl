@@ -27,9 +27,10 @@ namespace KPVL {
     //const std::string  URI = "opc.tcp://85.116.124.32:4840";
 };
 
-#define PLCsec1 sec01000
-#define PLCsec2 sec02000
-#define PLCsec5 sec05000
+//#define PLCsec0 sec00500
+//#define PLCsec1 sec01000
+//#define PLCsec2 sec02000
+//#define PLCsec5 sec05000
 
 extern std::string lpLogDir;
 
@@ -380,9 +381,9 @@ void PLC_KPVL::InitTag()
         LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
         CREATESUBSCRIPT(cssKPVL, sec00500, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, PLCsec1, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, PLCsec2, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, PLCsec5, &DataChangeKPVL, Logger);
+        CREATESUBSCRIPT(cssKPVL, sec01000, &DataChangeKPVL, Logger);
+        CREATESUBSCRIPT(cssKPVL, sec02000, &DataChangeKPVL, Logger);
+        CREATESUBSCRIPT(cssKPVL, sec05000, &DataChangeKPVL, Logger);
 
         cssKPVL[sec00500].Subscribe(nodeCurrentTime);
     }
@@ -403,9 +404,9 @@ void PLC_KPVL::InitTag()
             avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
 
     LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec00500, avid[sec00500].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, PLCsec1, avid[PLCsec1].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, PLCsec2, avid[PLCsec2].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, PLCsec5, avid[PLCsec5].size());
+    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec01000, avid[sec01000].size());
+    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec02000, avid[sec02000].size());
+    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec05000, avid[sec05000].size());
 
 
     for(auto& ar : avid)
@@ -458,7 +459,11 @@ void PLC_KPVL::Run(int count)
         DataChangeKPVL.InitGoot = FALSE;
         countget = 1;
 
+#if NEW
         client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
+#else
+        client = new OpcUa::UaClient(Logger);
+#endif
 
         SetWindowText(winmap(hEditMode1), "Connect");
         w1 = hEditDiagnose7;
@@ -525,6 +530,8 @@ void PLC_KPVL::Run(int count)
         SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
 #else
+        //client->Disconnect();
+        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         delete client;
 #endif
         return;
@@ -551,6 +558,12 @@ void PLC_KPVL::Run(int count)
         SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
 #else
+        //LOG_INFO(Logger, "{:90}| Disconnect countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //SetWindowText(winmap(hEditMode1), "Disconnect");
+        //client->Disconnect();
+
+        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        SetWindowText(winmap(hEditMode1), "delete");
         delete client;
 #endif
     }

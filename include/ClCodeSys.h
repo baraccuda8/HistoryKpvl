@@ -143,7 +143,7 @@
 
 //using namespace OpcUa;
 
-#define NEWS 1
+#define NEWS 0
 class Client
 {
 public:

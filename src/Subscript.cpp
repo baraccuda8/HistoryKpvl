@@ -7,7 +7,13 @@
 #include "Subscript.h"
 
 
-void ChannelSubscription::Create(std::shared_ptr<OpcUa::UaClient>client, Subscriptions* subscript, int ms, std::shared_ptr<spdlog::logger>& logger)
+#if NEW 
+#define OPCCLIENT std::shared_ptr<OpcUa::UaClient>
+#else
+#define OPCCLIENT OpcUa::UaClient*
+#endif
+
+void ChannelSubscription::Create(OPCCLIENT client, Subscriptions* subscript, int ms, std::shared_ptr<spdlog::logger>& logger)
 {
     LOG_INFO(Logger, "{:90}| -->CreateSubscription {}", FUNCTION_LINE_NAME, ms);
     if(!isRun)

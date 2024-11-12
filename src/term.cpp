@@ -13,9 +13,10 @@
 #include "pdf.h"
 
 
-#define SPKsec1 sec01000
-#define SPKsec2 sec02000
-#define SPKsec5 sec05000
+//#define SPKsec0 sec00500
+//#define SPKsec1 sec01000
+//#define SPKsec2 sec02000
+//#define SPKsec5 sec05000
 
 extern std::string lpLogDir;
 
@@ -278,10 +279,11 @@ void PLC_S107::InitTag()
         //Создание Subscribe
         LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
+        
         CREATESUBSCRIPT(cssS107, sec00500, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, SPKsec1, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, SPKsec2, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, SPKsec5, &DataChangeS107, Logger);
+        CREATESUBSCRIPT(cssS107, sec01000, &DataChangeS107, Logger);
+        CREATESUBSCRIPT(cssS107, sec02000, &DataChangeS107, Logger);
+        CREATESUBSCRIPT(cssS107, sec05000, &DataChangeS107, Logger);
 
         cssS107[sec00500].Subscribe(nodeCurrentTime);
     }
@@ -357,7 +359,11 @@ void PLC_S107::Run(int count)
         DataChangeS107.InitGoot = FALSE;
         countget = 1;
 
+#if NEW
         client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
+#else
+        client = new OpcUa::UaClient(Logger);
+#endif
 
         SetWindowText(winmap(hEditMode2), "Connect");
         w1 = hEditTime_3;
@@ -406,6 +412,8 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "reset");
         client.reset();
 #else
+        //client->Disconnect();
+        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         delete client;
 #endif
         return;
@@ -426,9 +434,20 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "delete Sub");
         for(auto s : cssS107)s.second.Delete();
 
+#if NEWS
         LOG_INFO(Logger, "{:90}| reset countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode2), "reset");
+        SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
+#else
+        //LOG_INFO(Logger, "{:90}| Disconnect countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //SetWindowText(winmap(hEditMode2), "Disconnect");
+        //client->Disconnect();
+
+        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        SetWindowText(winmap(hEditMode2), "delete");
+        delete client;
+#endif
+
     }
     CATCH_RUN(Logger);
 
