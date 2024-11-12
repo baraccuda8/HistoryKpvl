@@ -481,6 +481,12 @@ namespace KPVL {
 
     }
 
+    void UpdateCountSheet(PGConnection& conn, int id)
+    {
+        std::stringstream sd;
+        sd << "SELECT updatesheetincassette(" << id << ");";
+        SETUPDATESQL(HardLogger, conn, sd);
+    }
 
     std::string ServerDataTime = "";
 
@@ -1499,12 +1505,6 @@ namespace KPVL {
                 return 0;
             }
 
-            void UpdateCountSheet(PGConnection& conn, int id)
-            {
-                std::stringstream sd;
-                sd << "SELECT updatesheetincassette(" << id << ");";
-                SETUPDATESQL(HardLogger, conn, sd);
-            }
             void SetSaveDone(PGConnection& conn)
             {
                 try
