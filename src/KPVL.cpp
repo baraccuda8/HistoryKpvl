@@ -527,78 +527,7 @@ namespace KPVL {
             return false;
         }
 
-        std::string GetIdSheet(PGConnection& conn, T_PlateData& PD)
-        {
-            std::string id = "0";
-            try
-            {
-                if(IsSheet(PD))
-                {
-                    PD.Melt->GetValue();
-                    PD.Slab->GetValue();
-                    PD.PartNo->GetValue();
-                    PD.Pack->GetValue();
-                    PD.Sheet->GetValue();
-                    PD.SubSheet->GetValue();
-
-                    std::stringstream sd;
-                    sd << "SELECT id FROM sheet WHERE ";
-                    sd << " melt = " << PD.Melt->GetInt();
-                    sd << " AND slab = " << PD.Slab->GetInt();
-                    sd << " AND partno = " << PD.PartNo->GetInt();
-                    sd << " AND pack = " << PD.Pack->GetInt();
-                    sd << " AND sheet = " << PD.Sheet->GetInt();
-                    sd << " AND subsheet = " << PD.SubSheet->GetInt();
-                    std::string comand = sd.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-
-                    PGresult* res = conn.PGexec(comand);
-
-                    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-                    {
-                        if(PQntuples(res))//Линий
-                        {
-                            id = conn.PGgetvalue(res, 0, 0);
-                        }
-                    }
-                    else
-                        LOG_ERR_SQL(HardLogger, res, comand);
-                    PQclear(res);
-                }
-            }
-            CATCH(HardLogger, "");
-            return id;
-        }
-
-
-        void LocSheet(PGConnection& conn, T_PlateData& PD, int Pos)
-        {
-            try
-            {
-                if(IsSheet(PD))
-                {
-                    std::string id = GetIdSheet(conn, PD);
-                    PalletSheet[Pos].id = id;
-                    PalletSheet[Pos].DataTime = GetDataTimeString();
-                    PalletSheet[Pos].Pos = std::to_string(Pos);
-                    PalletSheet[Pos].Alloy = PD.AlloyCodeText->GetString();
-                    PalletSheet[Pos].Thikness = PD.ThiknessText->GetString();
-                    PalletSheet[Pos].Melt = PD.Melt->GetString();
-                    PalletSheet[Pos].Slab = PD.Slab->GetString();
-                    PalletSheet[Pos].PartNo = PD.PartNo->GetString();
-                    PalletSheet[Pos].Pack = PD.Pack->GetString();
-                    PalletSheet[Pos].Sheet = PD.Sheet->GetString();
-                    PalletSheet[Pos].SubSheet = PD.SubSheet->GetString();
-                }
-                else
-                {
-                    PalletSheet[Pos].Clear();
-                }
-            }
-            CATCH(HardLogger, "");
-        }
-
-        //Получаем ID листа
+        
         std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab)
         {
             std::string id = "0";
@@ -616,11 +545,11 @@ namespace KPVL {
                     std::stringstream co;
                     co << "SELECT id FROM sheet WHERE delete_at IS NULL AND ";
                     co << " melt = " << Melt;
-                    co << " AND pack = " << Pack;
+                    co << " AND slab = " << Slab;
                     co << " AND partno = " << PartNo;
+                    co << " AND pack = " << Pack;
                     co << " AND sheet = " << Sheet;
                     co << " AND subsheet = " << SubSheet;
-                    co << " AND slab = " << Slab;
                     co << ";";
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -652,11 +581,11 @@ namespace KPVL {
                     std::stringstream co;
                     co << "SELECT id FROM sheet WHERE delete_at IS NULL AND ";
                     co << " melt = " << Melt;
-                    co << " AND pack = " << Pack;
+                    co << " AND slab = " << Slab;
                     co << " AND partno = " << PartNo;
+                    co << " AND pack = " << Pack;
                     co << " AND sheet = " << Sheet;
                     co << " AND subsheet = " << SubSheet;
-                    co << " AND slab = " << Slab;
                     co << ";";
                     std::string comand = co.str();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
@@ -674,7 +603,99 @@ namespace KPVL {
             CATCH(HardLogger, "");
             return id;
         }
+        std::string GetIdSheet(PGConnection& conn, T_PlateData& PD)
+        {
+            std::string id = "0";
+            try
+            {
+                if(IsSheet(PD))
+                {
+                    int32_t Melt1       = PD.Melt->Val.As<int32_t>();
+                    int32_t Slab1       = PD.Slab->Val.As<int32_t>();
+                    int32_t PartNo1     = PD.PartNo->Val.As<int32_t>();
+                    int32_t Pack1       = PD.Pack->Val.As<int32_t>();
+                    int32_t Sheet1      = PD.Sheet->Val.As<int32_t>();
+                    int32_t SubSheet1   = PD.SubSheet->Val.As<int32_t>();
 
+                    int32_t Melt2       = PD.Melt->GetValue().As<int32_t>();
+                    int32_t Slab2       = PD.Slab->GetValue().As<int32_t>();
+                    int32_t PartNo2     = PD.PartNo->GetValue().As<int32_t>();
+                    int32_t Pack2       = PD.Pack->GetValue().As<int32_t>();
+                    int32_t Sheet2      = PD.Sheet->GetValue().As<int32_t>();
+                    int32_t SubSheet2   = PD.SubSheet->GetValue().As<int32_t>();
+
+                    if(Melt1 != Melt2 || Slab1 != Slab2 || PartNo1 != PartNo2 || Pack1 != Pack2 || Sheet1 != Sheet2 || SubSheet1 != SubSheet2)
+                    {
+                        LOG_INFO(HardLogger, "{:90}| Запрос по ID: Melt = {}, Slab = {}, PartNo = {}, Pack = {}, Sheet = {}, SubSheet = {}", FUNCTION_LINE_NAME, Melt1, Slab1, PartNo1, Pack1, Sheet1, SubSheet1);
+                        LOG_INFO(HardLogger, "{:90}| Запрос по ID: Melt = {}, Slab = {}, PartNo = {}, Pack = {}, Sheet = {}, SubSheet = {}", FUNCTION_LINE_NAME, Melt2, Slab2, PartNo2, Pack2, Sheet2, SubSheet2);
+                    }
+
+                    std::stringstream sd;
+                    sd << "SELECT id FROM sheet WHERE ";
+                    sd << " melt = " << Melt2;
+                    sd << " AND slab = " << Slab2;
+                    sd << " AND partno = " << PartNo2;
+                    sd << " AND pack = " << Pack2;
+                    sd << " AND sheet = " << Sheet2;
+                    sd << " AND subsheet = " << SubSheet2;
+                    std::string comand = sd.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+
+                    PGresult* res = conn.PGexec(comand);
+
+                    if(PQresultStatus(res) == PGRES_TUPLES_OK)
+                    {
+                        if(PQntuples(res))//Линий
+                        {
+                            id = conn.PGgetvalue(res, 0, 0);
+                        }
+                    }
+                    else
+                        LOG_ERR_SQL(HardLogger, res, comand);
+                    PQclear(res);
+                }
+            }
+            CATCH(HardLogger, "");
+            return id;
+        }
+
+
+        void LocSheet(PGConnection& conn, T_PlateData& PD, int Pos)
+        {
+            try
+            {
+                if(IsSheet(PD))
+                {
+                    int32_t Melt = PD.Melt->Val.As<int32_t >();//(sMelt);
+                    int32_t Pack = PD.Pack->Val.As<int32_t >();
+                    int32_t PartNo = PD.PartNo->Val.As<int32_t >();
+                    int32_t Sheet = PD.Sheet->Val.As<int32_t >();
+                    int32_t SubSheet = PD.SubSheet->Val.As<int32_t >();
+                    int32_t Slab = PD.Slab->Val.As<int32_t >();
+                    std::string id = GetIdSheet(conn, Melt, Pack, PartNo, Sheet, SubSheet, Slab);
+
+                    //std::string id = GetIdSheet(conn, PD);
+                    PalletSheet[Pos].id = id;
+                    PalletSheet[Pos].DataTime = GetDataTimeString();
+                    PalletSheet[Pos].Pos = std::to_string(Pos);
+                    PalletSheet[Pos].Alloy = PD.AlloyCodeText->GetString();
+                    PalletSheet[Pos].Thikness = PD.ThiknessText->GetString();
+                    PalletSheet[Pos].Melt = PD.Melt->GetString();
+                    PalletSheet[Pos].Slab = PD.Slab->GetString();
+                    PalletSheet[Pos].PartNo = PD.PartNo->GetString();
+                    PalletSheet[Pos].Pack = PD.Pack->GetString();
+                    PalletSheet[Pos].Sheet = PD.Sheet->GetString();
+                    PalletSheet[Pos].SubSheet = PD.SubSheet->GetString();
+                }
+                else
+                {
+                    PalletSheet[Pos].Clear();
+                }
+            }
+            CATCH(HardLogger, "");
+        }
+
+        //Получаем ID листа
         //Добовление листа в базу
         void InsertSheet(PGConnection& conn, T_PlateData& PD, int Pos)
         {
@@ -691,8 +712,8 @@ namespace KPVL {
 
                 if(IsSheet(PD))
                 {
-                    std::string id = GetIdSheet(conn, PD);
-                    if(!Stoi(id)) //!id.length() || id == "" || id == "0")
+                    //std::string id = GetIdSheet(conn, PD);
+                    //if(!Stoi(id)) //!id.length() || id == "" || id == "0")
                     {
                         std::stringstream sd;
                         sd << "INSERT INTO sheet ";
@@ -981,11 +1002,11 @@ namespace KPVL {
         {
             try
             {
-
                 std::string id = GetIdSheet(conn, PD);
-
                 if(Stoi(id) != 0)
                 {
+
+
                     UpdateSheetPos(conn, PD, id, Pos);
 
                     if(Pos == 1 || Pos == 2)
