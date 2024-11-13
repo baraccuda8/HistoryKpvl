@@ -534,15 +534,19 @@ namespace KPVL {
             {
                 if(IsSheet(PD))
                 {
-                    //PD.SubSheet->GetValue();
-                    //PD.Slab->GetValue();
+                    PD.Melt->GetValue();
+                    PD.Slab->GetValue();
+                    PD.PartNo->GetValue();
+                    PD.Pack->GetValue();
+                    PD.Sheet->GetValue();
+                    PD.SubSheet->GetValue();
 
                     std::stringstream sd;
                     sd << "SELECT id FROM sheet WHERE ";
                     sd << " melt = " << PD.Melt->GetInt();
                     sd << " AND slab = " << PD.Slab->GetInt();
-                    sd << " AND pack = " << PD.Pack->GetInt();
                     sd << " AND partno = " << PD.PartNo->GetInt();
+                    sd << " AND pack = " << PD.Pack->GetInt();
                     sd << " AND sheet = " << PD.Sheet->GetInt();
                     sd << " AND subsheet = " << PD.SubSheet->GetInt();
                     std::string comand = sd.str();
@@ -1517,6 +1521,7 @@ namespace KPVL {
 
                         if(IsSheet(PD))
                         {
+                            SheetPos(conn_kpvl, PD, Pos);
                             uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
                             int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
                             std::string DataTime = GetDataTimeString();
