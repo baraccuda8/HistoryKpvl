@@ -56,7 +56,7 @@ namespace S107
     };
 
     //Получение номера колонки
-    void GetColl(PGresult* res)
+    void GetCollumn(PGresult* res)
     {
         if(!Coll::Return_at)
         {
@@ -99,38 +99,40 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
     //Чтение кассеты
-    void GetCassette(PGresult* res, TCassette& cassette, int line)
+    void GetCassette(PGConnection& conn, PGresult* res, TCassette& cassette, int line)
     {
-        GetColl(res);
-        cassette.Create_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Create_at));
-        cassette.Id = conn_spis.PGgetvalue(res, line, Coll::Id);
-        cassette.Event = conn_spis.PGgetvalue(res, line, Coll::Event);
-        cassette.Hour = conn_spis.PGgetvalue(res, line, Coll::Hour);
-        cassette.Day = conn_spis.PGgetvalue(res, line, Coll::Day);
-        cassette.Month = conn_spis.PGgetvalue(res, line, Coll::Month);
-        cassette.Year = conn_spis.PGgetvalue(res, line, Coll::Year);
-        cassette.CassetteNo = conn_spis.PGgetvalue(res, line, Coll::CassetteNo);
-        cassette.SheetInCassette = conn_spis.PGgetvalue(res, line, Coll::SheetInCassette);
-        cassette.Close_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Close_at));
-        cassette.Peth = conn_spis.PGgetvalue(res, line, Coll::Peth);
-        cassette.Run_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Run_at));
-        cassette.Error_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Error_at));
-        cassette.End_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::End_at));
-        cassette.Delete_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Delete_at));
-        cassette.TempRef = conn_spis.PGgetvalue(res, line, Coll::TempRef);           //Заданное значение температуры
-        cassette.PointTime_1 = conn_spis.PGgetvalue(res, line, Coll::PointTime_1);       //Время разгона
-        cassette.PointRef_1 = conn_spis.PGgetvalue(res, line, Coll::PointRef_1);        //Уставка температуры
-        cassette.TimeProcSet = conn_spis.PGgetvalue(res, line, Coll::TimeProcSet);       //Полное время процесса (уставка), мин
-        cassette.PointTime_2 = conn_spis.PGgetvalue(res, line, Coll::PointTime_2);      //Время выдержки
-        cassette.facttemper = conn_spis.PGgetvalue(res, line, Coll::facttemper);          //Факт температуры за 5 минут до конца отпуска
-        cassette.Finish_at = GetStringData(conn_spis.PGgetvalue(res, line, Coll::Finish_at)); //Завершение процесса + 15 минут
-        cassette.HeatAcc = conn_spis.PGgetvalue(res, line, Coll::HeatAcc); //Завершение процесса + 15 минут
-        cassette.HeatWait = conn_spis.PGgetvalue(res, line, Coll::HeatWait); //Завершение процесса + 15 минут
-        cassette.Total = conn_spis.PGgetvalue(res, line, Coll::Total); //Завершение процесса + 15 минут
-        cassette.Correct = conn_spis.PGgetvalue(res, line, Coll::Correct); //Завершение процесса + 15 минут
-        cassette.Pdf = conn_spis.PGgetvalue(res, line, Coll::Pdf); //Завершение процесса + 15 минут
-        cassette.Return_at = conn_spis.PGgetvalue(res, line, Coll::Return_at); //Завершение процесса + 15 минут
-        
+        GetCollumn(res);
+        if(Coll::Return_at)
+        {
+            cassette.Create_at = GetStringData(conn.PGgetvalue(res, line, Coll::Create_at));
+            cassette.Id = conn.PGgetvalue(res, line, Coll::Id);
+            cassette.Event = conn.PGgetvalue(res, line, Coll::Event);
+            cassette.Hour = conn.PGgetvalue(res, line, Coll::Hour);
+            cassette.Day = conn.PGgetvalue(res, line, Coll::Day);
+            cassette.Month = conn.PGgetvalue(res, line, Coll::Month);
+            cassette.Year = conn.PGgetvalue(res, line, Coll::Year);
+            cassette.CassetteNo = conn.PGgetvalue(res, line, Coll::CassetteNo);
+            cassette.SheetInCassette = conn.PGgetvalue(res, line, Coll::SheetInCassette);
+            cassette.Close_at = GetStringData(conn.PGgetvalue(res, line, Coll::Close_at));
+            cassette.Peth = conn.PGgetvalue(res, line, Coll::Peth);
+            cassette.Run_at = GetStringData(conn.PGgetvalue(res, line, Coll::Run_at));
+            cassette.Error_at = GetStringData(conn.PGgetvalue(res, line, Coll::Error_at));
+            cassette.End_at = GetStringData(conn.PGgetvalue(res, line, Coll::End_at));
+            cassette.Delete_at = GetStringData(conn.PGgetvalue(res, line, Coll::Delete_at));
+            cassette.TempRef = conn.PGgetvalue(res, line, Coll::TempRef);           //Заданное значение температуры
+            cassette.PointTime_1 = conn.PGgetvalue(res, line, Coll::PointTime_1);       //Время разгона
+            cassette.PointRef_1 = conn.PGgetvalue(res, line, Coll::PointRef_1);        //Уставка температуры
+            cassette.TimeProcSet = conn.PGgetvalue(res, line, Coll::TimeProcSet);       //Полное время процесса (уставка), мин
+            cassette.PointTime_2 = conn.PGgetvalue(res, line, Coll::PointTime_2);      //Время выдержки
+            cassette.facttemper = conn.PGgetvalue(res, line, Coll::facttemper);          //Факт температуры за 5 минут до конца отпуска
+            cassette.Finish_at = GetStringData(conn.PGgetvalue(res, line, Coll::Finish_at)); //Завершение процесса + 15 минут
+            cassette.HeatAcc = conn.PGgetvalue(res, line, Coll::HeatAcc); //Завершение процесса + 15 минут
+            cassette.HeatWait = conn.PGgetvalue(res, line, Coll::HeatWait); //Завершение процесса + 15 минут
+            cassette.Total = conn.PGgetvalue(res, line, Coll::Total); //Завершение процесса + 15 минут
+            cassette.Correct = conn.PGgetvalue(res, line, Coll::Correct); //Завершение процесса + 15 минут
+            cassette.Pdf = conn.PGgetvalue(res, line, Coll::Pdf); //Завершение процесса + 15 минут
+            cassette.Return_at = conn.PGgetvalue(res, line, Coll::Return_at); //Завершение процесса + 15 минут
+        }
 
     }
     int GetId(PGConnection& conn, TCassette& CD)
@@ -343,13 +345,12 @@ namespace S107
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
 
-                    GetColl(res);
                     allCassette.erase(allCassette.begin(), allCassette.end());
                     int line =  PQntuples(res);
                     for(int l = 0; l < line; l++)
                     {
                         TCassette cassette;
-                        GetCassette(res, cassette, l);
+                        GetCassette(conn, res, cassette, l);
                         allCassette.push_back(cassette);
                         if(!isRun) return;
                     }

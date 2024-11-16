@@ -54,71 +54,72 @@ std::deque<TSheet>AllSheet;
 
 //Собираем данные по 2 секции через 5 секунд после State_2 = 5
 //Номер колонки в таблице листов
-#pragma region //Номер колонки в таблице листов
-        //enum{
-int Col_Sheet_id = 0;
-int Col_Sheet_create_at = 0;
-int Col_Sheet_start_at = 0;
-int Col_Sheet_datatime_end = 0;
-int Col_Sheet_pos = 0;
-int Col_Sheet_datatime_all = 0;
-int Col_Sheet_alloy = 0;
-int Col_Sheet_thikness = 0;
-int Col_Sheet_melt = 0;
-int Col_Sheet_slab = 0;
-int Col_Sheet_partno = 0;
-int Col_Sheet_pack = 0;
-int Col_Sheet_sheet = 0;
-int Col_Sheet_subsheet = 0;
-int Col_Sheet_temper = 0;
-int Col_Sheet_speed = 0;
-int Col_Sheet_za_pt3 = 0;
-int Col_Sheet_za_te3 = 0;
-int Col_Sheet_lampresstop = 0;
-int Col_Sheet_lampressbot = 0;
-int Col_Sheet_posclapantop  = 0;
-int Col_Sheet_posclapanbot = 0;
-int Col_Sheet_mask = 0;
-int Col_Sheet_lam1posclapantop = 0;
-int Col_Sheet_lam1posclapanbot = 0;
-int Col_Sheet_lam2posclapantop = 0;
-int Col_Sheet_lam2posclapanbot = 0;
-int Col_Sheet_lam_te1 = 0;
-int Col_Sheet_news = 0;
-int Col_Sheet_top1 = 0;
-int Col_Sheet_top2 = 0;
-int Col_Sheet_top3 = 0;
-int Col_Sheet_top4 = 0;
-int Col_Sheet_top5 = 0;
-int Col_Sheet_top6 = 0;
-int Col_Sheet_top7 = 0;
-int Col_Sheet_top8 = 0;
-int Col_Sheet_bot1 = 0;
-int Col_Sheet_bot2 = 0;
-int Col_Sheet_bot3 = 0;
-int Col_Sheet_bot4 = 0;
-int Col_Sheet_bot5 = 0;
-int Col_Sheet_bot6 = 0;
-int Col_Sheet_bot7 = 0;
-int Col_Sheet_bot8 = 0;
-int Col_Sheet_day = 0;
-int Col_Sheet_month = 0;
-int Col_Sheet_year = 0;
-int Col_Sheet_cassetteno = 0;
-int Col_Sheet_sheetincassette = 0;
-int Col_Sheet_timeforplateheat = 0;
-int Col_Sheet_prestostartcomp = 0;
-int Col_Sheet_temperature = 0;
-int Col_Sheet_correct = 0;
-int Col_Sheet_SecondPos_at = 0;
-int Col_Sheet_hour = 0;
-int Col_Sheet_delete_at = 0;
-int Col_Sheet_Cassette = 0;
-//};
-#pragma endregion
 
 //Печь закалки
 namespace KPVL {
+    //Номер колонки в таблице листов
+    namespace Coll{
+        int id = 0;
+        int create_at = 0;
+        int start_at = 0;
+        int datatime_end = 0;
+        int pos = 0;
+        int datatime_all = 0;
+        int alloy = 0;
+        int thikness = 0;
+        int melt = 0;
+        int slab = 0;
+        int partno = 0;
+        int pack = 0;
+        int sheet = 0;
+        int subsheet = 0;
+        int temper = 0;
+        int speed = 0;
+        int za_pt3 = 0;
+        int za_te3 = 0;
+        int lampresstop = 0;
+        int lampressbot = 0;
+        int posclapantop  = 0;
+        int posclapanbot = 0;
+        int mask = 0;
+        int lam1posclapantop = 0;
+        int lam1posclapanbot = 0;
+        int lam2posclapantop = 0;
+        int lam2posclapanbot = 0;
+        int lam_te1 = 0;
+        int news = 0;
+        int top1 = 0;
+        int top2 = 0;
+        int top3 = 0;
+        int top4 = 0;
+        int top5 = 0;
+        int top6 = 0;
+        int top7 = 0;
+        int top8 = 0;
+        int bot1 = 0;
+        int bot2 = 0;
+        int bot3 = 0;
+        int bot4 = 0;
+        int bot5 = 0;
+        int bot6 = 0;
+        int bot7 = 0;
+        int bot8 = 0;
+        int day = 0;
+        int month = 0;
+        int year = 0;
+        int cassetteno = 0;
+        int sheetincassette = 0;
+        int timeforplateheat = 0;
+        int prestostartcomp = 0;
+        int temperature = 0;
+        int correct = 0;
+        int SecondPos_at = 0;
+        int hour = 0;
+        int delete_at = 0;
+        int Cassette = 0;
+    };
+
+
     void UpdateCountSheet(PGConnection& conn, int id)
     {
         std::stringstream sd;
@@ -136,70 +137,70 @@ namespace KPVL {
         {
             try
             {
-                if(!Col_Sheet_delete_at)
+                if(!Coll::delete_at)
                 {
                     int nFields = PQnfields(res);
                     for(int j = 0; j < nFields; j++)
                     {
                         std::string l =  utf8_to_cp1251(PQfname(res, j));
-                        if(l == "id") Col_Sheet_id = j;
-                        else if(l == "create_at") Col_Sheet_create_at = j;
-                        else if(l == "start_at") Col_Sheet_start_at = j;
-                        else if(l == "datatime_end") Col_Sheet_datatime_end = j;
-                        else if(l == "pos") Col_Sheet_pos = j;
-                        else if(l == "datatime_all") Col_Sheet_datatime_all = j;
-                        else if(l == "alloy") Col_Sheet_alloy = j;
-                        else if(l == "thikness") Col_Sheet_thikness = j;
-                        else if(l == "melt") Col_Sheet_melt = j;
-                        else if(l == "slab") Col_Sheet_slab = j;
-                        else if(l == "partno") Col_Sheet_partno = j;
-                        else if(l == "pack") Col_Sheet_pack = j;
-                        else if(l == "sheet") Col_Sheet_sheet = j;
-                        else if(l == "subsheet") Col_Sheet_subsheet = j;
-                        else if(l == "temper") Col_Sheet_temper = j;
-                        else if(l == "speed") Col_Sheet_speed = j;
-                        else if(l == "za_pt3") Col_Sheet_za_pt3 = j;
-                        else if(l == "za_te3") Col_Sheet_za_te3 = j;
-                        else if(l == "lampresstop") Col_Sheet_lampresstop = j;
-                        else if(l == "lampressbot") Col_Sheet_lampressbot = j;
-                        else if(l == "posclapantop") Col_Sheet_posclapantop = j;
-                        else if(l == "posclapanbot") Col_Sheet_posclapanbot = j;
-                        else if(l == "mask") Col_Sheet_mask = j;
-                        else if(l == "lam1posclapantop") Col_Sheet_lam1posclapantop = j;
-                        else if(l == "lam1posclapanbot") Col_Sheet_lam1posclapanbot = j;
-                        else if(l == "lam2posclapantop") Col_Sheet_lam2posclapantop = j;
-                        else if(l == "lam2posclapanbot") Col_Sheet_lam2posclapanbot = j;
-                        else if(l == "lam_te1") Col_Sheet_lam_te1 = j;
-                        else if(l == "news") Col_Sheet_news = j;
-                        else if(l == "top1") Col_Sheet_top1 = j;
-                        else if(l == "top2") Col_Sheet_top2 = j;
-                        else if(l == "top3") Col_Sheet_top3 = j;
-                        else if(l == "top4") Col_Sheet_top4 = j;
-                        else if(l == "top5") Col_Sheet_top5 = j;
-                        else if(l == "top6") Col_Sheet_top6 = j;
-                        else if(l == "top7") Col_Sheet_top7 = j;
-                        else if(l == "top8") Col_Sheet_top8 = j;
-                        else if(l == "bot1") Col_Sheet_bot1 = j;
-                        else if(l == "bot2") Col_Sheet_bot2 = j;
-                        else if(l == "bot3") Col_Sheet_bot3 = j;
-                        else if(l == "bot4") Col_Sheet_bot4 = j;
-                        else if(l == "bot5") Col_Sheet_bot5 = j;
-                        else if(l == "bot6") Col_Sheet_bot6 = j;
-                        else if(l == "bot7") Col_Sheet_bot7 = j;
-                        else if(l == "bot8") Col_Sheet_bot8 = j;
-                        else if(l == "day") Col_Sheet_day = j;
-                        else if(l == "month") Col_Sheet_month = j;
-                        else if(l == "year") Col_Sheet_year = j;
-                        else if(l == "hour") Col_Sheet_hour = j;
-                        else if(l == "cassetteno") Col_Sheet_cassetteno = j;
-                        else if(l == "sheetincassette") Col_Sheet_sheetincassette = j;
-                        else if(l == "timeforplateheat") Col_Sheet_timeforplateheat = j;
-                        else if(l == "prestostartcomp") Col_Sheet_prestostartcomp = j;
-                        else if(l == "temperature") Col_Sheet_temperature = j;
-                        else if(l == "correct") Col_Sheet_correct = j;
-                        else if(l == "secondpos_at") Col_Sheet_SecondPos_at = j;
-                        else if(l == "delete_at") Col_Sheet_delete_at = j;
-                        else if(l == "cassette") Col_Sheet_Cassette = j;
+                        if(l == "id") Coll::id = j;
+                        else if(l == "create_at") Coll::create_at = j;
+                        else if(l == "start_at") Coll::start_at = j;
+                        else if(l == "datatime_end") Coll::datatime_end = j;
+                        else if(l == "pos") Coll::pos = j;
+                        else if(l == "datatime_all") Coll::datatime_all = j;
+                        else if(l == "alloy") Coll::alloy = j;
+                        else if(l == "thikness") Coll::thikness = j;
+                        else if(l == "melt") Coll::melt = j;
+                        else if(l == "slab") Coll::slab = j;
+                        else if(l == "partno") Coll::partno = j;
+                        else if(l == "pack") Coll::pack = j;
+                        else if(l == "sheet") Coll::sheet = j;
+                        else if(l == "subsheet") Coll::subsheet = j;
+                        else if(l == "temper") Coll::temper = j;
+                        else if(l == "speed") Coll::speed = j;
+                        else if(l == "za_pt3") Coll::za_pt3 = j;
+                        else if(l == "za_te3") Coll::za_te3 = j;
+                        else if(l == "lampresstop") Coll::lampresstop = j;
+                        else if(l == "lampressbot") Coll::lampressbot = j;
+                        else if(l == "posclapantop") Coll::posclapantop = j;
+                        else if(l == "posclapanbot") Coll::posclapanbot = j;
+                        else if(l == "mask") Coll::mask = j;
+                        else if(l == "lam1posclapantop") Coll::lam1posclapantop = j;
+                        else if(l == "lam1posclapanbot") Coll::lam1posclapanbot = j;
+                        else if(l == "lam2posclapantop") Coll::lam2posclapantop = j;
+                        else if(l == "lam2posclapanbot") Coll::lam2posclapanbot = j;
+                        else if(l == "lam_te1") Coll::lam_te1 = j;
+                        else if(l == "news") Coll::news = j;
+                        else if(l == "top1") Coll::top1 = j;
+                        else if(l == "top2") Coll::top2 = j;
+                        else if(l == "top3") Coll::top3 = j;
+                        else if(l == "top4") Coll::top4 = j;
+                        else if(l == "top5") Coll::top5 = j;
+                        else if(l == "top6") Coll::top6 = j;
+                        else if(l == "top7") Coll::top7 = j;
+                        else if(l == "top8") Coll::top8 = j;
+                        else if(l == "bot1") Coll::bot1 = j;
+                        else if(l == "bot2") Coll::bot2 = j;
+                        else if(l == "bot3") Coll::bot3 = j;
+                        else if(l == "bot4") Coll::bot4 = j;
+                        else if(l == "bot5") Coll::bot5 = j;
+                        else if(l == "bot6") Coll::bot6 = j;
+                        else if(l == "bot7") Coll::bot7 = j;
+                        else if(l == "bot8") Coll::bot8 = j;
+                        else if(l == "day") Coll::day = j;
+                        else if(l == "month") Coll::month = j;
+                        else if(l == "year") Coll::year = j;
+                        else if(l == "hour") Coll::hour = j;
+                        else if(l == "cassetteno") Coll::cassetteno = j;
+                        else if(l == "sheetincassette") Coll::sheetincassette = j;
+                        else if(l == "timeforplateheat") Coll::timeforplateheat = j;
+                        else if(l == "prestostartcomp") Coll::prestostartcomp = j;
+                        else if(l == "temperature") Coll::temperature = j;
+                        else if(l == "correct") Coll::correct = j;
+                        else if(l == "secondpos_at") Coll::SecondPos_at = j;
+                        else if(l == "delete_at") Coll::delete_at = j;
+                        else if(l == "cassette") Coll::Cassette = j;
                     }
                 }
             }
@@ -207,91 +208,86 @@ namespace KPVL {
         }
 
         //Чтение листов
-        void GetSheet(PGConnection& conn, PGresult* res, std::deque<TSheet>& Sheet)
+        void GetSheet(PGConnection& conn, PGresult* res, int l, TSheet& sheet)
         {
             try
             {
-                int line = PQntuples(res);
-                for(int l = 0; l < line; l++)
-                {
-                    TSheet sheet;
-                    sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_create_at));
-                    sheet.Pos = conn.PGgetvalue(res, l, Col_Sheet_pos);
-                    sheet.id = conn.PGgetvalue(res, l, Col_Sheet_id);
-                    sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_datatime_end));
-                    sheet.DataTime_All = conn.PGgetvalue(res, l, Col_Sheet_datatime_all);
-                    sheet.Alloy = conn.PGgetvalue(res, l, Col_Sheet_alloy);
-                    sheet.Thikness = conn.PGgetvalue(res, l, Col_Sheet_thikness);
-                    sheet.Melt = conn.PGgetvalue(res, l, Col_Sheet_melt);
-                    sheet.Slab = conn.PGgetvalue(res, l, Col_Sheet_slab);
-                    sheet.PartNo = conn.PGgetvalue(res, l, Col_Sheet_partno);
-                    sheet.Pack = conn.PGgetvalue(res, l, Col_Sheet_pack);
-                    sheet.Sheet = conn.PGgetvalue(res, l, Col_Sheet_sheet);
-                    sheet.SubSheet = conn.PGgetvalue(res, l, Col_Sheet_subsheet);
-                    sheet.Temper = conn.PGgetvalue(res, l, Col_Sheet_temper);
-                    sheet.Speed = conn.PGgetvalue(res, l, Col_Sheet_speed);
+                GetCollumn(res);
+                sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Coll::create_at));
+                sheet.Pos = conn.PGgetvalue(res, l, Coll::pos);
+                sheet.id = conn.PGgetvalue(res, l, Coll::id);
+                sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Coll::datatime_end));
+                sheet.DataTime_All = conn.PGgetvalue(res, l, Coll::datatime_all);
+                sheet.Alloy = conn.PGgetvalue(res, l, Coll::alloy);
+                sheet.Thikness = conn.PGgetvalue(res, l, Coll::thikness);
+                sheet.Melt = conn.PGgetvalue(res, l, Coll::melt);
+                sheet.Slab = conn.PGgetvalue(res, l, Coll::slab);
+                sheet.PartNo = conn.PGgetvalue(res, l, Coll::partno);
+                sheet.Pack = conn.PGgetvalue(res, l, Coll::pack);
+                sheet.Sheet = conn.PGgetvalue(res, l, Coll::sheet);
+                sheet.SubSheet = conn.PGgetvalue(res, l, Coll::subsheet);
+                sheet.Temper = conn.PGgetvalue(res, l, Coll::temper);
+                sheet.Speed = conn.PGgetvalue(res, l, Coll::speed);
 
-                    sheet.Za_PT3 = conn.PGgetvalue(res, l, Col_Sheet_za_pt3);
-                    sheet.Za_TE3 = conn.PGgetvalue(res, l, Col_Sheet_za_te3);
+                sheet.Za_PT3 = conn.PGgetvalue(res, l, Coll::za_pt3);
+                sheet.Za_TE3 = conn.PGgetvalue(res, l, Coll::za_te3);
 
-                    sheet.LaminPressTop = conn.PGgetvalue(res, l, Col_Sheet_lampresstop);
-                    sheet.LaminPressBot = conn.PGgetvalue(res, l, Col_Sheet_lampressbot);
-                    sheet.PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_posclapantop);
-                    sheet.PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_posclapanbot);
-                    sheet.Mask = conn.PGgetvalue(res, l, Col_Sheet_mask);
+                sheet.LaminPressTop = conn.PGgetvalue(res, l, Coll::lampresstop);
+                sheet.LaminPressBot = conn.PGgetvalue(res, l, Coll::lampressbot);
+                sheet.PosClapanTop = conn.PGgetvalue(res, l, Coll::posclapantop);
+                sheet.PosClapanBot = conn.PGgetvalue(res, l, Coll::posclapanbot);
+                sheet.Mask = conn.PGgetvalue(res, l, Coll::mask);
 
-                    sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapantop);
-                    sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam1posclapanbot);
-                    sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapantop);
-                    sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Col_Sheet_lam2posclapanbot);
+                sheet.Lam1PosClapanTop = conn.PGgetvalue(res, l, Coll::lam1posclapantop);
+                sheet.Lam1PosClapanBot = conn.PGgetvalue(res, l, Coll::lam1posclapanbot);
+                sheet.Lam2PosClapanTop = conn.PGgetvalue(res, l, Coll::lam2posclapantop);
+                sheet.Lam2PosClapanBot = conn.PGgetvalue(res, l, Coll::lam2posclapanbot);
 
-                    sheet.LAM_TE1 = conn.PGgetvalue(res, l, Col_Sheet_lam_te1);
-                    sheet.News = conn.PGgetvalue(res, l, Col_Sheet_news);
-                    sheet.Top1 = conn.PGgetvalue(res, l, Col_Sheet_top1);
-                    sheet.Top2 = conn.PGgetvalue(res, l, Col_Sheet_top2);
-                    sheet.Top3 = conn.PGgetvalue(res, l, Col_Sheet_top3);
-                    sheet.Top4 = conn.PGgetvalue(res, l, Col_Sheet_top4);
-                    sheet.Top5 = conn.PGgetvalue(res, l, Col_Sheet_top5);
-                    sheet.Top6 = conn.PGgetvalue(res, l, Col_Sheet_top6);
-                    sheet.Top7 = conn.PGgetvalue(res, l, Col_Sheet_top7);
-                    sheet.Top8 = conn.PGgetvalue(res, l, Col_Sheet_top8);
+                sheet.LAM_TE1 = conn.PGgetvalue(res, l, Coll::lam_te1);
+                sheet.News = conn.PGgetvalue(res, l, Coll::news);
+                sheet.Top1 = conn.PGgetvalue(res, l, Coll::top1);
+                sheet.Top2 = conn.PGgetvalue(res, l, Coll::top2);
+                sheet.Top3 = conn.PGgetvalue(res, l, Coll::top3);
+                sheet.Top4 = conn.PGgetvalue(res, l, Coll::top4);
+                sheet.Top5 = conn.PGgetvalue(res, l, Coll::top5);
+                sheet.Top6 = conn.PGgetvalue(res, l, Coll::top6);
+                sheet.Top7 = conn.PGgetvalue(res, l, Coll::top7);
+                sheet.Top8 = conn.PGgetvalue(res, l, Coll::top8);
 
-                    sheet.Bot1 = conn.PGgetvalue(res, l, Col_Sheet_bot1);
-                    sheet.Bot2 = conn.PGgetvalue(res, l, Col_Sheet_bot2);
-                    sheet.Bot3 = conn.PGgetvalue(res, l, Col_Sheet_bot3);
-                    sheet.Bot4 = conn.PGgetvalue(res, l, Col_Sheet_bot4);
-                    sheet.Bot5 = conn.PGgetvalue(res, l, Col_Sheet_bot5);
-                    sheet.Bot6 = conn.PGgetvalue(res, l, Col_Sheet_bot6);
-                    sheet.Bot7 = conn.PGgetvalue(res, l, Col_Sheet_bot7);
-                    sheet.Bot8 = conn.PGgetvalue(res, l, Col_Sheet_bot8);
+                sheet.Bot1 = conn.PGgetvalue(res, l, Coll::bot1);
+                sheet.Bot2 = conn.PGgetvalue(res, l, Coll::bot2);
+                sheet.Bot3 = conn.PGgetvalue(res, l, Coll::bot3);
+                sheet.Bot4 = conn.PGgetvalue(res, l, Coll::bot4);
+                sheet.Bot5 = conn.PGgetvalue(res, l, Coll::bot5);
+                sheet.Bot6 = conn.PGgetvalue(res, l, Coll::bot6);
+                sheet.Bot7 = conn.PGgetvalue(res, l, Coll::bot7);
+                sheet.Bot8 = conn.PGgetvalue(res, l, Coll::bot8);
 
-                    sheet.Hour = conn.PGgetvalue(res, l, Col_Sheet_hour);
-                    sheet.Day = conn.PGgetvalue(res, l, Col_Sheet_day);
-                    sheet.Month = conn.PGgetvalue(res, l, Col_Sheet_month);
-                    sheet.Year = conn.PGgetvalue(res, l, Col_Sheet_year);
-                    sheet.CassetteNo = conn.PGgetvalue(res, l, Col_Sheet_cassetteno);
-                    sheet.SheetInCassette = conn.PGgetvalue(res, l, Col_Sheet_sheetincassette);
+                sheet.Hour = conn.PGgetvalue(res, l, Coll::hour);
+                sheet.Day = conn.PGgetvalue(res, l, Coll::day);
+                sheet.Month = conn.PGgetvalue(res, l, Coll::month);
+                sheet.Year = conn.PGgetvalue(res, l, Coll::year);
+                sheet.CassetteNo = conn.PGgetvalue(res, l, Coll::cassetteno);
+                sheet.SheetInCassette = conn.PGgetvalue(res, l, Coll::sheetincassette);
 
-                    sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_start_at));
-                    sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Col_Sheet_timeforplateheat);
-                    sheet.PresToStartComp = conn.PGgetvalue(res, l, Col_Sheet_prestostartcomp);
-                    sheet.Temperature = conn.PGgetvalue(res, l, Col_Sheet_temperature);
-                    sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_correct));
-                    sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_SecondPos_at));
-                    sheet.Delete_at = GetStringData(conn.PGgetvalue(res, l, Col_Sheet_delete_at));
-                    sheet.Cassette = conn.PGgetvalue(res, l, Col_Sheet_Cassette);
-                    Sheet.push_back(sheet);
-                }
+                sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Coll::start_at));
+                sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Coll::timeforplateheat);
+                sheet.PresToStartComp = conn.PGgetvalue(res, l, Coll::prestostartcomp);
+                sheet.Temperature = conn.PGgetvalue(res, l, Coll::temperature);
+                sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Coll::correct));
+                sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Coll::SecondPos_at));
+                sheet.Delete_at = GetStringData(conn.PGgetvalue(res, l, Coll::delete_at));
+                sheet.Cassette = conn.PGgetvalue(res, l, Coll::Cassette);
             }
             CATCH(HardLogger, "");
         }
 
         //Получаем список листов из базы
-        void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& Sheet)
+        void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& allSheet)
         {
             try
             {
-                Sheet.erase(Sheet.begin(), Sheet.end());
+                allSheet.erase(allSheet.begin(), allSheet.end());
 
                 std::time_t stop = time(NULL);
                 std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 1)); //1-е суток
@@ -310,8 +306,14 @@ namespace KPVL {
                 //LOG_INFO(HardLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
-                    GetCollumn(res);
-                    GetSheet(conn, res, Sheet);
+                    int line = PQntuples(res);
+                    for(int l = 0; l < line; l++)
+                    {
+                        TSheet sheet;
+                        GetSheet(conn, res, l, sheet);
+                        allSheet.push_back(sheet);
+                        if(!isRun) return;
+                    }
 
                 }
                 else

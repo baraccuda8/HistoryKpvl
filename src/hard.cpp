@@ -843,23 +843,11 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
 
 void Open_KPVL()
 {
-    //auto f = AllTagKpvl[6];
-    //Сортировка переменных по имени
+    InitLogger(HardLogger);
+
     if(AllTagKpvl.size() > 2)
         std::sort(AllTagKpvl.begin() + 2, AllTagKpvl.end(), cmpAllTagKpvl);
 
-    //T_PlateData *pp0 = PlateData[0];
-    //PlateData[0] = &GenSeqFromHmi.PlateData;
-    //PlateData[1] = &GenSeqToHmi.PlateData_Z1;
-    //PlateData[2] = &GenSeqToHmi.PlateData_Z1;
-    //PlateData[3] = &GenSeqToHmi.PlateData_Z1;
-    //PlateData[4] = &GenSeqToHmi.PlateData_Z1;
-    //PlateData[5] = &GenSeqToHmi.PlateData_Z5;
-    //PlateData[6] = &PlateData[6];
-
-    InitLogger(HardLogger);
-
-    
 #ifndef TESTSPIS
 #ifndef TESTWIN
 #ifndef TESTGRAFF

@@ -1,64 +1,5 @@
 #pragma once
 
-//Номер колонки в таблице листов
-#pragma region //Номер колонки в таблице листов
-extern int Col_Sheet_id;
-extern int Col_Sheet_create_at;
-extern int Col_Sheet_start_at;
-extern int Col_Sheet_datatime_end;
-extern int Col_Sheet_pos;
-extern int Col_Sheet_datatime_all;
-extern int Col_Sheet_alloy;
-extern int Col_Sheet_thikness;
-extern int Col_Sheet_melt;
-extern int Col_Sheet_slab;
-extern int Col_Sheet_partno;
-extern int Col_Sheet_pack;
-extern int Col_Sheet_sheet;
-extern int Col_Sheet_subsheet;
-extern int Col_Sheet_temper;
-extern int Col_Sheet_speed;
-extern int Col_Sheet_za_pt3;
-extern int Col_Sheet_za_te3;
-extern int Col_Sheet_lampresstop;
-extern int Col_Sheet_lampressbot;
-extern int Col_Sheet_posclapantop;
-extern int Col_Sheet_posclapanbot;
-extern int Col_Sheet_mask;
-extern int Col_Sheet_lam1posclapantop;
-extern int Col_Sheet_lam1posclapanbot;
-extern int Col_Sheet_lam2posclapantop;
-extern int Col_Sheet_lam2posclapanbot;
-extern int Col_Sheet_lam_te1;
-extern int Col_Sheet_news;
-extern int Col_Sheet_top1;
-extern int Col_Sheet_top2;
-extern int Col_Sheet_top3;
-extern int Col_Sheet_top4;
-extern int Col_Sheet_top5;
-extern int Col_Sheet_top6;
-extern int Col_Sheet_top7;
-extern int Col_Sheet_top8;
-extern int Col_Sheet_bot1;
-extern int Col_Sheet_bot2;
-extern int Col_Sheet_bot3;
-extern int Col_Sheet_bot4;
-extern int Col_Sheet_bot5;
-extern int Col_Sheet_bot6;
-extern int Col_Sheet_bot7;
-extern int Col_Sheet_bot8;
-extern int Col_Sheet_day;
-extern int Col_Sheet_month;
-extern int Col_Sheet_year;
-extern int Col_Sheet_cassetteno;
-extern int Col_Sheet_sheetincassette;
-extern int Col_Sheet_timeforplateheat;
-extern int Col_Sheet_prestostartcomp;
-extern int Col_Sheet_correct;
-//};
-#pragma endregion
-
-
 //Печь закалки
 namespace KPVL {
     extern std::string ServerDataTime;
@@ -70,12 +11,10 @@ namespace KPVL {
         //Получаем список колонов в таблице sheet
         void GetCollumn(PGresult* res);
         //Чтение листов
-        void GetSheet(PGConnection& conn, PGresult* res, std::deque<TSheet>& Sheet);
-
-
+        void GetSheet(PGConnection& conn, PGresult* res, int l, TSheet& sheet);
         //Получаем список листов из базы
-        //void KPVL_SQL(PGConnection& conn);
         void KPVL_SQL(PGConnection& conn, std::deque<TSheet>& Sheet);
+
         void GetDataTime_All(PGConnection& conn, TSheet& TS);
     };
 
