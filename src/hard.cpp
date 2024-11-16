@@ -725,14 +725,14 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
 
 void GetEndData(TSheet& sheet)
 {
-    std::string comand = "SELECT FROM todos WHERE pos > 2 AND id = " + sheet.id;
-    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-    PGresult* res = conn_spis.PGexec(comand);
+    std::string command = "SELECT FROM todos WHERE pos > 2 AND id = " + sheet.id;
+    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+    PGresult* res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        LOG_ERR_SQL(HardLogger, res, comand);
+        LOG_ERR_SQL(HardLogger, res, command);
     PQclear(res);
 }
 
@@ -742,8 +742,8 @@ void TestSheet()
     std::vector <std::string> IDS;
     //Удаление "левых" листов
     //DELETE FROM sheet WHERE id = 15825;
-    std::string comand = "SELECT id FROM sheet WHERE delete_at IS NULL AND datatime_end IS NULL AND (pos > 5 AND secondpos_at IS NULL AND datatime_end IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-11 00:00:00' ORDER BY id;";
-    PGresult* res = conn_spis.PGexec(comand);
+    std::string command = "SELECT id FROM sheet WHERE delete_at IS NULL AND datatime_end IS NULL AND (pos > 5 AND secondpos_at IS NULL AND datatime_end IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-11 00:00:00' ORDER BY id;";
+    PGresult* res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
@@ -755,16 +755,16 @@ void TestSheet()
         }
     }
     else
-        LOG_ERR_SQL(HardLogger, res, comand);
+        LOG_ERR_SQL(HardLogger, res, command);
     PQclear(res);
 
     for(auto& ids : IDS)
     {
-        std::stringstream comand;
-        //comand << "DELETE FROM sheet WHERE id = " << ids;
-        comand << "UPDATE sheet SET delete_at = now() WHERE id = " << ids;
-        LOG_INFO(HardLogger, "{:90}| {}", comand.str());
-        SETUPDATESQL(HardLogger, conn_spis, comand);
+        std::stringstream command;
+        //command << "DELETE FROM sheet WHERE id = " << ids;
+        command << "UPDATE sheet SET delete_at = now() WHERE id = " << ids;
+        LOG_INFO(HardLogger, "{:90}| {}", command.str());
+        SETUPDATESQL(HardLogger, conn_spis, command);
     }
 }
 

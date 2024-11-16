@@ -244,11 +244,11 @@ namespace PDF
 			{12, "December"},
 	};
 
-	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& comand)
+	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& command)
 	{
 
-		//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-		PGresult* res = conn.PGexec(comand);
+		//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+		PGresult* res = conn.PGexec(command);
 		if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		{
 			int nFields = PQnfields(res);
@@ -429,21 +429,21 @@ namespace PDF
 			{
 				cassette = TCassette();
 		
-				std::stringstream com;
-				com << "SELECT * FROM cassette WHERE";
-				com << " year = " << Stoi(Sheet.Year);
-				com << " AND month = " << Stoi(Sheet.Month);
-				com << " AND day = " << Stoi(Sheet.Day);
+				std::stringstream sd;
+				sd << "SELECT * FROM cassette WHERE";
+				sd << " year = " << Stoi(Sheet.Year);
+				sd << " AND month = " << Stoi(Sheet.Month);
+				sd << " AND day = " << Stoi(Sheet.Day);
 				if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
-					com << " AND hour = " << Sheet.Hour;
+					sd << " AND hour = " << Sheet.Hour;
 		
-				com << " AND cassetteno = " << Sheet.CassetteNo;
-				com << " AND delete_at IS NULL";
-				com << " ORDER BY run_at DESC;";
+				sd << " AND cassetteno = " << Sheet.CassetteNo;
+				sd << " AND delete_at IS NULL";
+				sd << " ORDER BY run_at DESC;";
 		
-				std::string comand = com.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sd.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					S107::GetColl(res);
@@ -451,7 +451,7 @@ namespace PDF
 						S107::GetCassette(res, cassette, 0);
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 			}CATCH(PdfLog, "");
 		}
@@ -470,11 +470,12 @@ namespace PDF
 				sd << "day = '" << Stoi(Cassette.Day) << "' AND ";
 				sd << "month = '" << Stoi(Cassette.Month) << "' AND ";
 				sd << "year = '" << Stoi(Cassette.Year) << "' AND ";
-				sd << "cassetteno = " << Stoi(Cassette.CassetteNo) << " ";
+				sd << "cassetteno = " << Stoi(Cassette.CassetteNo) << " AND ";
+				sd << "delete_at IS NULL ";
 				sd << "ORDER BY start_at DESC;";
-				std::string comand = sd.str();
-				LOG_INFO(PdfLog, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sd.str();
+				LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					KPVL::SQL::GetCollumn(res);
@@ -494,16 +495,16 @@ namespace PDF
 				sde << " AND create_at <= '";
 				sde << Start;
 				sde << "' ORDER BY create_at DESC LIMIT 1;";
-				std::string comand = sde.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sde.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(PQntuples(res))
 						sBegTime2 = conn.PGgetvalue(res, 0, 0);
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 
 
@@ -513,9 +514,9 @@ namespace PDF
 				if(Stop.length()) sdt << " AND create_at <= '" << Stop << "'";
 				sdt << " ORDER BY create_at ASC;";
 
-				comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				res = conn.PGexec(comand);
+				command = sdt.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					int line = PQntuples(res);
@@ -549,7 +550,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 
 				PQclear(res);
 			}CATCH(PdfLog, "");
@@ -569,9 +570,9 @@ namespace PDF
 
 				sdt << ") AND create_at <= '" << Stop;
 				sdt << "' ORDER BY id_name DESC, create_at ASC;";
-				std::string comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sdt.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -590,7 +591,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 				fT.t0 = (fT.t1 + fT.t2 + fT.t3 + fT.t4) / 4.0f;
 			}CATCH(PdfLog, "");
@@ -609,9 +610,9 @@ namespace PDF
 
 				sdt << ") AND create_at <= '" << Stop;
 				sdt << "' ORDER BY id_name DESC, create_at ASC;";
-				std::string comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sdt.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -630,7 +631,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 				fT.t0 = (fT.t1 + fT.t2 + fT.t3 + fT.t4) / 4.0f;
 			}CATCH(PdfLog, "");
@@ -665,9 +666,9 @@ namespace PDF
 				sdt << "' AND create_at < '" << Stop;
 				sdt << "' ORDER BY create_at ASC;";
 
-				std::string comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sdt.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -691,7 +692,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 			}CATCH(PdfLog, "");
 		}
@@ -725,9 +726,9 @@ namespace PDF
 				sdt << "' ORDER BY create_at ASC;";
 
 
-				std::string comand = sdt.str();
-				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sdt.str();
+				if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -762,7 +763,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(PdfLog, res, comand);
+					LOG_ERR_SQL(PdfLog, res, command);
 				PQclear(res);
 			}CATCH(PdfLog, "");
 		}
@@ -786,9 +787,9 @@ namespace PDF
 			//sdt << "' ORDER BY id ASC;";
 			//
 			//
-			//std::string comand = sdt.str();
-			//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			//PGresult* res = conn.PGexec(comand);
+			//std::string command = sdt.str();
+			//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+			//PGresult* res = conn.PGexec(command);
 			//
 			//if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			//{
@@ -817,7 +818,7 @@ namespace PDF
 			//	}
 			//}
 			//else
-			//	LOG_ERR_SQL(PdfLogger, res, comand);
+			//	LOG_ERR_SQL(PdfLogger, res, command);
 			//PQclear(res);
 
 		}
@@ -898,8 +899,8 @@ namespace PDF
 				ssd << ") ";
 				ssd << "ORDER BY id_name, create_at DESC;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
@@ -1652,10 +1653,10 @@ namespace PDF
 				std::stringstream ssd;
 				ssd << "UPDATE sheet SET pdf = '" << FileName;
 				ssd << "' WHERE id = " << Sheet.id; //delete_at IS NULL AND 
-				std::string comand = ssd.str();
-				PGresult* res = conn.PGexec(comand);
+				std::string command = ssd.str();
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-					LOG_ERROR(PdfLog, "{:89}| {}", (std::string(__FUNCTION__) + std::string(":") + std::to_string(1037)), comand);;
+					LOG_ERROR(PdfLog, "{:89}| {}", (std::string(__FUNCTION__) + std::string(":") + std::to_string(1037)), command);;
 				PQclear(res);
 			}
 			CATCH(PdfLog, " File1: " + FileName + " ");
@@ -2181,8 +2182,8 @@ namespace PDF
 		{
 			try
 			{
-				//std::string comand = "SELECT id, run_at  FROM cassette WHERE pdf IS NULL AND run_at > (now() - interval '7 day') AND CAST(event AS integer) = 5 ORDER BY run_at;";
-				std::string comand = "SELECT id FROM cassette WHERE "
+				//std::string command = "SELECT id, run_at  FROM cassette WHERE pdf IS NULL AND run_at > (now() - interval '7 day') AND CAST(event AS integer) = 5 ORDER BY run_at;";
+				std::string command = "SELECT id FROM cassette WHERE "
 					"delete_at IS NULL AND "
 					      "pdf IS NULL AND "
 					  "correct IS NOT NULL AND "
@@ -2190,8 +2191,8 @@ namespace PDF
 					   "end_at IS NOT NULL AND "
 					   "run_at IS NOT NULL "
 					"ORDER BY run_at DESC;";
-				//std::string comand = "SELECT id, run_at FROM cassette WHERE CAST(event AS integer) >= 5 ORDER BY run_at;";
-				PGresult* res = conn.PGexec(comand);
+				//std::string command = "SELECT id, run_at FROM cassette WHERE CAST(event AS integer) >= 5 ORDER BY run_at;";
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					int line =  PQntuples(res);
@@ -2203,7 +2204,7 @@ namespace PDF
 					}
 				}
 				else
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 				PQclear(res);
 			}CATCH(CassetteLogger, "");
 		}
@@ -2218,8 +2219,8 @@ namespace PDF
 		
 				for(auto ids : IDS)
 				{
-					std::string comand = "SELECT * FROM cassette WHERE id = " + ids;
-					PGresult* res = conn.PGexec(comand);
+					std::string command = "SELECT * FROM cassette WHERE id = " + ids;
+					PGresult* res = conn.PGexec(command);
 					TCassette Cassette;
 					if(PQresultStatus(res) == PGRES_TUPLES_OK)
 					{
@@ -2228,7 +2229,7 @@ namespace PDF
 							S107::GetCassette(res, Cassette, 0);
 					}
 					else
-						LOG_ERR_SQL(CassetteLogger, res, comand);
+						LOG_ERR_SQL(CassetteLogger, res, command);
 					PQclear(res);
 					PASSPORT::PdfClass sdc(Cassette);
 				}
@@ -2272,7 +2273,7 @@ namespace PDF
 			std::string start = "";
 			try
 			{
-				//std::string comand = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
+				//std::string command = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
 
 				std::stringstream ss1;
 				ss1 << "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND delete_at IS NULL AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
@@ -2291,38 +2292,38 @@ namespace PDF
 				//comand1 += peth;
 				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
 				//
-				//std::string comand = "SELECT run_at";
-				//comand += " - TIME '06:00:00'";	//Минус 6 часов
-				//comand += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//comand += comand1;
-				//comand += peth;
-				//comand += " ORDER BY run_at ASC LIMIT 1;";
+				//std::string command = "SELECT run_at";
+				//command += " - TIME '06:00:00'";	//Минус 6 часов
+				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+				//command += comand1;
+				//command += peth;
+				//command += " ORDER BY run_at ASC LIMIT 1;";
 
 				//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
 				//comand1 += peth;
 				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
 				//
-				//std::string comand = "SELECT run_at";
-				//comand += " - TIME '06:00:00'";	//Минус 5 часов
-				//comand += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//comand += comand1;
-				//comand += peth;
-				//comand += " ORDER BY run_at ASC LIMIT 1;";
+				//std::string command = "SELECT run_at";
+				//command += " - TIME '06:00:00'";	//Минус 5 часов
+				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+				//command += comand1;
+				//command += peth;
+				//command += " ORDER BY run_at ASC LIMIT 1;";
 
 
 				//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
 				//comand1 += peth;
 				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
 				//
-				//std::string comand = "SELECT run_at";
-				//comand += " - TIME '06:00:00'";	//Минус 5 часов
-				//comand += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//comand += comand1;
-				//comand += peth;
-				//comand += " ORDER BY run_at ASC LIMIT 1;";
+				//std::string command = "SELECT run_at";
+				//command += " - TIME '06:00:00'";	//Минус 5 часов
+				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+				//command += comand1;
+				//command += peth;
+				//command += " ORDER BY run_at ASC LIMIT 1;";
 
-				std::string comand = ssd.str();
-				PGresult* res = conn.PGexec(comand);
+				std::string command = ssd.str();
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(conn.PQntuples(res))
@@ -2333,7 +2334,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 				}
 				PQclear(res);
 			}CATCH(CassetteLogger, "");
@@ -2348,8 +2349,8 @@ namespace PDF
 				<< " AND create_at >= '" << Start << "'"
 				<< " AND content = 'true'"
 				<< " ORDER BY create_at DESC LIMIT 1"; // LIMIT 3
-			std::string comand = sss.str();
-			PGresult* res = conn.PGexec(comand);
+			std::string command = sss.str();
+			PGresult* res = conn.PGexec(command);
 			//Заполняем данные
 			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
@@ -2358,7 +2359,7 @@ namespace PDF
 			}
 			else
 			{
-				LOG_ERR_SQL(CassetteLogger, res, comand);
+				LOG_ERR_SQL(CassetteLogger, res, command);
 			}
 			PQclear(res);
 		}
@@ -2374,8 +2375,8 @@ namespace PDF
 				sss << " AND create_at >= '" << Run_at << "'";
 				sss << " AND create_at < '" << End_at << "'";
 				sss << " ORDER BY create_at DESC LIMIT 1";
-				std::string comand = sss.str();
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sss.str();
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					int line = PQntuples(res);
@@ -2384,7 +2385,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 				}
 				PQclear(res);
 			}
@@ -2415,8 +2416,8 @@ namespace PDF
 
 #pragma region Запрос в базу
 
-				std::string comand = sss.str();
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sss.str();
+				PGresult* res = conn.PGexec(command);
 				//Заполняем данные
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -2437,7 +2438,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 				}
 				PQclear(res);
 
@@ -2465,8 +2466,8 @@ namespace PDF
 
 #pragma region Запрос в базу
 
-				std::string comand = sss.str();
-				PGresult* res = conn.PGexec(comand);
+				std::string command = sss.str();
+				PGresult* res = conn.PGexec(command);
 				//Заполняем данные
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -2488,7 +2489,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 				}
 				PQclear(res);
 
@@ -2499,7 +2500,7 @@ namespace PDF
 			try
 			{
 				time_t temp  = (time_t)difftime(DataTimeOfString(it.End_at), 5 * 60); //Вычисть 5 минут до конца отпуска
-				std::string End_at  = GetDataTimeString(&temp);
+				std::string End_at  = GetStringOfDataTime(&temp);
 				it.facttemper = GetVal(conn, Furn->TempAct->ID, it.Run_at, End_at);
 
 			}
@@ -2601,9 +2602,9 @@ namespace PDF
 				com << " AND correct IS NULL";
 				com << " ORDER BY id";;
 
-				std::string comand = com.str();
-				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = com.str();
+				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				//LOG_INFO(CassetteLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
@@ -2613,7 +2614,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(CassetteLogger, res, comand);
+					LOG_ERR_SQL(CassetteLogger, res, command);
 					PQclear(res);
 				}
 			}
@@ -2672,8 +2673,8 @@ namespace PDF
 			if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
 				set << " AND hour = " << Stoi(ct.Hour);
 
-			std::string comand = set.str();
-			PGresult* res = conn.PGexec(comand);
+			std::string command = set.str();
+			PGresult* res = conn.PGexec(command);
 			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 				countSheet = Stoi(conn.PGgetvalue(res, 0, 0));
 			PQclear(res);
@@ -2778,7 +2779,7 @@ namespace PDF
 
 
 				ssd << " WHERE id = " << ct.Id;
-				std::string comand = ssd.str();
+				std::string command = ssd.str();
 
 				LOG_INFO(CassetteLogger, "{:89}| {}", FUNCTION_LINE_NAME, ssd.str());
 				SETUPDATESQL(CassetteLogger, conn, ssd);
@@ -2931,7 +2932,7 @@ namespace PDF
 					ssd << " AND year = " << ct.Year;
 					ssd << " AND cassetteno = " << ct.CassetteNo;
 					ssd << " ORDER BY id LIMIT 1";
-					//comand = ssg.str();
+					//command = ssg.str();
 
 					PGresult* res = conn.PGexec(ssd.str());
 					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
@@ -2968,10 +2969,10 @@ namespace PDF
 				ssg << " AND year = " << it.Year;
 				ssg << " AND cassetteno = " << it.CassetteNo;
 				ssg << " ORDER BY id LIMIT 1";
-				std::string comand = ssg.str();
+				std::string command = ssg.str();
 
-				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 					it.Id = conn.PGgetvalue(res, 0, 0);
 				PQclear(res);
@@ -3288,8 +3289,8 @@ namespace PDF
 					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
 					ssd << ") ORDER BY create_at DESC"; //AND content <> 'false' AND content <> '0' 
 
-					std::string comand = ssd.str();
-					PGresult* res = conn.PGexec(comand);
+					std::string command = ssd.str();
+					PGresult* res = conn.PGexec(command);
 					if(PQresultStatus(res) == PGRES_TUPLES_OK)
 					{
 						TodosColumn(res);
@@ -3312,7 +3313,7 @@ namespace PDF
 					}
 					else
 					{
-						LOG_ERR_SQL(CassetteLogger, res, comand);
+						LOG_ERR_SQL(CassetteLogger, res, command);
 					}
 					PQclear(res);
 
@@ -3331,8 +3332,8 @@ namespace PDF
 				//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
 				//	ssd << " ORDER BY id";
 				//
-				//	std::string comand = ssd.str();
-				//	PGresult* res = conn.PGexec(comand);
+				//	std::string command = ssd.str();
+				//	PGresult* res = conn.PGexec(command);
 				//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				//	{
 				//		TodosColumn(res);
@@ -3355,7 +3356,7 @@ namespace PDF
 				//	}
 				//	else
 				//	{
-				//		LOG_ERR_SQL(PdfLogger, res, comand);
+				//		LOG_ERR_SQL(PdfLogger, res, command);
 				//	}
 				//	PQclear(res);
 				//}
@@ -3792,10 +3793,10 @@ namespace PDF
 					//ssd << " AND content <> '0'";
 					ssd << "ORDER BY id_name, create_at DESC;";
 
-					std::string comand = ssd.str();
+					std::string command = ssd.str();
 
 					MapTodos idSheet;
-					GetTodosSQL(conn, idSheet, comand);
+					GetTodosSQL(conn, idSheet, command);
 					for(auto t : idSheet)
 					{
 						if(t.id_name == PlateData[0].SubSheet->ID)	ids.SubSheet = t.content.As<int32_t>();
@@ -3832,10 +3833,10 @@ namespace PDF
 				ssd << " id_name = " << Par_Gen.TimeForPlateHeat->ID;
 				ssd << " AND CAST(content AS DOUBLE PRECISION) <> 0.0";
 				ssd << " ORDER BY create_at DESC;";
-				std::string comand = ssd.str();
+				std::string command = ssd.str();
 
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					int line = PQntuples(res);
@@ -3903,8 +3904,8 @@ namespace PDF
 				ssd << "id_name = " << HMISheetData.Valve_2x->ID << ") ";
 				ssd << "ORDER BY id_name, create_at DESC LIMIT 11;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
@@ -3951,8 +3952,8 @@ namespace PDF
 				ssd << "id_name = " << AI_Hmi_210.LAM_TE1->ID;
 				ssd << ") ORDER BY id_name, create_at DESC LIMIT 3;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
@@ -3971,7 +3972,7 @@ namespace PDF
 				MapTodos DataSheetTodos;
 				std::tm tmp;
 				time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
-				std::string Start = GetDataTimeString(&t1);
+				std::string Start = GetStringOfDataTime(&t1);
 
 				std::stringstream ssd;
 				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
@@ -3982,8 +3983,8 @@ namespace PDF
 				ssd << "id_name = " << AI_Hmi_210.LaminPressBot->ID;
 				ssd << ") ORDER BY id_name, create_at DESC LIMIT 2;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
@@ -4009,8 +4010,8 @@ namespace PDF
 				ssd << " AND create_at >= '" << StartSheet << "'";
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 				ssd << " ORDER BY create_at;";
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, allSheetTodos, command);
 			}CATCH(SheetLogger, "");
 		}
 		void GetSheets::GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos)
@@ -4029,8 +4030,8 @@ namespace PDF
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 				ssd << " ORDER BY create_at;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, allSheetTodos, command);
 			}CATCH(SheetLogger, "");
 		}
 
@@ -4050,8 +4051,8 @@ namespace PDF
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 				ssd << " ORDER BY create_at;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, allSheetTodos, command);
 			}CATCH(SheetLogger, "");
 		}
 		void GetSheets::GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos)
@@ -4068,8 +4069,8 @@ namespace PDF
 				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 				ssd << " AND content <> 'false' ORDER BY create_at;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, allSheetTodos, command);
 			}CATCH(SheetLogger, "");
 		}
 
@@ -4092,9 +4093,9 @@ namespace PDF
 				ssd << " AND slab = " << td.Slab;
 				ssd << " AND subsheet = " << td.SubSheet;
 				ssd << " ORDER BY id LIMIT 1";
-				std::string comand = ssd.str();
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				std::string command = ssd.str();
+				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 				{
 					td.id = Stoi(conn.PGgetvalue(res, 0, 0));
@@ -4128,9 +4129,9 @@ namespace PDF
 					ssd << " AND slab = " << td.Slab;
 					ssd << " AND subsheet = " << td.SubSheet;
 					ssd << " ORDER BY id LIMIT 1";
-					std::string comand = ssd.str();
-					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-					PGresult* res = conn.PGexec(comand);
+					std::string command = ssd.str();
+					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
 					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 					{
 						td.id = Stoi(conn.PGgetvalue(res, 0, 0));
@@ -4156,10 +4157,10 @@ namespace PDF
 
 				ssd << " AND cassetteno = " << td.cassetteno;
 				ssd << " ORDER BY id LIMIT 1";
-				std::string comand = ssd.str();
+				std::string command = ssd.str();
 
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-				PGresult* res = conn.PGexec(comand);
+				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
 					id = Stoi(conn.PGgetvalue(res, 0, 0));
 				PQclear(res);
@@ -4180,8 +4181,8 @@ namespace PDF
 					ssd << " hour = " << td.hour << " AND";
 				ssd << " cassetteno = " << td.cassetteno;
 				ssd << " ORDER BY run_at DESC LIMIT 1;";
-				std::string comand = ssd.str();
-				PGresult* res = conn_kpvl.PGexec(comand);
+				std::string command = ssd.str();
+				PGresult* res = conn_kpvl.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(PQntuples(res))
@@ -4201,7 +4202,7 @@ namespace PDF
 				MapTodos DataSheetTodos;
 				std::tm tmp;
 				time_t t1 = DataTimeOfString(td.DataTime_End, tmp);
-				std::string Start = GetDataTimeString(&t1); 
+				std::string Start = GetStringOfDataTime(&t1); 
 
 				std::stringstream ssd;
 				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
@@ -4214,8 +4215,8 @@ namespace PDF
 				ssd << "id_name = " << Hmi210_1.Htr1_4->ID;
 				ssd << ") ORDER BY id_name, create_at DESC LIMIT 4;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				float Htr1_1 = 0;
 				float Htr1_2 = 0;
@@ -4318,7 +4319,7 @@ namespace PDF
 					ssd << "INSERT INTO sheet (";
 					ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
 					ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
-					"datatime_end, ";					//Дата, время выдачи листа из закалочной печи
+					ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
 
 					if(td.Start2.length())			ssd << "secondpos_at, ";	//Преход во вторую зону
 					if(td.InCant.length())			ssd << "incant_at, ";		//Преход на кантовку
@@ -4624,8 +4625,8 @@ namespace PDF
 				ssd << "id_name = " << HMISheetData.Cassette.SheetInCassette->ID << ") ";
 				ssd << "ORDER BY id_name, create_at DESC;";
 
-				std::string comand = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, comand);
+				std::string command = ssd.str();
+				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
@@ -4698,7 +4699,7 @@ namespace PDF
 					time_t tm2 = DataTimeOfString(ids.Start1, TM);
 
 					time_t tm = time_t(tm1 + (difftime(tm1, tm2) / 2.0));
-					ids.Start2 = GetDataTimeString(&tm);
+					ids.Start2 = GetStringOfDataTime(&tm);
 				}
 
 				ids.TimeForPlateHeat = GetTime(ids.Start2, allTime);
@@ -4944,8 +4945,8 @@ namespace PDF
 			std::string start = "";
 			try
 			{
-				//std::string comand = "SELECT now() - INTERVAL '30 min'";
-				std::string comand = 
+				//std::string command = "SELECT now() - INTERVAL '30 min'";
+				std::string command = 
 					"SELECT start_at"
 					" - TIME '00:02:00'"						//Минут 2 минуты
 					" FROM sheet WHERE correct IS NULL AND start_at > ("
@@ -4953,7 +4954,7 @@ namespace PDF
 					") AND CAST(pos AS integer) > 6 "
 					"ORDER BY start_at ASC LIMIT 1;";
 
-				PGresult* res = conn.PGexec(comand);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(conn.PQntuples(res))
@@ -4963,7 +4964,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(SheetLogger, res, comand);
+					LOG_ERR_SQL(SheetLogger, res, command);
 				}
 				PQclear(res);
 			}CATCH(SheetLogger, "");
@@ -4975,9 +4976,9 @@ namespace PDF
 			std::string start = "";
 			try
 			{
-				std::string comand = "SELECT now() - INTERVAL '30 min'";
+				std::string command = "SELECT now() - INTERVAL '30 min'";
 
-				PGresult* res = conn.PGexec(comand);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(conn.PQntuples(res))
@@ -4987,7 +4988,7 @@ namespace PDF
 				}
 				else
 				{
-					LOG_ERR_SQL(SheetLogger, res, comand);
+					LOG_ERR_SQL(SheetLogger, res, command);
 				}
 				PQclear(res);
 			}CATCH(SheetLogger, "");
@@ -5012,6 +5013,29 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
+	void CorrectSheetDebug(PGConnection& conn, std::string start, std::string id)
+	{
+		std::string stop = "";
+		time_t td = DataTimeOfString(start);
+		td += (time_t)(60 * 40 * 1);		// + 40 минут
+		stop = GetStringOfDataTime(&td);
+
+		if(id.length())
+		{
+			SetWindowText(hWndDebug, ("Корректировка листа id = " + id).c_str());
+			LOG_INFO(SheetLogger, "Корректировка листа id = {}", id);
+
+			if(start.length() && stop.length())
+				SHEET::GetSheets sheet(conn, start, stop);
+			else
+				LOG_INFO(SheetLogger, "Ошибка корректировки листа id = {}, start = {}, stop = {}", id, start, stop);
+
+			std::stringstream ssd;
+			ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << id;
+			SETUPDATESQL(SheetLogger, conn, ssd);
+		}
+	}
+
 	void CorrectSheetDebug(PGConnection& conn)
 	{
 #ifndef NOSQL
@@ -5019,56 +5043,35 @@ namespace PDF
 		InitLogger(SheetLogger);
 		try
 		{
+			LOG_INFO(SheetLogger, "Принудительная корректировка листов");
 			std::stringstream ssd;
-			ssd << "SELECT id, start_at - INTERVAL '1 HOUR' FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY id, start_at;";
+			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY start_at LIMIT 1;";
 			//ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct >= '14-10-2024 19:53:30' AND correct <= '14-10-2024 20:00:23' AND pos >= 6 ORDER BY id DESC, start_at;";
-			std::string comand = ssd.str();
-			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-			PGresult* res = conn.PGexec(comand);
-			std::map <std::string, std::string>sheet_at;
-	
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				int len = PQntuples(res);
-				for(int l = 0; l < len; l++)
-				{
-					std::string id = conn.PGgetvalue(res, l, 0);
-					sheet_at[id] = conn.PGgetvalue(res, l, 1);
-				}
-			}
-			else
-				LOG_ERR_SQL(CassetteLogger, res, comand);
-			PQclear(res);
-	
-			if(sheet_at.size())
-			{
-				LOG_INFO(SheetLogger, "Принудительная корректировка листов");
-				for(auto& a : sheet_at)
-				{
-					std::string start = "";
-					std::string stop = "";
-					start = a.second;
-					time_t td = DataTimeOfString(a.second);
-					td += (long long)7200;
-					stop = GetDataTimeString(&td);
+			std::string command = ssd.str();
+			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-					if(a.first.length())
+			while(isRun)
+			{
+				PGresult* res = conn.PGexec(command);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				{
+					if(PQntuples(res))
 					{
-						SetWindowText(hWndDebug, ("Корректировка листа id = " + a.first).c_str());
-						LOG_INFO(SheetLogger, "Корректировка листа id = {}", a.first);
-
-						if(start.length() && stop.length())
-							SHEET::GetSheets (conn, start, stop);
-						else
-							LOG_INFO(SheetLogger, "Ошибка корректировки листа id = {}, start = {}, stop = {}", a.first, start, stop);
-
-						std::stringstream ssd;
-						ssd << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND id = " << a.first;
-						SETUPDATESQL(SheetLogger, conn, ssd);
+						std::string id = conn.PGgetvalue(res, 0, 0);
+						std::string sheet_at = conn.PGgetvalue(res, 0, 1);
+						PQclear(res);
+						CorrectSheetDebug(conn, sheet_at, id);
+						continue;
 					}
 				}
-				LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
+				else
+					LOG_ERR_SQL(CassetteLogger, res, command);
+				PQclear(res);
+				break;
 			}
+
+			LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
+
 		}
 		CATCH(SheetLogger, "");
 
@@ -5149,7 +5152,7 @@ namespace PDF
 		
 		//LOG_INFO(SheetLogger, "Закончили коррекчию листов: " + GetDataTimeString());
 
-		SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetDataTimeString()).c_str());
+		SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetStringDataTime()).c_str());
 #endif
 
 		return 0;
@@ -5202,7 +5205,7 @@ namespace PDF
 	
 		isCorrectCassette = false;
 		//LOG_INFO(CassetteLogger, "Стоп корректировки кассет");
-		SetWindowText(hWndDebug, ("Закончили коррекчию кассет: " + GetDataTimeString()).c_str());
+		SetWindowText(hWndDebug, ("Закончили коррекчию кассет: " + GetStringDataTime()).c_str());
 		return 0;
 	}
 
@@ -5247,7 +5250,7 @@ namespace PDF
 #else
 
 			//return 0;
-				std::string out1 = "Вход в создание паспортов: " + GetDataTimeString();
+				std::string out1 = "Вход в создание паспортов: " + GetStringDataTime();
 				LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out1);
 				bool OldNotCorrect = NotCorrect;
 				while(isRun)
@@ -5255,14 +5258,14 @@ namespace PDF
 					if(!NotCorrect)
 					{
 						
-						std::string out = "Запуск создание паспортов: " + GetDataTimeString();
+						std::string out = "Запуск создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
 						
 						////CorrectCassette(0);
 
 						CorrectSheet(0);
 						CASSETTE::GetCassettes cass("", "");
-						out = "Закончили создание паспортов: " + GetDataTimeString();
+						out = "Закончили создание паспортов: " + GetStringDataTime();
 
 						SetWindowText(hWndDebug, out.c_str());
 						//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
@@ -5284,7 +5287,7 @@ namespace PDF
 		}
 		CATCH(CorrectLog, "");
 
-		std::string out2 = "Выход из создания паспортов: " + GetDataTimeString();
+		std::string out2 = "Выход из создания паспортов: " + GetStringDataTime();
 		LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out2);
 		SetWindowText(hWndDebug, out2.c_str());
 //#endif

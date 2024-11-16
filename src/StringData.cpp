@@ -62,7 +62,7 @@ bool TestDataTimeOfString(std::string str)
     return b;
 }
 
-std::string GetDataTimeString(std::time_t& st)
+std::string GetStringOfDataTime(std::time_t& st)
 {
     st = time(NULL);
     tm curr_tm;
@@ -78,7 +78,7 @@ std::string GetDataTimeString(std::time_t& st)
     return sdt.str();
 }
 
-std::string GetDataTimeString(std::tm& st)
+std::string GetStringOfDataTime(std::tm& st)
 {
     std::stringstream sdt;
     sdt << boost::format("%|04|-") % (st.tm_year + 1900);
@@ -90,7 +90,7 @@ std::string GetDataTimeString(std::tm& st)
     return sdt.str();
 }
 
-std::string GetDataTimeString(std::time_t* st)
+std::string GetStringOfDataTime(std::time_t* st)
 {
     tm curr_tm;
     localtime_s(&curr_tm, st);
@@ -117,7 +117,7 @@ std::wstring GetData(std::wstring str)
 }
 
 
-std::string GetDataTimeString()
+std::string GetStringDataTime()
 {
     std::time_t st = time(NULL);
     tm curr_tm;
@@ -133,7 +133,7 @@ std::string GetDataTimeString()
     return sdt.str();
 }
 
-std::string GetDataTimeStringMS()
+std::string GetStringMSDataTime()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);

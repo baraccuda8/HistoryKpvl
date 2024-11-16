@@ -43,13 +43,13 @@ inline std::string string_time(struct tm const* TM)
 
 bool TestDataTimeOfString(std::string str);
 
-std::string GetDataTimeString();
-std::string GetDataTimeStringMS();
+std::string GetStringDataTime();
+std::string GetStringMSDataTime();
 
 
-std::string GetDataTimeString(std::time_t& st);
-std::string GetDataTimeString(std::time_t* st);
-std::string GetDataTimeString(std::tm& st);
+std::string GetStringOfDataTime(std::time_t& st);
+std::string GetStringOfDataTime(std::time_t* st);
+std::string GetStringOfDataTime(std::tm& st);
 time_t DataTimeDiff(std::string str1, std::string str2);
 
 

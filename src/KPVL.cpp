@@ -295,7 +295,7 @@ namespace KPVL {
 
                 std::time_t stop = time(NULL);
                 std::time_t statr = static_cast<std::time_t>(difftime(stop, 60 * 60 * 24 * 1)); //1-е суток
-                std::string start_at = GetDataTimeString(&statr);
+                std::string start_at = GetStringOfDataTime(&statr);
 
                 std::stringstream FilterComand;
                 FilterComand << "SELECT * FROM sheet ";
@@ -304,9 +304,9 @@ namespace KPVL {
                 FilterComand << " ORDER BY  create_at DESC, pos DESC, start_at DESC;";
                 //FilterSheet();
                 //bFilterData = TRUE;
-                std::string comand = FilterComand.str();
-                if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                PGresult* res = conn.PGexec(comand);
+                std::string command = FilterComand.str();
+                if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                PGresult* res = conn.PGexec(command);
                 //LOG_INFO(HardLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
@@ -315,7 +315,7 @@ namespace KPVL {
 
                 }
                 else
-                    LOG_ERR_SQL(HardLogger, res, comand);
+                    LOG_ERR_SQL(HardLogger, res, command);
                 PQclear(res);
 
                 //AddHistoriSheet(true, (int)sheet.size());
@@ -335,16 +335,16 @@ namespace KPVL {
                 //{
                 //    std::stringstream co;
                 //    co << "SELECT max(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "';";
-                //    std::string comand = co.str();
-                //    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                //    PGresult* res = conn.PGexec(comand);
+                //    std::string command = co.str();
+                //    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                //    PGresult* res = conn.PGexec(command);
                 //    if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 //    {
                 //        if(PQntuples(res))
                 //            next_at = conn.PGgetvalue(res, 0, 0);
                 //    }
                 //    else
-                //        LOG_ERR_SQL(HardLogger, res, comand);
+                //        LOG_ERR_SQL(HardLogger, res, command);
                 //    PQclear(res);
                 //}
 
@@ -353,16 +353,16 @@ namespace KPVL {
                     std::stringstream co;
                     //co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at = '" << next_at << "';";
                     co << "SELECT content FROM todos WHERE id_name = " << GenSeqToHmi.HeatTime_Z2->ID << " AND create_at <= '" << enddata_at << "' ORDER BY create_at DESC LIMIT 1";
-                    std::string comand = co.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
+                    std::string command = co.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
                             sout = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
 
@@ -405,16 +405,16 @@ namespace KPVL {
                     std::stringstream sa;
                     sa << "SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3'";
 
-                    std::string comand = sa.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
+                    std::string command = sa.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
                             TS.Start_at = GetStringData(conn.PGgetvalue(res, 0, 0));
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
 
@@ -431,16 +431,16 @@ namespace KPVL {
                         std::stringstream co;
                         //co << "SELECT min(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_2_StateNo->ID << " AND content = '3' AND create_at > '" << TS.Start_at << "' ORDER BY create_at LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
-                        std::string comand = co.str();
-                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        PGresult* res = conn.PGexec(comand);
+                        std::string command = co.str();
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                        PGresult* res = conn.PGexec(command);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK)
                         {
                             if(PQntuples(res))
                                 next_at = conn.PGgetvalue(res, 0, 0);
                         }
                         else
-                            LOG_ERR_SQL(HardLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, command);
                         PQclear(res);
                     }
 
@@ -449,16 +449,16 @@ namespace KPVL {
                         std::stringstream co;
                         co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '3' AND create_at > '" << next_at << "' ORDER BY create_at LIMIT 1;"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
                         //co << "SELECT create_at FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND content = '5' AND create_at > '" << next_at << "';"; //GenSeqToHmi.Data.Seq_2_StateNo Номер шага последовательности выгрузки в печи
-                        std::string comand = co.str();
-                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        PGresult* res = conn.PGexec(comand);
+                        std::string command = co.str();
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                        PGresult* res = conn.PGexec(command);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK)
                         {
                             if(PQntuples(res))
                                 enddata_at = conn.PGgetvalue(res, 0, 0);
                         }
                         else
-                            LOG_ERR_SQL(HardLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, command);
                         PQclear(res);
                     }
                     if(enddata_at.length())
@@ -469,12 +469,12 @@ namespace KPVL {
 
                         std::stringstream co;
                         co << "UPDATE sheet SET datatime_end = '" << enddata_at << "', datatime_all = " << HeatTime_Z2 << " WHERE delete_at IS NULL AND id = " << Id;
-                        std::string comand = co.str();
-                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        PGresult* res = conn.PGexec(comand);
-                        //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        std::string command = co.str();
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                        PGresult* res = conn.PGexec(command);
+                        //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                            LOG_ERR_SQL(HardLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, command);
                         PQclear(res);
                     }
 
@@ -489,14 +489,9 @@ namespace KPVL {
 
     std::string ServerDataTime = "";
 
-    //ШВ листа в локальных данных по листу
-    //uint32_t NextID = 1;
-
-//Функции обработки и со сохранения истории листов
-#pragma region Функции обработки и со сохранения истории листов
-    //Локальные данные по листу
+    //Функции обработки и со сохранения истории листов
     namespace Sheet{
-
+#pragma region Функции обработки и со сохранения истории листов
         //Проверка на наличие листа
         bool IsSheet(T_PlateData& PD)
         {
@@ -551,17 +546,17 @@ namespace KPVL {
                     co << " AND sheet = " << Sheet;
                     co << " AND subsheet = " << SubSheet;
                     co << ";";
-                    std::string comand = co.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    std::string command = co.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-                    PGresult* res = conn.PGexec(comand);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
                             id = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
             }
@@ -569,7 +564,7 @@ namespace KPVL {
             return id;
         }
 
-                //Получаем ID листа
+        //Получаем ID листа
         std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab)
         {
             std::string id = "0";
@@ -587,16 +582,16 @@ namespace KPVL {
                     co << " AND sheet = " << Sheet;
                     co << " AND subsheet = " << SubSheet;
                     co << ";";
-                    std::string comand = co.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
+                    std::string command = co.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
                             id = conn.PGgetvalue(res, 0, 0);
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
             }
@@ -638,10 +633,10 @@ namespace KPVL {
                     sd << " AND pack = " << Pack2;
                     sd << " AND sheet = " << Sheet2;
                     sd << " AND subsheet = " << SubSheet2;
-                    std::string comand = sd.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    std::string command = sd.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-                    PGresult* res = conn.PGexec(comand);
+                    PGresult* res = conn.PGexec(command);
 
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
@@ -651,7 +646,7 @@ namespace KPVL {
                         }
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
             }
@@ -676,7 +671,7 @@ namespace KPVL {
 
                     //std::string id = GetIdSheet(conn, PD);
                     PalletSheet[Pos].id = id;
-                    PalletSheet[Pos].DataTime = GetDataTimeString();
+                    PalletSheet[Pos].DataTime = GetStringDataTime();
                     PalletSheet[Pos].Pos = std::to_string(Pos);
                     PalletSheet[Pos].Alloy = PD.AlloyCodeText->GetString();
                     PalletSheet[Pos].Thikness = PD.ThiknessText->GetString();
@@ -803,13 +798,13 @@ namespace KPVL {
 
                         LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                         SETUPDATESQL(HardLogger, conn, sd);
-                        //std::string comand = sd.str();
-                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        //PGresult* res = conn.PGexec(comand);
-                        ////LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                        //std::string command = sd.str();
+                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                        //PGresult* res = conn.PGexec(command);
+                        ////LOG_ERROR(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                         //
                         //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        //    LOG_ERR_SQL(HardLogger, res, comand);
+                        //    LOG_ERR_SQL(HardLogger, res, command);
                         //PQclear(res);
                     }
                 }
@@ -839,14 +834,14 @@ namespace KPVL {
                     //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(HardLogger, conn, sd);
 
-                    //std::string comand = sd.str();
-                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    //PGresult* res = conn.PGexec(comand);
-                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //std::string command = sd.str();
+                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    //PGresult* res = conn.PGexec(command);
+                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                     //
                     //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     //{
-                    //    LOG_ERR_SQL(HardLogger, res, comand);
+                    //    LOG_ERR_SQL(HardLogger, res, command);
                     //}
                     //else
                     //{
@@ -880,14 +875,14 @@ namespace KPVL {
                     //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(HardLogger, conn, sd);
 
-                    //std::string comand = sd.str();
-                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    //PGresult* res = conn.PGexec(comand);
-                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    //std::string command = sd.str();
+                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    //PGresult* res = conn.PGexec(command);
+                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                     //
                     //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
                     //{
-                    //    LOG_ERR_SQL(HardLogger, res, comand);
+                    //    LOG_ERR_SQL(HardLogger, res, command);
                     //}
                     //else
                     //{
@@ -935,9 +930,9 @@ namespace KPVL {
                 std::vector<std::string> oldid;
                 std::stringstream sr;
                 sr << "SELECT id FROM sheet WHERE pos = 6 AND id <> " << id << " ORDER BY id DESC";
-                std::string comand = sr.str();
-                //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                PGresult* res = conn.PGexec(comand);
+                std::string command = sr.str();
+                //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                PGresult* res = conn.PGexec(command);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
                     int len = PQntuples(res);
@@ -945,7 +940,7 @@ namespace KPVL {
                         oldid.push_back(conn.PGgetvalue(res, 0, 0));
                 }
                 else
-                    LOG_ERR_SQL(HardLogger, res, comand);
+                    LOG_ERR_SQL(HardLogger, res, command);
                 PQclear(res);
 
                 for(auto& a : oldid)
@@ -970,13 +965,13 @@ namespace KPVL {
 
                         std::stringstream se;
                         se << "SELECT pos FROM sheet WHERE id = " << id;
-                        std::string comand = se.str();
-                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                        PGresult* res = conn.PGexec(comand);
+                        std::string command = se.str();
+                        if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                        PGresult* res = conn.PGexec(command);
                         if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
                             pos = Stoi(conn.PGgetvalue(res, 0, 0));
                         else
-                            LOG_ERR_SQL(HardLogger, res, comand);
+                            LOG_ERR_SQL(HardLogger, res, command);
                         PQclear(res);
 
                         if(pos != Pos && pos > 0 && pos < 7)
@@ -1058,9 +1053,9 @@ namespace KPVL {
                         if(atoi(sId.c_str()))
                         {
                             int iPos = -1;
-                            std::string comand = "SELECT pos FROM sheet WHERE id = " + sId;
-                            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                            PGresult* res = conn.PGexec(comand);
+                            std::string command = "SELECT pos FROM sheet WHERE id = " + sId;
+                            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                            PGresult* res = conn.PGexec(command);
                             if(PQresultStatus(res) == PGRES_TUPLES_OK)
                             {
                                 if(PQntuples(res))
@@ -1079,20 +1074,20 @@ namespace KPVL {
                                         sd << "UPDATE sheet SET pos = " << iPos;
                                         sd << " WHERE news <> 1 AND id = " << sId;
                                         SETUPDATESQL(HardLogger, conn, sd);
-                                        //comand = sd.str();
-                                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                                        //res = conn.PGexec(comand);
-                                        ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                                        //command = sd.str();
+                                        //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                                        //res = conn.PGexec(command);
+                                        ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                                         //
                                         //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                        //    LOG_ERR_SQL(HardLogger, res, comand);
+                                        //    LOG_ERR_SQL(HardLogger, res, command);
                                         //PQclear(res);
                                     }
 
                                 }
                             }
                             if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                                LOG_ERR_SQL(HardLogger, res, comand);
+                                LOG_ERR_SQL(HardLogger, res, command);
                         }
 
                         PalletSheet[Pos].Slab = "";
@@ -1124,20 +1119,9 @@ namespace KPVL {
             CATCH(HardLogger, "");
 
         }
-    }
-
 #pragma endregion
 
-
-//Функции обработки и со сохранения истории кассет
-
-#pragma region Зоны печи закалки
-    //O_CassetteData OldCassette;
-
-
-    //Зоны
-    namespace Sheet{
-    //Зона 0: На входе в печь
+        //Зона 0: На входе в печь
         namespace Z0{
 
             const int Pos = 0;
@@ -1518,7 +1502,7 @@ namespace KPVL {
 
                     if(IsSheet(PD))
                     {
-                        std::string update = " incant_at = '" + GetDataTimeString() + "'";
+                        std::string update = " incant_at = '" + GetStringDataTime() + "'";
                         SetUpdateSheet(conn_kpvl, PD, update, " incant_at IS NULL  AND");
 
                         SheetPos(conn_kpvl, PD, Pos);
@@ -1543,9 +1527,8 @@ namespace KPVL {
                         if(IsSheet(PD))
                         {
                             SheetPos(conn_kpvl, PD, Pos);
-                            uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
-                            int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette, hour);
-                            std::string DataTime = GetDataTimeString();
+                            int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette);
+                            std::string DataTime = GetStringDataTime();
 
                             {
                                 int32_t id = Stoi(GetIdSheet(conn, PD));
@@ -1629,7 +1612,7 @@ namespace KPVL {
                         T_PlateData PD = PlateData[Pos];
                         if(IsSheet(PD))
                         {
-                            std::string update = " incant_at = '" + GetDataTimeString() + "'";
+                            std::string update = " incant_at = '" + GetStringDataTime() + "'";
                             SetUpdateSheet(conn_kpvl, PD, update, " incant_at IS NULL AND");
 
                             SetSaveDone(conn_kpvl);
@@ -1647,62 +1630,8 @@ namespace KPVL {
         }
     }
 
+    //Функции обработки и со сохранения истории кассет
     namespace Cassette{
-        //void SetOldCassette(T_CassetteData& CD, int32_t id)
-        //{
-        //    try
-        //    {
-        //        OldCassette.Id = id;
-        //        OldCassette.Year = CD.Year->GetInt();
-        //        OldCassette.Month = CD.Month->GetInt();
-        //        OldCassette.Day = CD.Day->GetInt();
-        //        OldCassette.Hour = CD.Hour->GetInt();
-        //        OldCassette.CassetteNo = CD.CassetteNo->GetInt();
-        //        OldCassette.SheetInCassette = CD.SheetInCassette->GetInt();
-        //    }CATCH(HardLogger, "");
-        //}
-
-        ////Проверка на наличие кассеты
-        //bool IsCassette(O_CassetteData& CD)
-        //{
-        //    return CD.Day && CD.Month && CD.Year && CD.CassetteNo;
-        //}
-
-        ////Получаем ID кассеты
-        //int32_t GetIdCassette(PGConnection& conn, O_CassetteData& CD)
-        //{
-        //    int32_t id = 0;
-        //    try
-        //    {
-        //        if(IsCassette(CD))
-        //        {
-        //            std::stringstream co;
-        //            co << "SELECT id FROM cassette WHERE";
-        //            co << " hour = " << CD.Hour;
-        //            co << " AND day = " << CD.Day;
-        //            co << " AND month = " << CD.Month;
-        //            co << " AND year = " << CD.Year;
-        //            co << " AND cassetteno = " << CD.CassetteNo;
-        //            co << ";";
-        //            std::string comand = co.str();
-        //            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        //            PGresult* res = conn.PGexec(comand);
-        //            if(PQresultStatus(res) == PGRES_TUPLES_OK)
-        //            {
-        //                if(PQntuples(res))//Линий
-        //                {
-        //                    id = Stoi(conn.PGgetvalue(res, 0, 0));
-        //                }
-        //            }
-        //            else
-        //                LOG_ERR_SQL(HardLogger, res, comand);
-        //            PQclear(res);
-        //        }
-        //    }
-        //    CATCH(HardLogger, "");
-        //    return id;
-        //
-        //}
 
         //Проверка на наличие кассеты
         bool IsCassette(T_CassetteData& CD)
@@ -1723,42 +1652,31 @@ namespace KPVL {
         }
 
         //Получаем ID кассеты по листу Из касеты
-        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD, int Hour)
+        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD)
         {
             int32_t id = 0;
             try
             {
-                tm curr_tm;
-                if(Hour == -1)
-                {
-                    std::time_t st = time(NULL);
-                    localtime_s(&curr_tm, &st);
-                }
-
                 if(IsCassette(CD))
                 {
                     std::stringstream co;
                     co << "SELECT id FROM cassette WHERE";
-                    if(Hour == -1)
-                        co << " hour = " << curr_tm.tm_hour;
-                    else
-                        co << " hour = " << Hour;
-
-                    co << " AND day = " << CD.Day->GetInt();
+                    co << " year = " << CD.Year->GetInt();
                     co << " AND month = " << CD.Month->GetInt();
-                    co << " AND year = " << CD.Year->GetInt();
+                    co << " AND day = " << CD.Day->GetInt();
+                    co << " AND hour = " << CD.Hour->GetInt();
                     co << " AND cassetteno = " << CD.CassetteNo->GetInt();
                     co << " LIMIT 1;";
-                    std::string comand = co.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    PGresult* res = conn.PGexec(comand);
+                    std::string command = co.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         if(PQntuples(res))
                             id = Stoi(conn.PGgetvalue(res, 0, 0));
                     }
                     else
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
             }
@@ -1767,7 +1685,7 @@ namespace KPVL {
         }
 
         //Добовление кассеты в базу
-        int32_t InsertCassette(PGConnection& conn, T_CassetteData& CD, int Hour)
+        int32_t InsertCassette(PGConnection& conn, T_CassetteData& CD)
         {
             int32_t id = 0;
             try
@@ -1776,12 +1694,6 @@ namespace KPVL {
                 //21:57:41.318 | Кассета наполяентся = true
                 //21:57:38.305 | Номер кассеты за день = 4
                 //21:57:26
-                tm curr_tm;
-                if(Hour == -1)
-                {
-                    std::time_t st = time(NULL);
-                    localtime_s(&curr_tm, &st);
-                }
 
                 if(IsCassette(CD))
                 {
@@ -1794,109 +1706,51 @@ namespace KPVL {
                     co << CD.Month->GetInt() << ", ";
                     co << CD.Day->GetInt() << ", ";
                     co << CD.CassetteNo->GetInt() << ", ";
+                    co << CD.Hour->GetInt() << ", ";
 
-                    if(Hour == -1)
-                        co << curr_tm.tm_hour << ", ";
-                    else
-                        co << Hour << ", ";
-
-                    int count = CD.SheetInCassette->GetInt();
-                    if(count)
-                        co << count << ");";
-                    else
-                        co << "-1);";
+                    int16_t count = CD.SheetInCassette->Val.As<int16_t>();
+                    if(!count) count = -1;
+                    co << count << ");";
 
                     LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
                     SETUPDATESQL(HardLogger, conn, co);
 
-                    id = GetIdCassette(conn, CD, Hour);
+                    id = GetIdCassette(conn, CD);
                 }
             }
             CATCH(HardLogger, "");
             return id;
         }
 
-        ////Обновляем в базе данные по кассете
-        //void UpdateCassette(PGConnection& conn, T_CassetteData& CD, int32_t id)
-        //{
-        //    try
-        //    {
-        //        std::stringstream co;
-        //        co << "UPDATE cassette SET";
-        //        co << " year = " << CD.Year->GetInt() << ", ";
-        //        co << " month = " << CD.Month->GetInt() << ", ";
-        //        co << " day = " << CD.Day->GetInt() << ", ";
-        //        co << " hour = " << CD.Hour->GetInt();//CD.Hour->GetInt() << ", ";
-        //        co << " cassetteno = " << CD.CassetteNo->GetInt() << ", ";
-        //        int count = CD.SheetInCassette->GetInt();
-        //        if(count)
-        //            co << " sheetincassette = " << count << ",";
-        //        else
-        //            co << " sheetincassette = -1,";
-        //
-        //        co << " close_at = DEFAULT, event = 1";
-        //        co << " WHERE id = " << id;
-        //        co << ";";
-        //
-        //        //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, co.str());
-        //        SETUPDATESQL(HardLogger, conn, co);
-        //    }
-        //    CATCH(HardLogger, "");
-        //}
-
-        //struct{
-        //    int CassetteNo;
-        //    int CassetteHour;
-        //    int CassetteDay;
-        //    int CassetteMonth;
-        //    int CassetteYear;
-        //}SheetCassette;
-
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD, int Hour)
+        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD)
         {
             int32_t id = 0;
             try
             {
+                CD.Year->GetValue();
+                CD.Month->GetValue();
+                CD.Day->GetValue();
+                CD.CassetteNo->GetValue();
+                CD.SheetInCassette->GetValue();
+                CD.Hour->GetValue();
+
                 if(IsCassette(CD))
                 {
                     //UpdateCassette(conn, CD, id);
-                    
-                    id = GetIdCassette(conn, CD, Hour);
+
+                    id = GetIdCassette(conn, CD);
                     if(!id)
                     {
-                        id = InsertCassette(conn, CD, Hour);
+                        id = InsertCassette(conn, CD);
                     }
                     //else
                     //    SetOldCassette(CD, id);
-}
+                }
             }
             CATCH(HardLogger, "");
             return id;
         }
-
-        //Закрываем все не закрытые касеты кроме кассеты на кантовке
-        //void CloseCassete(PGConnection& conn, O_CassetteData& CD)
-        //{
-        //    try
-        //    {
-        //        if(IsCassette(CD))
-        //        {
-        //            int32_t id = GetIdCassette(conn, CD);
-        //            std::stringstream co;
-        //            co << "UPDATE cassette SET close_at = now(), event = 2 WHERE close_at IS NULL AND id = " << id;
-        //
-        //            std::string comand = co.str();
-        //            if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-        //            PGresult* res = conn.PGexec(comand);
-        //            if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-        //                LOG_ERR_SQL(HardLogger, res, comand);
-        //            PQclear(res);
-        //        }
-        //    }
-        //    CATCH(HardLogger, "");
-        //}
-
 
         //Вывод Номер листа в касете
         DWORD Sheet_InCassette(Value* value)
@@ -1907,17 +1761,17 @@ namespace KPVL {
                 int InCassette = value->GetInt();
                 sprintf_s(ss, 256, "%d", InCassette + 1);
                 MySetWindowText(winmap(value->winId), ss);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 //if(!HMISheetData.CasseteIsFill->Val.IsNul())
                 //bool b = HMISheetData.CasseteIsFill->Val.As<bool>();
-                if(HMISheetData.CasseteIsFill->GetBool())
-                {
-                    //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                    int hour = HMISheetData.Cassette.Hour->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
-                    LOG_INFO(HardLogger, "{:90}| << Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
-                }
+                //if(HMISheetData.CasseteIsFill->GetBool())
+                //{
+                //    //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                //    int hour = HMISheetData.Cassette.Hour->GetInt();
+                //    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                //    LOG_INFO(HardLogger, "{:90}| << Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
+                //    //SetOldCassette(HMISheetData.Cassette, id);
+                //}
                 //LOG_INFO(HardLogger, "{:90} {}", FUNCTION_LINE_NAME, b);
             }
             CATCH(HardLogger, "");
@@ -1932,14 +1786,12 @@ namespace KPVL {
                 //SheetCassette.CassetteNo = value->GetInt();
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 MySetWindowText(value);
-                if(HMISheetData.CasseteIsFill->GetBool())
+                if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
                 }
             }
             CATCH(HardLogger, "");
@@ -1953,13 +1805,11 @@ namespace KPVL {
             {
                 //SheetCassette.CassetteYear = value->GetInt();
                 MySetWindowText(value);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                if(HMISheetData.CasseteIsFill->GetBool())
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
+                if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
                 }
             }
             CATCH(HardLogger, "");
@@ -1974,13 +1824,11 @@ namespace KPVL {
                 //SheetCassette.CassetteMonth = value->GetInt();
 
                 MySetWindowText(value);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                if(HMISheetData.CasseteIsFill->GetBool())
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
+                if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
                 }
             }
             CATCH(HardLogger, "");
@@ -1994,13 +1842,11 @@ namespace KPVL {
             {
                 //SheetCassette.CassetteDay = value->GetInt();
                 MySetWindowText(value);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                if(HMISheetData.CasseteIsFill->GetBool())
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
+                if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
                 }
             }
             CATCH(HardLogger, "");
@@ -2015,15 +1861,11 @@ namespace KPVL {
             {
                 //SheetCassette.CassetteHour = value->GetInt();
                 MySetWindowText(value);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-                if(HMISheetData.CasseteIsFill->GetBool())
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
+                if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    //int Hour = HMISheetData.Cassette.Hour->GetValue().As<int32_t>();
-                    //OpcUa::VariantType Variant = HMISheetData.Cassette.Hour->GetType();
-                    uint16_t hour = value->GetInt();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteHour = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
                 }
             }
             CATCH(HardLogger, "");
@@ -2037,57 +1879,23 @@ namespace KPVL {
         {
             try
             {
-                std::map<bool, const char*>TextOut ={
-                    {false, WaitCassette},
-                    {true, FillCassette },
-                };
+                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
 
-                bool b = value->Val.As<bool>();
-
-                SetWindowText(winmap(value->winId), TextOut[b]);
-                InvalidateRect(winmap(value->winId), NULL, false);
-                MySetWindowText(winmap(hEdit_Sheet_DataTime), GetDataTimeString());
-
-                if(b)
+                if(value->Val.As<bool>())
                 {
-                    uint16_t hour = HMISheetData.Cassette.Hour->GetValue().As<uint16_t>();
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
+                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, id);
-                    //SetOldCassette(HMISheetData.Cassette, id);
+                    SetWindowText(winmap(value->winId), FillCassette);
                 }
-                //else
-                //{
-                //    if(OldCassette.Id)
-                //    {
-                //        LOG_INFO(HardLogger, "{:90}| OldCassette.Id = {}, OldCassette.Year = {}, OldCassette.Month = {}, OldCassette.Day = {}, OldCassette.Hour = {}, OldCassette.CassetteNo = {}, OldCassette.SheetInCassette = {}", FUNCTION_LINE_NAME,
-                //                 OldCassette.Id, OldCassette.Year, OldCassette.Month, OldCassette.Day, OldCassette.Hour, OldCassette.CassetteNo, OldCassette.SheetInCassette);
-                //        //CloseCassete(conn_kpvl, OldCassette);
-                //        //OldCassette = O_CassetteData();
-                //    }
-                //}
+                else
+                    SetWindowText(winmap(value->winId), WaitCassette);
 
             }
             CATCH(HardLogger, "");
             return 0;
         }
 
-        ////кассета готова
-        //DWORD CassetteIsComplete(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    LOG_INFO(HardLogger, "{:90}| CassetteIsComplete = {} Id = {}", FUNCTION_LINE_NAME, value->GetBool(), OldCassette.Id);
-        //    return 0;
-        //}
-        //
-        ////начать новую кассету
-        //DWORD StartNewCassette(Value* value)
-        //{
-        //    MySetWindowText(winmap(value->winId), value->GetString().c_str());
-        //    LOG_INFO(HardLogger, "{:90}| StartNewCassette = {} Id = {}", FUNCTION_LINE_NAME, value->GetBool(), OldCassette.Id);
-        //    return 0;
-        //}
     }
-#pragma endregion
 
 
 #pragma region Вспомогательные функции
@@ -2113,7 +1921,7 @@ namespace KPVL {
                 if(Time_Z2 == 0)
                 {
                     time_t st;
-                    std::string datatimeend_at = GetDataTimeString(st);
+                    std::string datatimeend_at = GetStringOfDataTime(st);
                     if(datatimeend_at.length())
                         Time_Z2 = SQL::GetHeatTime_Z2(conn_dops, datatimeend_at);
                 }
@@ -2131,12 +1939,12 @@ namespace KPVL {
                     ss1 << " WHERE datatime_end IS NULL AND"; //delete_at IS NULL AND 
                     ss1 << " id = " << Id;
 
-                    std::string comand = ss1.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    std::string command = ss1.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-                    res = conn_dops.PGexec(comand);
+                    res = conn_dops.PGexec(command);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
 
                     std::stringstream ss2;
@@ -2146,12 +1954,12 @@ namespace KPVL {
                     ss2 << "WHERE";
                     ss2 << " id = " << Id;
 
-                    comand = ss2.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                    command = ss2.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-                    res = conn_dops.PGexec(comand);
+                    res = conn_dops.PGexec(command);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
 
                     int r = 5;
@@ -2173,11 +1981,11 @@ namespace KPVL {
                     ss4 << "WHERE";
                     ss4 << " id = " << Id;
 
-                    comand = ss4.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-                    res = conn_dops.PGexec(comand);
+                    command = ss4.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    res = conn_dops.PGexec(command);
                     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, comand);
+                        LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
                 }
             }

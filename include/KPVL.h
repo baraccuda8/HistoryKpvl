@@ -84,29 +84,9 @@ namespace KPVL {
         std::string GetIdSheet(PGConnection& conn, std::string sMelt, std::string sPack, std::string sPartNo, std::string sSheet, std::string sSubSheet, std::string sSlab);
         std::string GetIdSheet(PGConnection& conn, int32_t Melt, int32_t Pack, int32_t PartNo, int32_t Sheet, int32_t SubSheet, int32_t Slab);
 
-        //Проверка на наличие листа
-        //bool IsSheet(T_PlateData& PD);
-
-        ////Получаем ID листа
-        //std::string GetIdSheet(T_PlateData& PD);
-
-        ////Добовление листа в базу
-        //void InsertSheet(T_PlateData& PD, int pos);
-
         ////Обновляем в базе данные по листу
         void SetUpdateSheet(PGConnection& conn, T_PlateData& PD, std::string update, std::string where);
         void SetUpdateSheet(PGConnection& conn, TSheet& TS, std::string update, std::string where);
-
-        ////Обновляем позицию листа
-        //void UpdateSheetPos(T_PlateData& PD, std::string id, int pos);
-
-        ////Обновляем данные по листу если лист есть или добовляем новый
-        //void SheetPos(T_PlateData& PD, int pos);
-
-        ////Вывод даны-вревени
-        //void OutTime(T_PlateData& PD, HWNDCLIENT chwnd);
-
-        //DWORD DataPosBool(Value* value);
 
         //Зона 0 на входе в печь
         namespace  Z0{
@@ -180,10 +160,6 @@ namespace KPVL {
             //Новые лист в касету, Кассета наполяентся
             DWORD NewSheetData(Value* value);
 
-            //DWORD StartNewCassette(Value* value);
-
-            //DWORD CassetteIsFill(Value* value);
-
             void SetSaveDone(PGConnection& conn);
 
         }
@@ -195,10 +171,10 @@ namespace KPVL {
         bool IsCassette(T_CassetteData& CD);
 
         //Получаем ID Кассеты
-        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD, int Hour);
+        int32_t GetIdCassette(PGConnection& conn, T_CassetteData& CD);
 
         //Обновляем данные по кассете если кассета есть или добовляем новую
-        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD, int Hour);
+        int32_t CassettePos(PGConnection& conn, T_CassetteData& CD);
 
         //Вывод Номер листа в касете
         DWORD Sheet_InCassette(Value* value);
@@ -220,14 +196,6 @@ namespace KPVL {
 
         //кассета наполяентся
         DWORD CasseteIsFill(Value* value);
-
-        ////начать новую кассету
-        //DWORD StartNewCassette(Value* value);
-        //
-        ////кассета готова
-        //DWORD CassetteIsComplete(Value* value);
-
-
     }
 
     //Операция в зонах
@@ -283,28 +251,6 @@ namespace KPVL {
         //state2=5
         //DWORD Za_PT3(Value* value);
     };
-
-    ////Температуры печи
-    //namespace Htr{
-    ////Температура в зоне 1.1
-    //    DWORD Htr_11(Value* value);
-    //    //Температура в зоне 1.2
-    //    DWORD Htr_12(Value* value);
-    //    //Температура в зоне 1.3
-    //    DWORD Htr_13(Value* value);
-    //    //Температура в зоне 1.4
-    //    DWORD Htr_14(Value* value);
-    //    //Температура в зоне 2.1
-    //    DWORD Htr_21(Value* value);
-    //    //Температура в зоне 2.2
-    //    DWORD Htr_22(Value* value);
-    //    //Температура в зоне 2.3
-    //    DWORD Htr_23(Value* value);
-    //    //Температура в зоне 2.4
-    //    DWORD Htr_24(Value* value);
-    //    //Пирометр
-    //    DWORD Za_TE4(Value* value);
-    //}
 
     //Режим работы клапана
     //State_1 = 3 

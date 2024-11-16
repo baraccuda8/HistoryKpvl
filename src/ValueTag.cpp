@@ -101,18 +101,18 @@ void Value::InsertVal()
 {
     try
     {
-        char comand[1024];
+        char command[1024];
         if(GetType() == OpcUa::VariantType::BOOLEAN)
-            sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist, Sec);
+            sprintf_s(command, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), Val.ToString().c_str(), coeff, hist, Sec);
         else if(GetType() == OpcUa::VariantType::STRING)
-            sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
+            sprintf_s(command, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), '%s', %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
         else
-            sprintf_s(comand, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
+            sprintf_s(command, 1023, "INSERT INTO tag (name, type, arhive, content_at, content, coeff, hist, idsec) VALUES(\'%s\', %u, %s, now(), %s, %f, %f, %u);", &Patch[0], GetType(), (Arhive ? "true" : "false"), GetString().c_str(), coeff, hist, Sec);
 
-        PGresult* res = Conn->PGexec(comand);
-        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        PGresult* res = Conn->PGexec(command);
+        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
+            LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
 
         GetIdValSQL();
@@ -140,11 +140,11 @@ void Value::UpdateVal()
         st << hist << ", ";
         st << "'" << format << "', ";
         st << Sec << ");";
-        std::string comand =st.str();
-        PGresult* res = Conn->PGexec(comand);
-        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        std::string command =st.str();
+        PGresult* res = Conn->PGexec(command);
+        LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-            LOG_ERR_SQL(SQLLogger, res, comand);
+            LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
         GetIdValSQL();
         Update = true;
@@ -180,20 +180,20 @@ void Value::GetIdValSQL()
 {
     try
     {
-        char comand[1024];
-        sprintf_s(comand, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
-        PGresult* res = Conn->PGexec(comand);
-        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        char command[1024];
+        sprintf_s(command, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
+        PGresult* res = Conn->PGexec(command);
+        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
         if(PQresultStatus(res) == PGRES_TUPLES_OK)
         {
             int line = PQntuples(res);
             if(line)
                 ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
             else
-                LOG_ERR_SQL(SQLLogger, res, comand);
+                LOG_ERR_SQL(SQLLogger, res, command);
         }
         else
-            LOG_ERR_SQL(SQLLogger, res, comand);
+            LOG_ERR_SQL(SQLLogger, res, command);
 
         PQclear(res);
     }
@@ -204,10 +204,10 @@ void Value::TestValSQL()
 {
     try
     {
-        char comand[1024];
-        sprintf_s(comand, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
-        PGresult* res = Conn->PGexec(comand);
-        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        char command[1024];
+        sprintf_s(command, 1023, "SELECT id FROM tag WHERE name = '%s';", Patch.c_str());
+        PGresult* res = Conn->PGexec(command);
+        //LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
         if(PQresultStatus(res) == PGRES_TUPLES_OK)
         {
             if(PQntuples(res))
@@ -225,7 +225,7 @@ void Value::TestValSQL()
         }
         else
         {
-            LOG_ERR_SQL(SQLLogger, res, comand);
+            LOG_ERR_SQL(SQLLogger, res, command);
             PQclear(res);
             InsertVal();
             GetIdValSQL();
@@ -267,7 +267,7 @@ void Value::SaveSQL()
             float f3 = std::abs(f1 - f2);
             if(f3 > hist || ifval)
             {
-                std::string Create_at = GetDataTimeStringMS();
+                std::string Create_at = GetStringMSDataTime();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '"<< Create_at << "', content = ";
                 sd << GetString();
@@ -275,11 +275,11 @@ void Value::SaveSQL()
                 //sd << " WHERE name = '" << Patch.c_str() << "';";
                 SETUPDATESQL(SQLLogger, (*Conn), sd);
 
-                //std::string comand = sd.str();
-                //PGresult* res = Conn->PGexec(comand);
-                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //std::string command = sd.str();
+                //PGresult* res = Conn->PGexec(command);
+                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                 //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                //    LOG_ERR_SQL(SQLLogger, res, comand);
+                //    LOG_ERR_SQL(SQLLogger, res, command);
                 //PQclear(res);
                 InsertValue(Create_at);
                 OldVal = Val;
@@ -293,7 +293,7 @@ void Value::SaveSQL()
             double f3 = std::abs(f1 - f2);
             if(f3 > hist || ifval)
             {
-                std::string Create_at = GetDataTimeStringMS();
+                std::string Create_at = GetStringMSDataTime();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << GetString();
@@ -301,11 +301,11 @@ void Value::SaveSQL()
                 //sd << " WHERE name = '" << Patch.c_str() << "';";
                 SETUPDATESQL(SQLLogger, (*Conn), sd);
 
-                //std::string comand = sd.str();
-                //PGresult* res = Conn->PGexec(comand);
-                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+                //std::string command = sd.str();
+                //PGresult* res = Conn->PGexec(command);
+                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
                 //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                //    LOG_ERR_SQL(SQLLogger, res, comand);
+                //    LOG_ERR_SQL(SQLLogger, res, command);
                 //PQclear(res);
                 InsertValue(Create_at);
                 OldVal = Val;
@@ -318,7 +318,7 @@ void Value::SaveSQL()
             std::string s2 = GetValString(OldVal, coeff, format);
             if(ifval || s1 != s2)
             {
-                std::string Create_at = GetDataTimeStringMS();
+                std::string Create_at = GetStringMSDataTime();
                 std::stringstream sd;
                 sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << "'" << s1 << "'";
@@ -345,7 +345,7 @@ void Value::SaveSQL()
         //}
         else if(ifval || OldVal != Val)
         {
-            std::string Create_at = GetDataTimeStringMS();
+            std::string Create_at = GetStringMSDataTime();
             std::stringstream sd;
             sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
             sd << GetString();

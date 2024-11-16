@@ -346,7 +346,7 @@ int Run()
     {
         std::fstream s(lpLogDir + "\\Error.log", std::fstream::binary | std::fstream::out | std::fstream::app);
         if(s.is_open())
-            s << "[" << GetDataTimeString() << "] " << FUNCTION_LINE_NAME << " Программа уже запущена. Pid = " << pid << std::endl;
+            s << "[" << GetStringDataTime() << "] " << FUNCTION_LINE_NAME << " Программа уже запущена. Pid = " << pid << std::endl;
         s.close();
         return 0;
     }
@@ -366,7 +366,7 @@ int Run()
         {
             std::fstream s(lpLogDir + "\\Error.log", std::fstream::binary | std::fstream::out | std::fstream::app);
             if(s.is_open())
-                s << "[" << GetDataTimeString() << "] " << FUNCTION_LINE_NAME << " Не могу создать AllLogger.log" << std::endl;
+                s << "[" << GetStringDataTime() << "] " << FUNCTION_LINE_NAME << " Не могу создать AllLogger.log" << std::endl;
             s.close();
         }
 #endif

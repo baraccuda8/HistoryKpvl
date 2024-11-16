@@ -567,17 +567,17 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
     return 0;
 }
 
-//float GetTime(std::string comand)
+//float GetTime(std::string command)
 //{
 //    float f = 0;
-//    PGresult* res = conn_spic.PGexec(comand);
+//    PGresult* res = conn_spic.PGexec(command);
 //    if(PQresultStatus(res) == PGRES_TUPLES_OK)
 //    {
 //        if(PQntuples(res))
 //            f = Stof(conn_spic.PGgetvalue(res, 0, 0));
 //    }
 //    else
-//        LOG_ERR_SQL(PethLogger, res, comand);
+//        LOG_ERR_SQL(PethLogger, res, command);
 //    PQclear(res);
 //    return f;
 //}
@@ -586,7 +586,7 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
 //{
 //    try
 //    {
-// //std::string comand = "";
+// //std::string command = "";
 //        std::stringstream sd1;
 //        std::stringstream sd2;
 //        if(!TC.Run_at.length() || !TC.Finish_at.length()) return;
@@ -817,7 +817,7 @@ void CaseteInRel(std::deque<TCassette>& CIl)
         {
             memcpy(OldSCassett, SCassett, sizeof(SCassett));
             std::fstream fSpCassette = std::fstream("SpCassette.csv", std::fstream::binary | std::fstream::out | std::ios::app);
-            fSpCassette << " " << GetDataTimeString() << ";";
+            fSpCassette << " " << GetStringDataTime() << ";";
 
             for(int i = 0; i < CountCaseteInRel; i++)
                 fSpCassette << SCassett[i] << ";";
@@ -874,8 +874,8 @@ int SetCassetteInCant(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
 
         std::stringstream sd;
         sd << "UPDATE cassette SET event = " << it.Event <<", peth = " << it.Peth << ", run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
-        std::string comand = sd.str();
-        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        std::string command = sd.str();
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);
         SETUPDATESQL(L, conn, sd);
     }
     CATCH(L, "");
@@ -895,8 +895,8 @@ int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
         if(run_at.length())
             sd << ", return_at = '" << run_at << "'";
         sd << " WHERE id = " << it.Id;
-        std::string comand = sd.str();
-        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        std::string command = sd.str();
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);
         SETUPDATESQL(L, conn, sd);
     }
     CATCH(L, "");
@@ -916,8 +916,8 @@ int SetCassetteInFurn(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
         it.Pdf = "";
         std::stringstream sd;
         sd << "UPDATE cassette SET event = " << it.Event << ", peth = " << it.Peth << ", run_at = now(), end_at = DEFAULT, finish_at = DEFAULT, correct = DEFAULT, pdf = DEFAULT, error_at = DEFAULT WHERE id = " << it.Id;
-        std::string comand = sd.str();
-        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        std::string command = sd.str();
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);
         SETUPDATESQL(L, conn, sd);
     }
     CATCH(L, "");
@@ -930,13 +930,13 @@ int SetCassetteInDelete(std::shared_ptr<spdlog::logger> L, PGConnection& conn, T
     try
     {
         it.Event = "7";
-        it.Delete_at = GetDataTimeString();
+        it.Delete_at = GetStringDataTime();
         std::stringstream sd;
         sd << "UPDATE cassette SET event = " << it.Event << ", ";
         sd << "delete_at = '" << it.Delete_at << "' ";
         sd << "WHERE id = " + it.Id;
-        std::string comand = sd.str();
-        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, comand);
+        std::string command = sd.str();
+        LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);
         SETUPDATESQL(L, conn, sd);
     }
     CATCH(L, "");

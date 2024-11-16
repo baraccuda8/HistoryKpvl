@@ -2039,7 +2039,7 @@ LRESULT CALLBACK WndProc0(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     //if(message == WM_CREATE) return CreatWindowChild(hWnd);
     if(message == WM_TIMER)
     {
-        SetWindowText(winmap(HWNDCLIENT::hEditTimes), GetDataTimeString().c_str());
+        SetWindowText(winmap(HWNDCLIENT::hEditTimes), GetStringDataTime().c_str());
         return 0L;
     }
     if(message == WM_COMMAND) return Command0(hWnd, message, wParam, lParam);
@@ -2440,7 +2440,7 @@ bool InitWindow(HINSTANCE hInst)
 
 
 
-    SetWindowText(winmap(hEditDiagnose5), GetDataTimeString().c_str());
+    SetWindowText(winmap(hEditDiagnose5), GetStringDataTime().c_str());
 #ifndef TESTWIN
     for(auto& val : AllTagKpvl)
         MySetWindowText(winmap(val->winId), val->GetString().c_str());

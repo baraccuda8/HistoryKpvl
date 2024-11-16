@@ -145,15 +145,15 @@ namespace S107
             ss << " AND month = '" << CD.Month << "'";
             ss << " AND hour = " << CD.Hour;
             ss << " AND cassetteno = " << CD.CassetteNo;
-            std::string comand = ss.str();
-            PGresult* res = conn.PGexec(comand);
+            std::string command = ss.str();
+            PGresult* res = conn.PGexec(command);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
                 if(PQntuples(res))
                     id = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else
-                LOG_ERR_SQL(PethLogger, res, comand);
+                LOG_ERR_SQL(PethLogger, res, command);
             PQclear(res);
         }
         CATCH(PethLogger, "");
@@ -171,8 +171,8 @@ namespace S107
             ss << " AND day = '" << CD.Day->Val.As<int32_t>() << "'";
             ss << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
             ss << " AND hour = " << CD.Hour->Val.As<uint16_t>();
-            std::string comand = ss.str();
-            PGresult* res = conn.PGexec(comand);
+            std::string command = ss.str();
+            PGresult* res = conn.PGexec(command);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
                    
@@ -186,7 +186,7 @@ namespace S107
                 }
             }
             else
-                LOG_ERR_SQL(PethLogger, res, comand);
+                LOG_ERR_SQL(PethLogger, res, command);
             PQclear(res);
         }
         CATCH(PethLogger, "");
@@ -204,17 +204,17 @@ namespace S107
             ss << " AND month = '" << CD.Month->Val.As<int32_t>() << "'";
             ss << " AND hour = " << CD.Hour->Val.As<uint16_t>();
             ss << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
-            std::string comand = ss.str();
+            std::string command = ss.str();
 
-            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, comand);
-            PGresult* res = conn.PGexec(comand);
+            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+            PGresult* res = conn.PGexec(command);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
                 if(PQntuples(res))
                     events = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else
-                LOG_ERR_SQL(PethLogger, res, comand);
+                LOG_ERR_SQL(PethLogger, res, command);
             PQclear(res);
         }
         CATCH(PethLogger, "");
@@ -263,9 +263,9 @@ namespace S107
                     ss << " AND day = '" << CD.Day << "'";
                     ss << " AND hour = '" << CD.Hour << "'";
                     ss << " AND cassetteno = " << CD.CassetteNo;
-                    std::string comand = ss.str();
+                    std::string command = ss.str();
 
-                    PGresult* res = conn.PGexec(comand);
+                    PGresult* res = conn.PGexec(command);
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
                         std::string countList = "-1";
@@ -287,7 +287,7 @@ namespace S107
                     }
                     else
                     {
-                        LOG_ERR_SQL(PethLogger, res, comand);
+                        LOG_ERR_SQL(PethLogger, res, command);
                         PQclear(res);
                     }
                 }
@@ -337,9 +337,9 @@ namespace S107
                 ss << boost::format("%|02|:") % TM_Beg.tm_min;
                 ss << boost::format("%|02|'") % TM_Beg.tm_sec;
                 ss << " AND delete_at IS NULL ORDER BY event ASC, create_at DESC;"; //DESC
-                std::string comand = ss.str();
+                std::string command = ss.str();
 
-                PGresult* res = conn.PGexec(comand);
+                PGresult* res = conn.PGexec(command);
                 if(PQresultStatus(res) == PGRES_TUPLES_OK)
                 {
 
@@ -355,7 +355,7 @@ namespace S107
                     }
                 }
                 else
-                    LOG_ERR_SQL(PethLogger, res, comand);
+                    LOG_ERR_SQL(PethLogger, res, command);
                 PQclear(res);
                 for(auto& a : allCassette)
                     GetCountSheet(conn, a);
@@ -378,8 +378,8 @@ namespace S107
             time_t tmp_at = DataTimeOfString(it.End_at);
             time_t tFinish = tmp_at + (60 * 15); //+15 минут
 
-            std::string finish = GetDataTimeString(&tFinish);;
-            std::string Currt = GetDataTimeString();
+            std::string finish = GetStringOfDataTime(&tFinish);;
+            std::string Currt = GetStringDataTime();
 
             //Финализируем если прошло 15 минут после конца отпуска
             if(Currt >= finish)
