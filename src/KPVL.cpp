@@ -1949,20 +1949,9 @@ namespace KPVL {
                         LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
 
-                    std::stringstream ss2;
-                    ss2 << "UPDATE sheet SET ";
-                    ss2 << "lampresstop = " + AI_Hmi_210.LaminPressTop->GetString() + ", ";
-                    ss2 << "lampressbot = " + AI_Hmi_210.LaminPressBot->GetString() + " ";
-                    ss2 << "WHERE";
-                    ss2 << " id = " << Id;
-
-                    command = ss2.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-
-                    res = conn_dops.PGexec(command);
-                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, command);
-                    PQclear(res);
+                    std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
+                    std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
+                    std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
 
                     int r = 5;
                     while(isRun && --r)  //5 секунд
@@ -1971,15 +1960,17 @@ namespace KPVL {
                         std::this_thread::sleep_for(std::chrono::seconds(1));
                     }
 
-                    std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
-                    std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
-                    std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
+                    std::string LaminTop  = AI_Hmi_210.LaminPressTop->GetString();
+                    std::string LaminBot = AI_Hmi_210.LaminPressBot->GetString();
 
                     std::stringstream ss4;
                     ss4 << "UPDATE sheet SET ";
                     ss4 << "lam_te1 = " << lam_te1 << ", ";
                     ss4 << "za_te3 = " << za_te3 << ", ";
-                    ss4 << "za_pt3 = " << za_pt3 << " ";
+                    ss4 << "za_pt3 = " << za_pt3 << ", ";
+                    ss4 << "lampresstop = " << LaminTop << ", ";
+                    ss4 << "lampressbot = " << LaminBot << " ";
+
                     ss4 << "WHERE";
                     ss4 << " id = " << Id;
 
@@ -2022,7 +2013,7 @@ namespace KPVL {
                 int16_t val = value->GetInt();
                 MySetWindowText(value);
                 SetWindowText(winmap(hEditState_22), GenSeq2[val].c_str());
-                if(val == 5 || val == 6)
+                if(val == 5 /*|| val == 6*/)
                 {
                     if(hThreadState2 == NULL)
                         hThreadState2 = CreateThread(0, 0, ThreadState2, (LPVOID)0, 0, 0);
