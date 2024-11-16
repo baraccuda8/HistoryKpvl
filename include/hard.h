@@ -169,7 +169,7 @@ public:
         //float Температура воды в баке
         Value* Za_TE3;
 
-        //float Температура воды в баке
+        //float Давление воды в баке
         Value* Za_PT3;
 
         //float Пирометр
