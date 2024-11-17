@@ -4223,7 +4223,7 @@ namespace PDF
 					ssd << ", cassette = " << td.cassette;
 					ssd << ", temperature = " << td.Temperature;
 					ssd << ", pos = " << td.Pos;
-					ssd << ", news = " << td.news;
+					//ssd << ", news = " << td.news;
 					ssd << ", delete_at = DEFAULT";
 					ssd << ", correct = now() WHERE id = " << td.id; //delete_at IS NULL AND 
 					SETUPDATESQL(SheetLogger, conn, ssd);
@@ -4583,12 +4583,12 @@ namespace PDF
 
 				if(ids.day && ids.month && ids.year && ids.cassetteno)
 				{
-					ids.news = 1;
+					//ids.news = 1;
 					ids.Pos = 7;
 				}
 				else
 				{
-					ids.news = 0;
+					//ids.news = 0;
 					ids.Pos = 16;
 				}
 			}CATCH(SheetLogger, "");

@@ -1916,6 +1916,9 @@ namespace KPVL {
                 int32_t SubSheet = Stoi(PalletSheet[2].SubSheet);
                 int32_t Slab     = Stoi(PalletSheet[2].Slab);
 
+                std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
+                std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
+                std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
 
                 float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetFloat();
                 int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetInt();
@@ -1949,11 +1952,8 @@ namespace KPVL {
                         LOG_ERR_SQL(HardLogger, res, command);
                     PQclear(res);
 
-                    std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
-                    std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
-                    std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
-
-                    int r = 5;
+                    
+                    int r = 4;
                     while(isRun && --r)  //5 секунд
                     {
                         SetWindowText(winmap(hEditState_34), std::to_string(r).c_str());

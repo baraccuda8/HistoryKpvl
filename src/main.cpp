@@ -301,11 +301,11 @@ void WaitCloseTheread(HANDLE h, std::string hamd)
     }
 }
 
-void TestTimeRun(ULONGLONG& time)
+void TestTimeRun(uint64_t& time)
 {
-    double t = 1000.0 - ((double)(GetTickCount64() - time) / 1000.0);
-    if(t <= 0) t = 1000.0;
-    Sleep((DWORD)t);
+    uint64_t t = uint64_t(1000.0 - (double(GetTickCount64() - time) / 1000.0));
+    if(t <= 0) t = 1000;
+    std::this_thread::sleep_for(std::chrono::milliseconds(t));
     time = GetTickCount64();
 }
 

@@ -151,7 +151,7 @@ void DisplayContextMenu(HWND hwnd, int ID);
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction);
 
-void TestTimeRun(ULONGLONG& time);
+void TestTimeRun(uint64_t& time);
 
 
 void CheckDir(std::string dir);
