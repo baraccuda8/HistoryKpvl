@@ -698,7 +698,7 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
     #pragma region Лист в касету
         {hGroup053, {szTem1,   Temp4Flag, {5, 95, 550, 60}, ""}},
         {hStatSheet_DataTime,       {szStat, Stat10Flag, {   0,  0, 129, 39}, "Время загрузки\nв закалочную печь"}},
-        {hStatSheet_Cassette_Data,  {szStat, Stat10Flag, { 130,  0, 419, 19}, "ID листа"}},
+        {hStatSheet_Cassette_Data,  {szStat, Stat10Flag, { 130,  0, 419, 19}, "ID кассеты"}},
         {hStatSheet_Cassette_Year,  {szStat, Stat10Flag, { 130, 20,  69, 19}, "Год"}},
         {hStatSheet_Cassette_Month, {szStat, Stat10Flag, { 200, 20,  69, 19}, "Месяц"}},
         {hStatSheet_Cassette_Day,   {szStat, Stat10Flag, { 270, 20,  69, 19}, "День"}},
