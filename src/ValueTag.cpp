@@ -272,15 +272,7 @@ void Value::SaveSQL()
                 sd << "UPDATE tag SET content_at = '"<< Create_at << "', content = ";
                 sd << GetString();
                 sd << " WHERE id = " << ID;
-                //sd << " WHERE name = '" << Patch.c_str() << "';";
                 SETUPDATESQL(SQLLogger, (*Conn), sd);
-
-                //std::string command = sd.str();
-                //PGresult* res = Conn->PGexec(command);
-                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                //    LOG_ERR_SQL(SQLLogger, res, command);
-                //PQclear(res);
                 InsertValue(Create_at);
                 OldVal = Val;
             }
@@ -298,22 +290,13 @@ void Value::SaveSQL()
                 sd << "UPDATE tag SET content_at = '" << Create_at << "', content = ";
                 sd << GetString();
                 sd << " WHERE id = " << ID;
-                //sd << " WHERE name = '" << Patch.c_str() << "';";
                 SETUPDATESQL(SQLLogger, (*Conn), sd);
-
-                //std::string command = sd.str();
-                //PGresult* res = Conn->PGexec(command);
-                ////LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                //    LOG_ERR_SQL(SQLLogger, res, command);
-                //PQclear(res);
                 InsertValue(Create_at);
                 OldVal = Val;
             }
         }
         else if(GetType() == OpcUa::VariantType::STRING)
         {
-            //std::string s1 = GetString();
             std::string s1 = GetValString(Val, coeff, format);
             std::string s2 = GetValString(OldVal, coeff, format);
             if(ifval || s1 != s2)
@@ -328,21 +311,6 @@ void Value::SaveSQL()
                 OldVal = Val;
             }
         }
-        //else if(GetType() == OpcUa::VariantType::BOOLEAN)
-        //{
-        //    std::string s1 = GetValString(Val, coeff, format);
-        //    std::string s2 = GetValString(OldVal, coeff, format);
-        //    if(ifval && s1 != s2)
-        //    {
-        //        std::stringstream sd;
-        //        sd << "UPDATE tag SET content_at = now(), content = ";
-        //        sd << s1;
-        //        sd << " WHERE id = " << ID;
-        //        SETUPDATESQL(SQLLogger, (*Conn), sd);
-        //        InsertValue();
-        //        OldVal = Val;
-        //    }
-        //}
         else if(ifval || OldVal != Val)
         {
             std::string Create_at = GetStringMSDataTime();
@@ -643,16 +611,22 @@ bool Value::Find(const uint32_t h, const OpcUa::Variant& v)
         {
             LOG_WARN(AllLogger, "{:90}| Ошибка типа: SQL:{} != OPC:{} Tag: {}", FUNCTION_LINE_NAME, Val.Type(), v.Type(), Patch);
         }
+
         Val = v;
+        OpcUa::Variant Old = OldVal;
+
         SaveSQL();
-        if(FunctionCallbak)
+
+        if(Old.IsNul() || Old != Val)
         {
-            GetString(Patch);
-            FunctionCallbak(this);
-        }
-        else
-        {
-            SetVariant(Patch);
+            if(FunctionCallbak)
+            {
+                GetString(Patch);
+                FunctionCallbak(this);
+            } else
+            {
+                SetVariant(Patch);
+            }
         }
     }
     return true;
