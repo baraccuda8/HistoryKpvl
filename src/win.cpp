@@ -199,7 +199,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     //{casSheet::Top6, { "До\nкантовки\n6", L2 }},
     //{casSheet::Top7, { "До\nкантовки\n7", L2 }},
     //{casSheet::Top8, { "До\nкантовки\n8", L2 }},
-
+    //
     //{casSheet::Bot1, { "После\nкантовки\n1", L2 }},
     //{casSheet::Bot2, { "После\nкантовки\n2", L2 }},
     //{casSheet::Bot3, { "После\nкантовки\n3", L2 }},

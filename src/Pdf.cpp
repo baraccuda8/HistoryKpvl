@@ -4950,7 +4950,7 @@ namespace PDF
 	{
 		std::string stop = "";
 		time_t td = DataTimeOfString(start);
-		td += (time_t)(60 * 40 * 1);		// + 40 минут
+		td += (time_t)((60 * 60 * 1) + (10 * 60));		// + 60 минут + 10 минут
 		stop = GetStringOfDataTime(&td);
 
 		if(id.length())
