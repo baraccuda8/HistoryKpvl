@@ -116,7 +116,9 @@ namespace KPVL {
         int SecondPos_at = 0;
         int hour = 0;
         int delete_at = 0;
-        int Cassette = 0;
+        int incant_at = 0;
+        int cant_at = 0;
+        int cassette = 0;
     };
 
 
@@ -200,7 +202,10 @@ namespace KPVL {
                         else if(l == "correct") Coll::correct = j;
                         else if(l == "secondpos_at") Coll::SecondPos_at = j;
                         else if(l == "delete_at") Coll::delete_at = j;
-                        else if(l == "cassette") Coll::Cassette = j;
+                        else if(l == "incant_at") Coll::incant_at = j;
+                        else if(l == "cant_at") Coll::cant_at = j;
+                        else if(l == "cassette") Coll::cassette = j;
+                        
                     }
                 }
             }
@@ -213,10 +218,19 @@ namespace KPVL {
             try
             {
                 GetCollumn(res);
-                sheet.DataTime = GetStringData(conn.PGgetvalue(res, l, Coll::create_at));
+
+                sheet.Create_at = GetStringData(conn.PGgetvalue(res, l, Coll::create_at));
+                sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Coll::start_at));
+                sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Coll::SecondPos_at));
+                sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Coll::datatime_end));
+                sheet.InCant_at = GetStringData(conn.PGgetvalue(res, l, Coll::incant_at));
+                sheet.Cant_at = GetStringData(conn.PGgetvalue(res, l, Coll::cant_at));
+                sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Coll::correct));
+                sheet.Delete_at = GetStringData(conn.PGgetvalue(res, l, Coll::delete_at));
+
+
                 sheet.Pos = conn.PGgetvalue(res, l, Coll::pos);
                 sheet.id = conn.PGgetvalue(res, l, Coll::id);
-                sheet.DataTime_End = GetStringData(conn.PGgetvalue(res, l, Coll::datatime_end));
                 sheet.DataTime_All = conn.PGgetvalue(res, l, Coll::datatime_all);
                 sheet.Alloy = conn.PGgetvalue(res, l, Coll::alloy);
                 sheet.Thikness = conn.PGgetvalue(res, l, Coll::thikness);
@@ -270,14 +284,10 @@ namespace KPVL {
                 sheet.CassetteNo = conn.PGgetvalue(res, l, Coll::cassetteno);
                 sheet.SheetInCassette = conn.PGgetvalue(res, l, Coll::sheetincassette);
 
-                sheet.Start_at = GetStringData(conn.PGgetvalue(res, l, Coll::start_at));
                 sheet.TimeForPlateHeat = conn.PGgetvalue(res, l, Coll::timeforplateheat);
                 sheet.PresToStartComp = conn.PGgetvalue(res, l, Coll::prestostartcomp);
                 sheet.Temperature = conn.PGgetvalue(res, l, Coll::temperature);
-                sheet.Correct = GetStringData(conn.PGgetvalue(res, l, Coll::correct));
-                sheet.SecondPos_at = GetStringData(conn.PGgetvalue(res, l, Coll::SecondPos_at));
-                sheet.Delete_at = GetStringData(conn.PGgetvalue(res, l, Coll::delete_at));
-                sheet.Cassette = conn.PGgetvalue(res, l, Coll::Cassette);
+                sheet.Cassette = conn.PGgetvalue(res, l, Coll::cassette);
             }
             CATCH(HardLogger, "");
         }
@@ -399,13 +409,13 @@ namespace KPVL {
                 if(!TS.Start_at.length())
                 {
                     std::stringstream sd;
-                    sd << " start_at = (SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3')";
+                    sd << " start_at = (SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.Create_at << "' AND content = '3')";
                     std::string update = sd.str();
 
                     Sheet::SetUpdateSheet(conn, TS, update, ""); // " start_at IS NULL AND ");
 
                     std::stringstream sa;
-                    sa << "SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.DataTime << "' AND content = '3'";
+                    sa << "SELECT MAX(create_at) FROM todos WHERE id_name = " << GenSeqToHmi.Seq_1_StateNo->ID << " AND create_at <= '" << TS.Create_at << "' AND content = '3'";
 
                     std::string command = sa.str();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
@@ -673,7 +683,7 @@ namespace KPVL {
 
                     //std::string id = GetIdSheet(conn, PD);
                     PalletSheet[Pos].id = id;
-                    PalletSheet[Pos].DataTime = GetStringDataTime();
+                    PalletSheet[Pos].Create_at = GetStringDataTime();
                     PalletSheet[Pos].Pos = std::to_string(Pos);
                     PalletSheet[Pos].Alloy = PD.AlloyCodeText->GetString();
                     PalletSheet[Pos].Thikness = PD.ThiknessText->GetString();

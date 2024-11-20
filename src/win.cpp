@@ -142,7 +142,7 @@ std::map <casSheet::cas, ListTitle> Sheet_Collumn ={
     {casSheet::NN, { "№", 30 }},
     {casSheet::Cassette, { "ID\nкассеты", 60 }},
     {casSheet::ID, { "ID", 50 }},
-    {casSheet::DataTime, { "Дата время\nсоздания листа", LL0 }},
+    {casSheet::Create_at, { "Дата время\nсоздания листа", LL0 }},
     {casSheet::Start_at, { "Дата время\nзагрузки в печь", LL0 }},
     {casSheet::SecondPos_at, { "Дата время\nво второй зоне", LL0 }},
     {casSheet::Delete_at, { "Удален", LL0 }},
@@ -1471,7 +1471,7 @@ LRESULT OnNotifySheet(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         if(subItem == casSheet::NN)         lstrcpy(plvdi->item.pszText, std::to_string(item + 1).c_str());
                         ELSEIF (casSheet::Cassette, p.Cassette);
                         ELSEIF (casSheet::ID, p.id);
-                        ELSEIF (casSheet::DataTime, GetDataTimeStr(p.DataTime));
+                        ELSEIF (casSheet::Create_at, GetDataTimeStr(p.Create_at));
                         ELSEIF (casSheet::Start_at, GetDataTimeStr(p.Start_at));
                         ELSEIF (casSheet::SecondPos_at, GetDataTimeStr(p.SecondPos_at));
                         ELSEIF (casSheet::DataTime_End, GetDataTimeStr(p.DataTime_End));

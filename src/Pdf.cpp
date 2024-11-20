@@ -482,9 +482,16 @@ namespace PDF
                         TSheet sheet;
                         KPVL::SQL::GetSheet(conn, res, l, sheet);
                         AllPfdSheet.push_back(sheet);
-                        if(!isRun) return;
+						if(!isRun)
+						{
+							PQclear(res);
+							return;
+						}
                     }
 				}
+				else
+					LOG_ERR_SQL(PdfLog, res, command);
+				PQclear(res);
 			}CATCH(PdfLog, "");
 		}
 
@@ -4946,11 +4953,79 @@ namespace PDF
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
 
-	void CorrectSheetDebug(PGConnection& conn, std::string start, std::string id)
+	time_t GetSheetOfBase(PGConnection& conn, std::string id)
+	{
+		try
+		{
+			std::stringstream sd;
+			sd << "SELECT * FROM sheet WHERE id = " << id; //delete_at IS NULL AND 
+			std::string command = sd.str();
+			PGresult* res = conn.PGexec(command);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(PQntuples(res))
+				{
+					TSheet sheet;
+					KPVL::SQL::GetSheet(conn, res, 0, sheet);
+					PQclear(res);
+
+					//Время кантовки
+					if(sheet.Cant_at.length())
+					{ 
+						time_t td = DataTimeOfString(sheet.Cant_at);
+						return td + 10 * 60;	//Плюс 10 минут
+					}
+					//Время листа на кантовку
+					else if(sheet.InCant_at.length())
+					{ 
+						time_t td = DataTimeOfString(sheet.InCant_at);
+						return td + 30 * 60;	//Плюс 30 минут
+					}
+					//Время листа выхода из печи
+					else if(sheet.DataTime_End.length())
+					{ 
+						time_t td = DataTimeOfString(sheet.DataTime_End);
+						return td + 30 * 60;	//Плюс 30 минут
+					}
+					//Время передачи листа во вторую зону
+					else if(sheet.SecondPos_at.length())
+					{ 
+						time_t td = DataTimeOfString(sheet.SecondPos_at);
+						float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						return td + (time_t)TimeHeat * 60 + 30 * 60;	//Плюс 30 минут, Плюс Время сигнализации окончания нагрева, мин
+					}
+					//Время входа листа в печь
+					else if(sheet.Start_at.length())
+					{
+						time_t td = DataTimeOfString(sheet.Start_at);
+						float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						return td + (time_t)TimeHeat * 60 + 40 * 60;	//Плюс 40 минут, Плюс Время сигнализации окончания нагрева, мин
+					}
+					//Время создания листа
+					else if(sheet.Create_at.length())
+					{ 
+						time_t td = DataTimeOfString(sheet.Create_at);
+						float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						return td + (time_t)TimeHeat * 60 + (60 * 60);	//Плюс 60 минут, Плюс Время сигнализации окончания нагрева, мин
+					}
+				}
+			}
+			else
+				LOG_ERR_SQL(SheetLogger, res, command);
+			PQclear(res);
+		}
+		CATCH(SheetLogger, "");
+		return 0;
+	}
+
+
+	void CorrectSheetDebug(PGConnection& conn, std::string id, std::string start)
 	{
 		std::string stop = "";
 		time_t td = DataTimeOfString(start);
-		td += (time_t)((60 * 60 * 1) + (10 * 60));		// + 60 минут + 10 минут
+		time_t ed = GetSheetOfBase(conn, id);
+		if(ed) td = ed;
+		else   td += (time_t)((60 * 60 * 1) + (10 * 60));		// + 60 минут + 10 минут
 		stop = GetStringOfDataTime(&td);
 
 		if(id.length())
@@ -4976,33 +5051,32 @@ namespace PDF
 		InitLogger(SheetLogger);
 		try
 		{
+			std::map <std::string, std::string> sheet_id;
+
 			LOG_INFO(SheetLogger, "Принудительная корректировка листов");
 			std::stringstream ssd;
-			ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY start_at LIMIT 1;";
-			//ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct >= '14-10-2024 19:53:30' AND correct <= '14-10-2024 20:00:23' AND pos >= 6 ORDER BY id DESC, start_at;";
+			ssd << "SELECT id, (start_at - INTERVAL '5 MINUTES') AS start FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY start_at;";
 			std::string command = ssd.str();
 			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-			while(isRun)
+			PGresult* res = conn.PGexec(command);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
 			{
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				int line = PQntuples(res);
+				for(int l = 0; l < line; l++)
 				{
-					if(PQntuples(res))
-					{
-						std::string id = conn.PGgetvalue(res, 0, 0);
-						std::string sheet_at = conn.PGgetvalue(res, 0, 1);
-						PQclear(res);
-						CorrectSheetDebug(conn, sheet_at, id);
-						continue;
-					}
+					std::string id = conn.PGgetvalue(res, l, 0);
+					std::string sheet_at = conn.PGgetvalue(res, l, 1);
+					sheet_id[id] = sheet_at;
 				}
-				else
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				PQclear(res);
-				break;
+			} 
+			else
+				LOG_ERR_SQL(CassetteLogger, res, command);
+			PQclear(res);
+			for(auto& a : sheet_id)
+			{
+				CorrectSheetDebug(conn, a.first, a.second);
 			}
-
 			LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
 
 		}

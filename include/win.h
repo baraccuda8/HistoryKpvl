@@ -1014,7 +1014,7 @@ namespace casSheet{
         NN = 0,
         Cassette = 1,
         ID = 2,
-        DataTime = 3,
+        Create_at = 3,
         Start_at,
         SecondPos_at,
         DataTime_End,
@@ -1154,7 +1154,7 @@ typedef struct _TSheet{
 
     std::string id = "";
     std::string Cassette = "";
-    std::string DataTime = "";
+    std::string Create_at = "";
     std::string Start_at = "";
     std::string DataTime_End = "";
     std::string DataTime_All = "";
@@ -1218,6 +1218,8 @@ typedef struct _TSheet{
     std::string Correct = "";
     std::string SecondPos_at = "";      //Время прехода во вторую зону
     std::string Delete_at = "";      //Удален
+    std::string InCant_at = "";      //Время прихода на кантовку
+    std::string Cant_at = "";       //Время кантовки
     std::string Return_at = "";     //Вернули в список
 
     _TSheet()
@@ -1229,7 +1231,7 @@ typedef struct _TSheet{
     {
         Cassette = "";
         id = "";
-        DataTime = "";
+        Create_at = "";
         Start_at = "";
         DataTime_End = "";
         DataTime_All = "";
@@ -1292,6 +1294,7 @@ typedef struct _TSheet{
         Correct = "";
         SecondPos_at = "";
         Delete_at = "";
+        Cant_at = "";
         Return_at = "";
     }
 
