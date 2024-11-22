@@ -4886,13 +4886,15 @@ namespace PDF
 			try
 			{
 				//std::string command = "SELECT now() - INTERVAL '30 min'";
-				std::string command = 
-					"SELECT start_at"
-					" - TIME '00:02:00'"						//Минут 2 минуты
-					" FROM sheet WHERE correct IS NULL AND start_at > ("
-					"SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1"
-					") AND CAST(pos AS integer) > 6 "
-					"ORDER BY start_at ASC LIMIT 1;";
+				std::string command =
+					"SELECT start_at "
+					"- TIME '00:02:00' "						//Минут 2 минуты
+					"FROM sheet WHERE "
+					"correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at DESC LIMIT 1";
+					//" FROM sheet WHERE correct IS NULL AND start_at > ("
+					//"SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1"
+					//") AND CAST(pos AS integer) > 6 "
+					//"ORDER BY start_at ASC LIMIT 1;";
 
 				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
