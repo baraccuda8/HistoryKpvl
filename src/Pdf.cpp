@@ -4971,25 +4971,25 @@ namespace PDF
 
 					//Время кантовки
 					if(sheet.Cant_at.length())
-					{ 
+					{
 						time_t td = DataTimeOfString(sheet.Cant_at);
-						return td + 10 * 60;	//Плюс 10 минут
+						return td + 5;	//Плюс 5 секунда
 					}
 					//Время листа на кантовку
 					else if(sheet.InCant_at.length())
-					{ 
+					{
 						time_t td = DataTimeOfString(sheet.InCant_at);
 						return td + 30 * 60;	//Плюс 30 минут
 					}
 					//Время листа выхода из печи
 					else if(sheet.DataTime_End.length())
-					{ 
+					{
 						time_t td = DataTimeOfString(sheet.DataTime_End);
 						return td + 30 * 60;	//Плюс 30 минут
 					}
 					//Время передачи листа во вторую зону
 					else if(sheet.SecondPos_at.length())
-					{ 
+					{
 						time_t td = DataTimeOfString(sheet.SecondPos_at);
 						float TimeHeat = Stof(sheet.TimeForPlateHeat);
 						return td + (time_t)TimeHeat * 60 + 30 * 60;	//Плюс 30 минут, Плюс Время сигнализации окончания нагрева, мин
@@ -5002,24 +5002,84 @@ namespace PDF
 						return td + (time_t)TimeHeat * 60 + 40 * 60;	//Плюс 40 минут, Плюс Время сигнализации окончания нагрева, мин
 					}
 					//Время создания листа
-					else if(sheet.Create_at.length())
-					{ 
-						time_t td = DataTimeOfString(sheet.Create_at);
-						float TimeHeat = Stof(sheet.TimeForPlateHeat);
-						return td + (time_t)TimeHeat * 60 + (60 * 60);	//Плюс 60 минут, Плюс Время сигнализации окончания нагрева, мин
-					}
+					//else if(sheet.Create_at.length())
+					//{ 
+						//time_t td = DataTimeOfString(sheet.Create_at);
+						//float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						//return td + (time_t)TimeHeat * 60 + (60 * 60);	//Плюс 60 минут, Плюс Время сигнализации окончания нагрева, мин
+					//}
 				}
-			}
-			else
-				LOG_ERR_SQL(SheetLogger, res, command);
+			} else
+				LOG_ERR_SQL(PdfLog, res, command);
 			PQclear(res);
 		}
 		CATCH(SheetLogger, "");
 		return 0;
 	}
 
+		std::string GetSheetOfBaseString(PGConnection& conn, std::string id)
+	{
+		try
+		{
+			std::stringstream sd;
+			sd << "SELECT * FROM sheet WHERE id = " << id; //delete_at IS NULL AND 
+			std::string command = sd.str();
+			PGresult* res = conn.PGexec(command);
+			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				if(PQntuples(res))
+				{
+					TSheet sheet;
+					KPVL::SQL::GetSheet(conn, res, 0, sheet);
+					PQclear(res);
 
-	void CorrectSheetDebug(PGConnection& conn, std::string id, std::string start)
+					//Время кантовки
+					if(sheet.Cant_at.length())
+					{
+						time_t td = DataTimeOfString(sheet.Cant_at) + 5;
+						return GetStringOfDataTime(&td);
+						//return td ;	//Плюс 5 секунда
+					}
+					//Время листа на кантовку
+					else if(sheet.InCant_at.length())
+					{
+						time_t td = DataTimeOfString(sheet.InCant_at) + 30 * 60;
+						return GetStringOfDataTime(&td);
+						//return td + 30 * 60;	//Плюс 30 минут
+					}
+					//Время листа выхода из печи
+					else if(sheet.DataTime_End.length())
+					{
+						time_t td = DataTimeOfString(sheet.DataTime_End) + 30 * 60;
+						return GetStringOfDataTime(&td);
+						//return td + 30 * 60;	//Плюс 30 минут
+					}
+					//Время передачи листа во вторую зону
+					else if(sheet.SecondPos_at.length())
+					{
+						float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						time_t td = DataTimeOfString(sheet.SecondPos_at) + (time_t)TimeHeat * 60 + 30 * 60;
+						return GetStringOfDataTime(&td);
+						//return td + (time_t)TimeHeat * 60 + 30 * 60;	//Плюс 30 минут, Плюс Время сигнализации окончания нагрева, мин
+					}
+					//Время входа листа в печь
+					else if(sheet.Start_at.length())
+					{
+						float TimeHeat = Stof(sheet.TimeForPlateHeat);
+						time_t td = DataTimeOfString(sheet.Start_at) + (time_t)TimeHeat * 60 + 40 * 60;
+						return GetStringOfDataTime(&td);
+						//return td + (time_t)TimeHeat * 60 + 40 * 60;	//Плюс 40 минут, Плюс Время сигнализации окончания нагрева, мин
+					}
+				}
+			} else
+				LOG_ERR_SQL(PdfLog, res, command);
+			PQclear(res);
+		}
+		CATCH(SheetLogger, "");
+		return 0;
+	}
+
+	void CorrectSheetDebug(PGConnection& conn, std::string start, std::string id)
 	{
 		std::string stop = "";
 		time_t td = DataTimeOfString(start);
@@ -5051,32 +5111,34 @@ namespace PDF
 		InitLogger(SheetLogger);
 		try
 		{
-			std::map <std::string, std::string> sheet_id;
-
 			LOG_INFO(SheetLogger, "Принудительная корректировка листов");
 			std::stringstream ssd;
-			ssd << "SELECT id, (start_at - INTERVAL '5 MINUTES') AS start FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY start_at;";
+			ssd << "SELECT id, (start_at - INTERVAL '5 MINUTES') AS start FROM sheet WHERE correct IS NULL AND pos > 6 ORDER BY start_at LIMIT 1;";
+			//ssd << "SELECT id, start_at - INTERVAL '5 MINUTES' FROM sheet WHERE correct >= '14-10-2024 19:53:30' AND correct <= '14-10-2024 20:00:23' AND pos >= 6 ORDER BY id DESC, start_at;";
 			std::string command = ssd.str();
 			if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
 
-			PGresult* res = conn.PGexec(command);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
+			while(isRun)
 			{
-				int line = PQntuples(res);
-				for(int l = 0; l < line; l++)
+				PGresult* res = conn.PGexec(command);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
-					std::string id = conn.PGgetvalue(res, l, 0);
-					std::string sheet_at = conn.PGgetvalue(res, l, 1);
-					sheet_id[id] = sheet_at;
+					if(PQntuples(res))
+					{
+						std::string id = conn.PGgetvalue(res, 0, 0);
+						std::string sheet_at = conn.PGgetvalue(res, 0, 1);
+						PQclear(res);
+						//if(Stoi(id) > 20000)
+						CorrectSheetDebug(conn, sheet_at, id);
+						continue;
+					}
 				}
-			} 
-			else
-				LOG_ERR_SQL(CassetteLogger, res, command);
-			PQclear(res);
-			for(auto& a : sheet_id)
-			{
-				CorrectSheetDebug(conn, a.first, a.second);
+				else
+					LOG_ERR_SQL(CassetteLogger, res, command);
+				PQclear(res);
+				break;
 			}
+
 			LOG_INFO(SheetLogger, "Закончили принудительную корректировку листов");
 
 		}
@@ -5127,8 +5189,13 @@ namespace PDF
 			PGConnection conn;
 			CONNECTION1(conn, SheetLogger);
 
+			//std::string start = "2024-11-21 06:35:47";
+			std::string start = SHEET::GetStartTime(conn);
+			std::string stop =  "";// "2024-10-17 12:00:00";
+			SHEET::GetSheets sheets(conn, start, stop);
+
 			//Проверка и коррекция всех листов не имеющих метку correct
-			CorrectSheetDebug(conn);
+			//CorrectSheetDebug(conn);
 
 			DbugPdf(conn);
 
@@ -5173,7 +5240,8 @@ namespace PDF
 		try
 		{
 			InitLogger(CorrectLog);
-
+			//PGConnection conn;
+			//CONNECTION1(conn, CorrectLog);
 #if HENDINSERT
 			//Для ручного тестирования
 			SetWindowText(hWndDebug, "Стартанул");
@@ -5209,10 +5277,10 @@ namespace PDF
 				{
 					if(!NotCorrect)
 					{
-						
+
 						std::string out = "Запуск создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
-						
+
 						////CorrectCassette(0);
 
 						CorrectSheet(0);
@@ -5223,8 +5291,9 @@ namespace PDF
 						//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 
 #ifdef _DEBUG
-						//В дебаге один проход и выход из программы
+												//В дебаге один проход и выход из программы
 						isRun = false;
+					}
 #else
 					}
 					int f = (NotCorrect ? 30 : 300); //30 секунд или 5 минут
