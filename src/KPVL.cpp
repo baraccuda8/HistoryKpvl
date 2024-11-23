@@ -1499,6 +1499,46 @@ namespace KPVL {
                 return 0;
             }
 
+            void UpdateInCant()
+            {
+                T_PlateData PD = PlateData[Pos];
+                T_CassetteData Cassette = HMISheetData.Cassette;
+
+                int32_t id = Stoi(SheetPos(conn_kpvl, PD, Pos));
+
+                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
+                std::string DataTime = GetStringDataTime();
+
+                std::stringstream co;
+                co << "UPDATE sheet SET";
+                co << " pos = 6";
+                co << ", cassette = " << CasseteId;
+                co << ", year = " << Cassette.Year->Val.As<int32_t>();
+                co << ", month = " << Cassette.Month->Val.As<int32_t>();
+                co << ", day = " << Cassette.Day->Val.As<int32_t>();
+                co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
+                co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
+                co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
+                co << ", incant_at = now() ";
+                co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
+                if(id != 0)
+                {
+                    co << " id = " << id;
+                } else
+                {
+                    std::stringstream sd;
+                    sd << " melt = " << PD.Melt->GetInt();
+                    sd << " AND slab = " << PD.Slab->GetInt();
+                    sd << " AND pack = " << PD.Pack->GetInt();
+                    sd << " AND partno = " << PD.PartNo->GetInt();
+                    sd << " AND sheet = " << PD.Sheet->GetInt();
+                    sd << " AND subsheet = " << PD.SubSheet->GetInt();
+                    LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
+                    co << sd.str();
+                }
+                SETUPDATESQL(HardLogger, conn_kpvl, co);
+            }
+
             DWORD Data(Value* value)
             {
                 try
@@ -1515,9 +1555,7 @@ namespace KPVL {
                     {
                         //std::string update = " incant_at = '" + GetStringDataTime() + "'";
                         //SetUpdateSheet(conn_kpvl, PD, update, ""); //" incant_at IS NULL  AND");
-                        SetUpdateSheet(conn_kpvl, PD, " incant_at = now() ", "");
-
-                        SheetPos(conn_kpvl, PD, Pos);
+                        UpdateInCant();
                         DeleteNullSgeet(conn_kpvl, PD, Pos);
                     }
                 }
@@ -1579,7 +1617,7 @@ namespace KPVL {
                             co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
                             co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
                             co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
-                            co << ", cant_at = '" << DataTime << "'";
+                            co << ", cant_at = now()";
                             co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
                         #pragma endregion
                         #pragma region WHERE ...

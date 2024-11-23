@@ -4890,7 +4890,7 @@ namespace PDF
 					"SELECT start_at "
 					"- TIME '00:02:00' "						//Минут 2 минуты
 					"FROM sheet WHERE "
-					"correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at DESC LIMIT 1";
+					"correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at LIMIT 1";
 					//" FROM sheet WHERE correct IS NULL AND start_at > ("
 					//"SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1"
 					//") AND CAST(pos AS integer) > 6 "
@@ -5182,30 +5182,31 @@ namespace PDF
 	DWORD CorrectSheet(LPVOID)
 	{
 		InitLogger(SheetLogger);
-
+	
 		if(isCorrectSheet) return 0;
 		isCorrectSheet = true;
-
+	
 		try
 		{
 			PGConnection conn;
 			CONNECTION1(conn, SheetLogger);
-
+	
 			//std::string start = "2024-11-21 06:35:47";
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop =  "";// "2024-10-17 12:00:00";
-			SHEET::GetSheets sheets(conn, start, stop);
 
+			SHEET::GetSheets sheets(conn, start, stop);
+	
 			//Проверка и коррекция всех листов не имеющих метку correct
 			//CorrectSheetDebug(conn);
-
+	
 			DbugPdf(conn);
-
+	
 		}
 		CATCH(SheetLogger, "");
-
+	
 		isCorrectSheet = false;
-
+	
 		SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetStringDataTime()).c_str());
 		return 0;
 	}
@@ -5222,10 +5223,7 @@ namespace PDF
 		{
 			std::string start = "";
 			std::string stop = "";
-
-	//		std::string start = "2024-08-01 00:00:00";
-	//		std::string stop = "2024-10-01 00:00:00";
-			CASSETTE::GetCassettes cass = CASSETTE::GetCassettes(start, stop);
+			CASSETTE::GetCassettes cass(start, stop);
 		}
 		CATCH(CassetteLogger, "");
 	
@@ -5283,12 +5281,12 @@ namespace PDF
 						std::string out = "Запуск создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
 
-						////CorrectCassette(0);
+						//CASSETTE::GetCassettes cass("", "");
 
 						CorrectSheet(0);
-						CASSETTE::GetCassettes cass("", "");
-						out = "Закончили создание паспортов: " + GetStringDataTime();
+						CorrectCassette(0);
 
+						out = "Закончили создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
 						//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
 
