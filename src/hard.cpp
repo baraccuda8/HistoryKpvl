@@ -282,7 +282,6 @@ bool cmpAllTagKpvl(Value* first, Value* second)
 std::map<MSSEC, ChannelSubscription>cssKPVL;
 
 
-ClassDataChangeKPVL DataChangeKPVL;
 
 void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
 {
@@ -298,7 +297,6 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                     SetWindowText(winmap(hEditDiagnose8), (KPVL::ServerDataTime + " (" + std::to_string(WatchDogWait) + ")").c_str());
                 }
 
-                SetWindowText(winmap(hEditMode1), "Пришли данные...");
                 WatchDog = TRUE; //Бит жизни
 
                 OpcUa::NodeId id = node.GetId();
@@ -312,6 +310,8 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                 }
                 else if(id.IsString())
                 {
+                    SetWindowText(winmap(hEditMode1), "Пришли данные...");
+
                     patch = id.GetStringIdentifier();
                     OpcUa::Variant vals = val;
                     for(auto& a : AllTagKpvl)
@@ -328,9 +328,9 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
                             return;
                         }
                     }
+                    SetWindowText(winmap(hEditMode1), "Ждем данные...");
                 }
 
-                SetWindowText(winmap(hEditMode1), "Ждем данные...");
             }
             catch(std::runtime_error& exc)
             {
@@ -348,24 +348,27 @@ void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, c
 
 void PLC_KPVL::InitNodeId()
 {
-    LOG_INFO(Logger, "{:90}| Инициализация узлов... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    LOG_INFO(Logger, "{:90}| Проверка Patch = Server_ServerStatus_CurrentTime", FUNCTION_LINE_NAME);
-    
-    nodeCurrentTime = GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime); //Node текущее время
+    try{
+        LOG_INFO(Logger, "{:90}| Инициализация узлов... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        LOG_INFO(Logger, "{:90}| Проверка Patch = Server_ServerStatus_CurrentTime", FUNCTION_LINE_NAME);
 
-    if(nodeCurrentTime.IsValid())
-    {
-        OpcUa::Variant val = nodeCurrentTime.GetValue();
-        KPVL::ServerDataTime = val.ToString();
-        SetWindowText(winmap(hEditTimeServer), KPVL::ServerDataTime.c_str());
-        SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-    }
+        nodeCurrentTime = GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime); //Node текущее время
 
-    LOG_INFO(Logger, "{:90}| Инициализация NodeId", FUNCTION_LINE_NAME);
-    for(auto& a : AllTagKpvl)
-    {
-        a->InitNodeId(this);
+        if(nodeCurrentTime.IsValid())
+        {
+            OpcUa::Variant val = nodeCurrentTime.GetValue();
+            KPVL::ServerDataTime = val.ToString();
+            SetWindowText(winmap(hEditTimeServer), KPVL::ServerDataTime.c_str());
+            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+        }
+
+        LOG_INFO(Logger, "{:90}| Инициализация NodeId", FUNCTION_LINE_NAME);
+        for(auto& a : AllTagKpvl)
+        {
+            a->InitNodeId(this);
+        }
     }
+    CATCH(PethLogger, "");
 
 #ifndef TESTTEMPER
     Par_Gen.UnloadSpeed->coeff = 1000;
@@ -374,39 +377,38 @@ void PLC_KPVL::InitNodeId()
 
 void PLC_KPVL::InitTag()
 {
+    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     try
     {
         //Создание Subscribe
         LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        for(auto& a : AllTagKpvl)
+        {
+            if(a->Sec)
+                avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
+        }
 
-        CREATESUBSCRIPT(cssKPVL, sec00500, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, sec01000, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, sec02000, &DataChangeKPVL, Logger);
-        CREATESUBSCRIPT(cssKPVL, sec05000, &DataChangeKPVL, Logger);
-
-        cssKPVL[sec00500].Subscribe(nodeCurrentTime);
     }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
-        throw std::runtime_error(exc);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
-        throw;
-    }
+    CATCHINIT();
 
 
-    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
-    for(auto& a : AllTagKpvl)
-            avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
 
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec00500, avid[sec00500].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec01000, avid[sec01000].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec02000, avid[sec02000].size());
-    LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec05000, avid[sec05000].size());
+    //for(auto& a : avid)
+    //    CREATESUBSCRIPT(cssKPVL, a.first, &DataChangeKPVL, Logger);
+    //
+        //CREATESUBSCRIPT(cssKPVL, sec00500, &DataChangeKPVL, Logger);
+        //CREATESUBSCRIPT(cssKPVL, sec01000, &DataChangeKPVL, Logger);
+        //CREATESUBSCRIPT(cssKPVL, sec02000, &DataChangeKPVL, Logger);
+        //CREATESUBSCRIPT(cssKPVL, sec05000, &DataChangeKPVL, Logger);
+        //MSSEC sec = avid.begin()->first;
+    //cssKPVL[avid.begin()->first].Subscribe(nodeCurrentTime);
+    //
+    //
+    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec00500, avid[sec00500].size());
+    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec01000, avid[sec01000].size());
+    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec02000, avid[sec02000].size());
+    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec05000, avid[sec05000].size());
 
 
     for(auto& ar : avid)
@@ -415,32 +417,19 @@ void PLC_KPVL::InitTag()
         {
             if(ar.second.size())
             {
+                CREATESUBSCRIPT(cssKPVL, ar.first, &DataChangeKPVL, Logger);
                 LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssKPVL[ar.first].msec, ar.second.size());
                 std::vector<uint32_t> monitoredItemsIds = cssKPVL[ar.first].sub->SubscribeDataChange(ar.second);
             }
-        }
-        catch(std::runtime_error& exc)
-        {
-            LOG_INFO(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
-            for(auto& a : AllTagKpvl)
-            {
-                if(!a->TestNode(this))
-                    LOG_ERROR(Logger, "{:90}| Error Patch: {}", FUNCTION_LINE_NAME, a->Patch);
-            }
-
-            throw std::runtime_error(exc);
-        }
-        catch(...)
-        {
-            LOG_INFO(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
-            for(auto& a : AllTagKpvl)
-            {
-                if(!a->TestNode(this))
-                    LOG_ERROR(Logger, "{:90}| Error Patch: {}", FUNCTION_LINE_NAME, a->Patch);
-            }
-            throw;
-        }
+        }   
+        CATCHINIT();
     }
+    try
+    {
+        if(avid.size() && avid.begin()->first)
+            cssKPVL[avid.begin()->first].Subscribe(nodeCurrentTime);
+    }
+    CATCHINIT();
 }
 
 
@@ -448,7 +437,6 @@ void PLC_KPVL::Run(int count)
 {
     countconnect1 = count;
     countconnect2 = 0;
-    DataChangeKPVL.WatchDogWait = 0;
 
     LOG_INFO(Logger, "{:90}| Run... : countconnect = {}.{} to: {}", FUNCTION_LINE_NAME, countconnect1, countconnect2, Uri);
 
@@ -485,6 +473,11 @@ void PLC_KPVL::Run(int count)
 
         LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
+
+        for(auto val : AllTagKpvl)
+            MySetWindowText(val);
+
+        DataChangeKPVL.WatchDogWait = 0;
         DataChangeKPVL.InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 

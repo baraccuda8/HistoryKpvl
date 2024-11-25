@@ -61,10 +61,10 @@ std::string GetValString(OpcUa::Variant& Val, float coeff, std::string format = 
     try
     {
         std::string strVal = "";
-        if(isRun)
+        //if(isRun)
         {
+            //if(Val.IsNul()) return "";
             if(Val.IsNul()) return "";
-
             OpcUa::VariantType type = Val.Type();
             if(format.length())
             {
@@ -386,10 +386,6 @@ void Value::InitNodeId(Client* cds)
         if(!cds)
             throw std::runtime_error("Error Codesys = NULL");
 
-        if(Patch.find("ReturnCassetteCmd") != std::string::npos)
-        {
-            vvv (Patch);
-        }
         Codesys = cds;
         NodeId = OpcUa::NodeId(Patch, cds->NamespaceIndex);
     }
@@ -676,10 +672,13 @@ void MySetWindowText(HWND h, std::string ss)
 
 void MySetWindowText(Value* value)
 {
-    HWND h = winmap(value->winId);
-    if(value && h)
+    if(value)
     {
-        SetWindowText(h, value->GetString().c_str());
-        InvalidateRect(h, NULL, false);
+        HWND h = winmap(value->winId);
+        if(h)
+        {
+            SetWindowText(h, value->GetString().c_str());
+            InvalidateRect(h, NULL, false);
+        }
     }
 }

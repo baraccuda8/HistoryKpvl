@@ -21,6 +21,8 @@ class PLC_S107: public Client
 {
 public:
 
+    ClassDataChangeS107 DataChangeS107;
+
     PLC_S107(std::string uri, std::shared_ptr<spdlog::logger>& log): Client(uri, log){};
     //void Connect() override;
 

@@ -1,6 +1,17 @@
 #pragma once
 #include "Subscript.h"
 
+#define CATCHINIT() catch(std::runtime_error& exc)\
+    {\
+        LOG_ERROR(Logger, "{:90}| ", FUNCTION_LINE_NAME, exc.what());\
+        throw std::runtime_error(exc);\
+    }\
+    catch(...)\
+    {\
+        LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);\
+        throw;\
+    }
+
 
 //class Client
 //{
@@ -142,6 +153,16 @@
 //
 
 //using namespace OpcUa;
+class ClassDataChange: public Subscriptions
+{
+public:
+    bool InitGoot = FALSE;
+    bool WatchDog = false;
+    int WatchDogWait = 0;
+
+    virtual void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) = 0;
+};
+
 
 #define NEWS 0
 class Client
@@ -169,8 +190,10 @@ public:
     time_t SekRun = 0;
 
     Client(std::string uri, std::shared_ptr<spdlog::logger>& logger): Uri(uri), Logger(logger)
-    {
+    { 
     };
+
+    ~Client();
 
     void Connect();
 

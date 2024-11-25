@@ -102,15 +102,6 @@ inline T GetVal(Value* value)
 }
 
 
-class ClassDataChange: public Subscriptions
-{
-public:
-    bool InitGoot = FALSE;
-    bool WatchDog = false;
-    int WatchDogWait = 0;
-
-    virtual void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) = 0;
-};
 
 
 void MySetWindowText(HWND h, const char* ss);

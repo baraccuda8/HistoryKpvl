@@ -500,11 +500,11 @@ void InitCurentTag()
     //    }
     //}
 
-    for(auto& val : AllTagKpvl)
+    for(auto val : AllTagKpvl)
     {
         val->UpdateVal();
     }
-    for(auto& val : AllTagPeth)
+    for(auto val : AllTagPeth)
     {
         val->UpdateVal();
     }

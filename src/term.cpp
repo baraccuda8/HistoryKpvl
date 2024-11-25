@@ -178,7 +178,6 @@ bool cmpAllTagPeth(Value* first, Value* second)
 
 std::map<MSSEC, ChannelSubscription>cssS107;
 
-ClassDataChangeS107 DataChangeS107;
 
 void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
 {
@@ -192,7 +191,6 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
                 SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
             }
 
-            SetWindowText(winmap(hEditMode2), "Пришли данные...");
             WatchDog = TRUE; //Бит жизни
 
             OpcUa::NodeId id = node.GetId();
@@ -206,6 +204,7 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
             }
             else if(id.IsString())
             {
+                SetWindowText(winmap(hEditMode2), "Пришли данные...");
                 patch = id.GetStringIdentifier();
                 OpcUa::Variant vals = val;
                 for(auto& a : AllTagPeth)
@@ -222,9 +221,9 @@ void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, c
                         return;
                     }
                 }
+                SetWindowText(winmap(hEditMode2), "Ждем данные...");
             }
 
-            SetWindowText(winmap(hEditMode2), "Ждем данные...");
         }
         CATCH(PethLogger, "");
         //catch(std::runtime_error& exc)
@@ -269,6 +268,7 @@ void PLC_S107::InitNodeId()
     CATCH(PethLogger, "");
 }
 
+
 void PLC_S107::InitTag()
 {
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
@@ -279,80 +279,51 @@ void PLC_S107::InitTag()
         //Создание Subscribe
         LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
-        
-        CREATESUBSCRIPT(cssS107, sec00500, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, sec01000, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, sec02000, &DataChangeS107, Logger);
-        CREATESUBSCRIPT(cssS107, sec05000, &DataChangeS107, Logger);
+        //CREATESUBSCRIPT(cssS107, sec00500, &DataChangeS107, Logger);
+        //CREATESUBSCRIPT(cssS107, sec01000, &DataChangeS107, Logger);
+        //CREATESUBSCRIPT(cssS107, sec02000, &DataChangeS107, Logger);
+        //CREATESUBSCRIPT(cssS107, sec05000, &DataChangeS107, Logger);
+    }
+    CATCHINIT();
 
-        cssS107[sec00500].Subscribe(nodeCurrentTime);
-    }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| ", FUNCTION_LINE_NAME, exc.what());
-        throw std::runtime_error(exc);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
-        throw;
-    }
     try
     {
         for(auto& a : AllTagPeth)
         {
-            //if(a->TestNode(this))
             if(a->Sec)
                 avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
-            else
-            {
-                int t = 0;
-            }
-            //else
-            //    LOG_WARN(Logger, "{:90}| Error tag {}", FUNCTION_LINE_NAME, a->Patch);
         }
-    }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| ", FUNCTION_LINE_NAME, exc.what());
-        throw std::runtime_error(exc);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
-        throw;
-    }
+    } 
+    CATCHINIT();
 
 
     for(auto& ar : avid)
     {
         try
         {
-            LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssS107[ar.first].msec, ar.second.size());
-            std::vector<uint32_t> monitoredItemsIds = cssS107[ar.first].sub->SubscribeDataChange(ar.second);
-        }
-        catch(std::runtime_error& exc)
-        {
-            LOG_ERROR(Logger, exc.what());
-            throw std::runtime_error(exc);
-        }
-        catch(...)
-        {
-            LOG_ERROR(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
-            throw;
-        }
+            if(ar.second.size())
+            {
+                CREATESUBSCRIPT(cssS107, ar.first, &DataChangeS107, Logger);
+                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssS107[ar.first].msec, ar.second.size());
+                std::vector<uint32_t> monitoredItemsIds = cssS107[ar.first].sub->SubscribeDataChange(ar.second);
+            }
+        } 
+        CATCHINIT();
     }
+    try
+    {
+        if(avid.size() && avid.begin()->first)
+            cssS107[avid.begin()->first].Subscribe(nodeCurrentTime);
+    } 
+    CATCHINIT();
 }
 
 void PLC_S107::Run(int count)
 {
     countconnect1 = count;
     countconnect2 = 0;
-    DataChangeS107.WatchDogWait = 0;
 
     LOG_INFO(Logger, "{:90}| Run... : countconnect = {}.{} to: {}", FUNCTION_LINE_NAME, countconnect1, countconnect2, Uri);
-
-    SetWindowText(winmap(hEditTime_1), std::to_string(DataChangeS107.WatchDogWait).c_str());
 
     try
     {
@@ -383,8 +354,13 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "InitTag");
         InitTag();
 
+
         LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
+        for(auto val : AllTagPeth)
+            MySetWindowText(val);
+
+        DataChangeS107.WatchDogWait = 0;
         DataChangeS107.InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 

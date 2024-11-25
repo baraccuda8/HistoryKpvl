@@ -8,6 +8,16 @@
 #include "ClCodeSys.h"
 
 
+//Client::Client(std::string uri, std::shared_ptr<spdlog::logger>& logger): Uri(uri), Logger(logger)
+//{
+    //DataChangeKPVL = new ClassDataChangeKPVL();
+//};
+
+Client::~Client()
+{
+    //delete DataChangeKPVL;
+}
+
 void Client::GetRoot()
 {
     if(!isRun)

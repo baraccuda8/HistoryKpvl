@@ -5199,7 +5199,14 @@ namespace PDF
 	
 			//Проверка и коррекция всех листов не имеющих метку correct
 			//CorrectSheetDebug(conn);
-	
+			if(start.length())
+			{
+				std::stringstream as;
+				as << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND start_at <= '" << start << "' AND pos > 6;";
+				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, as.str());
+				SETUPDATESQL(SheetLogger, conn, as);
+			}
+
 			DbugPdf(conn);
 	
 		}

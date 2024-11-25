@@ -265,7 +265,8 @@ std::map<int, const char*> NamePos2 = {
 #define XXC1 MaxTrackSizeX - XXX1 - 2
 
 //Список элементов окон главного окна
-std::map<HWNDCLIENT, structWindow>mapWindow = {
+typedef std::map<HWNDCLIENT, structWindow> MAP_WINDOW;
+MAP_WINDOW mapWindow = {
 
 
 {hEditDiagnose, {szStat,   Stat03Flag, {150, 0, 0, 21}, "Информацмя"}},
@@ -383,13 +384,13 @@ std::map<HWNDCLIENT, structWindow>mapWindow = {
 
 #pragma region Данные статистики
         {hGroup01,{szTem1,  Temp4Flag,{XXX1 + 70, 0, 540, 160}, ""}},
-        {hEditState_11, {szStat,   Stat10Flag, {0,     0,  19, 19}, "1"}},
-        {hEditState_21, {szStat,   Stat10Flag, {0,    20,  19, 19}, "2"}},
-        {hEditState_31, {szStat,   Stat10Flag, {0,    40,  19, 19}, "3"}},
+        {hEditState_11, {szStat,   Stat10Flag, {0,     0,  19, 19}, "0"}},
+        {hEditState_21, {szStat,   Stat10Flag, {0,    20,  19, 19}, "0"}},
+        {hEditState_31, {szStat,   Stat10Flag, {0,    40,  19, 19}, "0"}},
 
-        {hEditState_12, {szStat, Stat05Flag, {20,    0, 295, 19}, "4"}},
-        {hEditState_22, {szStat, Stat05Flag, {20,   20, 295, 19}, "5"}},
-        {hEditState_32, {szStat, Stat05Flag, {20,   40, 295, 19}, "6"}},
+        {hEditState_12, {szStat, Stat05Flag, {20,    0, 295, 19}, ""}},
+        {hEditState_22, {szStat, Stat05Flag, {20,   20, 295, 19}, ""}},
+        {hEditState_32, {szStat, Stat05Flag, {20,   40, 295, 19}, ""}},
 
         {hEditWDG,          {szStat, Stat05Flag, {320, 0, 139, 19}, "7"}},
         {hEditState_WDG,    {szStat, Stat05Flag, {320,20, 139, 19}, "8"}},
