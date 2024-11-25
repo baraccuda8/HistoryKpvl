@@ -10,18 +10,19 @@ extern std::shared_ptr<spdlog::logger> FurnLogger;
 extern std::shared_ptr<spdlog::logger> TestLogger;
 
 
-class ClassDataChangeS107: public ClassDataChange
+//class ClassDataChangeS107: public ClassDataChange
+//{
+//public:
+//    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
+//};
+
+
+class PLC_S107: public Client, ClassDataChange
 {
 public:
     void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
-};
 
-
-class PLC_S107: public Client
-{
-public:
-
-    ClassDataChangeS107 DataChangeS107;
+    //ClassDataChangeS107 DataChangeS107;
 
     PLC_S107(std::string uri, std::shared_ptr<spdlog::logger>& log): Client(uri, log){};
     //void Connect() override;

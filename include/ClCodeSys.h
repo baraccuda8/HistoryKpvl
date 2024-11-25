@@ -165,7 +165,7 @@ public:
 
 
 #define NEWS 0
-class Client
+class Client: public OpcUa::UaClient
 {
 public:
     int countconnect1 = 0;
@@ -178,7 +178,7 @@ public:
 #if NEWS
     std::shared_ptr<OpcUa::UaClient>client = NULL;
 #else
-    OpcUa::UaClient * client = NULL;
+    //OpcUa::UaClient * client = NULL;
 #endif
     std::string Uri = "";
     std::string NamePLC = "";
@@ -189,7 +189,7 @@ public:
     int countget = 1;
     time_t SekRun = 0;
 
-    Client(std::string uri, std::shared_ptr<spdlog::logger>& logger): Uri(uri), Logger(logger)
+    Client(std::string uri, std::shared_ptr<spdlog::logger>& logger): Uri(uri), Logger(logger), OpcUa::UaClient(logger)
     { 
     };
 
@@ -201,6 +201,7 @@ public:
     void GetTimeServer();
     void GetNameSpace();
 
+    OpcUa::Node GetNode(OpcUa::NodeId& nodeid);
     OpcUa::Node GetNode(OpcUa::ObjectId Id);
     OpcUa::Node GetNode(std::string name);
     

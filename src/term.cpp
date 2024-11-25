@@ -179,7 +179,7 @@ bool cmpAllTagPeth(Value* first, Value* second)
 std::map<MSSEC, ChannelSubscription>cssS107;
 
 
-void ClassDataChangeS107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
+void PLC_S107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
 {
     std::string patch = "";
     if(attr == OpcUa::AttributeId::Value)
@@ -303,7 +303,7 @@ void PLC_S107::InitTag()
         {
             if(ar.second.size())
             {
-                CREATESUBSCRIPT(cssS107, ar.first, &DataChangeS107, Logger);
+                cssS107[ar.first].Create(this, this, ar.first, Logger);;
                 LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssS107[ar.first].msec, ar.second.size());
                 std::vector<uint32_t> monitoredItemsIds = cssS107[ar.first].sub->SubscribeDataChange(ar.second);
             }
@@ -327,13 +327,13 @@ void PLC_S107::Run(int count)
 
     try
     {
-        DataChangeS107.InitGoot = FALSE;
+        InitGoot = FALSE;
         countget = 1;
 
 #if NEW
         client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
 #else
-        client = new OpcUa::UaClient(Logger);
+        //client = new OpcUa::UaClient(Logger);
 #endif
 
         SetWindowText(winmap(hEditMode2), "Connect");
@@ -360,15 +360,15 @@ void PLC_S107::Run(int count)
         for(auto val : AllTagPeth)
             MySetWindowText(val);
 
-        DataChangeS107.WatchDogWait = 0;
-        DataChangeS107.InitGoot = TRUE;
+        WatchDogWait = 0;
+        InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 
         isInitPLC_S107 = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode2), "Чтение данных");
         
-        while(isRun && client->KeepAlive.Running)
+        while(isRun && KeepAlive.Running)
         {
             HMISheetData.WDG_fromBase->Set_Value(true);
 
@@ -390,7 +390,7 @@ void PLC_S107::Run(int count)
 #else
         //client->Disconnect();
         LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        delete client;
+        //delete client;
 #endif
         return;
     }
@@ -421,7 +421,7 @@ void PLC_S107::Run(int count)
 
         LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         SetWindowText(winmap(hEditMode2), "delete");
-        delete client;
+        //delete client;
 #endif
 
     }
@@ -449,34 +449,34 @@ void PLC_S107::GetWD()
 bool PLC_S107::WD()
 {
     //Бит жизни
-    if(DataChangeS107.WatchDog == TRUE)
+    if(WatchDog == TRUE)
     {
-        DataChangeS107.WatchDog = FALSE;
-        if(DataChangeS107.WatchDogWait)
+        WatchDog = FALSE;
+        if(WatchDogWait)
         {
-            if(DataChangeS107.WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, DataChangeS107.WatchDogWait);
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
 
         }
-        DataChangeS107.WatchDogWait = 0;
+        WatchDogWait = 0;
     }
     else
     {
-        DataChangeS107.WatchDogWait++; //Инкрементируем счетчик ошибок связи
-        if(DataChangeS107.WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
+        WatchDogWait++; //Инкрементируем счетчик ошибок связи
+        if(WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
         {
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(DataChangeS107.WatchDogWait).c_str());
+            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
             //SekRun = time(NULL);
             return true;
         }
         else
         {
-            if(DataChangeS107.WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, DataChangeS107.WatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(DataChangeS107.WatchDogWait).c_str());
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
             //SekRun = time(NULL);
         }
@@ -1289,6 +1289,9 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 #pragma endregion
+    LOG_INFO(TestLogger, "{:90} Stop Open_FURN_SQL", FUNCTION_LINE_NAME);
+    LOG_INFO(FurnLogger, "{:90} Stop Open_FURN_SQL", FUNCTION_LINE_NAME);
+
     return 0;
 }
 
@@ -1297,6 +1300,7 @@ void Open_FURN()
     //Сортировка переменных по имени
     std::sort(AllTagPeth.begin(), AllTagPeth.end(), cmpAllTagPeth);
     InitLogger(PethLogger);
+
     LOG_INFO(PethLogger, "{:90}| Start Open_FURN", FUNCTION_LINE_NAME);
 
 

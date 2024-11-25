@@ -441,7 +441,8 @@ OpcUa::Variant Value::GetValue()
 
             if(!Node.IsValid())
             {
-                Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
+                OpcUa::NodeId nid = OpcUa::NodeId(Patch, Codesys->NamespaceIndex);
+                Node = Codesys->GetNode(nid);
                 if(!Node.IsValid())
                     throw std::runtime_error("Error Node Is Not Valid");
             }
@@ -467,7 +468,8 @@ void Value::Set_Value(OpcUa::Variant var)
             
             if(!Node.IsValid())
             {
-                Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
+                OpcUa::NodeId nid = OpcUa::NodeId(Patch, Codesys->NamespaceIndex);
+                Node = Codesys->GetNode(nid);
 
                 if(!Node.IsValid())
                     throw std::runtime_error("Error Node Is Not Valid");
@@ -497,7 +499,8 @@ void Value::Set_Value(){
 
             if(!Node.IsValid())
             {
-                Node = Codesys->client->GetNode(OpcUa::NodeId(Patch, Codesys->NamespaceIndex));
+                OpcUa::NodeId nid = OpcUa::NodeId(Patch, Codesys->NamespaceIndex);
+                Node = Codesys->GetNode(nid);
 
                 if(!Node.IsValid())
                     throw std::runtime_error("Error Node Is Not Valid");
@@ -641,7 +644,8 @@ bool Value::TestNode(Client* cds)
 
             SetWindowText(hWndDebug, (std::string("Проверка Patch = ") + Patch).c_str());
 
-            Node = cds->client->GetNode(OpcUa::NodeId(Patch, cds->NamespaceIndex));
+            OpcUa::NodeId nid = OpcUa::NodeId(Patch, Codesys->NamespaceIndex);
+            Node = cds->GetNode(nid);
 
             if(!Node.IsValid()) 
                 return false;

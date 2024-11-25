@@ -283,7 +283,7 @@ std::map<MSSEC, ChannelSubscription>cssKPVL;
 
 
 
-void ClassDataChangeKPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
+void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
 {
     std::string patch = "";
     if(isRun)
@@ -417,7 +417,7 @@ void PLC_KPVL::InitTag()
         {
             if(ar.second.size())
             {
-                CREATESUBSCRIPT(cssKPVL, ar.first, &DataChangeKPVL, Logger);
+                cssKPVL[ar.first].Create(this, this, ar.first, Logger);;
                 LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssKPVL[ar.first].msec, ar.second.size());
                 std::vector<uint32_t> monitoredItemsIds = cssKPVL[ar.first].sub->SubscribeDataChange(ar.second);
             }
@@ -440,17 +440,17 @@ void PLC_KPVL::Run(int count)
 
     LOG_INFO(Logger, "{:90}| Run... : countconnect = {}.{} to: {}", FUNCTION_LINE_NAME, countconnect1, countconnect2, Uri);
 
-    SetWindowText(winmap(hEditDiagnose6), std::to_string(DataChangeKPVL.WatchDogWait).c_str());
+    SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
 
     try
     {
-        DataChangeKPVL.InitGoot = FALSE;
+        InitGoot = FALSE;
         countget = 1;
 
 #if NEW
         client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
 #else
-        client = new OpcUa::UaClient(Logger);
+        //client = new OpcUa::UaClient(Logger);
 #endif
 
         SetWindowText(winmap(hEditMode1), "Connect");
@@ -477,15 +477,15 @@ void PLC_KPVL::Run(int count)
         for(auto val : AllTagKpvl)
             MySetWindowText(val);
 
-        DataChangeKPVL.WatchDogWait = 0;
-        DataChangeKPVL.InitGoot = TRUE;
+        WatchDogWait = 0;
+        InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 
         isInitPLC_KPVL = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
         int  NewDataVal = 0;
-        while(isRun && client->KeepAlive.Running)
+        while(isRun && KeepAlive.Running)
         {
             //Проверяем на новый лист на кантовке
             if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый
@@ -525,7 +525,7 @@ void PLC_KPVL::Run(int count)
 #else
         //client->Disconnect();
         LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        delete client;
+        //delete client;
 #endif
         return;
     }
@@ -557,7 +557,7 @@ void PLC_KPVL::Run(int count)
 
         LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         SetWindowText(winmap(hEditMode1), "delete");
-        delete client;
+        //delete client;
 #endif
     }
     CATCH_RUN(Logger);
@@ -619,34 +619,34 @@ void PLC_KPVL::GetWD()
 bool PLC_KPVL::WD()
 {
     //Бит жизни
-    if(DataChangeKPVL.WatchDog == TRUE)
+    if(WatchDog == TRUE)
     {
-        DataChangeKPVL.WatchDog = FALSE;
-        if(DataChangeKPVL.WatchDogWait)
+        WatchDog = FALSE;
+        if(WatchDogWait)
         {
-            if(DataChangeKPVL.WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, DataChangeKPVL.WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(DataChangeKPVL.WatchDogWait).c_str());
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
         }
-        DataChangeKPVL.WatchDogWait = 0;
+        WatchDogWait = 0;
     }
     else
     {
-        DataChangeKPVL.WatchDogWait++; //Инкрементируем счетчик ошибок связи
-        if(DataChangeKPVL.WatchDogWait >= CountWatchDogWait)
+        WatchDogWait++; //Инкрементируем счетчик ошибок связи
+        if(WatchDogWait >= CountWatchDogWait)
         {
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(DataChangeKPVL.WatchDogWait).c_str());
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
             //SekRun = time(NULL);
             return true;
         }
         else
         {
-            if(DataChangeKPVL.WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, DataChangeKPVL.WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(DataChangeKPVL.WatchDogWait).c_str());
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
             //SekRun = time(NULL);
         }

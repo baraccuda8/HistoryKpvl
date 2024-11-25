@@ -19,17 +19,18 @@ extern HANDLE hThreadState2;
 
 extern time_t PLC_KPVL_old_dt;
 
-class ClassDataChangeKPVL: public ClassDataChange
+//class ClassDataChangeKPVL: public ClassDataChange
+//{
+//public:
+//    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
+//};
+
+class PLC_KPVL: public Client, ClassDataChange
 {
 public:
     void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
-};
 
-class PLC_KPVL: public Client
-{
-public:
-
-    ClassDataChangeKPVL DataChangeKPVL;
+    //ClassDataChangeKPVL DataChangeKPVL;
     PLC_KPVL(std::string uri, std::shared_ptr<spdlog::logger>& log): Client(uri, log){};
     //void Connect() override;
 

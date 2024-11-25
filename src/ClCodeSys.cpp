@@ -8,14 +8,8 @@
 #include "ClCodeSys.h"
 
 
-//Client::Client(std::string uri, std::shared_ptr<spdlog::logger>& logger): Uri(uri), Logger(logger)
-//{
-    //DataChangeKPVL = new ClassDataChangeKPVL();
-//};
-
 Client::~Client()
 {
-    //delete DataChangeKPVL;
 }
 
 void Client::GetRoot()
@@ -25,7 +19,7 @@ void Client::GetRoot()
 
     LOG_INFO(Logger, "{:90}| Опрос GetRoot countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
-    auto node = client->GetRootNode();
+    auto node = UaClient::GetRootNode();
     if(!node.IsValid())
         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Ложные данные:uri = " + Uri)).c_str());
 }
@@ -35,7 +29,7 @@ void Client::GetTimeServer()
 {
     if(!isRun)
         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Завершение работы")).c_str());
-    OpcUa::Node nodeCurrentTime = client->GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime);
+    OpcUa::Node nodeCurrentTime = UaClient::GetNode(OpcUa::ObjectId::Server_ServerStatus_CurrentTime);
     OpcUa::Variant valueCurrentTime = nodeCurrentTime.GetValue();
     TimePLC = valueCurrentTime.ToString();
 }
@@ -47,7 +41,7 @@ void Client::GetNameSpace()
 
     LOG_INFO(Logger, "{:90}| Опрос GetNameSpace countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
-    OpcUa::Node srv = client->GetNode(OpcUa::ObjectId::Server);
+    OpcUa::Node srv = UaClient::GetNode(OpcUa::ObjectId::Server);
     if(!srv.IsValid())
         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Не найден ObjectId::Server:\nuri = " + Uri)).c_str());
 
@@ -73,6 +67,29 @@ void Client::GetNameSpace()
         throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Не найден NamespaceIndex:\nuri = " + Uri)).c_str());
 }
 
+OpcUa::Node Client::GetNode(OpcUa::NodeId& nodeid)
+{
+    if(!isRun)
+        throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Завершение работы")).c_str());
+    try{
+        OpcUa::Node node = UaClient::GetNode(nodeid);
+        
+        if(!node.IsValid()) // Ложные данные
+            throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Ошибка GetNode").c_str()));
+
+        return node;
+    }
+    catch(std::runtime_error& exc)
+    {
+        LOG_INFO(Logger,"{:90}| {}", FUNCTION_LINE_NAME, exc.what());
+    }
+    catch(...)
+    {
+        LOG_INFO(Logger, "{:90}| Unknown error", FUNCTION_LINE_NAME);
+    }
+    return OpcUa::Node();
+}
+
 OpcUa::Node Client::GetNode(OpcUa::ObjectId Id)
 {
     if(!isRun)
@@ -82,7 +99,7 @@ OpcUa::Node Client::GetNode(OpcUa::ObjectId Id)
         if(Id == OpcUa::ObjectId::Null)
             throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Ошибка GetNode: Id == NULL ")).c_str());
 
-        OpcUa::Node node = client->GetNode(Id);
+        OpcUa::Node node = UaClient::GetNode(Id);
         if(!node.IsValid()) // Ложные данные
             throw std::runtime_error((FUNCTION_LINE_NAME + std::string(" Ошибка GetNode: Id = ") + std::to_string((uint32_t)Id)).c_str());
         return node;
@@ -106,7 +123,7 @@ OpcUa::Node Client::GetNode(std::string name)
     try
     {
         OpcUa::Node node;
-        node = client->GetNode(OpcUa::NodeId(name, NamespaceIndex));
+        node = UaClient::GetNode(OpcUa::NodeId(name, NamespaceIndex));
         if(!node.IsValid())
             throw std::runtime_error((FUNCTION_LINE_NAME + std::string("Ошибка GetNode: Name = ") + name).c_str());
         return node;
@@ -136,7 +153,7 @@ void Client::Connect()
             oo = ("Connect countconnect = " + std::to_string(countconnect1) + "." + std::to_string(countconnect2));
 
             LOG_INFO(Logger, "{:90}| Connect countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-            client->Connect(Uri);
+            UaClient::Connect(Uri);
             return;
         }
         CATCH(Logger, oo)
