@@ -88,14 +88,14 @@ T_Hmi210_1 Hmi210_1;
 T_PlateData PlateData[7];
 
 
-extern std::deque<Value*> AllTagPeth;
-std::deque<Value*> AllTagKpvl = {
+extern MAP_VALUE AllTagPeth;
+MAP_VALUE AllTagKpvl = {
 #ifndef TESTTEMPER
 
 #pragma region вачдог WDG
-    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec00500)},    //Счетчик циклов контроллера
-    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec00500)},  //Обратный бит жизни для контроллера
-    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec00500)}, //Подтверждение бита жизни для контроллера
+    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec01000)},    //Счетчик циклов контроллера
+    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec01000)},  //Обратный бит жизни для контроллера
+    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec01000)}, //Подтверждение бита жизни для контроллера
 
 #pragma endregion
 
@@ -346,6 +346,95 @@ void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
     }
 }
 
+
+void PLC_KPVL::GetWD()
+{
+    time_t old = time(NULL);
+    time_t dt = (time_t)difftime(old, SekRun);
+    struct tm TM;
+    errno_t err = gmtime_s(&TM, &dt);
+
+    if(!err)
+    {
+        char sFormat[50];
+        sprintf_s(sFormat, 50, "%04d-%02d-%02d %02d:%02d:%02d", TM.tm_year - 70, TM.tm_mon, TM.tm_mday - 1, TM.tm_hour, TM.tm_min, TM.tm_sec);
+        SetWindowText(winmap(hEditDiagnose9), sFormat);
+
+    }
+
+    //if(PLC_KPVL_old_dt != 0 && PLC_KPVL_old_dt - time(NULL) > 5)
+    //{
+    //    try
+    //    {
+    //        //bool WDG_toBase = AllTagKpvl[std::string("HMISheetData.Sheet.WDG_toBase")].GetBool();
+    //        for(auto& a : AllTagKpvl)
+    //        {
+    //            if("|var|PLC210 OPC-UA.Application.HMISheetData.Sheet.WDG_toBase" == a.second.Patch)
+    //            {
+    //            //HMISheetData.Sheet.WDG_toBase.GetValue();
+    //            //if(WDG_toBase)
+    //                PLC_KPVL_old_dt = time(NULL);
+    //                //if(!MyServer)
+    //                {
+    //                    HARD_LOGGER("HMISheetData.Sheet.WDG_fromBase.Set_Value(true)");
+    //                    a.second.
+    //                    //OpcUa::Variant var = true;
+    //                    //AllTagKpvl["HMISheetData.Sheet.WDG_toBase"].Set_Value(true);
+    //                    //HMISheetData.Sheet.WDG_fromBase.Set_Value(true);
+    //                }
+    //
+    //                WDGSheetData_To++;
+    //                struct tm TM;
+    //                localtime_s(&TM, &PLC_KPVL_old_dt);
+    //
+    //                SetWindowText(winmap(hEditState_WDG), string_time(&TM).c_str());
+    //            }
+    //        }
+    //    }
+    //    LOG_CATCH("Ошибка данных HMISheetData.Sheet.WDG_fromBase.Set_Value");
+    //
+    //}
+}
+
+bool PLC_KPVL::WD()
+{
+    //Бит жизни
+    if(WatchDog == TRUE)
+    {
+        WatchDog = FALSE;
+        if(WatchDogWait)
+        {
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+        }
+        WatchDogWait = 0;
+    }
+    else
+    {
+        WatchDogWait++; //Инкрементируем счетчик ошибок связи
+        if(WatchDogWait >= CountWatchDogWait)
+        {
+            LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+            //SekRun = time(NULL);
+            return true;
+        }
+        else
+        {
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+            //SekRun = time(NULL);
+        }
+    }
+    return false;
+}
+
+
 void PLC_KPVL::InitNodeId()
 {
     try{
@@ -473,7 +562,6 @@ void PLC_KPVL::Run(int count)
 
         LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
-
         for(auto val : AllTagKpvl)
             MySetWindowText(val);
 
@@ -484,7 +572,7 @@ void PLC_KPVL::Run(int count)
         isInitPLC_KPVL = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
-        int  NewDataVal = 0;
+
         while(isRun && KeepAlive.Running)
         {
             //Проверяем на новый лист на кантовке
@@ -516,16 +604,12 @@ void PLC_KPVL::Run(int count)
 
         }
 
-        SetWindowText(winmap(hEditMode1), "delete Sub");
-        for(auto s : cssKPVL)s.second.Delete();
+        //SetWindowText(winmap(hEditMode1), "delete Sub");
+        //for(auto s : cssKPVL)s.second.Delete();
 
 #if NEWS
         SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
-#else
-        //client->Disconnect();
-        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        //delete client;
 #endif
         return;
     }
@@ -536,123 +620,26 @@ void PLC_KPVL::Run(int count)
     {
         LOG_INFO(Logger, "{:90}| Ждем 5 секунд... для {}", FUNCTION_LINE_NAME, Uri);
         int f = 5;
-        while(--f && isRun)
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        while(--f && isRun) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     try
     {
-        LOG_INFO(Logger, "{:90}| delete Sub countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode1), "delete Sub");
-        for(auto s : cssKPVL)s.second.Delete();
+        //LOG_INFO(Logger, "{:90}| delete Sub countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //SetWindowText(winmap(hEditMode1), "delete Sub");
+        //for(auto s : cssKPVL)s.second.Delete();
 
 #if NEWS
         LOG_INFO(Logger, "{:90}| reset countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
-#else
-        //LOG_INFO(Logger, "{:90}| Disconnect countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        //SetWindowText(winmap(hEditMode1), "Disconnect");
-        //client->Disconnect();
-
-        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode1), "delete");
-        //delete client;
 #endif
     }
     CATCH_RUN(Logger);
 
-
     LOG_INFO(Logger, "{:90}| ... Вышли {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 };
 
-void PLC_KPVL::GetWD()
-{
-    time_t old = time(NULL);
-    time_t dt = (time_t)difftime(old, SekRun);
-    struct tm TM;
-    errno_t err = gmtime_s(&TM, &dt);
-
-    if(!err)
-    {
-        char sFormat[50];
-        sprintf_s(sFormat, 50, "%04d-%02d-%02d %02d:%02d:%02d", TM.tm_year - 70, TM.tm_mon, TM.tm_mday - 1, TM.tm_hour, TM.tm_min, TM.tm_sec);
-        SetWindowText(winmap(hEditDiagnose9), sFormat);
-
-    }
-
-    //if(PLC_KPVL_old_dt != 0 && PLC_KPVL_old_dt - time(NULL) > 5)
-    //{
-    //    try
-    //    {
-    //        //bool WDG_toBase = AllTagKpvl[std::string("HMISheetData.Sheet.WDG_toBase")].GetBool();
-    //        for(auto& a : AllTagKpvl)
-    //        {
-    //            if("|var|PLC210 OPC-UA.Application.HMISheetData.Sheet.WDG_toBase" == a.second.Patch)
-    //            {
-    //            //HMISheetData.Sheet.WDG_toBase.GetValue();
-    //            //if(WDG_toBase)
-    //                PLC_KPVL_old_dt = time(NULL);
-    //                //if(!MyServer)
-    //                {
-    //                    HARD_LOGGER("HMISheetData.Sheet.WDG_fromBase.Set_Value(true)");
-    //                    a.second.
-    //                    //OpcUa::Variant var = true;
-    //                    //AllTagKpvl["HMISheetData.Sheet.WDG_toBase"].Set_Value(true);
-    //                    //HMISheetData.Sheet.WDG_fromBase.Set_Value(true);
-    //                }
-    //
-    //                WDGSheetData_To++;
-    //                struct tm TM;
-    //                localtime_s(&TM, &PLC_KPVL_old_dt);
-    //
-    //                SetWindowText(winmap(hEditState_WDG), string_time(&TM).c_str());
-    //            }
-    //        }
-    //    }
-    //    LOG_CATCH("Ошибка данных HMISheetData.Sheet.WDG_fromBase.Set_Value");
-    //
-    //}
-}
-
-
-bool PLC_KPVL::WD()
-{
-    //Бит жизни
-    if(WatchDog == TRUE)
-    {
-        WatchDog = FALSE;
-        if(WatchDogWait)
-        {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
-            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-        }
-        WatchDogWait = 0;
-    }
-    else
-    {
-        WatchDogWait++; //Инкрементируем счетчик ошибок связи
-        if(WatchDogWait >= CountWatchDogWait)
-        {
-            LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
-            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-            //SekRun = time(NULL);
-            return true;
-        }
-        else
-        {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
-            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-            //SekRun = time(NULL);
-        }
-    }
-    return false;
-}
 
 DWORD WINAPI Open_KPVL_RUN(LPVOID)
 {
@@ -661,10 +648,6 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
     LOG_INFO(Logger, "{:90}| Старт to: {}", FUNCTION_LINE_NAME, KPVL::URI);
 
     int countconnect = 1;
-    //LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
-    ////Динамичесокая работа памяти с умным unique_ptr
-    //SetWindowText(winmap(hEditMode1), "Создание объекта");
-    //auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
 
     while(isRun)
     {
@@ -685,17 +668,18 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
             //auto CS_S107 = new CS_S107(Uri, PethLogger);
             //CS_S107->Run(countconnect);
             //delete CS_S107;
+            //Динамичесокая работа памяти с умным unique_ptr
+            //auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
+            //LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
+            //PLC->Run(countconnect);
 
             LOG_INFO(Logger, "{:90}| Создание класса PLC_KPVL {}", FUNCTION_LINE_NAME, countconnect);
-//Динамичесокая работа памяти с умным unique_ptr
             SetWindowText(winmap(hEditMode1), "Создание объекта");
 
             PLC_KPVL PLC(KPVL::URI, Logger);
             LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
             PLC.Run(countconnect);
-            //auto PLC = std::unique_ptr<PLC_KPVL>(new PLC_KPVL(KPVL::URI, Logger));
-            //LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
-            //PLC->Run(countconnect);
+            LOG_INFO(Logger, "{:90}| Выход из Run countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
         }
         CATCH_OPEN(Logger, KPVL::URI);
 
@@ -703,13 +687,13 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
 
         if(isRun)
         {
+            int f = 10;
+            while(--f && isRun) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
             countconnect++;
             LOG_INFO(Logger, "{:90}| Повторяем попытку {} to: {}", FUNCTION_LINE_NAME, countconnect, KPVL::URI);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     }
-    //SetWindowText(winmap(hEditMode1), "Удаление PLC");
-    //PLC.reset();
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
 
@@ -773,6 +757,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
         {
             TestSheet();
             KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
+            if(isRun)
             for(auto& TS : AllSheet)
             {
                 int Pos = Stoi(TS.Pos);

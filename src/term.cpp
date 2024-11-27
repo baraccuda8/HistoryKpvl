@@ -47,11 +47,11 @@ struct T_FcassetteArray{
 #define SETALLTAG2(_t, _f, _e, _s,  _d) SETALLTAG(PathPeth, _t, _f, _e, _s,  _d)
 
 
-std::deque<Value*> AllTagPeth = {
+MAP_VALUE AllTagPeth = {
 
     //Первая печь
-    {AppFurn1.WDG_toBase            = new Value(StrFurn1 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_1,          S107::Furn1::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог")}, //вачдог
-    {AppFurn1.WDG_fromBase          = new Value(StrFurn1 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
+    {AppFurn1.WDG_toBase            = new Value(StrFurn1 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_1,          S107::Furn1::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec01000, "", (bool)false, "Вачдог")}, //вачдог
+    {AppFurn1.WDG_fromBase          = new Value(StrFurn1 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec01000, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
     {AppFurn1.PointRef_1            = new Value(StrFurn1 + "PointRef_1",            HWNDCLIENT::RelF1_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;  //Уставка температуры
     {AppFurn1.PointTime_1           = new Value(StrFurn1 + "PointTime_1",           HWNDCLIENT::RelF1_Edit_PointTime_1,     0, &conn_temp)}, //: REAL; //Время разгона
@@ -82,8 +82,8 @@ std::deque<Value*> AllTagPeth = {
     {AppFurn1.Cassette.CassetteNo   = new Value(StrFurn1 + "Cassette.CaasetteNo",   HWNDCLIENT::RelF1_Edit_CassetteNo,      S107::Furn1::No, &conn_temp)}, //ID касеты номер
 
     //Вторая печь
-    {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false,  "Вачдог")}, //вачдог
-    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec00500, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
+    {AppFurn2.WDG_toBase            = new Value(StrFurn2 + "WDG_toBase",            HWNDCLIENT::hEditTimeServer_2,          S107::Furn2::Data_WDG_toBase, &conn_temp, true, 1, 1, MSSEC::sec01000, "", (bool)false,  "Вачдог")}, //вачдог
+    {AppFurn2.WDG_fromBase          = new Value(StrFurn2 + "WDG_fromBase",          HWNDCLIENT::hNull,                      0, &conn_temp, true, 1, 1, MSSEC::sec01000, "", (bool)false, "Вачдог для обратной связи")}, //вачдог для обратной связи 
 
     {AppFurn2.PointRef_1            = new Value(StrFurn2 + "PointRef_1",            HWNDCLIENT::RelF2_Edit_PointRef_1,      0, &conn_temp)}, //: REAL;//Уставка температуры
     {AppFurn2.PointTime_1           = new Value(StrFurn2 + "PointTime_1",           HWNDCLIENT::RelF2_Edit_PointTime_1,     0, &conn_temp)}, //: REAL;//Время разгона
@@ -241,6 +241,59 @@ void PLC_S107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
 }
 
 
+void PLC_S107::GetWD()
+{
+    time_t old = time(NULL);
+    time_t dt = (time_t)difftime(old, SekRun);
+    struct tm TM;
+    errno_t err = gmtime_s(&TM, &dt);
+
+    if(!err)
+    {
+        char sFormat[50];
+        sprintf_s(sFormat, 50, "%04d-%02d-%02d %02d:%02d:%02d", TM.tm_year-70, TM.tm_mon, TM.tm_mday - 1, TM.tm_hour, TM.tm_min, TM.tm_sec);
+        SetWindowText(winmap(hEditTime_4), sFormat);
+    }
+}
+
+bool PLC_S107::WD()
+{
+    //Бит жизни
+    if(WatchDog == TRUE)
+    {
+        WatchDog = FALSE;
+        if(WatchDogWait)
+        {
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+
+        }
+        WatchDogWait = 0;
+    }
+    else
+    {
+        WatchDogWait++; //Инкрементируем счетчик ошибок связи
+        if(WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
+        {
+            LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
+            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
+            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+            //SekRun = time(NULL);
+            return true;
+        }
+        else
+        {
+            if(WatchDogWait >= CountWatchDogWait - 1)
+                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
+            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+            //SekRun = time(NULL);
+        }
+    }
+    return false;
+}
+
 
 void PLC_S107::InitNodeId()
 {
@@ -354,7 +407,6 @@ void PLC_S107::Run(int count)
         SetWindowText(winmap(hEditMode2), "InitTag");
         InitTag();
 
-
         LOG_INFO(Logger, "{:90}| Подключение успешно countconnect = {}.{}\r\n", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
         for(auto val : AllTagPeth)
@@ -381,16 +433,12 @@ void PLC_S107::Run(int count)
             GetWD();
         }
 
-        SetWindowText(winmap(hEditMode2), "delete Sub");
-        for(auto s : cssS107)s.second.Delete();
+        //SetWindowText(winmap(hEditMode2), "delete Sub");
+        //for(auto s : cssS107)s.second.Delete();
 
 #if NEWS
         SetWindowText(winmap(hEditMode2), "reset");
         client.reset();
-#else
-        //client->Disconnect();
-        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        //delete client;
 #endif
         return;
     }
@@ -406,87 +454,24 @@ void PLC_S107::Run(int count)
 
     try
     {
-        LOG_INFO(Logger, "{:90}| delete Sub countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode2), "delete Sub");
-        for(auto s : cssS107)s.second.Delete();
+        //LOG_INFO(Logger, "{:90}| delete Sub countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //SetWindowText(winmap(hEditMode2), "delete Sub");
+        //for(auto s : cssS107)s.second.Delete();
 
 #if NEWS
         LOG_INFO(Logger, "{:90}| reset countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
         SetWindowText(winmap(hEditMode1), "reset");
         client.reset();
-#else
-        //LOG_INFO(Logger, "{:90}| Disconnect countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        //SetWindowText(winmap(hEditMode2), "Disconnect");
-        //client->Disconnect();
-
-        LOG_INFO(Logger, "{:90}| delete countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode2), "delete");
-        //delete client;
 #endif
-
     }
     CATCH_RUN(Logger);
 
-    LOG_INFO(PethLogger, "{:90}| ... Вышли countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+    LOG_INFO(Logger, "{:90}| ... Вышли {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 };
 
-void PLC_S107::GetWD()
-{
-    time_t old = time(NULL);
-    time_t dt = (time_t)difftime(old, SekRun);
-    struct tm TM;
-    errno_t err = gmtime_s(&TM, &dt);
-
-    if(!err)
-    {
-        char sFormat[50];
-        sprintf_s(sFormat, 50, "%04d-%02d-%02d %02d:%02d:%02d", TM.tm_year-70, TM.tm_mon, TM.tm_mday - 1, TM.tm_hour, TM.tm_min, TM.tm_sec);
-        SetWindowText(winmap(hEditTime_4), sFormat);
-    }
-}
-
-
-bool PLC_S107::WD()
-{
-    //Бит жизни
-    if(WatchDog == TRUE)
-    {
-        WatchDog = FALSE;
-        if(WatchDogWait)
-        {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-
-        }
-        WatchDogWait = 0;
-    }
-    else
-    {
-        WatchDogWait++; //Инкрементируем счетчик ошибок связи
-        if(WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
-        {
-            LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
-            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            //SekRun = time(NULL);
-            return true;
-        }
-        else
-        {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
-            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            //SekRun = time(NULL);
-        }
-    }
-    return false;
-}
 
 DWORD WINAPI Open_FURN_RUN(LPVOID)
 {
-    //std::string Uri = (char*)pv;
     std::shared_ptr<spdlog::logger> Logger = PethLogger;
 
     LOG_INFO(Logger, "{:90}| Старт to: {}", FUNCTION_LINE_NAME, S107::URI);
@@ -512,17 +497,18 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
             //auto CS_S107 = new CS_S107(Uri, PethLogger);
             //CS_S107->Run(countconnect);
             //delete CS_S107;
-
-            LOG_INFO(Logger, "{:90}| Создание класса PLC_S107 {}", FUNCTION_LINE_NAME, countconnect);
             //Динамичесокая работа памяти с умным unique_ptr
-            SetWindowText(winmap(hEditMode2), "Создание объекта");
-            PLC_S107 PLC(S107::URI, Logger);
-            LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
-            PLC.Run(countconnect);
-
             //auto PLC = std::unique_ptr<PLC_S107>(new PLC_S107(S107::URI, PethLogger));
             //LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
             //PLC->Run(countconnect);
+
+            LOG_INFO(Logger, "{:90}| Создание класса PLC_S107 {}", FUNCTION_LINE_NAME, countconnect);
+            SetWindowText(winmap(hEditMode2), "Создание объекта");
+
+            PLC_S107 PLC(S107::URI, Logger);
+            LOG_INFO(Logger, "{:90}| Подключение {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
+            PLC.Run(countconnect);
+            LOG_INFO(Logger, "{:90}| Выход из Run countconnect = {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
         }
         CATCH_OPEN(Logger, S107::URI);
 
@@ -530,13 +516,13 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
 
         if(isRun)
         {
+            int f = 10;
+            while(--f && isRun) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
             countconnect++;
             LOG_INFO(Logger, "{:90}| Повторяем попытку {} to: {}", FUNCTION_LINE_NAME, countconnect, S107::URI);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     }
-    //SetWindowText(winmap(hEditMode2), "Удаление PLC");
-    //PLC.reset();
 
     LOG_INFO(Logger, "{:90}| ExitThread. isRun = {}", FUNCTION_LINE_NAME, isRun);
 

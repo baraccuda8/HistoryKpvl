@@ -102,7 +102,7 @@ inline T GetVal(Value* value)
 }
 
 
-
+typedef std::deque<Value*> MAP_VALUE;
 
 void MySetWindowText(HWND h, const char* ss);
 void MySetWindowText(HWND h, std::string ss);

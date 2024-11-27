@@ -27,6 +27,7 @@ extern time_t PLC_KPVL_old_dt;
 
 class PLC_KPVL: public Client, ClassDataChange
 {
+    int  NewDataVal = 0;
 public:
     void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
 
