@@ -406,7 +406,6 @@ bool PLC_KPVL::WD()
         {
             if(WatchDogWait >= CountWatchDogWait - 1)
                 LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
         }
         WatchDogWait = 0;
@@ -417,19 +416,17 @@ bool PLC_KPVL::WD()
         if(WatchDogWait >= CountWatchDogWait)
         {
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-            //SekRun = time(NULL);
+            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             return true;
         }
         else
         {
             if(WatchDogWait >= CountWatchDogWait - 1)
                 LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
-            //SekRun = time(NULL);
         }
+        SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
     }
     return false;
 }
@@ -529,8 +526,6 @@ void PLC_KPVL::Run(int count)
 
     LOG_INFO(Logger, "{:90}| Run... : countconnect = {}.{} to: {}", FUNCTION_LINE_NAME, countconnect1, countconnect2, Uri);
 
-    SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
-
     try
     {
         InitGoot = FALSE;
@@ -566,6 +561,8 @@ void PLC_KPVL::Run(int count)
             MySetWindowText(val);
 
         WatchDogWait = 0;
+        SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+
         InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 
@@ -575,6 +572,8 @@ void PLC_KPVL::Run(int count)
 
         while(isRun && KeepAlive.Running)
         {
+            HMISheetData.WDG_fromBase->Set_Value(true);
+
             //Проверяем на новый лист на кантовке
             if(HMISheetData.NewData->Val.As<bool>())                   //Если лист новый
             {

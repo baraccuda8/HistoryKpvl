@@ -128,7 +128,14 @@ HBRUSH TitleBrush0 = CreateSolidBrush(RGB(0, 0, 0));
 //Белая заливка
 HBRUSH TitleBrush1 = CreateSolidBrush(RGB(255, 255, 255));
 
+//Желтая заливка
+HBRUSH TitleBrush5 = CreateSolidBrush(RGB(255, 255, 0));
+
+//Красная заливка
+HBRUSH TitleBrush6 = CreateSolidBrush(RGB(255, 0, 0));
+
 //синяя заливка
+
 HBRUSH TitleBrush2 = CreateSolidBrush(RGB(192, 192, 255));
 
 //светлосиняя заливка
@@ -404,17 +411,18 @@ MAP_WINDOW mapWindow = {
         {hEditMode1,        {szStat, Stat04Flag, {70,  70, 230, 19}, "Mode 1"}},
         {hEditMode2,        {szStat, Stat04Flag, {300, 70, 230, 19}, "Mode 2"}},
 
-        {hEditDiagnose6,    {szStat, Stat06Flag, {70, 90, 99, 19}, "D1"}},
+        {hEditDiagnose6,    {szStat2, Stat06Flag, {70, 90, 99, 19}, "D1"}},
         {hEditDiagnose7,    {szStat, Stat06Flag, {70, 110, 99, 19}, "D2"}},
 
         {hEditDiagnose9,    {szStat, Stat04Flag, {170, 90, 129, 19}, "D3"}},
         {hEditDiagnose8,    {szStat, Stat04Flag, {170, 110, 129, 19}, "D4"}},
 
-        {hEditTime_1,       {szStat, Stat06Flag, {300, 90,  99, 19}, "1"}},
-        {hEditTime_3,       {szStat, Stat06Flag, {300, 110, 100, 19}, "2"}},
+        {hEditTime_1,       {szStat2, Stat06Flag, {300, 90,  99, 19}, "F1"}},
+        {hEditTime_3,       {szStat, Stat06Flag, {300, 110, 100, 19}, "F2"}},
 
-        {hEditTime_4,       {szStat, Stat04Flag, {400, 90, 129, 19}, "3"}},
-        {hEditTime_2,       {szStat, Stat04Flag, {400, 110, 129, 19}, "4"}},
+        {hEditTime_4,       {szStat, Stat04Flag, {400, 90, 129, 19}, "F3"}},
+
+        {hEditTime_2,       {szStat, Stat04Flag, {400, 110, 129, 19}, "F4"}},
 
         {hEndGroup01, {}},
 #pragma endregion
@@ -2058,6 +2066,63 @@ LRESULT CALLBACK WndProc0(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+LRESULT PaintStatic2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    PAINTSTRUCT ps;
+    HDC hDC = BeginPaint(hWnd, &ps);
+
+    //FrameRect(hDC, &ps.rcPaint, TitleBrush0);
+    FillRect(hDC, &ps.rcPaint, TitleBrush1);
+    //FrameRect(hDC, &ps.rcPaint, TitleBrush0);
+
+
+    char szBuff[MAX_STRING] = "";
+    GetWindowText(hWnd, szBuff, 255);
+    DWORD style = GetWindowStyle(hWnd);
+
+    if(strlen(szBuff))
+    {
+
+        RECT rc1 = ps.rcPaint;
+        RECT rc2 = ps.rcPaint;
+        rc1.bottom = rc1.top + 19;
+        rc2.bottom--;
+
+        
+        if(Stoi(szBuff) < 2)
+            FillRect(hDC, &rc1, TitleBrush1);
+        else if(Stoi(szBuff) < 15)
+            FillRect(hDC, &rc1, TitleBrush5);
+        else 
+            FillRect(hDC, &rc1, TitleBrush6);
+
+
+        //FrameRect(hDC, &rc1, TitleBrush0);
+        //FrameRect(hDC, &rc2, TitleBrush0);
+
+        SetTextColor(hDC, RGB(0, 0, 0));
+        SetBkMode(hDC, TRANSPARENT);
+
+        //HFONT oldfont = (HFONT)SelectObject(hDC, Font[emFont::Font09]);
+        DrawText(hDC, szBuff, -1, &rc1, DT_RIGHT | DT_SINGLELINE | DT_WORDBREAK | DT_VCENTER);
+        //SelectObject(hDC, oldfont);
+    }
+
+    EndPaint(hWnd, &ps);
+    return 0;
+}
+
+LRESULT CALLBACK ProcStatic2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if(message == WM_SETTEXT)
+    { 
+        LRESULT lr = DefWindowProc(hWnd, message, wParam, lParam);
+        InvalidateRect(hWnd, NULL, 0);
+        return lr;
+    }
+    if(message == WM_PAINT) return PaintStatic2(hWnd, message, wParam, lParam);
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
 
 //Отрисовка текста окна
 LRESULT DrawTextStat(HWND hWnd, PAINTSTRUCT ps, int TT)
@@ -2161,7 +2226,6 @@ LRESULT CALLBACK WndProcButton(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     //else
     return DefSubclassProc(hWnd, message, wParam, lParam);
 }
-
 
 //Открытие главного окна
 std::map<int, MONITORINFOEX>ScreenArrayInfo;
@@ -2400,17 +2464,17 @@ void MyRegisterClass()
 
     WNDCLASSEX cex4 ={0};
     cex4.cbSize = sizeof(WNDCLASSEX);
-    //cex4.style          = CS_HREDRAW | CS_VREDRAW;
-    //cex4.lpfnWndProc    = WndProcCalendar;
-    //cex4.cbClsExtra     = 0;
-    //cex4.cbWndExtra     = 0;
-    //cex4.hInstance      = hInstance;
-    //cex4.hIcon          = NULL;
-    //cex4.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    //cex4.hbrBackground  = TitleBrush2;
-    //cex4.lpszMenuName   = NULL;
-    //cex4.lpszClassName  = szMont;
-    //cex4.hIconSm        = NULL;
+    cex4.style          = CS_HREDRAW | CS_VREDRAW;
+    cex4.lpfnWndProc    = ProcStatic2;
+    cex4.cbClsExtra     = 0;
+    cex4.cbWndExtra     = 0;
+    cex4.hInstance      = hInstance;
+    cex4.hIcon          = NULL;
+    cex4.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    cex4.hbrBackground  = TitleBrush2;
+    cex4.lpszMenuName   = NULL;
+    cex4.lpszClassName  = szStat2;
+    cex4.hIconSm        = NULL;
 
     if(cex0.hInstance && !RegisterClassExA(&cex0))
         throw std::exception(__FUN(std::string("Ошибка регистрации класса окна cex0: " + std::string(szWindowClass0))));
@@ -2425,7 +2489,7 @@ void MyRegisterClass()
         throw std::exception(__FUN(std::string("Ошибка регистрации класса окна cex3: " + std::string(szTem2))));
 
     if(cex4.hInstance && !RegisterClassExA(&cex4))
-        throw std::exception(__FUN(std::string("Ошибка регистрации класса окна cex4: " + std::string(szMont))));
+        throw std::exception(__FUN(std::string("Ошибка регистрации класса окна cex4: " + std::string(szStat2))));
 }
 
 

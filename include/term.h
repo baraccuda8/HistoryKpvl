@@ -19,6 +19,7 @@ extern std::shared_ptr<spdlog::logger> TestLogger;
 
 class PLC_S107: public Client, ClassDataChange
 {
+    HDC hDC = NULL;
 public:
     void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
 

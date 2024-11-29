@@ -102,6 +102,8 @@ namespace evCassete
 //Класс окна Static
 #define szStat "Static"
 //Класс окна Edit
+#define szStat2 "Static2"
+//Класс окна Edit
 #define szEdit "Edit"
 //Класс окна Button
 #define szButt "Button"

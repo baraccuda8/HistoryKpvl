@@ -267,7 +267,6 @@ bool PLC_S107::WD()
             if(WatchDogWait >= CountWatchDogWait - 1)
                 LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-
         }
         WatchDogWait = 0;
     }
@@ -276,20 +275,19 @@ bool PLC_S107::WD()
         WatchDogWait++; //Инкрементируем счетчик ошибок связи
         if(WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
         {
+
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            //SekRun = time(NULL);
+            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
             return true;
         }
         else
         {
             if(WatchDogWait >= CountWatchDogWait - 1)
                 LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            //SekRun = time(NULL);
         }
+        SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
     }
     return false;
 }
@@ -413,6 +411,8 @@ void PLC_S107::Run(int count)
             MySetWindowText(val);
 
         WatchDogWait = 0;
+        SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
+
         InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
 
@@ -422,7 +422,7 @@ void PLC_S107::Run(int count)
         
         while(isRun && KeepAlive.Running)
         {
-            HMISheetData.WDG_fromBase->Set_Value(true);
+            AppFurn1.WDG_fromBase->Set_Value(true);
 
             //Проверяем WatchDog
             if(WD())
@@ -1237,12 +1237,10 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 
     while(isRun)
     {
-        if(!isRun) return 0;
-
         try
         {
 #pragma endregion
-
+            
 #pragma region Запрашиваем список кассет
             try
             {
