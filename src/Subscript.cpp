@@ -23,9 +23,9 @@ void ChannelSubscription::Create(OpcUa::UaClient& client, Subscriptions& subscri
     try
     {
         handle.erase(handle.begin(), handle.end());
-        if(sub.get())
-            sub.reset();
-
+        //if(sub.get())
+        //    sub.reset();
+        
         sub = client.CreateSubscription(msec, subscript);
     }
     catch(std::runtime_error& exc)
@@ -50,35 +50,8 @@ void ChannelSubscription::Delete()
 {
     try
     {
-        if(sub) sub->UnSubscribe(handle);
-    }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
-    //    throw std::runtime_error(exc);
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
-    //    throw;
-    }
-
-    try
-    {
-        if(sub) sub->Delete();
-    }
-    catch(std::runtime_error& exc)
-    {
-        LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
-    }
-    catch(...)
-    {
-        LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
-    }
-
-    try
-    {
-        sub.reset();
+        if(sub)
+            delete sub;
     }
     catch(std::runtime_error& exc)
     {

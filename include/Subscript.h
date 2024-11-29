@@ -29,7 +29,7 @@ class ChannelSubscription
 {
 public:
     std::vector <uint32_t> handle ={};
-    OpcUa::Subscription::SharedPtr sub = NULL;
+    OpcUa::Subscription* sub = NULL;
     int msec = sec01000;
     std::shared_ptr<spdlog::logger> Logger = NULL;
 
