@@ -2089,7 +2089,7 @@ LRESULT PaintStatic2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         rc2.bottom--;
 
         
-        if(Stoi(szBuff) < 2)
+        if(Stoi(szBuff) < 5)
             FillRect(hDC, &rc1, TitleBrush1);
         else if(Stoi(szBuff) < 15)
             FillRect(hDC, &rc1, TitleBrush5);
