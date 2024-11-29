@@ -176,67 +176,62 @@ bool cmpAllTagPeth(Value* first, Value* second)
 }
 
 
-std::map<MSSEC, ChannelSubscription>cssS107;
-
 
 void PLC_S107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
 {
     std::string patch = "";
-    if(attr == OpcUa::AttributeId::Value)
+    if(isRun)
     {
-        try
+        if(attr == OpcUa::AttributeId::Value)
         {
-            if(WatchDogWait)
+            try
             {
-                SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            }
+                WatchDog = TRUE; //Бит жизни
 
-            WatchDog = TRUE; //Бит жизни
-
-            OpcUa::NodeId id = node.GetId();
-            if(id.IsInteger())
-            {
-                if((uint32_t)OpcUa::ObjectId::Server_ServerStatus_CurrentTime == id.GetIntegerIdentifier())
+                OpcUa::NodeId id = node.GetId();
+                if(id.IsInteger())
                 {
-                    S107::ServerDataTime = val.ToString();
-                    SetWindowText(winmap(hEditTimeServer_2), S107::ServerDataTime.c_str());
-                }
-            }
-            else if(id.IsString())
-            {
-                SetWindowText(winmap(hEditMode2), "Пришли данные...");
-                patch = id.GetStringIdentifier();
-                OpcUa::Variant vals = val;
-                for(auto& a : AllTagPeth)
-                {
-                    if(patch == a->Patch)
+                    if((uint32_t)OpcUa::ObjectId::Server_ServerStatus_CurrentTime == id.GetIntegerIdentifier())
                     {
-                        if(!a->Node.IsValid())
-                        {
-                            a->Node = node;
-                            a->handle = handle;
-                            a->attr = attr;
-                        }
-                        a->Find(handle, vals);
-                        return;
+                        S107::ServerDataTime = val.ToString();
+                        SetWindowText(winmap(hEditTimeServer_2), S107::ServerDataTime.c_str());
                     }
                 }
-                SetWindowText(winmap(hEditMode2), "Ждем данные...");
+                else if(id.IsString())
+                {
+                    SetWindowText(winmap(hEditMode2), "Пришли данные...");
+                    patch = id.GetStringIdentifier();
+                    OpcUa::Variant vals = val;
+                    for(auto& a : AllTagPeth)
+                    {
+                        if(patch == a->Patch)
+                        {
+                            if(!a->Node.IsValid())
+                            {
+                                a->Node = node;
+                                a->handle = handle;
+                                a->attr = attr;
+                            }
+                            a->Find(handle, vals);
+                            return;
+                        }
+                    }
+                    SetWindowText(winmap(hEditMode2), "Ждем данные...");
+                }
+
             }
-
+            CATCH(PethLogger, "");
+            //catch(std::runtime_error& exc)
+            //{
+            //    SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
+            //    LOG_ERROR(PethLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
+            //}
+            //catch(...)
+            //{
+            //    SetWindowText(winmap(hEditMode1), "Unknown error");
+            //    LOG_ERROR(PethLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
+            //};
         }
-        CATCH(PethLogger, "");
-        //catch(std::runtime_error& exc)
-        //{
-        //    SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
-        //    LOG_ERROR(PethLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
-        //}
-        //catch(...)
-        //{
-        //    SetWindowText(winmap(hEditMode1), "Unknown error");
-        //    LOG_ERROR(PethLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
-        //};
-
     }
 }
 
@@ -287,8 +282,8 @@ bool PLC_S107::WD()
                 LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
         }
-        SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
     }
+    SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
     return false;
 }
 
@@ -323,8 +318,6 @@ void PLC_S107::InitNodeId()
 void PLC_S107::InitTag()
 {
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
-
     try
     {
         //Создание Subscribe
@@ -354,9 +347,9 @@ void PLC_S107::InitTag()
         {
             if(ar.second.size())
             {
-                cssS107[ar.first].Create(this, this, ar.first, Logger);;
-                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssS107[ar.first].msec, ar.second.size());
-                std::vector<uint32_t> monitoredItemsIds = cssS107[ar.first].sub->SubscribeDataChange(ar.second);
+                css[ar.first].Create(*this, *this, ar.first, Logger);;
+                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, css[ar.first].msec, ar.second.size());
+                std::vector<uint32_t> monitoredItemsIds = css[ar.first].sub->SubscribeDataChange(ar.second);
             }
         } 
         CATCHINIT();
@@ -364,7 +357,7 @@ void PLC_S107::InitTag()
     try
     {
         if(avid.size() && avid.begin()->first)
-            cssS107[avid.begin()->first].Subscribe(nodeCurrentTime);
+            css[avid.begin()->first].Subscribe(nodeCurrentTime);
     } 
     CATCHINIT();
 }
@@ -380,12 +373,6 @@ void PLC_S107::Run(int count)
     {
         InitGoot = FALSE;
         countget = 1;
-
-#if NEW
-        client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
-#else
-        //client = new OpcUa::UaClient(Logger);
-#endif
 
         SetWindowText(winmap(hEditMode2), "Connect");
         w1 = hEditTime_3;
@@ -423,6 +410,7 @@ void PLC_S107::Run(int count)
         while(isRun && KeepAlive.Running)
         {
             AppFurn1.WDG_fromBase->Set_Value(true);
+            AppFurn2.WDG_fromBase->Set_Value(true);
 
             //Проверяем WatchDog
             if(WD())
@@ -433,13 +421,9 @@ void PLC_S107::Run(int count)
             GetWD();
         }
 
-        //SetWindowText(winmap(hEditMode2), "delete Sub");
-        //for(auto s : cssS107)s.second.Delete();
+        for(auto&a : css)
+            a.second.Delete();
 
-#if NEWS
-        SetWindowText(winmap(hEditMode2), "reset");
-        client.reset();
-#endif
         return;
     }
     CATCH_RUN(Logger);

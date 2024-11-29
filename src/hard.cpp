@@ -279,8 +279,6 @@ bool cmpAllTagKpvl(Value* first, Value* second)
     return first->Patch > second->Patch;
 }
 
-std::map<MSSEC, ChannelSubscription>cssKPVL;
-
 
 
 void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr)
@@ -292,11 +290,6 @@ void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
         {
             try
             {
-                if(WatchDogWait)
-                {
-                    SetWindowText(winmap(hEditDiagnose8), (KPVL::ServerDataTime + " (" + std::to_string(WatchDogWait) + ")").c_str());
-                }
-
                 WatchDog = TRUE; //Бит жизни
 
                 OpcUa::NodeId id = node.GetId();
@@ -332,16 +325,17 @@ void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
                 }
 
             }
-            catch(std::runtime_error& exc)
-            {
-                SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
-                LOG_ERROR(HardLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
-            }
-            catch(...)
-            {
-                SetWindowText(winmap(hEditMode1), "Unknown error");
-                LOG_ERROR(HardLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
-            };
+            CATCH(HardLogger, "");
+            //catch(std::runtime_error& exc)
+            //{
+            //    SetWindowText(winmap(hEditMode1), "DataChange runtime_error");
+            //    LOG_ERROR(HardLogger, "{:90| DataChange Error {}, {}", FUNCTION_LINE_NAME, exc.what(), node.ToString());
+            //}
+            //catch(...)
+            //{
+            //    SetWindowText(winmap(hEditMode1), "Unknown error");
+            //    LOG_ERROR(HardLogger, "{:90| DataChange Error 'Unknown error' {}", FUNCTION_LINE_NAME, node.ToString());
+            //};
         }
     }
 }
@@ -426,8 +420,8 @@ bool PLC_KPVL::WD()
                 LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
         }
-        SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
     }
+    SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
     return false;
 }
 
@@ -463,7 +457,6 @@ void PLC_KPVL::InitNodeId()
 
 void PLC_KPVL::InitTag()
 {
-    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     try
     {
@@ -503,9 +496,9 @@ void PLC_KPVL::InitTag()
         {
             if(ar.second.size())
             {
-                cssKPVL[ar.first].Create(this, this, ar.first, Logger);;
-                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, cssKPVL[ar.first].msec, ar.second.size());
-                std::vector<uint32_t> monitoredItemsIds = cssKPVL[ar.first].sub->SubscribeDataChange(ar.second);
+                css[ar.first].Create(*this, *this, ar.first, Logger);;
+                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, css[ar.first].msec, ar.second.size());
+                std::vector<uint32_t> monitoredItemsIds = css[ar.first].sub->SubscribeDataChange(ar.second);
             }
         }   
         CATCHINIT();
@@ -513,7 +506,7 @@ void PLC_KPVL::InitTag()
     try
     {
         if(avid.size() && avid.begin()->first)
-            cssKPVL[avid.begin()->first].Subscribe(nodeCurrentTime);
+            css[avid.begin()->first].Subscribe(nodeCurrentTime);
     }
     CATCHINIT();
 }
@@ -530,12 +523,6 @@ void PLC_KPVL::Run(int count)
     {
         InitGoot = FALSE;
         countget = 1;
-
-#if NEW
-        client = std::shared_ptr<OpcUa::UaClient>(new OpcUa::UaClient(Logger));
-#else
-        //client = new OpcUa::UaClient(Logger);
-#endif
 
         SetWindowText(winmap(hEditMode1), "Connect");
         w1 = hEditDiagnose7;
@@ -603,13 +590,9 @@ void PLC_KPVL::Run(int count)
 
         }
 
-        //SetWindowText(winmap(hEditMode1), "delete Sub");
-        //for(auto s : cssKPVL)s.second.Delete();
+        for(auto&a : css)
+            a.second.Delete();
 
-#if NEWS
-        SetWindowText(winmap(hEditMode1), "reset");
-        client.reset();
-#endif
         return;
     }
     CATCH_RUN(Logger);

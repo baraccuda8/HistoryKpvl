@@ -172,14 +172,11 @@ public:
     int countconnect2 = 0;
 
     HWNDCLIENT w1;
+    std::map< MSSEC, std::vector<OpcUa::ReadValueId>> avid;
+    std::map<MSSEC, ChannelSubscription>css;
 
     OpcUa::Node nodeCurrentTime;                //Node Текущее время сервера
 
-#if NEWS
-    std::shared_ptr<OpcUa::UaClient>client = NULL;
-#else
-    //OpcUa::UaClient * client = NULL;
-#endif
     std::string Uri = "";
     std::string NamePLC = "";
     std::string TimePLC = "";

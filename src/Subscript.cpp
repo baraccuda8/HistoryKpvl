@@ -13,7 +13,7 @@
 #define OPCCLIENT OpcUa::UaClient*
 #endif
 
-void ChannelSubscription::Create(OPCCLIENT client, Subscriptions* subscript, int ms, std::shared_ptr<spdlog::logger>& logger)
+void ChannelSubscription::Create(OpcUa::UaClient& client, Subscriptions& subscript, int ms, std::shared_ptr<spdlog::logger>& logger)
 {
     LOG_INFO(Logger, "{:90}| -->CreateSubscription {}", FUNCTION_LINE_NAME, ms);
     if(!isRun)
@@ -26,7 +26,7 @@ void ChannelSubscription::Create(OPCCLIENT client, Subscriptions* subscript, int
         if(sub.get())
             sub.reset();
 
-        sub = client->CreateSubscription(msec, *subscript);
+        sub = client.CreateSubscription(msec, subscript);
     }
     catch(std::runtime_error& exc)
     {
@@ -48,21 +48,34 @@ void ChannelSubscription::Create(OPCCLIENT client, Subscriptions* subscript, int
 
 void ChannelSubscription::Delete()
 {
-    //try
-    //{
-    //    //if(sub) sub->UnSubscribe(handle);
-    //    //if(sub) sub->Delete();
-    //}
-    //catch(std::runtime_error& exc)
-    //{
-    //    LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
+    try
+    {
+        if(sub) sub->UnSubscribe(handle);
+    }
+    catch(std::runtime_error& exc)
+    {
+        LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
     //    throw std::runtime_error(exc);
-    //}
-    //catch(...)
-    //{
-    //    LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
+    }
+    catch(...)
+    {
+        LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
     //    throw;
-    //}
+    }
+
+    try
+    {
+        if(sub) sub->Delete();
+    }
+    catch(std::runtime_error& exc)
+    {
+        LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
+    }
+    catch(...)
+    {
+        LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
+    }
+
     try
     {
         sub.reset();
@@ -70,12 +83,10 @@ void ChannelSubscription::Delete()
     catch(std::runtime_error& exc)
     {
         LOG_ERROR(Logger, "{:90}| Error {}", FUNCTION_LINE_NAME, exc.what());
-        throw std::runtime_error(exc);
     }
     catch(...)
     {
         LOG_ERROR(Logger, "{:90}| Unknown error {}", FUNCTION_LINE_NAME);
-        throw;
     }
 
     handle.erase(handle.begin(), handle.end());

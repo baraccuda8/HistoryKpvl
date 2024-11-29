@@ -33,7 +33,7 @@ public:
     int msec = sec01000;
     std::shared_ptr<spdlog::logger> Logger = NULL;
 
-    void Create(OPCCLIENT client, Subscriptions* subscript, int ms, std::shared_ptr<spdlog::logger>& logger);
+    void Create(OpcUa::UaClient& client, Subscriptions& subscript, int ms, std::shared_ptr<spdlog::logger>& logger);
     ~ChannelSubscription();
     uint32_t Subscribe(OpcUa::Node node);
     void Delete();
