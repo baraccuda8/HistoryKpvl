@@ -3,7 +3,6 @@
 #include "main.h"
 #include "win.h"
 #include "file.h"
-//#include "ValueTag.h"
 #include "Subscript.h"
 
 
@@ -13,7 +12,7 @@
 #define OPCCLIENT OpcUa::UaClient*
 #endif
 
-void ChannelSubscription::Create(OpcUa::UaClient& client, Subscriptions& subscript, int ms, std::shared_ptr<spdlog::logger>& logger)
+void ChannelSubscription::Create(Client& client, int ms, std::shared_ptr<spdlog::logger>& logger)
 {
     LOG_INFO(Logger, "{:90}| -->CreateSubscription {}", FUNCTION_LINE_NAME, ms);
     if(!isRun)
@@ -23,10 +22,8 @@ void ChannelSubscription::Create(OpcUa::UaClient& client, Subscriptions& subscri
     try
     {
         handle.erase(handle.begin(), handle.end());
-        //if(sub.get())
-        //    sub.reset();
-        
-        sub = client.CreateSubscription(msec, subscript);
+
+        sub = client.CreateSubscription(msec, client);
     }
     catch(std::runtime_error& exc)
     {

@@ -64,6 +64,7 @@ public:
     Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s);
     Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC s, std::string fo, OpcUa::Variant v, std::string com);
     void InitNodeId(Client* cds);
+    OpcUa::NodeId GetId();
     OpcUa::Node GetNode();
     OpcUa::VariantType GetType();
     OpcUa::Variant GetValuew();

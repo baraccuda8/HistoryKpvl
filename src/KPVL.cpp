@@ -1499,6 +1499,14 @@ namespace KPVL {
                 return 0;
             }
 
+            int16_t Old_SheetInCassette = 0;
+            int16_t getSheetInCassette(int16_t New_SheetInCassette)
+            {
+                if(!Old_SheetInCassette || Old_SheetInCassette + 1 != New_SheetInCassette)
+                    New_SheetInCassette++;
+                Old_SheetInCassette = New_SheetInCassette;
+                return New_SheetInCassette;
+            }
             void UpdateInCant()
             {
                 T_PlateData PD = PlateData[Pos];
@@ -1506,8 +1514,8 @@ namespace KPVL {
 
                 int32_t id = Stoi(SheetPos(conn_kpvl, PD, Pos));
 
-                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, HMISheetData.Cassette);
-                std::string DataTime = GetStringDataTime();
+                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, Cassette);
+                //std::string DataTime = GetStringDataTime();
 
                 std::stringstream co;
                 co << "UPDATE sheet SET";
@@ -1516,11 +1524,11 @@ namespace KPVL {
                 co << ", year = " << Cassette.Year->Val.As<int32_t>();
                 co << ", month = " << Cassette.Month->Val.As<int32_t>();
                 co << ", day = " << Cassette.Day->Val.As<int32_t>();
-                co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
+                co << ", hour = " << Cassette.Hour->Val.As<uint16_t>();
                 co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
-                co << ", incant_at = now() ";
-                co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
+                co << ", sheetincassette = " << getSheetInCassette(Cassette.SheetInCassette->Val.As<int16_t>());
+                co << ", incant_at = now(), correct = DEFAULT, pdf = DEFAULT";
+                co << " WHERE";
                 if(id != 0)
                 {
                     co << " id = " << id;
@@ -1812,22 +1820,14 @@ namespace KPVL {
         {
             try
             {
-                char ss[256];
-                int InCassette = value->GetInt();
-                sprintf_s(ss, 256, "%d", InCassette + 1);
-                MySetWindowText(winmap(value->winId), ss);
+                //char ss[256];
+                //int InCassette = value->GetInt();
+                //sprintf_s(ss, 256, "%d", InCassette);
+                //MySetWindowText(winmap(value->winId), ss);
+                if(!Sheet::Z6::Old_SheetInCassette)
+                    Sheet::Z6::Old_SheetInCassette = value->GetInt();
+                MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
-                //if(!HMISheetData.CasseteIsFill->Val.IsNul())
-                //bool b = HMISheetData.CasseteIsFill->Val.As<bool>();
-                //if(HMISheetData.CasseteIsFill->GetBool())
-                //{
-                //    //int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
-                //    int hour = HMISheetData.Cassette.Hour->GetInt();
-                //    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette, hour);
-                //    LOG_INFO(HardLogger, "{:90}| << Sheet_InCassette = {} Id = {}", FUNCTION_LINE_NAME, InCassette, id);
-                //    //SetOldCassette(HMISheetData.Cassette, id);
-                //}
-                //LOG_INFO(HardLogger, "{:90} {}", FUNCTION_LINE_NAME, b);
             }
             CATCH(HardLogger, "");
             return 0;
@@ -1838,7 +1838,6 @@ namespace KPVL {
         {
             try
             {
-                //SheetCassette.CassetteNo = value->GetInt();
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNo), value->GetString().c_str());
                 MySetWindowText(winmap(hEdit_Sheet_CassetteNew), value->GetString().c_str());
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
@@ -1858,7 +1857,6 @@ namespace KPVL {
         {
             try
             {
-                //SheetCassette.CassetteYear = value->GetInt();
                 MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
@@ -1876,8 +1874,6 @@ namespace KPVL {
         {
             try
             {
-                //SheetCassette.CassetteMonth = value->GetInt();
-
                 MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
@@ -1895,7 +1891,6 @@ namespace KPVL {
         {
             try
             {
-                //SheetCassette.CassetteDay = value->GetInt();
                 MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
@@ -1914,7 +1909,6 @@ namespace KPVL {
         {
             try
             {
-                //SheetCassette.CassetteHour = value->GetInt();
                 MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())

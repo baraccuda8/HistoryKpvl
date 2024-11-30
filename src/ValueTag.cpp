@@ -404,6 +404,11 @@ OpcUa::Node Value::GetNode()
     return OpcUa::Node();
 }
 
+OpcUa::NodeId Value::GetId()
+{
+    return NodeId;
+}
+
 OpcUa::VariantType Value::GetType()
 {
     try

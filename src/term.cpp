@@ -302,7 +302,6 @@ void PLC_S107::InitNodeId()
             OpcUa::Variant val = nodeCurrentTime.GetValue();
             S107::ServerDataTime = val.ToString();
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
-            //SetWindowText(winmap(hEditTime_2), (S107::ServerDataTime + " (" + std::to_string(dataCangeS107.WatchDogWait) + ")").c_str());
         }
 
         LOG_INFO(Logger, "{:90}| Инициализация NodeId", FUNCTION_LINE_NAME);
@@ -320,26 +319,16 @@ void PLC_S107::InitTag()
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     try
     {
-        //Создание Subscribe
-        LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //Текушее время контроллера
+        avid[MSSEC::sec01000].push_back({nodeCurrentTime.GetId(), OpcUa::AttributeId::Value});
 
-        //CREATESUBSCRIPT(cssS107, sec00500, &DataChangeS107, Logger);
-        //CREATESUBSCRIPT(cssS107, sec01000, &DataChangeS107, Logger);
-        //CREATESUBSCRIPT(cssS107, sec02000, &DataChangeS107, Logger);
-        //CREATESUBSCRIPT(cssS107, sec05000, &DataChangeS107, Logger);
-    }
-    CATCHINIT();
-
-    try
-    {
         for(auto& a : AllTagPeth)
         {
             if(a->Sec)
-                avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
+                avid[a->Sec].push_back({a->GetId(), OpcUa::AttributeId::Value});
         }
     } 
     CATCHINIT();
-
 
     for(auto& ar : avid)
     {
@@ -347,19 +336,13 @@ void PLC_S107::InitTag()
         {
             if(ar.second.size())
             {
-                css[ar.first].Create(*this, *this, ar.first, Logger);;
+                css[ar.first].Create(*this, ar.first, Logger);
                 LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, css[ar.first].msec, ar.second.size());
                 std::vector<uint32_t> monitoredItemsIds = css[ar.first].sub->SubscribeDataChange(ar.second);
             }
         } 
         CATCHINIT();
     }
-    try
-    {
-        if(avid.size() && avid.begin()->first)
-            css[avid.begin()->first].Subscribe(nodeCurrentTime);
-    } 
-    CATCHINIT();
 }
 
 void PLC_S107::Run(int count)

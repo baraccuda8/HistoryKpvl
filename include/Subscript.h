@@ -1,4 +1,6 @@
 #pragma once
+#include "ClCodeSys.h"
+
 extern bool isRun;
 
 #define NEW 0
@@ -17,13 +19,7 @@ extern bool isRun;
 
 
 
-
-
-class Subscriptions: public OpcUa::SubscriptionHandler
-{
-public:
-    virtual void DataChange(uint32_t, const OpcUa::Node&, const OpcUa::Variant&, OpcUa::AttributeId) = 0;
-};
+class Client;
 
 class ChannelSubscription
 {
@@ -33,7 +29,7 @@ public:
     int msec = sec01000;
     std::shared_ptr<spdlog::logger> Logger = NULL;
 
-    void Create(OpcUa::UaClient& client, Subscriptions& subscript, int ms, std::shared_ptr<spdlog::logger>& logger);
+    void Create(Client& client, int ms, std::shared_ptr<spdlog::logger>& logger);
     ~ChannelSubscription();
     uint32_t Subscribe(OpcUa::Node node);
     void Delete();

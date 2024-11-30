@@ -10,14 +10,7 @@ extern std::shared_ptr<spdlog::logger> FurnLogger;
 extern std::shared_ptr<spdlog::logger> TestLogger;
 
 
-//class ClassDataChangeS107: public ClassDataChange
-//{
-//public:
-//    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr);
-//};
-
-
-class PLC_S107: public Client, ClassDataChange
+class PLC_S107: public Client
 {
     HDC hDC = NULL;
 public:

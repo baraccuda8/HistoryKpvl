@@ -97,6 +97,8 @@ namespace KPVL {
             //DWORD DataSlab(Value* value);
 
             //Новые лист в касету, Кассета наполяентся
+            extern int16_t Old_SheetInCassette;
+
             DWORD NewSheetData(Value* value);
 
             void SetSaveDone(PGConnection& conn);

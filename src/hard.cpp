@@ -93,9 +93,9 @@ MAP_VALUE AllTagKpvl = {
 #ifndef TESTTEMPER
 
 #pragma region вачдог WDG
-    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl, MSSEC::sec01000)},    //Счетчик циклов контроллера
-    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl, MSSEC::sec01000)},  //Обратный бит жизни для контроллера
-    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl, MSSEC::sec01000)}, //Подтверждение бита жизни для контроллера
+    {HMISheetData.WDG           = new Value(AppHMISheetData + "WDG",            HWNDCLIENT::hEditWDG, 0, &conn_kpvl)},    //Счетчик циклов контроллера
+    {HMISheetData.WDG_toBase    = new Value(AppHMISheetData + "WDG_toBase",     HWNDCLIENT::hEditState_WDG, KPVL::SheetData_WDG_toBase, &conn_kpvl)},  //Обратный бит жизни для контроллера
+    {HMISheetData.WDG_fromBase  = new Value(AppHMISheetData + "WDG_fromBase",   HWNDCLIENT::hNull, 0, &conn_kpvl)}, //Подтверждение бита жизни для контроллера
 
 #pragma endregion
 
@@ -460,35 +460,17 @@ void PLC_KPVL::InitTag()
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
     try
     {
-        //Создание Subscribe
-        LOG_INFO(Logger, "{:90}| Создание Subscribe countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+        //Текушее время контроллера
+        avid[MSSEC::sec01000].push_back({nodeCurrentTime.GetId(), OpcUa::AttributeId::Value});
+
         for(auto& a : AllTagKpvl)
         {
             if(a->Sec)
-                avid[a->Sec].push_back({a->NodeId, OpcUa::AttributeId::Value});
+                avid[a->Sec].push_back({a->GetId(), OpcUa::AttributeId::Value});
         }
 
     }
     CATCHINIT();
-
-
-
-    //for(auto& a : avid)
-    //    CREATESUBSCRIPT(cssKPVL, a.first, &DataChangeKPVL, Logger);
-    //
-        //CREATESUBSCRIPT(cssKPVL, sec00500, &DataChangeKPVL, Logger);
-        //CREATESUBSCRIPT(cssKPVL, sec01000, &DataChangeKPVL, Logger);
-        //CREATESUBSCRIPT(cssKPVL, sec02000, &DataChangeKPVL, Logger);
-        //CREATESUBSCRIPT(cssKPVL, sec05000, &DataChangeKPVL, Logger);
-        //MSSEC sec = avid.begin()->first;
-    //cssKPVL[avid.begin()->first].Subscribe(nodeCurrentTime);
-    //
-    //
-    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec00500, avid[sec00500].size());
-    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec01000, avid[sec01000].size());
-    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec02000, avid[sec02000].size());
-    //LOG_INFO(Logger, "{:90}| cssKPVL {} ms, count {}", FUNCTION_LINE_NAME, sec05000, avid[sec05000].size());
-
 
     for(auto& ar : avid)
     {
@@ -496,19 +478,13 @@ void PLC_KPVL::InitTag()
         {
             if(ar.second.size())
             {
-                css[ar.first].Create(*this, *this, ar.first, Logger);;
-                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, css[ar.first].msec, ar.second.size());
+                LOG_INFO(Logger, "{:90}| SubscribeDataChange msec: {}, count: {}", FUNCTION_LINE_NAME, ar.first, ar.second.size());
+                css[ar.first].Create(*this, ar.first, Logger);;
                 std::vector<uint32_t> monitoredItemsIds = css[ar.first].sub->SubscribeDataChange(ar.second);
             }
         }   
         CATCHINIT();
     }
-    try
-    {
-        if(avid.size() && avid.begin()->first)
-            css[avid.begin()->first].Subscribe(nodeCurrentTime);
-    }
-    CATCHINIT();
 }
 
 
@@ -556,7 +532,7 @@ void PLC_KPVL::Run(int count)
         isInitPLC_KPVL = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
-
+        KPVL::Sheet::Z6::Old_SheetInCassette = HMISheetData.Cassette.SheetInCassette->GetValue().As<int16_t>();
         while(isRun && KeepAlive.Running)
         {
             HMISheetData.WDG_fromBase->Set_Value(true);
