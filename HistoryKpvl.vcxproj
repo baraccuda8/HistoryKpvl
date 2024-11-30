@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
@@ -227,7 +227,7 @@ time /T &gt;&gt;rc\date.txt</Command>
       </EnableCOMDATFolding>
       <OptimizeReferences>
       </OptimizeReferences>
-      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../wbenny-ziplib/lib/$(PlatformArchitecture)/$(Configuration);../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../../KPVL/PostgreSQL/16/lib;../FreeOpcUa/Lib;../boost_1_81_0/lib$(PlatformArchitecture)$(PlatformToolset);../Exel/LibXL_4.0.4/lib64_32;../Haru/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opcuaclient_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuacore_$(PlatformArchitecture)_$(Configuration).lib
 ;opcuaprotocol_$(PlatformArchitecture)_$(Configuration).lib;Haru_$(PlatformArchitecture)_$(Configuration).lib;Psapi.lib;Wininet.lib;wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
