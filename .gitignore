@@ -32,7 +32,7 @@
 *.out
 *.app
 *.aps
-/lib
+/Lib
 /bin
 /old
 /.vs
