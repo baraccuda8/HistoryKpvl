@@ -1495,14 +1495,14 @@ namespace KPVL {
                 return 0;
             }
 
-            int16_t Old_SheetInCassette = 0;
-            int16_t getSheetInCassette(int16_t New_SheetInCassette)
-            {
-                if(!Old_SheetInCassette || Old_SheetInCassette + 1 != New_SheetInCassette)
-                    New_SheetInCassette++;
-                Old_SheetInCassette = New_SheetInCassette;
-                return New_SheetInCassette;
-            }
+            //int16_t Old_SheetInCassette = 0;
+            //int16_t getSheetInCassette(int16_t New_SheetInCassette)
+            //{
+            //    if(!Old_SheetInCassette || Old_SheetInCassette + 1 != New_SheetInCassette)
+            //        New_SheetInCassette++;
+            //    Old_SheetInCassette = New_SheetInCassette;
+            //    return New_SheetInCassette;
+            //}
             void UpdateInCant(PGConnection& conn)
             {
                 T_PlateData PD = PlateData[Pos];
@@ -1522,7 +1522,7 @@ namespace KPVL {
                 co << ", day = " << Cassette.Day->Val.As<int32_t>();
                 co << ", hour = " << Cassette.Hour->Val.As<uint16_t>();
                 co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                co << ", sheetincassette = " << getSheetInCassette(Cassette.SheetInCassette->Val.As<int16_t>());
+                co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
                 co << ", incant_at = now(), correct = DEFAULT, pdf = DEFAULT";
                 co << " WHERE";
                 if(id != 0)
@@ -1567,92 +1567,115 @@ namespace KPVL {
                 return 0;
             }
 
-            void SetSaveDone(PGConnection& conn)
+            DWORD SetSaveDone(LPVOID)
             {
                 try
                 {
+                    PGConnection conn;
+                    CONNECTION1(conn, HardLogger);
                     if(HMISheetData.NewData->Val.As<bool>())
                     {
-                        T_Side Top_Side = HMISheetData.Top_Side;
-                        T_Side Bot_Side = HMISheetData.Bot_Side;
-                        T_CassetteData Cassette = HMISheetData.Cassette;
-                        T_PlateData PD = PlateData[Pos];
-
-                        if(IsSheet(PD))
+                        try
                         {
-                            int32_t id = Stoi(SheetPos(conn, PD, Pos));
-                            //int32_t id = Stoi(GetIdSheet(conn, PD));
-                            std::string DataTime = GetStringDataTime();
+                            T_Side Top_Side = HMISheetData.Top_Side;
+                            T_Side Bot_Side = HMISheetData.Bot_Side;
+                            T_CassetteData Cassette = HMISheetData.Cassette;
+                            T_PlateData PD = PlateData[Pos];
 
-                            Cassette.Year->GetValue();
-                            Cassette.Month->GetValue();
-                            Cassette.Day->GetValue();
-                            Cassette.Hour->GetValue();
-                            Cassette.CassetteNo->GetValue();
-                            Cassette.SheetInCassette->GetValue();
-
-                            int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette);
-
-                        #pragma region co = "UPDATE sheet SET"
-                            std::stringstream co;
-                            co << "UPDATE sheet SET";
-                            co << " pos = 7";
-                            co << ", cassette = " << CasseteId;
-                            co << ", news = 1";
-                            co << ", top1 = " << Top_Side.h1->Val.As<float>();  // GetFloat();
-                            co << ", top2 = " << Top_Side.h2->Val.As<float>();  // GetFloat();
-                            co << ", top3 = " << Top_Side.h3->Val.As<float>();  // GetFloat();
-                            co << ", top4 = " << Top_Side.h4->Val.As<float>();  // GetFloat();
-                            co << ", top5 = " << Top_Side.h5->Val.As<float>();  // GetFloat();
-                            co << ", top6 = " << Top_Side.h6->Val.As<float>();  // GetFloat();
-                            co << ", top7 = " << Top_Side.h7->Val.As<float>();  // GetFloat();
-                            co << ", top8 = " << Top_Side.h8->Val.As<float>();  // GetFloat();
-                            co << ", bot1 = " << Bot_Side.h1->Val.As<float>();  // GetFloat();
-                            co << ", bot2 = " << Bot_Side.h2->Val.As<float>();  // GetFloat();
-                            co << ", bot3 = " << Bot_Side.h3->Val.As<float>();  // GetFloat();
-                            co << ", bot4 = " << Bot_Side.h4->Val.As<float>();  // GetFloat();
-                            co << ", bot5 = " << Bot_Side.h5->Val.As<float>();  // GetFloat();
-                            co << ", bot6 = " << Bot_Side.h6->Val.As<float>();  // GetFloat();
-                            co << ", bot7 = " << Bot_Side.h7->Val.As<float>();  // GetFloat();
-                            co << ", bot8 = " << Bot_Side.h8->Val.As<float>();  // GetFloat();
-                            co << ", year = " << Cassette.Year->Val.As<int32_t>();
-                            co << ", month = " << Cassette.Month->Val.As<int32_t>();
-                            co << ", day = " << Cassette.Day->Val.As<int32_t>();
-                            co << ", hour = " << Cassette.Hour->GetValue().As<uint16_t>(); // ->GetInt();
-                            co << ", cassetteno = " << Cassette.CassetteNo->Val.As<int32_t>();
-                            co << ", sheetincassette = " << (Cassette.SheetInCassette->Val.As<int16_t>() + 1);
-                            co << ", cant_at = now()";
-                            co << ", correct = DEFAULT, pdf = DEFAULT WHERE";
-                        #pragma endregion
-                        #pragma region WHERE ...
-                            if(id != 0)
+                            if(IsSheet(PD))
                             {
-                                co << " id = " << id;
-                            } else
+                                #pragma region InitTag
+
+                                int32_t id = Stoi(SheetPos(conn, PD, Pos));
+                                std::string DataTime = GetStringDataTime();
+
+                                int32_t Year = Cassette.Year->GetValue().As<int32_t>();
+                                int32_t Month = Cassette.Month->GetValue().As<int32_t>();
+                                int32_t Day = Cassette.Day->GetValue().As<int32_t>();
+                                uint16_t Hour = Cassette.Hour->GetValue().As<uint16_t>();
+                                int32_t CassetteNo = Cassette.CassetteNo->GetValue().As<int32_t>();
+                                int16_t SheetInCassette = Cassette.SheetInCassette->GetValue().As<int16_t>() + 1;
+
+                                int Melt = PD.Melt->GetInt();
+                                int Slab = PD.Slab->GetInt();
+                                int Pack = PD.Pack->GetInt();
+                                int PartNo = PD.PartNo->GetInt();
+                                int Sheet = PD.Sheet->GetInt();
+                                int SubSheet = PD.SubSheet->GetInt();
+
+                                int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette);
+
+                                #pragma endregion
+
+                                #pragma region co = "UPDATE sheet SET"
+                                std::stringstream co;
+                                co << "UPDATE sheet SET pos = 7, news = 1, cant_at = now(), correct = DEFAULT, pdf = DEFAULT ";
+                                co << ", cassette = " << CasseteId;
+                                co << ", top1 = " << Top_Side.h1->Val.As<float>();  // GetFloat();
+                                co << ", top2 = " << Top_Side.h2->Val.As<float>();  // GetFloat();
+                                co << ", top3 = " << Top_Side.h3->Val.As<float>();  // GetFloat();
+                                co << ", top4 = " << Top_Side.h4->Val.As<float>();  // GetFloat();
+                                co << ", top5 = " << Top_Side.h5->Val.As<float>();  // GetFloat();
+                                co << ", top6 = " << Top_Side.h6->Val.As<float>();  // GetFloat();
+                                co << ", top7 = " << Top_Side.h7->Val.As<float>();  // GetFloat();
+                                co << ", top8 = " << Top_Side.h8->Val.As<float>();  // GetFloat();
+                                co << ", bot1 = " << Bot_Side.h1->Val.As<float>();  // GetFloat();
+                                co << ", bot2 = " << Bot_Side.h2->Val.As<float>();  // GetFloat();
+                                co << ", bot3 = " << Bot_Side.h3->Val.As<float>();  // GetFloat();
+                                co << ", bot4 = " << Bot_Side.h4->Val.As<float>();  // GetFloat();
+                                co << ", bot5 = " << Bot_Side.h5->Val.As<float>();  // GetFloat();
+                                co << ", bot6 = " << Bot_Side.h6->Val.As<float>();  // GetFloat();
+                                co << ", bot7 = " << Bot_Side.h7->Val.As<float>();  // GetFloat();
+                                co << ", bot8 = " << Bot_Side.h8->Val.As<float>();  // GetFloat();
+                                co << ", year = " << Year;
+                                co << ", month = " << Month;
+                                co << ", day = " << Day;
+                                co << ", hour = " << Hour;
+                                co << ", cassetteno = " << CassetteNo;
+                                co << ", sheetincassette = " << SheetInCassette;
+                                co << " WHERE";
+                                #pragma endregion
+
+                                #pragma region WHERE ...
+                                if(id != 0)
+                                {
+                                    co << " id = " << id;
+                                } 
+                                else
+                                {
+                                    std::stringstream sd;
+                                    sd << " melt = " << Melt;
+                                    sd << " AND slab = " << Slab;
+                                    sd << " AND pack = " << Pack;
+                                    sd << " AND partno = " << PartNo;
+                                    sd << " AND sheet = " << Sheet;
+                                    sd << " AND subsheet = " << SubSheet;
+                                    LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
+                                    co << sd.str();
+                                }
+                                #pragma endregion
+
+                                LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), {}\r\n", FUNCTION_LINE_NAME, co.str());
+                                SETUPDATESQL(HardLogger, conn, co);
+                                //LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), CasseteId={}, Id={}, Melt={}, Slab={},PartNo={}, Pack={}, Sheet={}, SubSheet={}\r\n", FUNCTION_LINE_NAME, CasseteId, id, PD.Melt->GetString(), PD.Slab->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString(), PD.SubSheet->GetString());
+                                UpdateCountSheet(conn, CasseteId);
+                                MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
+                                std::this_thread::sleep_for(std::chrono::seconds(1));
+                            } 
+                            else
                             {
-                                std::stringstream sd;
-                                sd << " melt = " << PD.Melt->GetInt();
-                                sd << " AND slab = " << PD.Slab->GetInt();
-                                sd << " AND pack = " << PD.Pack->GetInt();
-                                sd << " AND partno = " << PD.PartNo->GetInt();
-                                sd << " AND sheet = " << PD.Sheet->GetInt();
-                                sd << " AND subsheet = " << PD.SubSheet->GetInt();
-                                LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
-                                co << sd.str();
+                                LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
                             }
-                        #pragma endregion
-
-                            SETUPDATESQL(HardLogger, conn, co);
-                            LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), CasseteId={}, Id={}, Melt={}, Slab={},PartNo={}, Pack={}, Sheet={}, SubSheet={}\r\n", FUNCTION_LINE_NAME, CasseteId, id, PD.Melt->GetString(), PD.Slab->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString(), PD.SubSheet->GetString());
-                            UpdateCountSheet(conn, CasseteId);
-                            MySetWindowText(winmap(hEdit_Sheet_DataTime), DataTime);
                         }
-                        else
-                            LOG_INFO(HardLogger, "{:90}| Not Set SaveDone->Set_Value(true), Melt={}, PartNo={}, Pack={}, Sheet={}\r\n", FUNCTION_LINE_NAME, PD.Melt->GetString(), PD.PartNo->GetString(), PD.Pack->GetString(), PD.Sheet->GetString());
+                        CATCH(HardLogger, "");
                         HMISheetData.SaveDone->Set_Value(true);
+                        PalletSheet[Pos - 1].Clear();
+                        PalletSheet[Pos].Clear();
+                        PDF::CorrectSheet(0);
                     }
                 }
                 CATCH(HardLogger, "");
+                return 0;
             }
 
             //Новые лист в касету, Кассета наполяентся
@@ -1672,15 +1695,10 @@ namespace KPVL {
                         if(IsSheet(PD))
                         {
                             SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
-                            SetUpdateSheet(*value->Conn, PD, " cant_at = now() ", "");
-                            
-                            SetSaveDone(*value->Conn);
+                            CreateThread(0, 0, SetSaveDone, (LPVOID)0, 0, 0);
                         }
-                        PalletSheet[Pos - 1].Clear();
-                        PalletSheet[Pos].Clear();
-
                         //Коррекция листа
-                        CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
+                        //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1958,8 +1976,8 @@ namespace KPVL {
                 //int InCassette = value->GetInt();
                 //sprintf_s(ss, 256, "%d", InCassette);
                 //MySetWindowText(winmap(value->winId), ss);
-                if(!Sheet::Z6::Old_SheetInCassette)
-                    Sheet::Z6::Old_SheetInCassette = value->GetInt();
+                //if(!Sheet::Z6::Old_SheetInCassette)
+                //    Sheet::Z6::Old_SheetInCassette = value->GetInt();
                 MySetWindowText(value);
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
             }

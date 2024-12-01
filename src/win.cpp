@@ -706,16 +706,16 @@ MAP_WINDOW mapWindow = {
 
     #pragma region Лист в касету
         {hGroup053, {szTem1,   Temp4Flag, {5, 95, 550, 60}, ""}},
-        {hStatSheet_DataTime,       {szStat, Stat10Flag, {   0,  0, 129, 39}, "Время загрузки\nв закалочную печь"}},
+        {hStatSheet_DataTime,       {szStat, Stat10Flag, {   0,  0, 129, 39}, "Дата время\r\nкантовки"}},
         {hStatSheet_Cassette_Data,  {szStat, Stat10Flag, { 130,  0, 419, 19}, "ID кассеты"}},
         {hStatSheet_Cassette_Year,  {szStat, Stat10Flag, { 130, 20,  69, 19}, "Год"}},
         {hStatSheet_Cassette_Month, {szStat, Stat10Flag, { 200, 20,  69, 19}, "Месяц"}},
         {hStatSheet_Cassette_Day,   {szStat, Stat10Flag, { 270, 20,  69, 19}, "День"}},
         {hStatSheet_Cassette_Hour,  {szStat, Stat10Flag, { 340, 20,  69, 19}, "Час"}},
         {hStatSheet_CassetteNo,     {szStat, Stat10Flag, { 410, 20,  69, 19}, "Кассета"}},
-        {hStatSheet_InCassette,     {szStat, Stat10Flag, { 480, 20,  69, 19}, "Лист"}},
+        {hStatSheet_InCassette,     {szStat, Stat10Flag, { 480, 20,  69, 19}, "Листов"}},
 
-        {hEdit_Sheet_DataTime,      {szStat, Stat05Flag, {   0, 40, 129, 19}, "2023-06-11 23:56:40"}},
+        {hEdit_Sheet_DataTime,      {szStat, Stat05Flag, {   0, 40, 129, 19}, ""}},
         {hEdit_Sheet_Cassette_Year, {szStat, Stat04Flag, { 130, 40,  69, 19}, ""}},
         {hEdit_Sheet_Cassette_Month,{szStat, Stat04Flag, { 200, 40,  69, 19}, ""}},
         {hEdit_Sheet_Cassette_Day,  {szStat, Stat04Flag, { 270, 40,  69, 19}, ""}},

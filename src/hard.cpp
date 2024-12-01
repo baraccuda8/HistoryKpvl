@@ -520,7 +520,7 @@ void PLC_KPVL::Run(int count)
         isInitPLC_KPVL = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
-        KPVL::Sheet::Z6::Old_SheetInCassette = HMISheetData.Cassette.SheetInCassette->GetValue().As<int16_t>();
+        //KPVL::Sheet::Z6::Old_SheetInCassette = HMISheetData.Cassette.SheetInCassette->GetValue().As<int16_t>();
         while(isRun && KeepAlive.Running)
         {
             HMISheetData.WDG_fromBase->Set_Value(true);
@@ -531,9 +531,10 @@ void PLC_KPVL::Run(int count)
                 if(++NewDataVal > 10)    //10 цыклов по 1 секунде
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
-                    PGConnection conn_temp; 
-                    CONNECTION1(conn_temp, Logger);
-                    KPVL::Sheet::Z6::SetSaveDone(conn_temp);
+                    //PGConnection conn_temp; 
+                    //CONNECTION1(conn_temp, Logger);
+                    CreateThread(0, 0, KPVL::Sheet::Z6::SetSaveDone, (LPVOID)0, 0, 0);
+                    //KPVL::Sheet::Z6::SetSaveDone(conn_temp);
                 }
             }
             else

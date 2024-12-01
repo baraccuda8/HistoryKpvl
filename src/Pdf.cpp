@@ -4885,10 +4885,10 @@ namespace PDF
 			std::string start = "";
 			try
 			{
-				//std::string command = "SELECT now() - INTERVAL '30 min'";
+				//std::string command = "SELECT now() - INTERVAL '30 MINUTES'";
 				std::string command =
 					"SELECT start_at "
-					"- TIME '00:02:00' "						//Минут 2 минуты
+					"- INTERVAL '2 MINUTES' "						//Минус 2 минуты
 					"FROM sheet WHERE "
 					"correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at LIMIT 1";
 					//" FROM sheet WHERE correct IS NULL AND start_at > ("
@@ -4918,7 +4918,7 @@ namespace PDF
 			std::string start = "";
 			try
 			{
-				std::string command = "SELECT now() - INTERVAL '30 min'";
+				std::string command = "SELECT now() - INTERVAL '30 MINUTES'";
 
 				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -5194,13 +5194,17 @@ namespace PDF
 			//std::string start = "2024-11-21 06:35:47";
 			std::string start = SHEET::GetStartTime(conn);
 			std::string stop =  "";// "2024-10-17 12:00:00";
-
-			SHEET::GetSheets sheets(conn, start, stop);
 	
 			//Проверка и коррекция всех листов не имеющих метку correct
 			//CorrectSheetDebug(conn);
 			if(start.length())
 			{
+				try
+				{
+					SHEET::GetSheets sheets(conn, start, stop);
+				}
+				CATCH(SheetLogger, "");
+
 				std::stringstream as;
 				as << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND start_at <= '" << start << "' AND pos > 6;";
 				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, as.str());
