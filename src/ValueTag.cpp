@@ -326,50 +326,56 @@ void Value::SaveSQL()
     CATCH(AllLogger, Patch);
 }
 
-Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s) :
+Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s):
     Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn), Sec(s)
 {
-    try
+    if(!Patch.length())
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
+
+    if(!Sec)
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
+
+    if(!Conn)
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
+
+    if(Patch.find("WDG") != std::string::npos)
     {
-        if(!Patch.length())
-            throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
-        if(Patch.find("WDG") != std::string::npos)
-        {
-            Arhive = false;
-        }
+        Arhive = false;
     }
-    CATCH(AllLogger, Patch);
-};
+}
 
 Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn):
     Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn)
 {
-    try
+    if(!Patch.length())
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
+
+    if(!Conn)
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
+
+
+    if(Patch.find("WDG") != std::string::npos)
     {
-        if(!Patch.length())
-            throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
-        if(Patch.find("WDG") != std::string::npos)
-        {
-            Arhive = false;
-        }
+        Arhive = false;
     }
-    CATCH(AllLogger, Patch);
-};
+}
 
 Value::Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC sec, std::string fo, OpcUa::Variant v, std::string com):
     Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn), Arhive(ar), format(fo), Sec(sec), Val(v), OldVal(v), Comment(com)
 {
-    try
-    {
-        if(!Patch.length())
-            throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
+    if(!Patch.length())
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
 
-        if(Patch.find("WDG") != std::string::npos)
-        {
-            Arhive = false;
-        }
+    if(!Sec)
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
+
+    if(!Conn)
+        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
+
+    if(Patch.find("WDG") != std::string::npos)
+    {
+        Arhive = false;
     }
-    CATCH(AllLogger, Patch);
 }
 
 int ouu = 0;
