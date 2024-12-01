@@ -15,8 +15,6 @@
 
 extern std::shared_ptr<spdlog::logger> PethLogger;
 
-extern PGConnection conn_temp;
-
 namespace S107
 {
     std::string URI = "opc.tcp://192.168.9.40:4840";
@@ -370,7 +368,7 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 
-    bool GetFinishCassete(std::shared_ptr<spdlog::logger> Logger, PGConnection& conn, TCassette& it)
+    bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it)
     {
         try
         {
@@ -556,7 +554,7 @@ namespace S107
                 sd << " WHERE id = " << id;
 
                 LOG_INFO(TestLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(PethLogger, conn_temp, sd);
+                SETUPDATESQL(PethLogger, conn, sd);
             }
         }
         CATCH(PethLogger, "");
@@ -650,28 +648,7 @@ namespace S107
                 if(value->GetBool()/*= GetBool()*/)
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(conn_temp, AppFurn1, nPetch);
-                    
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
-                    //{
-                    //    Petch.Run_at = GetDataTimeString();
-                    //    //UpdateCassette(conn_temp, Petch, nPetch);
-                    //    std::stringstream sd;
-                    //    sd << "INSERT INTO cassette2 (";
-                    //    sd << "hour, day, month, year, cassetteno, peth, run_at";
-                    //    sd << ") VALUES (";
-                    //    sd << Petch.Hour << ", "
-                    //        << Petch.Day << ", "
-                    //        << Petch.Month << ", "
-                    //        << Petch.Year << ", "
-                    //        << Petch.CassetteNo << ", "
-                    //        << nPetch << ", '"
-                    //        << Petch.Run_at << "');";
-                    //    SETUPDATESQL(PethLogger, conn_temp, sd);
-                    //}
-#pragma endregion
-
+                    CassetteId = UpdateCassetteProcRun(*value->Conn, AppFurn1, nPetch);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -688,7 +665,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcEnd(conn_temp, AppFurn1, nPetch);
+                    CassetteId = UpdateCassetteProcEnd(*value->Conn, AppFurn1, nPetch);
                     AppFurn1.Cassette.facttemper = "0";
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
@@ -718,7 +695,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(conn_temp, AppFurn1, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, AppFurn1, nPetch);
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
@@ -744,7 +721,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(conn_temp, AppFurn1, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, AppFurn1, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
                 }
@@ -817,7 +794,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//value->GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn1, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn1, "heatacc = " + value->GetString());
             }
             CATCH(PethLogger, "");
 
@@ -829,7 +806,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn1, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn1, "heatwait = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -840,7 +817,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn1, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn1, "total = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -856,7 +833,7 @@ namespace S107
                 if(f <= 5.0 && f >= 4.9)
                 {
                     MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.TempAct->GetString().c_str());
-                    SetTemperCassette(conn_temp, AppFurn1.Cassette, AppFurn1.TempAct->GetString());
+                    SetTemperCassette(*value->Conn, AppFurn1.Cassette, AppFurn1.TempAct->GetString());
                 }
                 else if(f >= AppFurn1.TimeProcSet->GetFloat())//GetFloat())
                 {
@@ -920,7 +897,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(conn_temp, AppFurn2, nPetch);
+                    CassetteId = UpdateCassetteProcRun(*value->Conn, AppFurn2, nPetch);
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
@@ -951,7 +928,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    UpdateCassetteProcEnd(conn_temp, AppFurn2, nPetch);
+                    UpdateCassetteProcEnd(*value->Conn, AppFurn2, nPetch);
                     CassetteId = 0;
                     AppFurn1.Cassette.facttemper = "0";
 
@@ -980,7 +957,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(conn_temp, AppFurn2, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, AppFurn2, nPetch);
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch))
@@ -1004,7 +981,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(conn_temp, AppFurn2, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, AppFurn2, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
                 }
@@ -1072,7 +1049,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn2, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn2, "heatacc = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1083,7 +1060,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn2, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn2, "heatwait = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1094,7 +1071,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(conn_temp, AppFurn2, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, AppFurn2, "total = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1110,7 +1087,7 @@ namespace S107
                 if(f <= 5.0 && f >= 4.9)
                 {
                     MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.TempAct->GetString().c_str());
-                    SetTemperCassette(conn_temp, AppFurn2.Cassette, AppFurn2.TempAct->GetString());
+                    SetTemperCassette(*value->Conn, AppFurn2.Cassette, AppFurn2.TempAct->GetString());
                 }
                 else if(f >= AppFurn2.TimeProcSet->GetFloat())//GetFloat())
                 {

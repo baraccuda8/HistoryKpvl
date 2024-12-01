@@ -2493,7 +2493,7 @@ namespace PDF
 					//P.Finish_at = GetDataTimeString(TM_Fin);
 					//
 					//std::stringstream sg2;
-					S107::GetFinishCassete(CassetteLogger, conn, it);
+					S107::GetFinishCassete(conn, CassetteLogger, it);
 					{
 						s1 << Stoi(it.Id) << ";";
 						s1 << " " << it.Run_at << ";";
@@ -3010,7 +3010,7 @@ namespace PDF
 					if(ct.facttemper.length())	it.facttemper = ct.facttemper;
 					if(ct.Id.length())			it.Id = ct.Id;
 
-					if(S107::GetFinishCassete(CassetteLogger, conn, it))
+					if(S107::GetFinishCassete(conn, CassetteLogger, it))
 						SaveDataBase(conn, ct, it);
 				}
 			}CATCH(CassetteLogger, "");

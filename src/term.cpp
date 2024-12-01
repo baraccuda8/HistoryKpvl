@@ -1114,7 +1114,7 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                                     {
                                         //Финализируем
                                         //OutLoggin(L, FUNCTION_LINE_NAME, ">> Финализируем", it);
-                                        S107::GetFinishCassete(L, conn, it);
+                                        S107::GetFinishCassete(conn, L, it);
                                         //FindFinish(L, conn, it);
                                         //OutLoggin(L, FUNCTION_LINE_NAME, "<< Финализируем", it);
                                     }

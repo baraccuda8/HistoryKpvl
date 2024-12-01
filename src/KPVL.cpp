@@ -14,11 +14,6 @@
 #include "pdf.h"
 
 
-extern PGConnection conn_kpvl;
-extern PGConnection conn_dops;
-
-//extern const std::string FORMATTIME;
-
 extern std::shared_ptr<spdlog::logger> HardLogger;
 
 std::map<int, std::string> GenSeq1 ={
@@ -50,13 +45,11 @@ std::map<int, std::string> GenSeq3 ={
     {4, "Окончание цикла обработки"},
 };
 
+extern PGConnection conn_dops;
 
 TSheet PalletSheet[7];
 
 std::deque<TSheet>AllSheet;
-
-//Собираем данные по 2 секции через 5 секунд после State_2 = 5
-//Номер колонки в таблице листов
 
 //Печь закалки
 namespace KPVL {
@@ -1141,7 +1134,7 @@ namespace KPVL {
                     PD.AlloyCodeText->GetValue();
                     PD.ThiknessText->GetValue();
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                 }
                 CATCH(HardLogger, "");
                 return 0;
@@ -1154,7 +1147,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
                     //DeleteNullSgeet(conn, PD, Pos);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ0_Time);
                 }
                 CATCH(HardLogger, "");
@@ -1172,7 +1165,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ1_Time);
 
                     PD.AlloyCodeText->GetValue();
@@ -1183,12 +1176,12 @@ namespace KPVL {
                     if(PD.AlloyCodeText->strVal.length())
                     {
                         update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                     if(PD.ThiknessText->strVal.length())
                     {
                         update = " thikness = '" + PD.ThiknessText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1202,36 +1195,36 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ1_Time);
 
                     if(IsSheet(PD))
                     {
-                        SheetPos(conn_kpvl, PD, Pos);
+                        SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(conn_kpvl, PD, update, "");
+                        //SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         //std::stringstream ssd;
                         //ssd << " start_at = (";
                         //ssd << "SELECT create_at FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND (content = '3' OR content = '4' OR content = '5')";
                         //ssd << " ORDER BY create_at DESC LIMIT 1)";
                         //SetUpdateSheet(conn_kpvl, PD, ssd.str(), "");//" start_at IS NULL AND ");
-                        SetUpdateSheet(conn_kpvl, PD, " start_at = now() ", "");//" start_at IS NULL AND ");
+                        SetUpdateSheet(*value->Conn, PD, " start_at = now() ", "");//" start_at IS NULL AND ");
 
-                        DeleteNullSgeet(conn_kpvl, PD, Pos);
+                        DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1249,7 +1242,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
 
                     PD.AlloyCodeText->GetValue();
@@ -1259,12 +1252,12 @@ namespace KPVL {
                     if(PD.AlloyCodeText->strVal.length())
                     {
                         update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                     if(PD.ThiknessText->strVal.length())
                     {
                         update = " thikness = '" + PD.ThiknessText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1278,37 +1271,37 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ2_Time);
 
                     if(IsSheet(PD))
                     {
-                        SheetPos(conn_kpvl, PD, Pos);
+                        SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(conn_kpvl, PD, update, "");
+                        //SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(conn_kpvl, PD, update, "");
+                        //SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
-                        SetUpdateSheet(conn_kpvl, PD, " secondpos_at = now() ", ""); //" secondpos_at IS NULL AND ");
+                        SetUpdateSheet(*value->Conn, PD, " secondpos_at = now() ", ""); //" secondpos_at IS NULL AND ");
 
-                        DeleteNullSgeet(conn_kpvl, PD, Pos);
+                        DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1326,7 +1319,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
 
                     PD.AlloyCodeText->GetValue();
                     PD.ThiknessText->GetValue();
@@ -1334,12 +1327,12 @@ namespace KPVL {
                     if(PD.AlloyCodeText->strVal.length())
                     {
                         update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                     if(PD.ThiknessText->strVal.length())
                     {
                         update = " thikness = '" + PD.ThiknessText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1352,17 +1345,17 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];;
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
 
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ3_Time);
 
                     if(IsSheet(PD))
                     {
-                        SheetPos(conn_kpvl, PD, Pos);
+                        SheetPos(*value->Conn, PD, Pos);
 
-                        SetUpdateSheet(conn_kpvl, PD, " datatime_end = now() ", ""); //" secondpos_at IS NULL AND ");
+                        SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", ""); //" secondpos_at IS NULL AND ");
 
-                        DeleteNullSgeet(conn_kpvl, PD, Pos);
+                        DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1380,7 +1373,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
 
                     PD.AlloyCodeText->GetValue();
                     PD.ThiknessText->GetValue();
@@ -1389,12 +1382,12 @@ namespace KPVL {
                     if(PD.AlloyCodeText->strVal.length())
                     {
                         update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                     if(PD.ThiknessText->strVal.length())
                     {
                         update = " thikness = '" + PD.ThiknessText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1408,14 +1401,14 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
 
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ4_Time);
 
                     if(IsSheet(PD))
                     {
-                        SheetPos(conn_kpvl, PD, Pos);
-                        SetUpdateSheet(conn_kpvl, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
-                        DeleteNullSgeet(conn_kpvl, PD, Pos);
+                        SheetPos(*value->Conn, PD, Pos);
+                        SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
+                        DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1432,7 +1425,7 @@ namespace KPVL {
                 {
                     T_PlateData& PD = PlateData[Pos];
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                 }
                 CATCH(HardLogger, "");
                 return 0;
@@ -1445,10 +1438,10 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
                     PD.SubSheet->GetValue();
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                     OutTime(PD, HWNDCLIENT::hEditPlate_DataZ5_Time);
 
-                    SetUpdateSheet(conn_kpvl, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
+                    SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
                 }
                 CATCH(HardLogger, "");
                 return 0;
@@ -1468,7 +1461,7 @@ namespace KPVL {
                     //    PD = PlateData[Pos - 1];
 
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
                 }
                 CATCH(HardLogger, "");
                 return 0;
@@ -1481,7 +1474,7 @@ namespace KPVL {
                     T_PlateData& PD = PlateData[Pos];
 
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
 
                     PD.AlloyCodeText->GetValue();
                     PD.ThiknessText->GetValue();
@@ -1490,12 +1483,12 @@ namespace KPVL {
                     if(PD.AlloyCodeText->strVal.length())
                     {
                         update = " alloy = '" + PD.AlloyCodeText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                     if(PD.ThiknessText->strVal.length())
                     {
                         update = " thikness = '" + PD.ThiknessText->strVal + "'";
-                        SetUpdateSheet(conn_kpvl, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1510,14 +1503,14 @@ namespace KPVL {
                 Old_SheetInCassette = New_SheetInCassette;
                 return New_SheetInCassette;
             }
-            void UpdateInCant()
+            void UpdateInCant(PGConnection& conn)
             {
                 T_PlateData PD = PlateData[Pos];
                 T_CassetteData Cassette = HMISheetData.Cassette;
 
-                int32_t id = Stoi(SheetPos(conn_kpvl, PD, Pos));
+                int32_t id = Stoi(SheetPos(conn, PD, Pos));
 
-                int32_t  CasseteId = Cassette::CassettePos(conn_kpvl, Cassette);
+                int32_t  CasseteId = Cassette::CassettePos(conn, Cassette);
                 //std::string DataTime = GetStringDataTime();
 
                 std::stringstream co;
@@ -1547,7 +1540,7 @@ namespace KPVL {
                     LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
                     co << sd.str();
                 }
-                SETUPDATESQL(HardLogger, conn_kpvl, co);
+                SETUPDATESQL(HardLogger, conn, co);
             }
 
             DWORD Data(Value* value)
@@ -1560,14 +1553,14 @@ namespace KPVL {
                     //    PD = PlateData[5];
 
                     MySetWindowText(value);
-                    LocSheet(conn_kpvl, PD, Pos);
+                    LocSheet(*value->Conn, PD, Pos);
 
                     if(IsSheet(PD))
                     {
                         //std::string update = " incant_at = '" + GetStringDataTime() + "'";
                         //SetUpdateSheet(conn_kpvl, PD, update, ""); //" incant_at IS NULL  AND");
-                        UpdateInCant();
-                        DeleteNullSgeet(conn_kpvl, PD, Pos);
+                        UpdateInCant(*value->Conn);
+                        DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
                 CATCH(HardLogger, "");
@@ -1587,7 +1580,7 @@ namespace KPVL {
 
                         if(IsSheet(PD))
                         {
-                            int32_t id = Stoi(SheetPos(conn_kpvl, PD, Pos));
+                            int32_t id = Stoi(SheetPos(conn, PD, Pos));
                             //int32_t id = Stoi(GetIdSheet(conn, PD));
                             std::string DataTime = GetStringDataTime();
 
@@ -1678,10 +1671,10 @@ namespace KPVL {
                         T_PlateData PD = PlateData[Pos];
                         if(IsSheet(PD))
                         {
-                            SetUpdateSheet(conn_kpvl, PD, " incant_at = now() ", " incant_at IS NULL AND ");
-                            SetUpdateSheet(conn_kpvl, PD, " cant_at = now() ", "");
+                            SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
+                            SetUpdateSheet(*value->Conn, PD, " cant_at = now() ", "");
                             
-                            SetSaveDone(conn_kpvl);
+                            SetSaveDone(*value->Conn);
                         }
                         PalletSheet[Pos - 1].Clear();
                         PalletSheet[Pos].Clear();
@@ -1693,6 +1686,144 @@ namespace KPVL {
                 CATCH(HardLogger, "");
                 return 0;
             }
+        }
+    }
+
+    //Операции в зонах
+    namespace ZState{
+        DWORD WINAPI ThreadState2(LPVOID)
+        {
+            //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, 1);
+            try
+            {
+                PGresult* res = NULL;
+                int32_t Melt     = Stoi(PalletSheet[2].Melt);
+                int32_t Pack     = Stoi(PalletSheet[2].Pack);
+                int32_t PartNo   = Stoi(PalletSheet[2].PartNo);
+                int32_t Sheet    = Stoi(PalletSheet[2].Sheet);
+                int32_t SubSheet = Stoi(PalletSheet[2].SubSheet);
+                int32_t Slab     = Stoi(PalletSheet[2].Slab);
+
+                std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
+                std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
+                std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
+
+                float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetFloat();
+                int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetInt();
+
+                if(Time_Z2 == 0)
+                {
+                    time_t st;
+                    std::string datatimeend_at = GetStringOfDataTime(st);
+                    if(datatimeend_at.length())
+                        Time_Z2 = SQL::GetHeatTime_Z2(conn_dops, datatimeend_at);
+                }
+
+                if(Melt && Pack && PartNo && Sheet)
+                {
+                    int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
+
+                    std::stringstream ss1;
+                    ss1 << "UPDATE sheet SET ";
+                    ss1 << "datatime_end = now()";
+                    if(Time_Z2)
+                        ss1 << ", datatime_all = " << Time_Z2;
+
+                    ss1 << " WHERE datatime_end IS NULL AND"; //delete_at IS NULL AND 
+                    ss1 << " id = " << Id;
+
+                    std::string command = ss1.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+
+                    res = conn_dops.PGexec(command);
+                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                        LOG_ERR_SQL(HardLogger, res, command);
+                    PQclear(res);
+
+                    
+                    int r = 4;
+                    while(isRun && --r)  //5 секунд
+                    {
+                        SetWindowText(winmap(hEditState_34), std::to_string(r).c_str());
+                        std::this_thread::sleep_for(std::chrono::seconds(1));
+                    }
+
+                    std::string LaminTop  = AI_Hmi_210.LaminPressTop->GetString();
+                    std::string LaminBot = AI_Hmi_210.LaminPressBot->GetString();
+
+                    std::stringstream ss4;
+                    ss4 << "UPDATE sheet SET ";
+                    ss4 << "lam_te1 = " << lam_te1 << ", ";
+                    ss4 << "za_te3 = " << za_te3 << ", ";
+                    ss4 << "za_pt3 = " << za_pt3 << ", ";
+                    ss4 << "lampresstop = " << LaminTop << ", ";
+                    ss4 << "lampressbot = " << LaminBot << " ";
+
+                    ss4 << "WHERE";
+                    ss4 << " id = " << Id;
+
+                    command = ss4.str();
+                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+                    res = conn_dops.PGexec(command);
+                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
+                        LOG_ERR_SQL(HardLogger, res, command);
+                    PQclear(res);
+                }
+            }
+            CATCH(HardLogger, "");
+
+            hThreadState2 = NULL;
+            return 0;
+        }
+
+        //Операция в 1 зоне
+        DWORD DataPosState_1(Value* value)
+        {
+            try
+            {
+                int16_t val = value->GetInt();
+                MySetWindowText(value);
+                SetWindowText(winmap(hEditState_12), GenSeq1[val].c_str());
+                if(val == 3)
+                {
+
+                }
+            }
+            CATCH(HardLogger, "");
+            return 0;
+        }
+
+        //Операция в 2 зоне
+        DWORD DataPosState_2(Value* value)
+        {
+            try
+            {
+                int16_t val = value->GetInt();
+                MySetWindowText(value);
+                SetWindowText(winmap(hEditState_22), GenSeq2[val].c_str());
+                if(val == 5 /*|| val == 6*/)
+                {
+                    if(hThreadState2 == NULL)
+                        hThreadState2 = CreateThread(0, 0, ThreadState2, (LPVOID)0, 0, 0);
+
+                }
+            }
+            CATCH(HardLogger, "");
+            return 0;
+        }
+
+        //Операция в 3 зоне
+        DWORD DataPosState_3(Value* value)
+        {
+            try
+            {
+                MySetWindowText(value);
+                SetWindowText(winmap(hEditState_32), GenSeq3[value->GetInt()].c_str());
+
+                MySetWindowText(winmap(value->winId), value->GetString().c_str());
+            }
+            CATCH(HardLogger, "");
+            return 0;
         }
     }
 
@@ -1847,7 +1978,7 @@ namespace KPVL {
                 MySetWindowText(value);
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteNo = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                 }
             }
@@ -1864,7 +1995,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteYear = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                 }
             }
@@ -1881,7 +2012,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteMonth = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                 }
             }
@@ -1898,7 +2029,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteDay = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                 }
             }
@@ -1916,7 +2047,7 @@ namespace KPVL {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
                 if(HMISheetData.CasseteIsFill->GetValue().As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CassetteHour = {} Id = {}", FUNCTION_LINE_NAME, value->GetInt(), id);
                 }
             }
@@ -1935,7 +2066,7 @@ namespace KPVL {
 
                 if(value->Val.As<bool>())
                 {
-                    int32_t id = CassettePos(conn_kpvl, HMISheetData.Cassette);
+                    int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, id);
                     SetWindowText(winmap(value->winId), FillCassette);
                 }
@@ -1951,144 +2082,6 @@ namespace KPVL {
 
 
 #pragma region Вспомогательные функции
-    //Операции в зонах
-    namespace ZState{
-        DWORD WINAPI ThreadState2(LPVOID)
-        {
-            //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, 1);
-            try
-            {
-                PGresult* res = NULL;
-                int32_t Melt     = Stoi(PalletSheet[2].Melt);
-                int32_t Pack     = Stoi(PalletSheet[2].Pack);
-                int32_t PartNo   = Stoi(PalletSheet[2].PartNo);
-                int32_t Sheet    = Stoi(PalletSheet[2].Sheet);
-                int32_t SubSheet = Stoi(PalletSheet[2].SubSheet);
-                int32_t Slab     = Stoi(PalletSheet[2].Slab);
-
-                std::string lam_te1 = AI_Hmi_210.LAM_TE1->GetString();
-                std::string za_te3 = AI_Hmi_210.Za_TE3->GetString();
-                std::string za_pt3 = AI_Hmi_210.Za_PT3->GetString();
-
-                float Time_Z2 = GenSeqToHmi.HeatTime_Z2->GetFloat();
-                int16_t StateNo = GenSeqToHmi.Seq_2_StateNo->GetInt();
-
-                if(Time_Z2 == 0)
-                {
-                    time_t st;
-                    std::string datatimeend_at = GetStringOfDataTime(st);
-                    if(datatimeend_at.length())
-                        Time_Z2 = SQL::GetHeatTime_Z2(conn_dops, datatimeend_at);
-                }
-
-                if(Melt && Pack && PartNo && Sheet)
-                {
-                    int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
-
-                    std::stringstream ss1;
-                    ss1 << "UPDATE sheet SET ";
-                    ss1 << "datatime_end = now()";
-                    if(Time_Z2)
-                        ss1 << ", datatime_all = " << Time_Z2;
-
-                    ss1 << " WHERE datatime_end IS NULL AND"; //delete_at IS NULL AND 
-                    ss1 << " id = " << Id;
-
-                    std::string command = ss1.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-
-                    res = conn_dops.PGexec(command);
-                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, command);
-                    PQclear(res);
-
-                    
-                    int r = 4;
-                    while(isRun && --r)  //5 секунд
-                    {
-                        SetWindowText(winmap(hEditState_34), std::to_string(r).c_str());
-                        std::this_thread::sleep_for(std::chrono::seconds(1));
-                    }
-
-                    std::string LaminTop  = AI_Hmi_210.LaminPressTop->GetString();
-                    std::string LaminBot = AI_Hmi_210.LaminPressBot->GetString();
-
-                    std::stringstream ss4;
-                    ss4 << "UPDATE sheet SET ";
-                    ss4 << "lam_te1 = " << lam_te1 << ", ";
-                    ss4 << "za_te3 = " << za_te3 << ", ";
-                    ss4 << "za_pt3 = " << za_pt3 << ", ";
-                    ss4 << "lampresstop = " << LaminTop << ", ";
-                    ss4 << "lampressbot = " << LaminBot << " ";
-
-                    ss4 << "WHERE";
-                    ss4 << " id = " << Id;
-
-                    command = ss4.str();
-                    if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                    res = conn_dops.PGexec(command);
-                    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                        LOG_ERR_SQL(HardLogger, res, command);
-                    PQclear(res);
-                }
-            }
-            CATCH(HardLogger, "");
-
-            hThreadState2 = NULL;
-            return 0;
-        }
-
-        //Операция в 1 зоне
-        DWORD DataPosState_1(Value* value)
-        {
-            try
-            {
-                int16_t val = value->GetInt();
-                MySetWindowText(value);
-                SetWindowText(winmap(hEditState_12), GenSeq1[val].c_str());
-                if(val == 3)
-                {
-
-                }
-            }
-            CATCH(HardLogger, "");
-            return 0;
-        }
-
-        //Операция в 2 зоне
-        DWORD DataPosState_2(Value* value)
-        {
-            try
-            {
-                int16_t val = value->GetInt();
-                MySetWindowText(value);
-                SetWindowText(winmap(hEditState_22), GenSeq2[val].c_str());
-                if(val == 5 /*|| val == 6*/)
-                {
-                    if(hThreadState2 == NULL)
-                        hThreadState2 = CreateThread(0, 0, ThreadState2, (LPVOID)0, 0, 0);
-
-                }
-            }
-            CATCH(HardLogger, "");
-            return 0;
-        }
-
-        //Операция в 3 зоне
-        DWORD DataPosState_3(Value* value)
-        {
-            try
-            {
-                MySetWindowText(value);
-                SetWindowText(winmap(hEditState_32), GenSeq3[value->GetInt()].c_str());
-
-                MySetWindowText(winmap(value->winId), value->GetString().c_str());
-            }
-            CATCH(HardLogger, "");
-            return 0;
-        }
-    }
-
     //Аналоги
     namespace An{
 
@@ -2104,8 +2097,8 @@ namespace KPVL {
                 if(value->GetFloat() > 0)
                 {
                     std::string update = " temper = " + value->GetString();
-                    Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                    Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
                 }
             }
             CATCH(HardLogger, "");
@@ -2122,8 +2115,8 @@ namespace KPVL {
                 if(value->GetFloat() > 0)
                 {
                     std::string update = " speed = " + value->GetString();
-                    Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                    Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
                 }
             }
             CATCH(HardLogger, "");
@@ -2138,8 +2131,8 @@ namespace KPVL {
                 MySetWindowText(value);
 
                 std::string update = " timeforplateheat = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2152,8 +2145,8 @@ namespace KPVL {
             {
                 MySetWindowText(winmap(value->winId), value->GetString().c_str());
                 std::string update = " prestostartcomp = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
             CATCH(HardLogger, "");
 
@@ -2188,8 +2181,8 @@ namespace KPVL {
                 MaskKlapan = MaskKlapan1 + " " + MaskKlapan2;
 
                 std::string update = " mask = '" + MaskKlapan + "'";
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2215,8 +2208,8 @@ namespace KPVL {
 
                 MaskKlapan = MaskKlapan1 + " " + MaskKlapan2;
                 std::string update = " mask = '" + MaskKlapan + "'";
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2232,8 +2225,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " posclapantop = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " posclapantop = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " posclapantop = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2245,8 +2238,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " posclapanbot = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " posclapanbot = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " posclapanbot = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2262,8 +2255,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " lam1posclapantop = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam1posclapantop = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam1posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " lam1posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " lam1posclapantop = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2275,8 +2268,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " lam1posclapanbot = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam1posclapanbot = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam1posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " lam1posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " lam1posclapanbot = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2292,8 +2285,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " lam2posclapantop = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam2posclapantop = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam2posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " lam2posclapantop = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " lam2posclapantop = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2305,8 +2298,8 @@ namespace KPVL {
             {
                 MySetWindowText(value);
                 std::string update = " lam2posclapanbot = " + value->GetString();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[1], update, " lam2posclapanbot = 0 AND");
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, " lam2posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " lam2posclapanbot = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " lam2posclapanbot = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
@@ -2344,27 +2337,9 @@ namespace KPVL {
                     std::stringstream up;
                     up << f.first << " = " << value->GetFloat();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, up.str());
-                    Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[6], up.str(), "");
                 }
             }
-
-
-            //else
-            //{
-            //    std::string find = "Bottom_Side.h";
-            //    size_t l = value->Patch.find(find);
-            //    if(l != std::string::npos)
-            //    {
-            //        char s = value->Patch[l + 13];
-            //        std::stringstream up;
-            //        up << " top" << value->Patch[l + find.length()] << " = " << value->GetFloat();
-            //        LOG_INFO(HardLogger, "{:90}| {}", up.str());
-            //        Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], up.str(), "");
-            //    }
-            //}
-            //
-            //std::string update = " top1 = " + value->GetString();
-            //Sheet::SetUpdateSheet(conn_kpvl, PlateData[6], update, "");
         }
         CATCH(HardLogger, "");
         return 0;
@@ -2394,7 +2369,7 @@ namespace KPVL {
                 ss << std::setprecision(0) << std::fixed << Hmi210_1.Temperature;
                 MySetWindowText(winmap(hStatTempALLTAct), ss.str());
                 std::string update = " temperature = " + ss.str();
-                Sheet::SetUpdateSheet(conn_kpvl, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
         }
         CATCH(HardLogger, "");
