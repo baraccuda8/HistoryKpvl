@@ -12,6 +12,7 @@
 #include "Furn.h"
 #include "pdf.h"
 
+extern PGConnection conn_temp;
 
 //#define SPKsec0 sec00500
 //#define SPKsec1 sec01000
@@ -788,7 +789,7 @@ void OutListCassette(size_t& old_count)
 }
 
 //На кантовку Event = 1
-int SetCassetteInCant(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+int SetCassetteInCant(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
 {
     try
     {
@@ -812,7 +813,7 @@ int SetCassetteInCant(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
 }
 
 //В ожидание Event = 2
-int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+int SetCassetteInWait(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
 {
     try
     {
@@ -833,7 +834,7 @@ int SetCassetteInWait(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
 }
 
 //В печь Event = 3
-int SetCassetteInFurn(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it, int Peth)
+int SetCassetteInFurn(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it, int Peth)
 {
     try
     {
@@ -854,7 +855,7 @@ int SetCassetteInFurn(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCa
 }
 
 //В удаленные Event = 7
-int SetCassetteInDelete(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+int SetCassetteInDelete(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
 {
     try
     {
@@ -873,7 +874,7 @@ int SetCassetteInDelete(std::shared_ptr<spdlog::logger> L, PGConnection& conn, T
 }
 
 
-std::string GetDataEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, std::string sd)
+std::string GetDataEnd(PGConnection& conn, std::shared_ptr<spdlog::logger> L, std::string sd)
 {
     std::string at = "";
     try
@@ -893,7 +894,7 @@ std::string GetDataEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, st
 }
 
 //Ищем конец
-void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+void FindEnd(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
 {
     try
     {
@@ -913,14 +914,14 @@ void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& i
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'true' AND ";
             sd << "id_name = " << ProcEndID;
             sd << " ORDER BY create_at DESC LIMIT 1";
-            End_at1 = GetDataEnd(L, conn, sd.str());
+            End_at1 = GetDataEnd(conn, L, sd.str());
         }
         {
             std::stringstream sd;
             sd << "SELECT create_at FROM todos WHERE create_at >= '" << it.Run_at << "' AND content = 'false' AND ";
             sd << "id_name = " << ProcRunID;
             sd << " ORDER BY create_at DESC LIMIT 1";
-            End_at2 = GetDataEnd(L, conn, sd.str());
+            End_at2 = GetDataEnd(conn, L, sd.str());
         }
 
         if(End_at1 > End_at2)
@@ -960,7 +961,7 @@ void FindEnd(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& i
 //}
 
 //В финал Event = 5
-int SetCassetteInFinal(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
+int SetCassetteInFinal(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
 {
     try
     {
@@ -1011,7 +1012,7 @@ void OutLoggin(std::shared_ptr<spdlog::logger> L, std::string F, std::string st,
 }
 
 
-void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::deque<TCassette>& CIl)
+void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::deque<TCassette>& CIl)
 {
     try
     {
@@ -1030,7 +1031,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
             {
                 //В удаленные Event = 7
                 OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);
-                Event = SetCassetteInDelete(L, conn, it);
+                Event = SetCassetteInDelete(conn, L, it);
                 OutLoggin(L, FUNCTION_LINE_NAME, "<< В удаленные", it);
             }
             int SheetInCassette = Stoi(it.SheetInCassette);
@@ -1057,7 +1058,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                         Peth = 0;
                         //На кантовку Event = 1
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> На кантовку", it);
-                        Event = SetCassetteInCant(L, conn, it);
+                        Event = SetCassetteInCant(conn, L, it);
                         OutLoggin(L, FUNCTION_LINE_NAME, "<< На кантовку", it);
                     }
                 }
@@ -1070,7 +1071,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                         Peth = 1;
                         //В печь Event = 3
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> В печь 1", it);
-                        Event = SetCassetteInFurn(L, conn, it, Peth);
+                        Event = SetCassetteInFurn(conn, L, it, Peth);
                         OutLoggin(L, FUNCTION_LINE_NAME, "<< В печь 1", it);
                     }
                 }
@@ -1083,7 +1084,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                         Peth = 2;
                         //В печь Event = 3
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> В печь 2", it);
-                        Event = SetCassetteInFurn(L, conn, it, Peth);
+                        Event = SetCassetteInFurn(conn, L, it, Peth);
                         OutLoggin(L, FUNCTION_LINE_NAME, "<< В печь 2", it);
                     }
                 }
@@ -1102,7 +1103,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                                 if(!it.End_at.length())
                                 {
                                     OutLoggin(L, FUNCTION_LINE_NAME, ">> Ищем конец", it);
-                                    FindEnd(L, conn, it);
+                                    FindEnd(conn, L, it);
                                     OutLoggin(L, FUNCTION_LINE_NAME, "<< Ищем конец", it);
                                 }
 
@@ -1122,7 +1123,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                                 {
                                     //В ожидание
                                     OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
-                                    Event = SetCassetteInWait(L, conn, it);
+                                    Event = SetCassetteInWait(conn, L, it);
                                     OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
                                 }
 
@@ -1133,7 +1134,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                             {
                                 //В финал Event = 5
                                 OutLoggin(L, FUNCTION_LINE_NAME, ">> В финал", it);
-                                Event = SetCassetteInFinal(L, conn, it);
+                                Event = SetCassetteInFinal(conn, L, it);
                                 OutLoggin(L, FUNCTION_LINE_NAME, "<< В финал", it);
                             }
                         }
@@ -1148,7 +1149,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                     {
                         //В удаленные Event = 7
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);
-                        Event = SetCassetteInDelete(L, conn, it);
+                        Event = SetCassetteInDelete(conn, L, it);
                         OutLoggin(L, FUNCTION_LINE_NAME, "<< В удаленные", it);
                     }
                     else
@@ -1161,7 +1162,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                             {
                                 //В ожидание Event = 2
                                 OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
-                                Event = SetCassetteInWait(L, conn, it);
+                                Event = SetCassetteInWait(conn, L, it);
                                 OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
                             }
                         }
@@ -1173,7 +1174,7 @@ void TestCassete(std::shared_ptr<spdlog::logger>L, PGConnection& conn, std::dequ
                 {
                     //В финал Event = 5
                     OutLoggin(L, FUNCTION_LINE_NAME, ">> В финал", it);
-                    Event = SetCassetteInFinal(L, conn, it);
+                    Event = SetCassetteInFinal(conn, L, it);
                     OutLoggin(L, FUNCTION_LINE_NAME, "<< В финал", it);
                 }
 
@@ -1219,7 +1220,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
             std::deque<TCassette> CIl;
 
 #ifndef _DEBUG
-            TestCassete(TestLogger, conn, CIl);
+            TestCassete(conn, TestLogger, CIl);
 #endif
 
             //Заполняем таблицу кассет для печей отпуска

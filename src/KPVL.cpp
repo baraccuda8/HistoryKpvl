@@ -14,6 +14,9 @@
 #include "pdf.h"
 
 
+extern PGConnection conn_kpvl;
+extern PGConnection conn_dops;
+
 //extern const std::string FORMATTIME;
 
 extern std::shared_ptr<spdlog::logger> HardLogger;

@@ -84,15 +84,4 @@ typedef struct T_Todos{
 void InitCurentTag();
 bool InitSQL();
 
-extern PGConnection conn_kpvl;
-extern PGConnection conn_kpvl2;
-
-extern PGConnection conn_dops;
-extern PGConnection conn_temp;
-extern PGConnection conn_spis;
-extern PGConnection conn_spic;
-
-extern PGConnection conn_grqff1;
-extern PGConnection conn_grqff2;
-extern PGConnection conn_grqff3;
 

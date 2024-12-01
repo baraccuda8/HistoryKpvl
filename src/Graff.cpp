@@ -595,7 +595,7 @@ std::string SqlTempKPVL2(std::string sBegTime)
 		if(PQresultStatus(res) == PGRES_TUPLES_OK)
 		{
 			if(PQntuples(res))
-				sBegTime2 = conn_kpvl.PGgetvalue(res, 0, 0);
+				sBegTime2 = GraffKPVL.conn->PGgetvalue(res, 0, 0);
 		}
 		else
 			LOG_ERR_SQL(SQLLogger, res, command);

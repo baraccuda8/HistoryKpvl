@@ -188,7 +188,7 @@ void Value::GetIdValSQL()
         {
             int line = PQntuples(res);
             if(line)
-                ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
+                ID = atol(Conn->PGgetvalue(res, 0, 0).c_str());
             else
                 LOG_ERR_SQL(SQLLogger, res, command);
         }
@@ -212,7 +212,7 @@ void Value::TestValSQL()
         {
             if(PQntuples(res))
             {
-                ID = atol(conn_kpvl.PGgetvalue(res, 0, 0).c_str());
+                ID = atol(Conn->PGgetvalue(res, 0, 0).c_str());
                 PQclear(res);
                 return;
             }

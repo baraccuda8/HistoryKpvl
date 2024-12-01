@@ -11,6 +11,8 @@
 #include "KPVL.h"
 #include "pdf.h"
 
+extern PGConnection conn_kpvl;
+
 //FFFF F000 0000 0000 Плавка
 //0000 0FFF 0000 0000 Партия
 //0000 0000 F000 0000 Пачка
@@ -544,7 +546,7 @@ void PLC_KPVL::Run(int count)
                 {
                     LOG_INFO(Logger, "{:90}| SaveDone.Set_Value (true)\r\n", FUNCTION_LINE_NAME);
                     PGConnection conn_temp; 
-                    CONNECTION1(conn_spis, Logger);
+                    CONNECTION1(conn_temp, Logger);
                     KPVL::Sheet::Z6::SetSaveDone(conn_temp);
                 }
             }
@@ -658,11 +660,12 @@ DWORD WINAPI Open_KPVL_RUN(LPVOID)
     return 0;
 }
 
-void GetEndData(TSheet& sheet)
+
+void GetEndData(PGConnection& conn, TSheet& sheet)
 {
     std::string command = "SELECT FROM todos WHERE pos > 2 AND id = " + sheet.id;
     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    PGresult* res = conn_spis.PGexec(command);
+    PGresult* res = conn.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
     }
@@ -672,19 +675,19 @@ void GetEndData(TSheet& sheet)
 }
 
 
-void TestSheet()
+void TestSheet(PGConnection& conn)
 {
     std::vector <std::string> IDS;
     //Удаление "левых" листов
     //DELETE FROM sheet WHERE id = 15825;
     std::string command = "SELECT id FROM sheet WHERE delete_at IS NULL AND datatime_end IS NULL AND (pos > 5 AND secondpos_at IS NULL AND datatime_end IS NULL AND correct IS NULL AND pdf = '') AND create_at > '2024-09-11 00:00:00' ORDER BY id;";
-    PGresult* res = conn_spis.PGexec(command);
+    PGresult* res = conn.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
         {
-            std::string ids = conn_spis.PGgetvalue(res, l, 0);
+            std::string ids = conn.PGgetvalue(res, l, 0);
             if(ids.length())
                 IDS.push_back(ids);
         }
@@ -699,7 +702,7 @@ void TestSheet()
         //command << "DELETE FROM sheet WHERE id = " << ids;
         command << "UPDATE sheet SET delete_at = now() WHERE id = " << ids;
         LOG_INFO(HardLogger, "{:90}| {}", command.str());
-        SETUPDATESQL(HardLogger, conn_spis, command);
+        SETUPDATESQL(HardLogger, conn, command);
     }
 }
 
@@ -709,12 +712,14 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
     
     LOG_INFO(HardLogger, "{:90}| Start Open_KPVL_SQL", FUNCTION_LINE_NAME);
 
+    PGConnection conn;
+    CONNECTION1(conn, HardLogger);
     while(isRun)
     {
         try
         {
-            TestSheet();
-            KPVL::SQL::KPVL_SQL(conn_spis, AllSheet);
+            TestSheet(conn);
+            KPVL::SQL::KPVL_SQL(conn, AllSheet);
             if(isRun)
             for(auto& TS : AllSheet)
             {
@@ -727,10 +732,10 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
                     std::stringstream sss;
                     sss << "UPDATE sheet SET pos = " << TS.Pos << " WHERE delete_at IS NULL AND id = " << TS.id;
                     LOG_INFO(HardLogger, "{:90}| {}", sss.str());
-                    SETUPDATESQL(HardLogger, conn_spis, sss);
+                    SETUPDATESQL(HardLogger, conn, sss);
                 }
     //#ifndef _DEBUG
-                KPVL::SQL::GetDataTime_All(conn_spis, TS);
+                KPVL::SQL::GetDataTime_All(conn, TS);
     //#endif
             }
 

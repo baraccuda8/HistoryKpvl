@@ -4122,11 +4122,11 @@ namespace PDF
 				ssd << " cassetteno = " << td.cassetteno;
 				ssd << " ORDER BY run_at DESC LIMIT 1;";
 				std::string command = ssd.str();
-				PGresult* res = conn_kpvl.PGexec(command);
+				PGresult* res = conn.PGexec(command);
 				if(PQresultStatus(res) == PGRES_TUPLES_OK)
 				{
 					if(PQntuples(res))
-						td.cassette = Stoi(conn_kpvl.PGgetvalue(res, 0, 0));
+						td.cassette = Stoi(conn.PGgetvalue(res, 0, 0));
 				}
 				else
 					LOG_ERR_SQL(SheetLogger, res, "");
@@ -5272,7 +5272,7 @@ namespace PDF
 			
 			//CorrectCassette(0);
 
-			//CorrectSheetDebug(conn_pdf);
+			//CorrectSheetDebug(conn);
 			//isRun = false;
 			//SetWindowText(hWndDebug, "Закончил");
 			return 0;

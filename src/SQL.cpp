@@ -20,9 +20,9 @@
 //Соединение с SQL базой
 int DEB = 0;
 PGConnection conn_spis;
-PGConnection conn_spic;
+//PGConnection conn_spic;
 PGConnection conn_kpvl;
-PGConnection conn_kpvl2;
+//PGConnection conn_kpvl2;
 PGConnection conn_dops;
 PGConnection conn_temp;
 
@@ -363,61 +363,11 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
                 << std::endl;
 
             val->Update = true;
-            //LOG_INFO(SQLLogger, "{:90}| ID = {}, coeff = {}, Val = {}, Patch = {}", FUNCTION_LINE_NAME, val->ID, val->coeff, val->GetString(), val->Patch);
             break;
         }
     }
 }
 
-//void GetPetch(S107::T_cass& tc, int p)
-//{
-//    std::string command = "SELECT id FROM cassette2 WHERE peth = " + std::to_string(p) + " ORDER BY id ASC LIMIT 1";
-//    PGresult* res = conn_spis.PGexec(command);
-//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-//    {
-//        int line = PQntuples(res);
-//        if(line)
-//        {
-//            std::string sid = conn_spis.PGgetvalue(res, line - 1, 0);
-//            if(sid.length())
-//                tc.id = Stoi(sid);
-//        }
-//    }
-//    if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-//        LOG_ERR_SQL(SQLLogger, res, command);
-//    PQclear(res);
-//
-//    if(tc.id)
-//    {
-//        std::string command = "SELECT day, month, year, cassetteno, run_at, error_at, end_at FROM cassette2 WHERE id = " + std::to_string(tc.id);
-//        PGresult* res = conn_spis.PGexec(command);
-//        if(PQresultStatus(res) == PGRES_TUPLES_OK)
-//        {
-//            int line = PQntuples(res);
-//            if(line)
-//            {
-//                tc.End_at = conn_spis.PGgetvalue(res, line - 1, 6);
-//                if(tc.End_at.size())
-//                    tc = S107::T_cass();
-//                else
-//                {
-//                    tc.Day = Stoi(conn_spis.PGgetvalue(res, line - 1, 0));
-//                    tc.Month = Stoi(conn_spis.PGgetvalue(res, line - 1, 1));
-//                    tc.Year = Stoi(conn_spis.PGgetvalue(res, line - 1, 2));
-//                    tc.CassetteNo = Stoi(conn_spis.PGgetvalue(res, line - 1, 3));
-//                    tc.Run_at = conn_spis.PGgetvalue(res, line - 1, 4);
-//                    tc.Err_at = conn_spis.PGgetvalue(res, line - 1, 5);
-//                }
-//            }
-//        }
-//
-//        if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-//            LOG_ERR_SQL(SQLLogger, res, command);
-//        PQclear(res);
-//
-//
-//    }
-//}
 
 
 void InitCurentTag()
@@ -526,12 +476,12 @@ void InitTag()
 #pragma region SELECT id, content FROM possheet
     std::string command = "SELECT id, content FROM possheet"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    PGresult* res = conn_kpvl.PGexec(command);
+    PGresult* res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            NamePos[conn_kpvl.PGgetvalue(res, l, 0)] = conn_kpvl.PGgetvalue(res, l, 1);
+            NamePos[conn_spis.PGgetvalue(res, l, 0)] = conn_spis.PGgetvalue(res, l, 1);
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, command);
@@ -595,7 +545,7 @@ void InitTag()
         }
         command = ss.str();
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-        res = conn_kpvl.PGexec(command);
+        res = conn_spis.PGexec(command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
@@ -605,12 +555,12 @@ void InitTag()
 #pragma region SELECT id, content FROM EventCassette
     command = "SELECT id, content FROM EventCassette"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    res = conn_kpvl.PGexec(command);
+    res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            EventCassette[(evCassete::EV)Stoi(conn_kpvl.PGgetvalue(res, l, 0))] = conn_kpvl.PGgetvalue(res, l, 1).c_str();
+            EventCassette[(evCassete::EV)Stoi(conn_spis.PGgetvalue(res, l, 0))] = conn_spis.PGgetvalue(res, l, 1).c_str();
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, command);
@@ -638,7 +588,7 @@ void InitTag()
 
         command = ss.str();
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-        res = conn_kpvl.PGexec(command);
+        res = conn_spis.PGexec(command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
@@ -648,12 +598,12 @@ void InitTag()
 #pragma region SELECT id, content FROM genseq1
     command = "SELECT id, content FROM genseq1"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    res = conn_kpvl.PGexec(command);
+    res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            GenSeq1[atoi(conn_kpvl.PGgetvalue(res, l, 0).c_str())] = conn_kpvl.PGgetvalue(res, l, 1);
+            GenSeq1[atoi(conn_spis.PGgetvalue(res, l, 0).c_str())] = conn_spis.PGgetvalue(res, l, 1);
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, command);
@@ -682,7 +632,7 @@ void InitTag()
 
         command = ss.str();
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-        res = conn_kpvl.PGexec(command);
+        res = conn_spis.PGexec(command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
@@ -692,12 +642,12 @@ void InitTag()
 #pragma region SELECT id, content FROM genseq2
     command = "SELECT id, content FROM genseq2"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    res = conn_kpvl.PGexec(command);
+    res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            GenSeq2[atoi(conn_kpvl.PGgetvalue(res, l, 0).c_str())] = conn_kpvl.PGgetvalue(res, l, 1);
+            GenSeq2[atoi(conn_spis.PGgetvalue(res, l, 0).c_str())] = conn_spis.PGgetvalue(res, l, 1);
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, command);
@@ -725,7 +675,7 @@ void InitTag()
 
         command = ss.str();
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-        res = conn_kpvl.PGexec(command);
+        res = conn_spis.PGexec(command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
@@ -735,12 +685,12 @@ void InitTag()
 #pragma region SELECT id, content FROM genseq3
     command = "SELECT id, content FROM genseq3"; ///* WHERE name = '" + val->Patch + "'*/;";
     if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-    res = conn_kpvl.PGexec(command);
+    res = conn_spis.PGexec(command);
     if(PQresultStatus(res) == PGRES_TUPLES_OK)
     {
         int line = PQntuples(res);
         for(int l = 0; l < line; l++)
-            GenSeq3[atoi(conn_kpvl.PGgetvalue(res, l, 0).c_str())] = conn_kpvl.PGgetvalue(res, l, 1);
+            GenSeq3[atoi(conn_spis.PGgetvalue(res, l, 0).c_str())] = conn_spis.PGgetvalue(res, l, 1);
     }
     if(PQresultStatus(res) == PGRES_FATAL_ERROR)
         LOG_ERR_SQL(SQLLogger, res, command);
@@ -765,7 +715,7 @@ void InitTag()
 
         command = ss.str();
         if(DEB)LOG_INFO(SQLLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-        res = conn_kpvl.PGexec(command);
+        res = conn_spis.PGexec(command);
         if(PQresultStatus(res) == PGRES_FATAL_ERROR)
             LOG_ERR_SQL(SQLLogger, res, command);
         PQclear(res);
@@ -779,16 +729,16 @@ void ConnectSQL()
 {
     CONNECTION1(conn_spis, SQLLogger);
     CONNECTION1(conn_kpvl, SQLLogger);
-    CONNECTION1(conn_kpvl2, SQLLogger);
     CONNECTION1(conn_dops, SQLLogger);
     CONNECTION1(conn_temp, SQLLogger);
-    CONNECTION1(conn_spic, SQLLogger);
+    //CONNECTION1(conn_kpvl2, SQLLogger);
+    //CONNECTION1(conn_spic, SQLLogger);
 }
 
 bool InitSQL()
 {
-    try
-    {
+    //try
+    //{
         InitLogger(SQLLogger);
         if(!LoginDlg::LoadConnect())
         {
@@ -802,17 +752,15 @@ bool InitSQL()
             ConnectSQL();
         }
         InitTag();
-    }
-    catch(std::exception& exc)
-    {
-        WinErrorExit(NULL, exc.what());
-    }
-    catch(...)
-    {
-        WinErrorExit(NULL, "Unknown error.");
-    }
-
-
-    return conn_kpvl.connections;
+    //}
+    //catch(std::exception& exc)
+    //{
+    //    WinErrorExit(NULL, exc.what());
+    //}
+    //catch(...)
+    //{
+    //    WinErrorExit(NULL, "Unknown error.");
+    //}
+    return conn_spis.connections;
 }
 
