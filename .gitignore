@@ -28,6 +28,7 @@
 *.lib
 
 # Executables
+*.idb
 *.exe
 *.out
 *.app
