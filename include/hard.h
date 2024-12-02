@@ -5,10 +5,21 @@
 #include "ValueTag.h"
 
 
-#define WaitKant "Ожидание кантовки листа"
+#define WaitCant "Ожидание кантовки листа"
 #define WaitResv "Ожидание ответа от ПЛС"
 #define WaitCassette "Ожидание кассеты"
 #define FillCassette "Кассета набирается"
+
+typedef std::map<bool, std::string> TextBool;
+typedef std::map<int, std::string> TextInt;
+
+extern TextBool CantTextOut;
+extern TextBool CassetTextOut;
+
+extern TextInt GenSeq1;
+extern TextInt GenSeq2;
+extern TextInt GenSeq3;
+
 
 
 extern std::string MaskKlapan1;

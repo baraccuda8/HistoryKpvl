@@ -43,6 +43,44 @@ bool isInitPLC_KPVL = false;
 
 time_t PLC_KPVL_old_dt = 0;
 
+TextBool CantTextOut = {
+    {false, WaitCant},
+    {true, WaitResv},
+};
+TextBool CassetTextOut = {
+    {false, WaitCassette},
+    {true, FillCassette},
+};
+
+TextInt GenSeq1 ={
+    {0, "Отключено"},
+    {1, "Подготовка"},
+    {2, "Прогрев"},
+    {3, "Открыть входную дверь"},
+    {4, "Загрузка в печь"},
+    {5, "Закрыть входную дверь"},
+    {6, "Нагрев листа"},
+    {7, "Передача на 2 рольганг"},
+    {8, "Передача на 2-й рольганг печи"},
+};
+TextInt GenSeq2 ={
+    {0, "Отключено"},
+    {1, "Подготовка"},
+    {2, "Прогрев"},
+    {3, "Прием заготовки с 1-го рольганга печи"},
+    {4, "Осциляция. Нагрев Листа"},
+    {5, "Открыть выходную дверь"},
+    {6, "Выдача в линию закалки"},
+    {7, "Закрыть выходную дверь"},
+};
+TextInt GenSeq3 ={
+    {0, "Отключено"},
+    {1, "Ожидание листа"},
+    {2, "Осциляция. Охл.листа."},
+    {3, "Выдача заготовки"},
+    {4, "Окончание цикла обработки"},
+};
+
 
 //HANDLE hFindSheet = NULL;
 
@@ -475,6 +513,24 @@ void PLC_KPVL::InitTag()
     }
 }
 
+void SetText(Value* v, TextBool& t)
+{
+    SetWindowText(winmap(v->winId), t[v->Val.As<bool>()].c_str());
+    InvalidateRect(winmap(v->winId), NULL, 0);
+}
+
+void InitText()
+{
+        KPVL::Mask::DataMaskKlapan1(HMISheetData.Valve_1x);
+        KPVL::Mask::DataMaskKlapan2(HMISheetData.Valve_2x);
+
+        SetText(HMISheetData.NewData, CantTextOut);
+        SetText(HMISheetData.CasseteIsFill, CassetTextOut);
+
+        SetWindowText(winmap(hEditState_12), GenSeq1[GenSeqToHmi.Seq_1_StateNo->GetInt()].c_str());
+        SetWindowText(winmap(hEditState_22), GenSeq1[GenSeqToHmi.Seq_2_StateNo->GetInt()].c_str());
+        SetWindowText(winmap(hEditState_32), GenSeq1[GenSeqToHmi.Seq_3_StateNo->GetInt()].c_str());
+}
 
 void PLC_KPVL::Run(int count)
 {
@@ -516,6 +572,9 @@ void PLC_KPVL::Run(int count)
 
         InitGoot = TRUE;
         ULONGLONG time1 = GetTickCount64();
+
+
+        InitText();
 
         isInitPLC_KPVL = true;
         SekRun = time(NULL);

@@ -26,8 +26,10 @@ std::shared_ptr<spdlog::logger> CorrectLog = NULL;
 
 #if _DEBUG
 #define HENDINSERT 1
+#define NO_UPDATE 1
 #else
 #define HENDINSERT 0
+#define NO_UPDATE 0
 #endif
 
 
@@ -1503,39 +1505,8 @@ namespace PDF
 			try
 			{
 				temp << "/" << std::setw(2) << std::setfill('0') << std::right << TM.tm_mday;
-				//urls << "/" << std::setw(2) << std::setfill('0') << std::right << TM.tm_mday;
 				CheckDir(temp.str());
 			}CATCH(PdfLog, " File: " + temp.str() + " ");
-
-			//try
-			//{
-				//temp << "/";
-				//temp << std::setw(4) << std::setfill('0') << std::right << Cassette.Year << "-";
-				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Month << "-";
-				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.Day << "-";
-				//temp << std::setw(2) << std::setfill('0') << std::right << Cassette.CassetteNo;
-			//
-	//В дебуге Удаляем катологи
-	//#ifdef _DEBUG
-				//if(!index)
-				//{
-				//	std::filesystem::path dir = temp.str();
-				//	boost::system::error_code ec;
-				//	std::filesystem::remove_all(dir, ec);
-				//	std::string err = "";
-				//	if(ec)
-				//	{
-				//		std::vector<boost::filesystem::path> patch = getDir(temp.str());
-				//		for(auto& p : patch)
-				//			remove(p.string().c_str());
-				//		if(ec)
-				//			LOG_ERROR(PdfLogger, "{:90}| Eor Delete dir: \"{}\"", FUNCTION_LINE_NAME, ec.message());
-				//		patch.erase(patch.begin(), patch.end());
-				//	}
-				//}
-	//#endif
-				//CheckDir(temp.str());
-			//}CATCH(PdfLogger, " File1: " + temp.str() + " ");
 
 			std::stringstream tfile;
 			std::stringstream ifile;
@@ -1562,22 +1533,6 @@ namespace PDF
 			FileName = temp.str() + "/" + tfile.str() + " " + outTime + ".pdf";
 			std::string ImgeName = temp.str() + "/" + ifile.str() + ".jpg";
 		
-
-	#pragma region Создаем 2-й и последуюие файлы
-			//try
-			//{
-			//	int n = 0;
-			//	while(std::filesystem::exists(FileName))
-			//	{
-			//		n++;
-			//		std::string sn = "_" + std::to_string(n);
-			//		FileName = temp.str() + "/" + tfile.str() + sn + " " + outTime + ".pdf";
-			//		ImgeName = temp.str() + "/" + ifile.str() + sn + ".jpg";
-			//	}
-			//}
-			//CATCH(PdfLog, " File1: " + FileName + " ");
-			////std::string PdfName = FileName;
-	#pragma endregion
 
 			try
 			{
@@ -4072,13 +4027,9 @@ namespace PDF
 					ssd << " AND sheet = " << td.Sheet;
 					ssd << " AND subsheet = " << td.SubSheet;
 					ssd << " ORDER BY id LIMIT 1";
-					std::string command = ssd.str();
-					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-					PGresult* res = conn.PGexec(command);
+					PGresult* res = conn.PGexec(ssd.str());
 					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					{
 						td.id = Stoi(conn.PGgetvalue(res, 0, 0));
-					}
 					PQclear(res);
 				}
 			}CATCH(SheetLogger, "");
@@ -4115,6 +4066,8 @@ namespace PDF
 		{
 			try
 			{
+				//KPVL::UpdateCountSheet(conn, td.cassetteno);
+
 				std::stringstream ssd;
 				ssd << "SELECT id FROM cassette WHERE";
 				ssd << " year = " << td.year << " AND";
@@ -4189,8 +4142,7 @@ namespace PDF
 				if(!td.Start1.length() || !td.DataTime_End.length()) return;
 				if(td.id)
 				{
-					#if HENDINSERT
-					#else
+				#if !(NO_UPDATE)
 					std::stringstream ssd;
 					ssd << "UPDATE sheet SET";
 
@@ -4205,58 +4157,47 @@ namespace PDF
 					ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
 
 					ssd << ", timeforplateheat = " << td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
-					ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
+					ssd << ", datatime_all = " << std::setprecision(1) << std::fixed << td.DataTime_All;
+					//ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
 
-					ssd << ", speed = " << td.Speed;						//Скорость выгрузки
-					ssd << ", temper = " << td.Temper;						//Уставка температуры
-					ssd << ", prestostartcomp = " << td.PresToStartComp;				//Скорость выгрузки
-					ssd << ", posclapantop = " << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
-					ssd << ", posclapanbot = " << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
-					ssd << ", lam1posclapantop = " << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
-					ssd << ", lam1posclapanbot = " << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
-					ssd << ", lam2posclapantop = " << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
-					ssd << ", lam2posclapanbot = " << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
+					ssd << ", speed = " << std::setprecision(1) << std::fixed << td.Speed;						//Скорость выгрузки
+					ssd << ", temper = " << std::setprecision(1) << std::fixed << td.Temper;						//Уставка температуры
+					ssd << ", prestostartcomp = " << std::setprecision(1) << std::fixed << td.PresToStartComp;				//Скорость выгрузки
+					ssd << ", posclapantop = " << std::setprecision(1) << std::fixed << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
+					ssd << ", posclapanbot = " << std::setprecision(1) << std::fixed << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
+					ssd << ", lam1posclapantop = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
+					ssd << ", lam1posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
+					ssd << ", lam2posclapantop = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
+					ssd << ", lam2posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
 					ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
 					//Фиксируем на выходе из печи State_2 = 5;
-					ssd << ", lam_te1 = " << td.LAM_TE1;					//Температура воды в поддоне
-					ssd << ", za_te3 = " << td.Za_TE3;						//Температура воды в баке
-					ssd << ", za_pt3 = " << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+					ssd << ", lam_te1 = " << std::setprecision(1) << std::fixed << td.LAM_TE1;					//Температура воды в поддоне
+					ssd << ", za_te3 = " << std::setprecision(1) << std::fixed << td.Za_TE3;						//Температура воды в баке
+					ssd << ", za_pt3 = " << std::setprecision(1) << std::fixed << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
 
 					//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
-					ssd << ", lampresstop = " << td.LaminPressTop;			//Давление в верхнем коллекторе
-					ssd << ", lampressbot = " << td.LaminPressBot;			//Давление в нижнем коллекторе
+					ssd << ", lampresstop = " << std::setprecision(1) << std::fixed << td.LaminPressTop;			//Давление в верхнем коллекторе
+					ssd << ", lampressbot = " << std::setprecision(1) << std::fixed << td.LaminPressBot;			//Давление в нижнем коллекторе
 
-					ssd << ", day = '" << td.day << "'";
-					ssd << ", month = '" << td.month << "'";
-					ssd << ", year = '" << td.year << "'";
+					ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
+
+					ssd << ", day = " << td.day;
+					ssd << ", month = " << td.month;
+					ssd << ", year = " << td.year;
 					ssd << ", hour = " << td.hour;
 					ssd << ", cassetteno = " << td.cassetteno;
 					ssd << ", sheetincassette = " << td.sheetincassette;
 					ssd << ", cassette = " << td.cassette;
-					ssd << ", temperature = " << td.Temperature;
 					ssd << ", pos = " << td.Pos;
-					//ssd << ", news = " << td.news;
-					ssd << ", delete_at = DEFAULT";
-					ssd << ", correct = now() WHERE id = " << td.id; //delete_at IS NULL AND 
+					ssd << ", delete_at = DEFAULT, correct = now()";
+					ssd << " WHERE id = " << td.id;
 					SETUPDATESQL(SheetLogger, conn, ssd);
 
 					SetWindowText(hWndDebug, ssd.str().c_str());
 					fUpdateSheet << ssd.str() << std::endl;
 					fUpdateSheet.flush();
 					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-					//SETUPDATESQL(SheetLogger, conn, ssd);
-
-					//if(td.day && td.month && td.year && td.hour >= 0 && td.cassetteno)
-					//{
-					//	int ID_C = Get_ID_C(conn, td);
-					//	if(ID_C)
-					//	{
-					//		std::stringstream ssd;
-					//		ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
-					//		SETUPDATESQL(PdfLogger, conn, ssd);
-					//	}
-					//}
-					#endif
+				#endif
 				}
 				else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
 				{
@@ -4326,8 +4267,8 @@ namespace PDF
 					if(td.Start2.length())			ssd << "'" << td.Start2 << "', ";	//Преход во вторую зону
 					if(td.InCant.length())			ssd << "'" << td.InCant << "', ";	//Преход на кантовку
 					if(td.Cant.length())			ssd << "'" << td.Cant << "', ";		//Канитовка
-
-					ssd << td.DataTime_All << ", ";
+					ssd << std::setprecision(1) << std::fixed << td.DataTime_All;
+					//ssd << std::round(td.DataTime_All*10.0f) / 10.0f << ", ";
 					ssd << "'" << td.Alloy << "', ";
 					ssd << "'" << td.Thikness << "', ";
 					ssd << td.Melt << ", ";
@@ -4367,48 +4308,34 @@ namespace PDF
 					ssd << "now(), ";
 					ssd << td.Pos << ", ";
 					ssd << td.news << ");";
-
-					SetWindowText(hWndDebug, ssd.str().c_str());
-
-					fUpdateSheet << ssd.str() << std::endl;
-					fUpdateSheet.flush();
-
-
-					LOG_INFO(SheetLogger, ssd.str());
 					SETUPDATESQL(SQLLogger, conn, ssd);
 
+					SetWindowText(hWndDebug, ssd.str().c_str());
+					fUpdateSheet << ssd.str() << std::endl;
+					fUpdateSheet.flush();
+					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
 
-					std::stringstream ssf;
-					ssf << "SELECT id FROM sheet ";
-					ssf << "WHERE melt = '" << td.Melt << "'";
-					ssf << " AND slab = " << td.Slab;
-					ssf << " AND partno = " << td.PartNo;
-					ssf << " AND pack = " << td.Pack;
-					ssf << " AND sheet = " << td.Sheet;
-					ssf << " AND subsheet = " << td.SubSheet;
-
-					LOG_INFO(SheetLogger, ssf.str());
-					PGresult* res = conn.PGexec(ssf.str());
-					if(PQresultStatus(res) == PGRES_TUPLES_OK)
-					{
-						if(PQntuples(res))
-							td.id = Stoi(conn.PGgetvalue(res, 0, 0));
-					}
-					else
-						LOG_ERR_SQL(SheetLogger, res, ssf.str());
-					PQclear(res);
-					LOG_INFO(SheetLogger, "{:90}| Sheet ID = {}", FUNCTION_LINE_NAME, td.id);
-
-					//if(td.day && td.month && td.year && td.cassetteno)
+					GetID(conn, td);
+					//std::stringstream ssf;
+					//ssf << "SELECT id FROM sheet ";
+					//ssf << "WHERE melt = '" << td.Melt << "'";
+					//ssf << " AND slab = " << td.Slab;
+					//ssf << " AND partno = " << td.PartNo;
+					//ssf << " AND pack = " << td.Pack;
+					//ssf << " AND sheet = " << td.Sheet;
+					//ssf << " AND subsheet = " << td.SubSheet;
+					//
+					//if(DEB)LOG_INFO(SheetLogger, ssf.str());
+					//PGresult* res = conn.PGexec(ssf.str());
+					//if(PQresultStatus(res) == PGRES_TUPLES_OK)
 					//{
-					//	int ID_C = Get_ID_C(conn, td);
-					//	if(ID_C)
-					//	{
-					//		std::stringstream ssd;
-					//		ssd << "UPDATE cassette SET correct = DEFAULT, pdf = DEFAULT WHERE id = " << ID_C;
-					//		SETUPDATESQL(PdfLogger, conn, ssd);
-					//	}
+					//	if(PQntuples(res))
+					//		td.id = Stoi(conn.PGgetvalue(res, 0, 0));
 					//}
+					//else
+					//	LOG_ERR_SQL(SheetLogger, res, ssf.str());
+					//PQclear(res);
+					LOG_INFO(SheetLogger, "{:90}| Sheet ID = {}", FUNCTION_LINE_NAME, td.id);
 				}
 			}CATCH(SheetLogger, "");
 		}

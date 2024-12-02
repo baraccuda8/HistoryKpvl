@@ -16,34 +16,6 @@
 
 extern std::shared_ptr<spdlog::logger> HardLogger;
 
-std::map<int, std::string> GenSeq1 ={
-    {0, "Отключено"},
-    {1, "Подготовка"},
-    {2, "Прогрев"},
-    {3, "Открыть входную дверь"},
-    {4, "Загрузка в печь"},
-    {5, "Закрыть входную дверь"},
-    {6, "Нагрев листа"},
-    {7, "Передача на 2 рольганг"},
-    {8, "Передача на 2-й рольганг печи"},
-};
-std::map<int, std::string> GenSeq2 ={
-    {0, "Отключено"},
-    {1, "Подготовка"},
-    {2, "Прогрев"},
-    {3, "Прием заготовки с 1-го рольганга печи"},
-    {4, "Осциляция. Нагрев Листа"},
-    {5, "Открыть выходную дверь"},
-    {6, "Выдача в линию закалки"},
-    {7, "Закрыть выходную дверь"},
-};
-std::map<int, std::string> GenSeq3 ={
-    {0, "Отключено"},
-    {1, "Ожидание листа"},
-    {2, "Осциляция. Охл.листа."},
-    {3, "Выдача заготовки"},
-    {4, "Окончание цикла обработки"},
-};
 
 extern PGConnection conn_dops;
 
@@ -643,18 +615,16 @@ namespace KPVL {
                     sd << " AND subsheet = " << SubSheet2;
                     std::string command = sd.str();
                     if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-
                     PGresult* res = conn.PGexec(command);
-
                     if(PQresultStatus(res) == PGRES_TUPLES_OK)
                     {
-                        if(PQntuples(res))//Линий
-                        {
+                        if(PQntuples(res))
                             id = conn.PGgetvalue(res, 0, 0);
-                        }
                     }
                     else
+                    {
                         LOG_ERR_SQL(HardLogger, res, command);
+                    }
                     PQclear(res);
                 }
             }
@@ -715,60 +685,56 @@ namespace KPVL {
 
                 if(IsSheet(PD))
                 {
-                    //std::string id = GetIdSheet(conn, PD);
-                    //if(!Stoi(id)) //!id.length() || id == "" || id == "0")
                     {
                         std::stringstream sd;
-                        sd << "INSERT INTO sheet ";
-                        sd << "(";
-                        sd << "start_at, ";
-#pragma region MyRegion
-                        sd << "alloy, ";
-                        sd << "thikness, ";
-                        sd << "melt, ";
-                        sd << "slab, ";
-                        sd << "partno, ";
-                        sd << "pack, ";
-                        sd << "sheet, ";
-                        sd << "subsheet, ";
+                        sd << "INSERT INTO sheet (";
+#pragma region ID листа
+                        sd << "start_at";
+                        sd << ", alloy";
+                        sd << ", thikness";
+                        sd << ", melt";
+                        sd << ", slab";
+                        sd << ", partno";
+                        sd << ", pack";
+                        sd << ", sheet";
+                        sd << ", subsheet";
+                        sd << ", pos";
 #pragma endregion
-
 
                         if(Pos == 1 || Pos == 2)
                         {
-                            sd << "temper, ";
-                            sd << "speed, ";
+                            sd << ", temper";
+                            sd << ", speed";
 
-                            sd << "timeforplateheat, ";
-                            sd << "prestostartcomp, ";
+                            sd << ", timeforplateheat";
+                            sd << ", prestostartcomp";
 
-                            sd << "posclapantop, ";
-                            sd << "posclapanbot, ";
+                            sd << ", posclapantop";
+                            sd << ", posclapanbot";
 
-                            sd << "lam1posclapantop, ";
-                            sd << "lam1posclapanbot, ";
+                            sd << ", lam1posclapantop";
+                            sd << ", lam1posclapanbot";
 
-                            sd << "lam2posclapantop, ";
-                            sd << "lam2posclapanbot, ";
+                            sd << ", lam2posclapantop";
+                            sd << ", lam2posclapanbot";
 
-                            sd << "mask, ";
+                            sd << ", mask";
                         }
 
+                        sd << ") VALUES (";
 
-#pragma region MyRegion
-                        sd << " pos";
-                        sd << ") VALUES (now(), ";
-                        sd << "'" << PD.AlloyCodeText->GetString() << "', ";
-                        sd << "'" << PD.ThiknessText->GetString() << "', ";
-
-                        sd << PD.Melt->GetInt() << ", ";
-                        sd << PD.Slab->GetInt() << ", ";
-                        sd << PD.PartNo->GetInt() << ", ";
-                        sd << PD.Pack->GetInt() << ", ";
-                        sd << PD.Sheet->GetInt() << ", ";
-                        sd << PD.SubSheet->GetInt() << ", ";
+#pragma region ID листа
+                        sd << "now()" ;
+                        sd << ", '" << PD.AlloyCodeText->strVal << "'";
+                        sd << ", '" << PD.ThiknessText->strVal << "'";
+                        sd << ", " << PD.Melt->strVal;
+                        sd << ", " << PD.Slab->strVal;
+                        sd << ", " << PD.PartNo->strVal;
+                        sd << ", " << PD.Pack->strVal;
+                        sd << ", " << PD.Sheet->strVal;
+                        sd << ", " << PD.SubSheet->strVal;
+                        sd << ", " << Pos; //start_at
 #pragma endregion
-
 
                         if(Pos == 1 || Pos == 2)
                         {
@@ -783,26 +749,25 @@ namespace KPVL {
                             HMISheetData.LaminarSection2.Top->GetValue();
                             HMISheetData.LaminarSection2.Bot->GetValue();
 
-                            sd << GenSeqFromHmi.TempSet1->GetFloat() << ", ";
-                            sd << Par_Gen.UnloadSpeed->GetFloat() << ", ";
+                            sd << ", "<< GenSeqFromHmi.TempSet1->strVal;
+                            sd << ", "<< Par_Gen.UnloadSpeed->strVal;
 
-                            sd << Par_Gen.TimeForPlateHeat->GetFloat() << ", ";
-                            sd << Par_Gen.PresToStartComp->GetFloat() << ", ";
+                            sd << ", "<< Par_Gen.TimeForPlateHeat->strVal;
+                            sd << ", "<< Par_Gen.PresToStartComp->strVal;
 
-                            sd << HMISheetData.SpeedSection.Top->GetFloat() << ", ";
-                            sd << HMISheetData.SpeedSection.Bot->GetFloat() << ", ";
+                            sd << ", "<< HMISheetData.SpeedSection.Top->strVal;
+                            sd << ", "<< HMISheetData.SpeedSection.Bot->strVal;
 
-                            sd << HMISheetData.LaminarSection1.Top->GetFloat() << ", ";
-                            sd << HMISheetData.LaminarSection1.Bot->GetFloat() << ", ";
+                            sd << ", "<< HMISheetData.LaminarSection1.Top->strVal;
+                            sd << ", "<< HMISheetData.LaminarSection1.Bot->strVal;
 
-                            sd << HMISheetData.LaminarSection2.Top->GetFloat() << ", ";
-                            sd << HMISheetData.LaminarSection2.Bot->GetFloat() << ", ";
+                            sd << ", "<< HMISheetData.LaminarSection2.Top->strVal;
+                            sd << ", "<< HMISheetData.LaminarSection2.Bot->strVal;
 
-                            sd << "'" + MaskKlapan + "', ";
+                            sd << ", "<< "'" + MaskKlapan + "'";
                         }
 
-
-                        sd << Pos << ");";
+                        sd << ");";
 
                         LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                         SETUPDATESQL(HardLogger, conn, sd);
@@ -831,25 +796,8 @@ namespace KPVL {
                     sd << " AND subsheet = " << TS.SubSheet;
                     sd << " AND slab = " << TS.Slab;
                     sd << ";";
-                    //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(HardLogger, conn, sd);
-
-                    //std::string command = sd.str();
-                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                    //PGresult* res = conn.PGexec(command);
-                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                    //
-                    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                    //{
-                    //    LOG_ERR_SQL(HardLogger, res, command);
-                    //}
-                    //else
-                    //{
-                    //    ret = true;
-                    //}
-                    //PQclear(res);
                 }
-                //return ret;
             }
             CATCH(HardLogger, "");
         }
@@ -872,23 +820,7 @@ namespace KPVL {
                     sd << " AND subsheet = " << PD.SubSheet->GetInt();
                     sd << " AND slab = " << PD.Slab->GetInt();
                     sd << ";";
-                    //LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(HardLogger, conn, sd);
-
-                    //std::string command = sd.str();
-                    //if(DEB)LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                    //PGresult* res = conn.PGexec(command);
-                    ////LOG_INFO(HardLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-                    //
-                    //if(PQresultStatus(res) == PGRES_FATAL_ERROR)
-                    //{
-                    //    LOG_ERR_SQL(HardLogger, res, command);
-                    //}
-                    //else
-                    //{
-                    //    ret = true;
-                    //}
-                    //PQclear(res);
                 }
             }
             CATCH(HardLogger, "");
@@ -1683,12 +1615,8 @@ namespace KPVL {
             {
                 try
                 {
-                    std::map<bool, const char*>TextOut ={
-                    {false, WaitKant},
-                    {true, WaitResv},
-                    };
                     bool b = value->GetBool();// Val.As<bool>();
-                    MySetWindowText(winmap(value->winId), TextOut[b]);
+                    MySetWindowText(winmap(value->winId), CantTextOut[b]);
                     if(b) //Если лист новый
                     {
                         T_PlateData PD = PlateData[Pos];
@@ -2081,16 +2009,15 @@ namespace KPVL {
             try
             {
                 MySetWindowText(winmap(hEdit_Sheet_DataTime), GetStringDataTime());
-
-                if(value->Val.As<bool>())
+                bool b = value->Val.As<bool>();
+                SetWindowText(winmap(value->winId), CassetTextOut[b].c_str());
+                
+                if(b)
                 {
                     int32_t id = CassettePos(*value->Conn, HMISheetData.Cassette);
                     LOG_INFO(HardLogger, "{:90}| CasseteIsFill = true, Id = {}", FUNCTION_LINE_NAME, id);
-                    SetWindowText(winmap(value->winId), FillCassette);
+                    
                 }
-                else
-                    SetWindowText(winmap(value->winId), WaitCassette);
-
             }
             CATCH(HardLogger, "");
             return 0;
