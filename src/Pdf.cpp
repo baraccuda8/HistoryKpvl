@@ -25,7 +25,7 @@ std::shared_ptr<spdlog::logger> CassetteLogger = NULL;
 std::shared_ptr<spdlog::logger> CorrectLog = NULL;
 
 #if _DEBUG
-#define HENDINSERT 0
+#define HENDINSERT 1
 #else
 #define HENDINSERT 0
 #endif
@@ -2684,7 +2684,7 @@ namespace PDF
 					ssd << "end_at = DEFAULT, ";
 
 				if(ct.Finish_at.length())
-					ssd << "finish_at = '" << ct.Finish_at << "', correct = now(), pdf = DEFAULT";
+					ssd << "finish_at = '" << ct.Finish_at << "', correct = now()";
 				else
 					ssd << "finish_at = DEFAULT, correct = now()";
 
@@ -3674,10 +3674,10 @@ namespace PDF
 
 		bool GetSheets::isSheet(T_IdSheet& t)
 		{
-			return t.Melt && t.Pack && t.PartNo && t.Sheet;
+			return t.Melt /*&& t.Pack*/ && t.PartNo && t.Sheet;
 		}
 
-		T_IdSheet GetSheets::GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t i)
+		T_IdSheet GetSheets::GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t)
 		{
 			T_IdSheet ids;
 			try
@@ -3690,6 +3690,7 @@ namespace PDF
 
 					ssd << "FROM todos WHERE";
 					ssd << " (id_name = " << PlateData[0].Melt->ID;
+					ssd << " OR id_name = " << PlateData[0].Slab->ID;
 					ssd << " OR id_name = " << PlateData[0].Pack->ID;
 					ssd << " OR id_name = " << PlateData[0].PartNo->ID;
 					ssd << " OR id_name = " << PlateData[0].Sheet->ID;
@@ -3697,10 +3698,11 @@ namespace PDF
 					ssd << " OR id_name = " << PlateData[0].AlloyCodeText->ID;
 					ssd << " OR id_name = " << PlateData[0].ThiknessText->ID;
 
-					//ssd << " OR id_name = " << PlateData[0].SubSheet->ID;
+					ssd << " OR id_name = " << PlateData[0].SubSheet->ID;
+
 					ssd << ") AND ";
 					ssd << " create_at <= '" << Start << "'";
-					ssd << " AND content <> '0'";
+					//ssd << " AND content <> '0'";
 					ssd << "ORDER BY id_name, create_at DESC;";
 
 					std::string comand1 = ssd.str();
@@ -3713,6 +3715,7 @@ namespace PDF
 						if(t.id_name == PlateData[0].ThiknessText->ID) ids.Thikness = t.value;
 
 						if(t.id_name == PlateData[0].Melt->ID)		ids.Melt = t.content.As<int32_t>();
+						if(t.id_name == PlateData[0].Slab->ID)		ids.Slab = t.content.As<int32_t>();
 						if(t.id_name == PlateData[0].Pack->ID)		ids.Pack = t.content.As<int32_t>();
 						if(t.id_name == PlateData[0].PartNo->ID)	ids.PartNo = t.content.As<int32_t>();
 						if(t.id_name == PlateData[0].Sheet->ID)		ids.Sheet = t.content.As<int32_t>();
@@ -4063,10 +4066,10 @@ namespace PDF
 					std::stringstream ssd;
 					ssd << "SELECT id FROM sheet ";
 					ssd << "WHERE melt = " << td.Melt;
+					ssd << " AND slab = " << td.Slab;
 					ssd << " AND partno = " << td.PartNo;
 					ssd << " AND pack = " << td.Pack;
 					ssd << " AND sheet = " << td.Sheet;
-					ssd << " AND slab = " << td.Slab;
 					ssd << " AND subsheet = " << td.SubSheet;
 					ssd << " ORDER BY id LIMIT 1";
 					std::string command = ssd.str();
@@ -4186,6 +4189,8 @@ namespace PDF
 				if(!td.Start1.length() || !td.DataTime_End.length()) return;
 				if(td.id)
 				{
+					#if HENDINSERT
+					#else
 					std::stringstream ssd;
 					ssd << "UPDATE sheet SET";
 
@@ -4251,9 +4256,14 @@ namespace PDF
 					//		SETUPDATESQL(PdfLogger, conn, ssd);
 					//	}
 					//}
+					#endif
 				}
-				else if(td.Melt && td.Pack && td.PartNo && td.Sheet)
+				else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
 				{
+					if(!td.Pack)
+					{ 
+						int tt = 0;
+					}
 					if(iAllId) td.id = iAllId++;
 					std::stringstream ssd;
 					ssd << "INSERT INTO sheet (";
@@ -4740,7 +4750,7 @@ namespace PDF
 
 		bool cmpData(T_Todos& first, T_Todos& second)
 		{
-			return first.id < second.id;
+			return first.create_at < second.create_at;
 		}
 
 		GetSheets::GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
@@ -5257,11 +5267,11 @@ namespace PDF
 			//Для ручного тестирования
 			SetWindowText(hWndDebug, "Стартанул");
 
-			//PGConnection conn;
-			//CONNECTION1(conn, CorrectLog);
-			//std::string start = "22-10-2024 04:05:00";
-			//std::string stop =  "";// "2024-10-17 12:00:00";
-			//SHEET::GetSheets (conn, start, stop);
+			PGConnection conn;
+			CONNECTION1(conn, CorrectLog);
+			std::string start = "2024-11-01 00:00:00";
+			std::string stop =  "2024-12-03 00:00:00";
+			SHEET::GetSheets sheets(conn, start, stop);
 
 			//CASSETTE::GetCassettes cass("", "");
 			//CorrectSheet(0);
@@ -5277,8 +5287,8 @@ namespace PDF
 			//CorrectCassette(0);
 
 			//CorrectSheetDebug(conn);
-			//isRun = false;
 			//SetWindowText(hWndDebug, "Закончил");
+			isRun = false;
 			return 0;
 #else
 				std::string out1 = "Вход в создание паспортов: " + GetStringDataTime();
@@ -5292,17 +5302,13 @@ namespace PDF
 						std::string out = "Запуск создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
 
-						//CASSETTE::GetCassettes cass("", "");
-
 						CorrectSheet(0);
 						CorrectCassette(0);
 
 						out = "Закончили создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
-						//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
-
 #ifdef _DEBUG
-												//В дебаге один проход и выход из программы
+						//В дебаге один проход и выход из программы
 						isRun = false;
 					}
 #else

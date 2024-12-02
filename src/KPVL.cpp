@@ -506,10 +506,10 @@ namespace KPVL {
             try
             {
                 int32_t Melt = PD.Melt->GetInt();
-                int32_t Pack = PD.Pack->GetInt();
+                //int32_t Pack = PD.Pack->GetInt();
                 int32_t PartNo = PD.PartNo->GetInt();
                 int32_t Sheet = PD.Sheet->GetInt();
-                return Melt && Pack && PartNo && Sheet;
+                return Melt /*&& Pack*/ && PartNo && Sheet;
             }
             CATCH(HardLogger, "");
             return false;
@@ -519,12 +519,12 @@ namespace KPVL {
             try
             {
                 int32_t Melt = Stoi(PS.Melt);
-                int32_t Pack = Stoi(PS.Pack);
+                //int32_t Pack = Stoi(PS.Pack);
                 int32_t PartNo = Stoi(PS.PartNo);
                 int32_t Sheet = Stoi(PS.Sheet);
                 //int32_t SubSheet = PS.SubSheet;
                 //int32_t Slab = PS.Slab;
-                return Melt && Pack && PartNo && Sheet/* && SubSheet*/;
+                return Melt /*&& Pack*/ && PartNo && Sheet/* && SubSheet*/;
             }
             CATCH(HardLogger, "");
             return false;
@@ -543,7 +543,7 @@ namespace KPVL {
                 int32_t SubSheet = Stoi(sSubSheet);
                 int32_t Slab = Stoi(sSlab);
 
-                if(Melt && Pack && PartNo && Sheet /*&& SubSheet && Slab*/)
+                if(Melt /*&& Pack*/ && PartNo && Sheet /*&& SubSheet && Slab*/)
                 {
                     std::stringstream co;
                     co << "SELECT id FROM sheet WHERE delete_at IS NULL AND ";
@@ -579,7 +579,7 @@ namespace KPVL {
 
             try
             {
-                if(Melt && Pack && PartNo && Sheet /*&& SubSheet && Slab*/)
+                if(Melt /*&& Pack*/ && PartNo && Sheet /*&& SubSheet && Slab*/)
                 {
                     std::stringstream co;
                     co << "SELECT id FROM sheet WHERE delete_at IS NULL AND ";
@@ -1737,7 +1737,7 @@ namespace KPVL {
                         Time_Z2 = SQL::GetHeatTime_Z2(conn_dops, datatimeend_at);
                 }
 
-                if(Melt && Pack && PartNo && Sheet)
+                if(Melt /*&& Pack*/ && PartNo && Sheet)
                 {
                     int Id = Stoi(Sheet::GetIdSheet(conn_dops, Melt, Pack, PartNo, Sheet, SubSheet, Slab));
 
