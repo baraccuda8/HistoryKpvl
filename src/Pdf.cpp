@@ -389,7 +389,7 @@ namespace PDF
 			Gdiplus::Pen Gdi_R1 = Gdiplus::Pen(Gdiplus::Color(192, 0, 0), 0.5); //Черный
 
 			void GetSrTemper(std::vector<PFS>& pF, std::map<int, PFS>& mF);
-			void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID);
+			void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID, float PointRef);
 			void SqlTempActKPVL1(std::string Stop, T_fTemp& fT);
 			void SqlTempActKPVL1(std::string Start, std::string Stop, VPFS& pfs1, int Temperature);
 			void SqlTempActKPVL2(std::string Stop, T_fTemp& fT);
@@ -497,7 +497,7 @@ namespace PDF
 			}CATCH(PdfLog, "");
 		}
 
-		void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID)
+		void PdfClass::GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID, float Temp)
 		{
 			try
 			{
@@ -552,7 +552,7 @@ namespace PDF
 								time_t t2 = DataTimeOfString(sData);
 
 								f = static_cast<float>(atof(sTemp.c_str()));
-								if(f != 0)
+								if(f > 0  && f <= Temp)
 									tr[sData] = std::pair(int(difftime(t2, t1)), f);
 							}
 						}
@@ -913,13 +913,15 @@ namespace PDF
 				for(auto a : mF1)
 				{
 					int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
-					tr[a.second.data] = std::pair(t, a.second.temper);
+					if(a.second.temper > 0 && a.second.temper < 999.0f)
+						tr[a.second.data] = std::pair(t, a.second.temper);
 				}
 
 				for(auto a : mF2)
 				{
 					int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
-					tr[a.second.data] = std::pair(t, a.second.temper);
+					if(a.second.temper > 0 && a.second.temper < 999.0f)
+						tr[a.second.data] = std::pair(t, a.second.temper);
 				}
 				//UpdateTemperature(tr, Sheet);
 				if(Stof(Sheet.Temperature) == 0)
@@ -1762,22 +1764,25 @@ namespace PDF
 
 					int Ref_ID = 0;
 					int Act_ID = 0;
+					float PointRef = 999.0f;
 
 					int P = atoi(Cassette.Peth.c_str());
 					if(P == 1)//Первая отпускная печь
 					{
 						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
 						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+						PointRef = ForBase_RelFurn_1.PointRef_1->Val.As<float>() + 50.0f;
 					}
 					else if(P == 2)//Вторая отпускная печь
 					{
 						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
 						Act_ID = ForBase_RelFurn_2.TempAct->ID;
+						PointRef = ForBase_RelFurn_2.PointRef_1->Val.As<float>() + 50.0f;
 					}
 					else return;
 
-					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
-					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID, PointRef);
+					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID, PointRef);
 
 
 
@@ -1817,7 +1822,8 @@ namespace PDF
 
 						//Закалка
 						SqlTempActKPVL(TempAct, Sheet);
-						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+						float TempSet1 = GenSeqFromHmi.TempSet1->Val.As<float>() + 50.f;
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID, TempSet1);
 
 						//Рисуем график KPVL
 						time_t tK1 = DataTimeOfString(Sheet.Start_at);
@@ -1922,22 +1928,25 @@ namespace PDF
 
 					int Ref_ID = 0;
 					int Act_ID = 0;
+					float PointRef = 999;
 
 					int P = atoi(Cassette.Peth.c_str());
 					if(P == 1)//Первая отпускная печь
 					{
 						Ref_ID = ForBase_RelFurn_1.TempRef->ID;
 						Act_ID = ForBase_RelFurn_1.TempAct->ID;
+						PointRef = ForBase_RelFurn_1.PointRef_1->Val.As<float>() + 50.0f;
 					}
 					else if(P == 2)//Вторая отпускная печь
 					{
 						Ref_ID = ForBase_RelFurn_2.TempRef->ID;
 						Act_ID = ForBase_RelFurn_2.TempAct->ID;
+						PointRef = ForBase_RelFurn_2.PointRef_1->Val.As<float>() + 50.0f;
 					}
 					else return;
 
-					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
-					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID);
+					if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID, PointRef);
+					if(Act_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnAct, Act_ID, PointRef);
 
 
 
@@ -1977,7 +1986,8 @@ namespace PDF
 
 						//Закалка
 						SqlTempActKPVL(TempAct, Sheet);
-						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID);
+						float TempSet1 = GenSeqFromHmi.TempSet1->Val.As<float>() + 50.f;
+						GetTempRef(Sheet.Start_at, Sheet.DataTime_End, TempRef, GenSeqFromHmi.TempSet1->ID, TempSet1);
 
 						//Рисуем график KPVL
 						time_t tK1 = DataTimeOfString(Sheet.Start_at);
