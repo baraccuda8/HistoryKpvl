@@ -492,6 +492,17 @@ DLLRESULT CALLBACK InfoStartProgramm(HWND hWnd, UINT message, WPARAM wParam, LPA
     return (0);
 }
 
+//std::stringstream& operator << (std::stringstream& lst, const char* rst)
+//{
+//    lst << rst;
+//    return lst;
+//}
+//std::stringstream& operator << (std::stringstream& lst, std::string rst)
+//{
+//	lst << "'" << rst << "'";
+//	return lst;
+//}
+
 //Глобальная функция для оконного
 int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
