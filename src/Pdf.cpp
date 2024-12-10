@@ -2155,6 +2155,7 @@ namespace PDF
 		class GetCassettes
 		{
 		public:
+			std::string DateCorrect = "";
 			std::string DateStart = "";
 			std::string DateStop = "";
 			std::fstream fUpdateCassette;
@@ -2175,7 +2176,7 @@ namespace PDF
 			void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it);
 			void SaveFileCass1(TCASS& P);
 			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
-
+			void SetAllCorrect(PGConnection& conn, std::string Date, int Petch);
 			void GetCassette(PGConnection& conn, std::string start, std::string stop);
 			void PrepareCassette(PGConnection& conn, std::string start, std::string stop);
 			GetCassettes(std::string start, std::string stop);
@@ -2186,7 +2187,7 @@ namespace PDF
 
 		void GetCassettes::GetStartTime(PGConnection& conn, int peth)
 		{
-			std::string start = "";
+			//std::string start = "";
 			try
 			{
 				//std::string command = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
@@ -2197,8 +2198,8 @@ namespace PDF
 				ss1 << " ORDER BY run_at ASC LIMIT 1) ";
 				
 				std::stringstream ssd;
-				ssd << "SELECT run_at";
-				ssd << " - TIME '02:00:00'";	//Минус 6 часов
+				ssd << "SELECT run_at, ";
+				ssd << "run_at - TIME '02:00:00'";	//Минус 2 часа
 				ssd << "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND delete_at IS NULL AND run_at >= "; //delete_at IS NULL AND 
 				ssd << ss1.str();
 				ssd << "AND peth = " << peth;
@@ -2244,7 +2245,8 @@ namespace PDF
 				{
 					if(conn.PQntuples(res))
 					{
-						DateStart = conn.PGgetvalue(res, 0, 0);
+						DateCorrect = conn.PGgetvalue(res, 0, 0);
+						DateStart = conn.PGgetvalue(res, 0, 1);
 						DateStop = "";
 					}
 				}
@@ -2509,14 +2511,14 @@ namespace PDF
 
 				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
 					com << " hour = " << Stoi(it.Hour);
-				else
-					com << " hour < 1 ";
+				//else
+				//	com << " hour < 1 ";
 				com << " AND day = " << Stoi(it.Day);
 				com << " AND month = " << Stoi(it.Month);
 				com << " AND year = " << Stoi(it.Year);
 				com << " AND cassetteno = " << Stoi(it.CassetteNo);
 				com << " AND correct IS NULL";
-				com << " ORDER BY id DESC LIMIT 1";
+				com << " ORDER BY start_at DESC LIMIT 1";
 
 				std::string command = com.str();
 				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
@@ -2865,21 +2867,21 @@ namespace PDF
 				std::stringstream ssg;
 				ssg << "SELECT id FROM cassette ";
 				ssg << "WHERE";
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
-					ssg << " hour = " << it.Hour;
-				else
-				{
-					if(it.Create_at.length())
-						ssg << " hour = " << getHour(it.Create_at);
-					else if(it.Run_at.length())
-						ssg << " hour = " << getHour(it.Run_at);
-					//else ssg << "-1 ";
-				}
+				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
+					ssg << " hour = " << Stoi(it.Hour);
+				//else
+				//{
+				//	if(it.Create_at.length())
+				//		ssg << " hour = " << getHour(it.Create_at);
+				//	else if(it.Run_at.length())
+				//		ssg << " hour = " << getHour(it.Run_at);
+				//	//else ssg << "-1 ";
+				//}
 
-				ssg << " AND day = " << it.Day;
-				ssg << " AND month = " << it.Month;
-				ssg << " AND year = " << it.Year;
-				ssg << " AND cassetteno = " << it.CassetteNo;
+				ssg << " AND day = " << Stoi(it.Day);
+				ssg << " AND month = " << Stoi(it.Month);
+				ssg << " AND year = " << Stoi(it.Year);
+				ssg << " AND cassetteno = " << Stoi(it.CassetteNo);
 				ssg << " ORDER BY id LIMIT 1";
 				std::string command = ssg.str();
 
@@ -3027,65 +3029,49 @@ namespace PDF
 
 			if(Furn == NULL) return;
 
-			//Furn->Cassette.Hour->ID
 			try
 			{
+				//Furn->Cassette.Hour->ID
 				if(a.id_name == Furn->Cassette.Hour->ID)
 				{
-					if(!cass.Run_at.size())
-						cass.Hour = a.value;
+					int v = Stoi(a.value);
+					if(!cass.Hour.length() && (v || !cass.Run_at.length()))
+						cass.Hour = std::to_string(v);
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->Cassette.Day->ID
-			try
-			{
+				//Furn->Cassette.Day->ID
 				if(a.id_name == Furn->Cassette.Day->ID && a.content.As<int32_t>())
 				{
-					if(!cass.Run_at.size())
-						cass.Day = a.value;
+					int v = Stoi(a.value);
+					if(!cass.Day.length() && v && !cass.Run_at.size())
+						cass.Day = std::to_string(v);
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->Cassette.Month->ID
-			try
-			{
+				//Furn->Cassette.Month->ID
 				if(a.id_name == Furn->Cassette.Month->ID && a.content.As<int32_t>())
 				{
-					if(!cass.Run_at.size())
-						cass.Month = a.value;
+					int v = Stoi(a.value);
+					if(!cass.Month.length() && v && !cass.Run_at.size())
+						cass.Month = std::to_string(v);
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->Cassette.Year->ID
-			try
-			{
+				//Furn->Cassette.Year->ID
 				if(a.id_name == Furn->Cassette.Year->ID && a.content.As<int32_t>())
 				{
-					if(!cass.Run_at.size())
-						cass.Year = a.value;
+					int v = Stoi(a.value);
+					if(!cass.Year.length() && v && !cass.Run_at.size())
+						cass.Year = std::to_string(v);
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->Cassette.CassetteNo->ID
-			try
-			{
+				//Furn->Cassette.CassetteNo->ID
 				if(a.id_name == Furn->Cassette.CassetteNo->ID && a.content.As<int32_t>())
 				{
-					if(!cass.Run_at.size())
+					if(!cass.CassetteNo.length() && (Stoi(a.value) || !cass.Run_at.size()))
 						cass.CassetteNo = a.value;
 
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->ProcRun->ID
-			try
-			{
+				//Furn->ProcRun->ID
 				if(a.id_name == Furn->ProcRun->ID && a.content.As<bool>())
 				{
 					if(IsCassette(cass))
@@ -3094,9 +3080,10 @@ namespace PDF
 						{
 							cass.Run_at = a.create_at;
 							P = cass;
-						}
-						else 
-							if (
+						} 
+						else
+						{
+							if(
 								IsCassette(P) &&
 								(
 									Stoi(P.Hour) != Stoi(cass.Hour) ||
@@ -3104,27 +3091,25 @@ namespace PDF
 									Stoi(P.Month) != Stoi(cass.Month) ||
 									Stoi(P.Year) != Stoi(cass.Year) ||
 									Stoi(P.CassetteNo) != Stoi(cass.CassetteNo)
+									)
 								)
-								)
-						{
-							P.End_at = a.create_at;
-							EndCassette(conn, P, Petch, s1);
-							SaveBaseCassete(conn, P);
+							{
+								//P = cass;
+								P.End_at = a.create_at;
+								EndCassette(conn, P, Petch, s1);
+								SaveBaseCassete(conn, P);
 
-							P = TCassette();
-							P = cass;
+								P = TCassette();
+								P = cass;
+							}
 						}
 					}
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//urn->ProcEnd->ID
-			try
-			{
+				//Furn->ProcEnd->ID
 				if(a.id_name == Furn->ProcEnd->ID && a.content.As<bool>())
 				{
-					if(IsCassette(cass))
+					if(IsCassette(cass) && cass.Run_at.size())
 					{
 						P = cass;
 						P.End_at = a.create_at;
@@ -3135,12 +3120,8 @@ namespace PDF
 					P = TCassette();
 					cass = Tcass(Petch);
 				}
-			}
-			CATCH(CassetteLogger, "");
 
-			//Furn->ProcFault->ID
-			try
-			{
+				//Furn->ProcFault->ID
 				if(a.id_name == Furn->ProcFault->ID && a.content.As<bool>())
 				{
 					if(!P.Error_at.length() && S107::IsCassette(P))
@@ -3278,6 +3259,22 @@ namespace PDF
 			SaveFileSdg(CassetteTodos);
 		}
 
+		void GetCassettes::SetAllCorrect(PGConnection& conn, std::string Date, int Petch)
+		{
+			std::stringstream as;
+			as << "UPDATE cassette SET correct = now() WHERE ";
+			as << " peth = " << Petch;
+			if(Date.length())
+			as << " AND run_at >= '" << Date << "'";
+			as << " AND delete_at IS NULL";
+			as << " AND correct IS NULL";
+			as << " AND finish_at IS NOT NULL";
+			as << " AND end_at IS NOT NULL";
+			as << " AND run_at IS NOT NULL";
+			//as << " AND sheetincassette > 0";
+			SETUPDATESQL(CassetteLogger, conn, as);
+		}
+
 		void GetCassettes::GetCassette(PGConnection& conn, std::string start, std::string stop)
 		{
 			MapRunn CassetteTodos;
@@ -3285,13 +3282,16 @@ namespace PDF
 			//DateStart = "2024-03-01 00:00:00";
 			//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
 			DateStart = start;
+			DateCorrect = start;
 			DateStop = stop;
-
 			GetCassetDataBase(conn, CassetteTodos, 1);
+			std::string DateCorrect1 = DateCorrect;
 
 			DateStart = start;
+			DateCorrect = start;
 			DateStop = stop;
 			GetCassetDataBase(conn, CassetteTodos, 2);
+			std::string DateCorrect2 = DateCorrect;
 
 			try
 			{
@@ -3318,6 +3318,10 @@ namespace PDF
 				//SaveFileCass(PP1);
 				//SaveFileCass(PP2);
 				s1.close();
+
+				SetAllCorrect(conn, DateCorrect1, 1);
+				SetAllCorrect(conn, DateCorrect2, 2);
+
 			}
 			CATCH(CassetteLogger, "");
 		}
@@ -3357,9 +3361,9 @@ namespace PDF
 				remove("all_tag.csv");
 
 				//Коррекция и ПДФ	
-#ifndef _DEBUG
+//#ifndef _DEBUG
 				PrepareCassette(conn, start, stop);
-#endif
+//#endif
 
 				//ПДФ без коррекции
 				HendCassettePDF(conn);
@@ -5209,6 +5213,10 @@ namespace PDF
 			//CONNECTION1(conn, CorrectLog);
 #if HENDINSERT
 			//Для ручного тестирования
+			#if !_DEBUG
+			#error HENDINSERT в Релисе!!!.
+			//("В Релисе!!!");
+			#endif
 			SetWindowText(hWndDebug, "Стартанул");
 
 			PGConnection conn;
@@ -5234,6 +5242,7 @@ namespace PDF
 			//SetWindowText(hWndDebug, "Закончил");
 			isRun = false;
 			return 0;
+
 #else
 				std::string out1 = "Вход в создание паспортов: " + GetStringDataTime();
 				LOG_INFO(CorrectLog, "{:90}| {}", FUNCTION_LINE_NAME, out1);
