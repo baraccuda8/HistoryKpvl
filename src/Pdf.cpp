@@ -3802,8 +3802,9 @@ namespace PDF
 				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 				ssd << " FROM todos WHERE";
 				ssd << " create_at < '" << ids.Start1 << "' AND ";
-				ssd << "(id_name = " << GenSeqFromHmi.TempSet1->ID;
-				ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;
+				ssd << "(id_name = " << GenSeqFromHmi.TempSet1->ID;			//Уставка температуры
+				ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;			//Уставка скорости
+				ssd << " OR id_name = " << Par_Gen.TimeForPlateHeat->ID;	//Уставка времени
 				ssd << " OR id_name = " << Par_Gen.PresToStartComp->ID;
 				ssd << " OR id_name = " << HMISheetData.SpeedSection.Top->ID;
 				ssd << " OR id_name = " << HMISheetData.SpeedSection.Bot->ID;
@@ -3820,8 +3821,10 @@ namespace PDF
 
 				for(auto a : DataSheetTodos)
 				{
-					if(a.id_name == GenSeqFromHmi.TempSet1->ID) ids.Temper = a.content.As<float>();
-					if(a.id_name == Par_Gen.UnloadSpeed->ID) ids.Speed = a.content.As<float>();
+					if(a.id_name == GenSeqFromHmi.TempSet1->ID) ids.Temper = a.content.As<float>();				//Уставка температуры
+					if(a.id_name == Par_Gen.UnloadSpeed->ID) ids.Speed = a.content.As<float>();					//Уставка скорости
+					if(a.id_name == Par_Gen.TimeForPlateHeat->ID) ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
+
 					if(a.id_name == Par_Gen.PresToStartComp->ID) ids.PresToStartComp = a.content.As<float>();
 					if(a.id_name == HMISheetData.SpeedSection.Top->ID) ids.SpeedTopSet = a.content.As<float>();
 					if(a.id_name == HMISheetData.SpeedSection.Bot->ID) ids.SpeedBotSet = a.content.As<float>();
@@ -4359,6 +4362,7 @@ namespace PDF
 				T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
 				GetID(conn, ids);
 
+			#pragma region Вывод инфы
 				std::stringstream sss;
 				sss << "InZone1 №" << i;
 				sss << " Start1: " << ids.Start1;
@@ -4370,6 +4374,7 @@ namespace PDF
 				sss << " Sheet: " << ids.Sheet;
 				sss << " SubSheet: " << ids.SubSheet;
 				SetWindowText(hWndDebug, sss.str().c_str());
+			#pragma endregion
 
 				if(isSheet(ids))
 				{
@@ -4403,6 +4408,7 @@ namespace PDF
 					Ids1 = T_IdSheet();
 					GetID(conn, Ids2);
 
+			#pragma region Вывод инфы
 					std::stringstream sss;
 					sss << "InZone2";
 					sss << " Start1: " << Ids2.Start1;
@@ -4414,6 +4420,7 @@ namespace PDF
 					sss << " Sheet: " << Ids2.Sheet;
 					sss << " SubSheet: " << Ids2.SubSheet;
 					SetWindowText(hWndDebug, sss.str().c_str());
+			#pragma endregion
 
 				}
 			}CATCH(SheetLogger, "");

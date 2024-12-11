@@ -1135,25 +1135,17 @@ namespace KPVL {
                         SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 ");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 ");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
                         SetUpdateSheet(*value->Conn, PD, update, "");
 
-                        //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(*value->Conn, PD, update, "");
-
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                         SetUpdateSheet(*value->Conn, PD, update, "");
 
-                        //std::stringstream ssd;
-                        //ssd << " start_at = (";
-                        //ssd << "SELECT create_at FROM todos WHERE id_name = " + std::to_string(GenSeqToHmi.Seq_1_StateNo->ID) + " AND create_at <= now() AND (content = '3' OR content = '4' OR content = '5')";
-                        //ssd << " ORDER BY create_at DESC LIMIT 1)";
-                        //SetUpdateSheet(conn_kpvl, PD, ssd.str(), "");//" start_at IS NULL AND ");
                         SetUpdateSheet(*value->Conn, PD, " start_at = now() ", "");//" start_at IS NULL AND ");
 
                         DeleteNullSgeet(*value->Conn, PD, Pos);
@@ -1211,22 +1203,16 @@ namespace KPVL {
                         SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 ");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 ");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
-
-                        //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                         SetUpdateSheet(*value->Conn, PD, update, "");
-
-                        //update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        //SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
                         SetUpdateSheet(*value->Conn, PD, update, "");
