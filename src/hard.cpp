@@ -145,7 +145,7 @@ MAP_VALUE AllTagKpvl = {
         #pragma endregion
 
         #pragma region Скорость выгрузки, Уставка температуры, Давление, Температура воды
-            {Par_Gen.UnloadSpeed = new Value(AppPar_Gen + "UnloadSpeed",         HWNDCLIENT::hEditUnloadSpeed,     0, &conn_kpvl)},            //Скорость выгрузки
+            {Par_Gen.UnloadSpeed = new Value(AppPar_Gen + "UnloadSpeed",         HWNDCLIENT::hEditUnloadSpeed,     KPVL::An::UnloadSpeed, &conn_kpvl)},            //Скорость выгрузки
             {Par_Gen.TimeForPlateHeat = new Value(AppPar_Gen + "TimeForPlateHeat",    HWNDCLIENT::hTimeForPlateHeat,    KPVL::An::fTimeForPlateHeat, &conn_kpvl)},   //Время сигнализации окончания нагрева, мин
             {Par_Gen.PresToStartComp = new Value(AppPar_Gen + "PresToStartComp",     HWNDCLIENT::hPresToStartComp,     KPVL::An::fPresToStartComp, &conn_kpvl)},    //Уставка давления для запуска комперссора
 

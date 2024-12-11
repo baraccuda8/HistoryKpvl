@@ -1135,18 +1135,18 @@ namespace KPVL {
                         SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 ");
+                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 AND");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 ");
+                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 AND");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0 AND");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " prestostartcomp = 0 AND");
 
-                        SetUpdateSheet(*value->Conn, PD, " start_at = now() ", "");//" start_at IS NULL AND ");
+                        SetUpdateSheet(*value->Conn, PD, " start_at = now() ", " start_at IS NULL AND");//" start_at IS NULL AND ");
 
                         DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
@@ -1202,20 +1202,17 @@ namespace KPVL {
                     {
                         SheetPos(*value->Conn, PD, Pos);
 
-                        std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 ");
+						std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
+                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 AND");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 ");
+                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 AND");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0");
+                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0 AND");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
-
-                        update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, "");
+                        SetUpdateSheet(*value->Conn, PD, update, " prestostartcomp = 0 AND");
 
                         SetUpdateSheet(*value->Conn, PD, " secondpos_at = now() ", ""); //" secondpos_at IS NULL AND ");
 
@@ -1271,7 +1268,7 @@ namespace KPVL {
                     {
                         SheetPos(*value->Conn, PD, Pos);
 
-                        SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", ""); //" secondpos_at IS NULL AND ");
+                        SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", " datatime_end IS NULL AND"); //" secondpos_at IS NULL AND ");
 
                         DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
@@ -1477,7 +1474,9 @@ namespace KPVL {
                     {
                         //std::string update = " incant_at = '" + GetStringDataTime() + "'";
                         //SetUpdateSheet(conn_kpvl, PD, update, ""); //" incant_at IS NULL  AND");
-                        UpdateInCant(*value->Conn);
+						SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
+
+						UpdateInCant(*value->Conn);
                         DeleteNullSgeet(*value->Conn, PD, Pos);
                     }
                 }
@@ -2046,8 +2045,8 @@ namespace KPVL {
                 if(value->GetFloat() > 0)
                 {
                     std::string update = " speed = " + value->GetString();
-                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
-                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " speed = 0 AND");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " speed = 0 AND");
                 }
             }
             CATCH(HardLogger, "");
@@ -2063,7 +2062,7 @@ namespace KPVL {
 
                 std::string update = " timeforplateheat = " + value->GetString();
                 Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " timeforplateheat = 0 AND");
             }
             CATCH(HardLogger, "");
             return 0;
