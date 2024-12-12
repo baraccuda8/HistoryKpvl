@@ -3691,27 +3691,6 @@ namespace PDF
 						if(t.id_name == PlateData[0].SubSheet->ID)	ids.SubSheet = t.content.As<int32_t>();
 					}
 				}
-				//{
-				//	std::stringstream ssd;
-				//	ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//	//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				//	ssd << " FROM todos WHERE";
-				//	ssd << " create_at <= '" << Start << "' AND";
-				//	ssd << " (id_name = " << PlateData[0].SubSheet->ID;
-				//	ssd << " OR id_name = " << PlateData[0].Slab->ID;
-				//	ssd << " ORDER BY id_name, create_at DESC;";
-				//
-				//	std::string command = ssd.str();
-				//
-				//	MapTodos idSheet;
-				//	GetTodosSQL(conn, idSheet, command);
-				//	for(auto t : idSheet)
-				//	{
-				//		if(t.id_name == PlateData[0].SubSheet->ID)	ids.SubSheet = t.content.As<int32_t>();
-				//		if(t.id_name == PlateData[0].Slab->ID)		ids.Slab = t.content.As<int32_t>();
-				//	}
-				//}
 			}CATCH(SheetLogger, "");
 			return ids;
 		}
@@ -3801,7 +3780,7 @@ namespace PDF
 				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
 				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 				ssd << " FROM todos WHERE";
-				ssd << " create_at < '" << ids.Start1 << "' AND ";
+				ssd << " create_at <= '" << ids.Start1 << "' AND ";
 				ssd << "(id_name = " << GenSeqFromHmi.TempSet1->ID;			//Уставка температуры
 				ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;			//Уставка скорости
 				ssd << " OR id_name = " << Par_Gen.TimeForPlateHeat->ID;	//Уставка времени
@@ -3814,24 +3793,24 @@ namespace PDF
 				ssd << " OR id_name = " << HMISheetData.LaminarSection2.Bot->ID;
 				ssd << " OR id_name = " << HMISheetData.Valve_1x->ID;
 				ssd << " OR id_name = " << HMISheetData.Valve_2x->ID;
-				ssd << ") ORDER BY id_name, create_at DESC LIMIT 11;";
+				ssd << ") ORDER BY id_name, create_at DESC;";
 
 				std::string command = ssd.str();
 				GetTodosSQL(conn, DataSheetTodos, command);
 
 				for(auto a : DataSheetTodos)
 				{
-					if(a.id_name == GenSeqFromHmi.TempSet1->ID) ids.Temper = a.content.As<float>();				//Уставка температуры
-					if(a.id_name == Par_Gen.UnloadSpeed->ID) ids.Speed = a.content.As<float>();					//Уставка скорости
-					if(a.id_name == Par_Gen.TimeForPlateHeat->ID) ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
+					if(a.id_name == GenSeqFromHmi.TempSet1->ID)				ids.Temper = a.content.As<float>();				//Уставка температуры
+					if(a.id_name == Par_Gen.UnloadSpeed->ID)				ids.Speed = a.content.As<float>();				//Уставка скорости
+					if(a.id_name == Par_Gen.TimeForPlateHeat->ID)			ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
 
-					if(a.id_name == Par_Gen.PresToStartComp->ID) ids.PresToStartComp = a.content.As<float>();
-					if(a.id_name == HMISheetData.SpeedSection.Top->ID) ids.SpeedTopSet = a.content.As<float>();
-					if(a.id_name == HMISheetData.SpeedSection.Bot->ID) ids.SpeedBotSet = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection1.Top->ID) ids.Lam1PosClapanTop = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection1.Bot->ID) ids.Lam1PosClapanBot = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection2.Top->ID) ids.Lam2PosClapanTop = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection2.Bot->ID) ids.Lam2PosClapanBot = a.content.As<float>();
+					if(a.id_name == Par_Gen.PresToStartComp->ID)			ids.PresToStartComp = a.content.As<float>();
+					if(a.id_name == HMISheetData.SpeedSection.Top->ID)		ids.SpeedTopSet = a.content.As<float>();
+					if(a.id_name == HMISheetData.SpeedSection.Bot->ID)		ids.SpeedBotSet = a.content.As<float>();
+					if(a.id_name == HMISheetData.LaminarSection1.Top->ID)	ids.Lam1PosClapanTop = a.content.As<float>();
+					if(a.id_name == HMISheetData.LaminarSection1.Bot->ID)	ids.Lam1PosClapanBot = a.content.As<float>();
+					if(a.id_name == HMISheetData.LaminarSection2.Top->ID)	ids.Lam2PosClapanTop = a.content.As<float>();
+					if(a.id_name == HMISheetData.LaminarSection2.Bot->ID)	ids.Lam2PosClapanBot = a.content.As<float>();
 					if(a.id_name == HMISheetData.Valve_1x->ID)
 					{
 						ids.Valve_1x = a.content.As<uint16_t>();
@@ -4161,7 +4140,7 @@ namespace PDF
 				if(!td.Start1.length() || !td.DataTime_End.length()) return;
 				if(td.id)
 				{
-				#if !(NO_UPDATE)
+				//#if !(NO_UPDATE)
 					std::stringstream ssd;
 					ssd << "UPDATE sheet SET";
 
@@ -4175,30 +4154,48 @@ namespace PDF
 					ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
 					ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
 
-					ssd << ", timeforplateheat = " << td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
-					ssd << ", datatime_all = " << std::setprecision(1) << std::fixed << td.DataTime_All;
-					//ssd << ", datatime_all = " << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
+					if(td.TimeForPlateHeat)
+						ssd << ", timeforplateheat = " << std::setprecision(1) << std::fixed <<  td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
+					if(td.DataTime_All)
+						ssd << ", datatime_all = " << std::setprecision(1) << std::fixed << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
 
-					ssd << ", speed = " << std::setprecision(1) << std::fixed << td.Speed;						//Скорость выгрузки
-					ssd << ", temper = " << std::setprecision(1) << std::fixed << td.Temper;						//Уставка температуры
-					ssd << ", prestostartcomp = " << std::setprecision(1) << std::fixed << td.PresToStartComp;				//Скорость выгрузки
-					ssd << ", posclapantop = " << std::setprecision(1) << std::fixed << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
-					ssd << ", posclapanbot = " << std::setprecision(1) << std::fixed << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
-					ssd << ", lam1posclapantop = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
-					ssd << ", lam1posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
-					ssd << ", lam2posclapantop = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
-					ssd << ", lam2posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
+
+					if(td.Speed)
+						ssd << ", speed = " << std::setprecision(1) << std::fixed << td.Speed;						//Скорость выгрузки
+					if(td.Temper)
+						ssd << ", temper = " << std::setprecision(1) << std::fixed << td.Temper;						//Уставка температуры
+
+					if(td.PresToStartComp)
+						ssd << ", prestostartcomp = " << std::setprecision(1) << std::fixed << td.PresToStartComp;				//
+					if(td.SpeedTopSet)
+						ssd << ", posclapantop = " << std::setprecision(1) << std::fixed << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
+					if(td.SpeedBotSet)
+						ssd << ", posclapanbot = " << std::setprecision(1) << std::fixed << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
+					if(td.Lam1PosClapanTop)
+						ssd << ", lam1posclapantop = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
+					if(td.Lam1PosClapanBot)
+						ssd << ", lam1posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
+					if(td.Lam2PosClapanTop)
+						ssd << ", lam2posclapantop = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
+					if(td.Lam2PosClapanBot)
+						ssd << ", lam2posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
 					ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
 					//Фиксируем на выходе из печи State_2 = 5;
-					ssd << ", lam_te1 = " << std::setprecision(1) << std::fixed << td.LAM_TE1;					//Температура воды в поддоне
-					ssd << ", za_te3 = " << std::setprecision(1) << std::fixed << td.Za_TE3;						//Температура воды в баке
-					ssd << ", za_pt3 = " << std::setprecision(1) << std::fixed << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+					if(td.LAM_TE1)
+						ssd << ", lam_te1 = " << std::setprecision(1) << std::fixed << td.LAM_TE1;					//Температура воды в поддоне
+					if(td.Za_TE3)
+						ssd << ", za_te3 = " << std::setprecision(1) << std::fixed << td.Za_TE3;						//Температура воды в баке
+					if(td.Za_PT3)
+						ssd << ", za_pt3 = " << std::setprecision(1) << std::fixed << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
 
 					//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
-					ssd << ", lampresstop = " << std::setprecision(1) << std::fixed << td.LaminPressTop;			//Давление в верхнем коллекторе
-					ssd << ", lampressbot = " << std::setprecision(1) << std::fixed << td.LaminPressBot;			//Давление в нижнем коллекторе
+					if(td.LaminPressTop)
+						ssd << ", lampresstop = " << std::setprecision(1) << std::fixed << td.LaminPressTop;			//Давление в верхнем коллекторе
+					if(td.LaminPressBot)
+						ssd << ", lampressbot = " << std::setprecision(1) << std::fixed << td.LaminPressBot;			//Давление в нижнем коллекторе
 
-					ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
+					if(td.Temperature)
+						ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
 
 					ssd << ", day = " << td.day;
 					ssd << ", month = " << td.month;
@@ -4216,7 +4213,7 @@ namespace PDF
 					fUpdateSheet << ssd.str() << std::endl;
 					fUpdateSheet.flush();
 					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-				#endif
+				//#endif
 				}
 				else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
 				{
@@ -4360,7 +4357,8 @@ namespace PDF
 			try
 			{
 				T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
-				GetID(conn, ids);
+				if(!ids.id)
+					GetID(conn, ids);
 
 			#pragma region Вывод инфы
 				std::stringstream sss;
@@ -4406,9 +4404,10 @@ namespace PDF
 					Ids2 = Ids1;
 					Ids2.Start2 = create_at;
 					Ids1 = T_IdSheet();
-					GetID(conn, Ids2);
+					if(!Ids2.id)
+						GetID(conn, Ids2);
 
-			#pragma region Вывод инфы
+				#pragma region Вывод инфы
 					std::stringstream sss;
 					sss << "InZone2";
 					sss << " Start1: " << Ids2.Start1;
@@ -4420,8 +4419,7 @@ namespace PDF
 					sss << " Sheet: " << Ids2.Sheet;
 					sss << " SubSheet: " << Ids2.SubSheet;
 					SetWindowText(hWndDebug, sss.str().c_str());
-			#pragma endregion
-
+				#pragma endregion
 				}
 			}CATCH(SheetLogger, "");
 			return true;
@@ -4442,7 +4440,9 @@ namespace PDF
 					Ids3.Start3 = create_at;
 					Ids2 = T_IdSheet();
 
-					GetID(conn, Ids3);
+					if(!Ids3.id)
+						GetID(conn, Ids3);
+				#pragma region Вывод инфы
 					std::stringstream sss;
 					sss << "InZone3";
 					sss << " Start1: " << Ids3.Start1;
@@ -4454,6 +4454,7 @@ namespace PDF
 					sss << " Sheet: " << Ids3.Sheet;
 					sss << " SubSheet: " << Ids3.SubSheet;
 					SetWindowText(hWndDebug, sss.str().c_str());
+				#pragma endregion
 				}
 			}CATCH(SheetLogger, "");
 			return true;
@@ -4477,7 +4478,9 @@ namespace PDF
 						Ids5.InCant = create_at;
 						Ids3 = T_IdSheet();
 
-						GetID(conn, Ids5);
+						if(!Ids5.id)
+							GetID(conn, Ids5);
+					#pragma region Вывод инфы
 						std::stringstream sss;
 						sss << "InZone5";
 						sss << " Start1: " << Ids5.Start1;
@@ -4489,6 +4492,7 @@ namespace PDF
 						sss << " Sheet: " << Ids5.Sheet;
 						sss << " SubSheet: " << Ids5.SubSheet;
 						SetWindowText(hWndDebug, sss.str().c_str());
+					#pragma endregion
 					}
 				}
 			}CATCH(SheetLogger, "");
@@ -4572,9 +4576,7 @@ namespace PDF
 				GetDataSheet3(conn, ids);
 				Get_ID_S(conn, ids);
 
-
-				
-				{
+				#pragma region Вывод инфы
 					std::stringstream sss;
 					sss << "InZone6 ";
 					sss << " Start1: " << ids.Start1;
@@ -4586,7 +4588,7 @@ namespace PDF
 					sss << " Sheet: " << ids.Sheet;
 					sss << " SubSheet: " << ids.SubSheet;
 					SetWindowText(hWndDebug, sss.str().c_str());
-				}
+				#pragma endregion
 
 				if(!ids.Start2.length())
 				{
@@ -4598,7 +4600,8 @@ namespace PDF
 					ids.Start2 = GetStringOfDataTime(&tm);
 				}
 
-				ids.TimeForPlateHeat = GetTime(ids.Start2, allTime);
+				float t = GetTime(ids.Start2, allTime);
+				if(t) ids.TimeForPlateHeat = t;
 
 				ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
 				float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
@@ -4764,13 +4767,13 @@ namespace PDF
 						//"Загрузка в печь" || "Закрыть входную дверь"
 						else if(st == st1_4 || st == st1_5)
 						{
-							if(Ids1.CloseInDor.length())
+							if(!isSheet(Ids1))
 							{
-								if(!isSheet(Ids1))
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-								}
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
+							}
+							if(!Ids1.CloseInDor.length())
+							{
 								if(isSheet(Ids1))
 								{
 									Ids1.CloseInDor = td.create_at;
@@ -4802,7 +4805,8 @@ namespace PDF
 						}
 					}
 
-					else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID) //Вторая зона печи
+					//Вторая зона печи
+					else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
 					{
 						int16_t st = td.content.As<int16_t>();
 						if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
@@ -4814,12 +4818,16 @@ namespace PDF
 							InZone3(conn, td.create_at);
 						}
 					}
-					else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID) //Охлаждение
+
+					//Зона Охлаждения
+					else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
 					{
 						int16_t st = td.content.As<int16_t>();
 						if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
 							InZone5(conn, td.create_at);
 					}
+
+					//Кантовка
 					else if(td.id_name == HMISheetData.NewData->ID && td.content.As<bool>())
 					{
 						InZone6(conn, td.create_at);
