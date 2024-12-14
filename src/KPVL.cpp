@@ -1602,17 +1602,17 @@ namespace KPVL {
                 {
                     bool b = value->GetBool();// Val.As<bool>();
                     MySetWindowText(winmap(value->winId), CantTextOut[b]);
-                    if(b) //Если лист новый
-                    {
-                        T_PlateData PD = PlateData[Pos];
-                        //if(IsSheet(PD))
-                        {
-                            SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
-                            CreateThread(0, 0, SetSaveDone, (LPVOID)0, 0, 0);
-                        }
-                        //Коррекция листа
-                        //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
-                    }
+					if(b) //Если лист новый
+					{
+						T_PlateData PD = PlateData[Pos];
+						if(IsSheet(PD))
+						{
+							SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
+						}
+						CreateThread(0, 0, SetSaveDone, (LPVOID)0, 0, 0);
+					//Коррекция листа
+					//CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
+					}
                 }
                 CATCH(HardLogger, "");
                 return 0;
