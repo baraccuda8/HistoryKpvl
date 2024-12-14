@@ -1605,7 +1605,7 @@ namespace KPVL {
                     if(b) //Если лист новый
                     {
                         T_PlateData PD = PlateData[Pos];
-                        if(IsSheet(PD))
+                        //if(IsSheet(PD))
                         {
                             SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
                             CreateThread(0, 0, SetSaveDone, (LPVOID)0, 0, 0);
