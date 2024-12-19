@@ -4003,7 +4003,7 @@ namespace PDF
 					td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 6));
 					td.Pos = Stoi(conn.PGgetvalue(res, 0, 7));
 					td.news = Stoi(conn.PGgetvalue(res, 0, 8));
-					td.Correct = GetStringData(conn.PGgetvalue(res, 0, 8));
+					td.Correct = GetStringData(conn.PGgetvalue(res, 0, 9));
 
 				}
 				PQclear(res);
@@ -4141,6 +4141,7 @@ namespace PDF
 				if(td.id)
 				{
 				//#if !(NO_UPDATE)
+				#pragma region MyRegion
 					std::stringstream ssd;
 					ssd << "UPDATE sheet SET";
 
@@ -4197,6 +4198,8 @@ namespace PDF
 					if(td.Temperature)
 						ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
 
+					#pragma endregion
+
 					ssd << ", day = " << td.day;
 					ssd << ", month = " << td.month;
 					ssd << ", year = " << td.year;
@@ -4207,12 +4210,15 @@ namespace PDF
 					ssd << ", pos = " << td.Pos;
 					ssd << ", delete_at = DEFAULT, correct = now()";
 					ssd << " WHERE id = " << td.id;
+				#pragma region MyRegion
+
 					SETUPDATESQL(SheetLogger, conn, ssd);
 
 					SetWindowText(hWndDebug, ssd.str().c_str());
 					fUpdateSheet << ssd.str() << std::endl;
 					fUpdateSheet.flush();
 					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+				#pragma endregion
 				//#endif
 				}
 				else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
@@ -4516,7 +4522,13 @@ namespace PDF
 				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 				ssd << " FROM todos WHERE ";
 				//ssd << "create_at >= '" << ids.Start3 << "' AND ";
-				ssd << "create_at < '" << ids.Cant << "' AND ";
+				if(ids.Cant.length())
+					ssd << "create_at < '" << ids.Cant << "' AND ";
+				else if(ids.InCant.length())
+					ssd << "create_at < '" << ids.InCant << "' AND ";
+				else
+					throw std::exception(__FUN("ids.Cant = NULL AND ids.InCant = NULL"));
+
 				ssd << "(id_name = " << HMISheetData.Cassette.Hour->ID << " OR";
 				ssd << " id_name = " << HMISheetData.Cassette.Day->ID << " OR";
 				ssd << " id_name = " << HMISheetData.Cassette.Month->ID << " OR";
@@ -4548,17 +4560,12 @@ namespace PDF
 					ids.sheetincassette = SheetInCassette + 1;
 				}
 
-				if(ids.day && ids.month && ids.year && ids.cassetteno)
-				{
-					//ids.news = 1;
-					ids.Pos = 7;
-				}
-				else
-				{
-					//ids.news = 0;
-					ids.Pos = 16;
-				}
 			}CATCH(SheetLogger, "");
+
+			if(ids.day && ids.month && ids.year && ids.cassetteno)
+				ids.Pos = 7;
+			else
+				ids.Pos = 16;
 		}
 
 
@@ -4600,7 +4607,7 @@ namespace PDF
 					ids.Start2 = GetStringOfDataTime(&tm);
 				}
 
-				float t = GetTime(ids.Start2, allTime);
+				float t = GetTime(ids.DataTime_End, allTime);
 				if(t) ids.TimeForPlateHeat = t;
 
 				ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
@@ -4764,8 +4771,8 @@ namespace PDF
 							InZone1(conn, td.create_at, count, i);
 							SaveT_IdSheetBodyCsv(ff2, Ids1);
 						}
-						//"Загрузка в печь" || "Закрыть входную дверь"
-						else if(st == st1_4 || st == st1_5)
+						//"Загрузка в печь"
+						else if(st == st1_4)
 						{
 							if(!isSheet(Ids1))
 							{
@@ -4780,6 +4787,38 @@ namespace PDF
 									Ids1.Start1 = td.create_at;
 								}
 							}
+						}
+						//"Закрыть входную дверь"
+						else if(st == st1_5)
+						{ 
+							if(!isSheet(Ids1))
+							{
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
+							}
+							if(!Ids1.CloseInDor.length())
+							{
+								if(isSheet(Ids1))
+								{
+									Ids1.CloseInDor = td.create_at;
+									Ids1.Start1 = td.create_at;
+								}
+							}
+
+							if(!Ids1.Nagrev.length())
+							{
+								if(!isSheet(Ids1))
+								{
+									InZone1(conn, td.create_at, count, i);
+									SaveT_IdSheetBodyCsv(ff2, Ids1);
+								}
+								if(isSheet(Ids1))
+								{
+									Ids1.Nagrev = td.create_at;
+									Ids1.Start1 = td.create_at;
+								}
+							}
+
 						}
 						//"Нагрев листа"
 						else if(st == st1_6)

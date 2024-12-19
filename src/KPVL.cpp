@@ -1135,16 +1135,16 @@ namespace KPVL {
                         SheetPos(*value->Conn, PD, Pos);
 
                         std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " prestostartcomp = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         SetUpdateSheet(*value->Conn, PD, " start_at = now() ", " start_at IS NULL AND");//" start_at IS NULL AND ");
 
@@ -1203,16 +1203,16 @@ namespace KPVL {
                         SheetPos(*value->Conn, PD, Pos);
 
 						std::string update = " temper = " + GenSeqFromHmi.TempSet1->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " temper = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " speed = " + Par_Gen.UnloadSpeed->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " speed = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " timeforplateheat = " + Par_Gen.TimeForPlateHeat->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " timeforplateheat = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         update = " prestostartcomp = " + Par_Gen.PresToStartComp->GetString();
-                        SetUpdateSheet(*value->Conn, PD, update, " prestostartcomp = 0 AND");
+                        SetUpdateSheet(*value->Conn, PD, update, "");
 
                         SetUpdateSheet(*value->Conn, PD, " secondpos_at = now() ", ""); //" secondpos_at IS NULL AND ");
 
@@ -1488,6 +1488,7 @@ namespace KPVL {
             {
                 try
                 {
+					std::string DataTime = GetStringDataTime();
                     PGConnection conn;
                     CONNECTION1(conn, HardLogger);
                     if(HMISheetData.NewData->Val.As<bool>())
@@ -1501,12 +1502,10 @@ namespace KPVL {
 
                             if(IsSheet(PD))
                             {
-                                #pragma region InitTag
+                            #pragma region InitTag
 
                                 int32_t id = Stoi(SheetPos(conn, PD, Pos));
-                                std::string DataTime = GetStringDataTime();
-
-                                int32_t Year = Cassette.Year->GetValue().As<int32_t>();
+								int32_t Year = Cassette.Year->GetValue().As<int32_t>();
                                 int32_t Month = Cassette.Month->GetValue().As<int32_t>();
                                 int32_t Day = Cassette.Day->GetValue().As<int32_t>();
                                 uint16_t Hour = Cassette.Hour->GetValue().As<uint16_t>();
@@ -1522,9 +1521,9 @@ namespace KPVL {
 
                                 int32_t  CasseteId = Cassette::CassettePos(conn, HMISheetData.Cassette);
 
-                                #pragma endregion
+                            #pragma endregion
 
-                                #pragma region co = "UPDATE sheet SET"
+							#pragma region co = "UPDATE sheet SET"
                                 std::stringstream co;
                                 co << "UPDATE sheet SET pos = 7, news = 1, cant_at = now(), correct = DEFAULT, pdf = DEFAULT ";
                                 co << ", cassette = " << CasseteId;
@@ -1550,10 +1549,10 @@ namespace KPVL {
                                 co << ", hour = " << Hour;
                                 co << ", cassetteno = " << CassetteNo;
                                 co << ", sheetincassette = " << SheetInCassette;
-                                co << " WHERE";
-                                #pragma endregion
+							#pragma endregion
 
-                                #pragma region WHERE ...
+							#pragma region WHERE ...
+                                co << " WHERE";
                                 if(id != 0)
                                 {
                                     co << " id = " << id;
@@ -1570,7 +1569,7 @@ namespace KPVL {
                                     LOG_INFO(HardLogger, "{:90}| Not find Sheet {}", sd.str());
                                     co << sd.str();
                                 }
-                                #pragma endregion
+							#pragma endregion
 
                                 LOG_INFO(HardLogger, "{:90}| Set SaveDone->Set_Value(true), {}\r\n", FUNCTION_LINE_NAME, co.str());
                                 SETUPDATESQL(HardLogger, conn, co);
@@ -1607,6 +1606,7 @@ namespace KPVL {
 						T_PlateData PD = PlateData[Pos];
 						if(IsSheet(PD))
 						{
+							SetUpdateSheet(*value->Conn, PD, " datatime_end = now() ", " datatime_end IS NULL AND ");
 							SetUpdateSheet(*value->Conn, PD, " incant_at = now() ", " incant_at IS NULL AND ");
 						}
 						CreateThread(0, 0, SetSaveDone, (LPVOID)0, 0, 0);
@@ -2016,8 +2016,8 @@ namespace KPVL {
     namespace An{
 
        //Скорость выгрузки, Уставка температуры, Давление, Температура воды
-        //Уставка температуры
 
+	   //Уставка температуры
         DWORD TempSet1(Value* value)
         {
             try
@@ -2035,7 +2035,7 @@ namespace KPVL {
             return 0;
         }
 
-        //Скорость выгрузки
+        //Уставка Скорость выгрузки
         DWORD UnloadSpeed(Value* value)
         {
             try
@@ -2045,15 +2045,15 @@ namespace KPVL {
                 if(value->GetFloat() > 0)
                 {
                     std::string update = " speed = " + value->GetString();
-                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, " speed = 0 AND");
-                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " speed = 0 AND");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
+                    Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
                 }
             }
             CATCH(HardLogger, "");
             return 0;
         }
 
-        //Время сигнализации окончания нагрева, мин
+        //Уставка Время сигнализации окончания нагрева, мин
         DWORD fTimeForPlateHeat(Value* value)
         {
             try
@@ -2062,7 +2062,7 @@ namespace KPVL {
 
                 std::string update = " timeforplateheat = " + value->GetString();
                 Sheet::SetUpdateSheet(*value->Conn, PlateData[1], update, "");
-                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, " timeforplateheat = 0 AND");
+                Sheet::SetUpdateSheet(*value->Conn, PlateData[2], update, "");
             }
             CATCH(HardLogger, "");
             return 0;
