@@ -373,8 +373,8 @@ namespace PDF
 			int64_t mind = 0LL;
 			int64_t maxd = 0LL;
 
-			PdfClass(TSheet& Sheet, bool end = false);
-			PdfClass(TCassette& TC, bool end = false);
+			PdfClass(TSheet& Sheet, bool end);
+			PdfClass(TCassette& TC, bool end);
 			~PdfClass()
 			{
 				//conn.PGDisConnection();
@@ -1871,13 +1871,7 @@ namespace PDF
 				CATCH(PdfLog, "");
 
 				std::stringstream ssq;
-				ssq << "UPDATE cassette SET pdf = now() WHERE";
-				ssq << " year = '" << Stoi(Cassette.Year) << "' AND";
-				ssq << " month = '" << Stoi(Cassette.Month) << "' AND";
-				ssq << " day = '" << Stoi(Cassette.Day) << "' AND";
-				if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
-					ssq << " hour = " << Stoi(Cassette.Hour) << " AND";
-				ssq << " cassetteno = " << Stoi(Cassette.CassetteNo);
+				ssq << "UPDATE cassette SET pdf = now() WHERE id = " << Cassette.Id;
 				SETUPDATESQL(PdfLog, conn, ssq);
 			}
 			CATCH(CorrectLog, "");
@@ -2020,7 +2014,7 @@ namespace PDF
 
 						remove(tempImage.c_str());
 
-#if _DEBUG
+#ifdef _DEBUG
 						if(end)
 						{
 							std::string url = FileName;
@@ -2035,13 +2029,7 @@ namespace PDF
 				CATCH(PdfLog, "");
 
 				std::stringstream ssq;
-				ssq << "UPDATE cassette SET pdf = now() WHERE";
-				ssq << " year = '" << Stoi(Cassette.Year) << "' AND";
-				ssq << " month = '" << Stoi(Cassette.Month) << "' AND";
-				ssq << " day = '" << Stoi(Cassette.Day) << "' AND";
-				if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
-					ssq << " hour = " << Stoi(Cassette.Hour) << " AND";
-				ssq << " cassetteno = " << Stoi(Cassette.CassetteNo);
+				ssq << "UPDATE cassette SET pdf = now() WHERE id = " << Cassette.Id;
 				SETUPDATESQL(PdfLog, conn, ssq);
 			}
 			CATCH(CorrectLog, "");
@@ -2066,7 +2054,7 @@ namespace PDF
 				SetWindowText(hWndDebug, sss.str().c_str());
 				LOG_INFO(PdfLog, "{:90}| Паспорта для кассеты: {}", FUNCTION_LINE_NAME, sss.str());
 
-				PASSPORT::PdfClass pdf(TC);
+				PASSPORT::PdfClass pdf(TC, false);
 				SetWindowText(hWndDebug, "");
 			}
 		}
@@ -2140,7 +2128,7 @@ namespace PDF
 						if(conn.PQntuples(res))
 							S107::GetCassette(conn, res, Cassette, 0);
 						PQclear(res);
-						PASSPORT::PdfClass sdc(Cassette);
+						PASSPORT::PdfClass sdc(Cassette, false);
 					}
 					else
 					{
