@@ -6,7 +6,7 @@
 #include "Furn.h"
 
 
-typedef std::map <int, T_Todos> MapRunn;
+//typedef std::map <int, T_Todos> MapRunn;
 typedef std::map<int, TCassette> TCASS;
 
 

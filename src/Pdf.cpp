@@ -3,6 +3,10 @@
 #include <setjmp.h>
 //#include <codecvt>
 
+#include <algorithm>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/range/adaptor/indexed.hpp>
+
 #include "win.h"
 #include "main.h"
 #include "StringData.h"
@@ -246,7 +250,7 @@ namespace PDF
 			{12, "December"},
 	};
 
-	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& command)
+	void GetTodosSQL(PGConnection& conn, MapTodos& mt, std::string& command, int p = 0)
 	{
 
 		//if(DEB)LOG_INFO(PdfLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
@@ -267,6 +271,7 @@ namespace PDF
 					td.value = conn.PGgetvalue(res, l, 3);
 					int type = Stoi(conn.PGgetvalue(res, l, 4));
 					td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+					td.Petch = p;
 					//if(nFields >= 6)
 					//	td.id_name_at = conn.PGgetvalue(res, l, 5);
 
@@ -2061,11 +2066,16 @@ namespace PDF
 		CATCH(PdfLog, "");
 	}
 		
-
+	bool cmpData(T_Todos& first, T_Todos& second)
+	{
+		return first.create_at < second.create_at;
+	}
 
 
 	namespace CASSETTE
 	{
+		typedef std::map <int, T_Todos> MapRunn;
+
 		std::string getHour(std::string Hour)
 		{
 			std::string shour = "-1";
@@ -2150,1046 +2160,195 @@ namespace PDF
 			
 			int lin = 1;
 
-			void GetStartTime(PGConnection& conn, int peth);
-			void GetStopTime(PGConnection& conn, std::string Start, int ID);
-			std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at);
-			void GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn);
-			//void GetCassettes::GetFinish(PGConnection& conn, TCassette& P);
-			void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
-			void GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it);
-			void SaveFileSdg(MapRunn& CassetteTodos);
-			int GetCountSheet(PGConnection& conn, TCassette& ct);
-			void SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it);
-			void SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it);
-			void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it);
-			void SaveFileCass1(TCASS& P);
-			void SaveBaseCassete(PGConnection& conn, TCassette& tc);
-			void SetAllCorrect(PGConnection& conn, std::string Date, int Petch);
-			void GetCassette(PGConnection& conn, std::string start, std::string stop);
-			void PrepareCassette(PGConnection& conn, std::string start, std::string stop);
-			GetCassettes(std::string start, std::string stop);
+			//void GetStartTime(PGConnection& conn, int peth);
+			//void GetStopTime(PGConnection& conn, std::string Start, int ID);
+			//std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at);
+			//void GetVal(PGConnection& conn, TCassette& P, T_ForBase_RelFurn* Furn);
+			////void GetCassettes::GetFinish(PGConnection& conn, TCassette& P);
+			//void EndCassette(PGConnection& conn, TCassette& P, int Petch, std::fstream& s1);
+			//void GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it);
+			//void SaveFileSdg(MapRunn& CassetteTodos);
+			//int GetCountSheet(PGConnection& conn, TCassette& ct);
+			//void SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it);
+			//void SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it);
+			//void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it);
+			//void SaveFileCass1(TCASS& P);
+			//void SaveBaseCassete(PGConnection& conn, TCassette& tc);
+			//void SetAllCorrect(PGConnection& conn, std::string Date, int Petch);
+			//void GetCassette(PGConnection& conn, std::string start, std::string stop);
+			//void PrepareCassette(PGConnection& conn, std::string start, std::string stop);
+			//GetCassettes(std::string start, std::string stop);
+			//
+			//void GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch);
+			//void PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int first, int Petch, std::fstream& s1);
 
-			void GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch);
-			void PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int first, int Petch, std::fstream& s1);
-		};
-
-		void GetCassettes::GetStartTime(PGConnection& conn, int peth)
-		{
-			//std::string start = "";
-			try
+			void GetStartTime(PGConnection& conn, int peth)
 			{
-				//std::string command = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
+				//std::string start = "";
+				try
+				{
+					//std::string command = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
 
-				std::stringstream ss1;
-				ss1 << "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND delete_at IS NULL AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
-				ss1 << "AND peth = " << peth;
-				ss1 << " ORDER BY run_at ASC LIMIT 1) ";
+					std::stringstream ss1;
+					ss1 << "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND delete_at IS NULL AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
+					ss1 << "AND peth = " << peth;
+					ss1 << " ORDER BY run_at ASC LIMIT 1) ";
 				
-				std::stringstream ssd;
-				ssd << "SELECT run_at, ";
-				ssd << "run_at - TIME '02:00:00'";	//Минус 2 часа
-				ssd << "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND delete_at IS NULL AND run_at >= "; //delete_at IS NULL AND 
-				ssd << ss1.str();
-				ssd << "AND peth = " << peth;
-				ssd << " ORDER BY run_at ASC LIMIT 1;";
-
-				//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
-				//comand1 += peth;
-				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
-				//
-				//std::string command = "SELECT run_at";
-				//command += " - TIME '06:00:00'";	//Минус 6 часов
-				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//command += comand1;
-				//command += peth;
-				//command += " ORDER BY run_at ASC LIMIT 1;";
-
-				//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
-				//comand1 += peth;
-				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
-				//
-				//std::string command = "SELECT run_at";
-				//command += " - TIME '06:00:00'";	//Минус 5 часов
-				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//command += comand1;
-				//command += peth;
-				//command += " ORDER BY run_at ASC LIMIT 1;";
-
-
-				//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
-				//comand1 += peth;
-				//comand1 += " ORDER BY run_at DESC LIMIT 1)";
-				//
-				//std::string command = "SELECT run_at";
-				//command += " - TIME '06:00:00'";	//Минус 5 часов
-				//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
-				//command += comand1;
-				//command += peth;
-				//command += " ORDER BY run_at ASC LIMIT 1;";
-
-				std::string command = ssd.str();
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					if(conn.PQntuples(res))
-					{
-						DateCorrect = conn.PGgetvalue(res, 0, 0);
-						DateStart = conn.PGgetvalue(res, 0, 1);
-						DateStop = "";
-					}
-				}
-				else
-				{
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				}
-				PQclear(res);
-			}CATCH(CassetteLogger, "");
-		}
-		void GetCassettes::GetStopTime(PGConnection& conn, std::string Start, int ID)
-		{
-			if(!DateStart.length()) return;
-			std::stringstream sss;
-			sss << "SELECT create_at"
-				//", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)"
-				" FROM todos WHERE id_name = " << ID	    //Конец отпуска
-				<< " AND create_at >= '" << Start << "'"
-				<< " AND content = 'true'"
-				<< " ORDER BY create_at DESC LIMIT 1"; // LIMIT 3
-			std::string command = sss.str();
-			PGresult* res = conn.PGexec(command);
-			//Заполняем данные
-			if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			{
-				if(PQntuples(res))
-					DateStop = conn.PGgetvalue(res, 0, 0);
-			}
-			else
-			{
-				LOG_ERR_SQL(CassetteLogger, res, command);
-			}
-			PQclear(res);
-		}
-
-		std::string GetCassettes::GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at)
-		{
-			std::string f = "0";
-			try
-			{
-				std::stringstream sss;
-				sss << "SELECT content FROM todos WHERE ";
-				sss << " id_name = " << ID; 			//Фактическое значение температуры
-				sss << " AND create_at >= '" << Run_at << "'";
-				sss << " AND create_at < '" << End_at << "'";
-				sss << " ORDER BY create_at DESC LIMIT 1";
-				std::string command = sss.str();
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					int line = PQntuples(res);
-					if(line)
-						f = conn.PGgetvalue(res, line - 1, 0);
-				}
-				else
-				{
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				}
-				PQclear(res);
-			}
-			CATCH(CassetteLogger, "");;
-			return f;
-		}
-
-		void GetCassettes::GetVal(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
-		{
-			try
-			{
-#pragma region Готовим запрос в базу
-
-				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id_name) id_name, content";
-				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
-				sss << " FROM todos WHERE (";
-				sss << " id_name = " << Furn->ActTimeHeatAcc->ID << " OR";	//Факт время нагрева
-				sss << " id_name = " << Furn->ActTimeHeatWait->ID << " OR";	//Факт время выдержки
-				sss << " id_name = " << Furn->ActTimeTotal->ID;				//Факт общее время
-				sss << ")";
-				sss << " AND create_at >= '" << it.Run_at << "'";
-				sss << " AND create_at < '" << it.End_at << "'";
-				sss << " AND cast (content as numeric) <> 0";
-				sss << " ORDER BY id_name, create_at DESC"; // LIMIT 3
-
-#pragma endregion
-
-#pragma region Запрос в базу
-
-				std::string command = sss.str();
-				PGresult* res = conn.PGexec(command);
-				//Заполняем данные
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					int line = PQntuples(res);
-					//Заполняем данные
-					for(int l = 0; l < line && isRun; l++)
-					{
-						int id = Stoi(conn.PGgetvalue(res, l, 0));
-						std::string f = conn.PGgetvalue(res, l, 1);
-
-						if(f.length())
-						{
-							if(id == Furn->ActTimeHeatAcc->ID && !it.HeatAcc.length()) it.HeatAcc = f;
-							if(id == Furn->ActTimeHeatWait->ID && !it.HeatWait.length()) it.HeatWait = f;
-							if(id == Furn->ActTimeTotal->ID && !it.Total.length()) it.Total = f;
-						}
-					}
-				}
-				else
-				{
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				}
-				PQclear(res);
-
-#pragma endregion
-			}
-			CATCH(CassetteLogger, "");
-
-			try
-			{
-#pragma region Гогтвим запрос в базу
-
-				std::stringstream sss;
-				sss << "SELECT DISTINCT ON (id_name) id_name, content";
-				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
-				sss << " FROM todos WHERE (";
-				sss << " id_name = " << Furn->PointRef_1->ID << " OR";		//Уставка температуры
-				sss << " id_name = " << Furn->PointTime_1->ID << " OR";		//Задание Время нагрева
-				sss << " id_name = " << Furn->PointTime_2->ID << " OR";	//Задание Время выдержки
-				sss << " id_name = " << Furn->TimeProcSet->ID;				//Полное время процесса (уставка), мин
-				sss << ")";	//Факт время выдержки
-				sss << " AND create_at < '" << it.End_at << "'";
-				sss << " ORDER BY id_name, create_at DESC"; // LIMIT 4
-
-#pragma endregion
-
-#pragma region Запрос в базу
-
-				std::string command = sss.str();
-				PGresult* res = conn.PGexec(command);
-				//Заполняем данные
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					int line = PQntuples(res);
-					//Заполняем данные
-					for(int l = 0; l < line && isRun; l++)
-					{
-						int id = Stoi(conn.PGgetvalue(res, l, 0));
-						std::string f = conn.PGgetvalue(res, l, 1);
-
-						if(f.length())
-						{
-							if(id == Furn->PointRef_1->ID && !it.PointRef_1.length())  it.PointRef_1 = f;
-							if(id == Furn->PointTime_1->ID && !it.PointTime_1.length()) it.PointTime_1 = f;
-							if(id == Furn->PointTime_2->ID && !it.PointTime_2.length()) it.PointTime_2 = f;
-							if(id == Furn->TimeProcSet->ID && !it.TimeProcSet.length()) it.TimeProcSet = f;
-						}
-					}
-				}
-				else
-				{
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				}
-				PQclear(res);
-
-#pragma endregion
-			}
-			CATCH(CassetteLogger, "");
-
-			try
-			{
-				time_t temp  = (time_t)difftime(DataTimeOfString(it.End_at), 5 * 60); //Вычисть 5 минут до конца отпуска
-				std::string End_at  = GetStringOfDataTime(&temp);
-				it.facttemper = GetVal(conn, Furn->TempAct->ID, it.Run_at, End_at);
-
-			}
-			CATCH(CassetteLogger, "");
-		}
-		
-		void GetCassettes::EndCassette(PGConnection& conn, TCassette& it, int Petch, std::fstream& s1)
-		{
-			try
-			{
-				T_ForBase_RelFurn* Furn = NULL;
-				if(Petch == 1)
-					Furn = &ForBase_RelFurn_1;
-				if(Petch == 2)
-					Furn = &ForBase_RelFurn_2;
-				if(Furn == NULL)
-					throw std::runtime_error(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
-
-				it.Peth = std::to_string(Petch);
-
-				if(S107::IsCassette(it) && it.Run_at.length())
-				{
-					GetVal(conn, it, Furn);
-
-					//std::tm TM_Run;
-					//std::tm TM_End;
-					//std::tm TM_All;
-					//std::tm TM_Fin;
-					////struct tm TM_All;
-					//std::time_t tm_Fin;
-					//
-					//std::time_t tm_Run = DataTimeOfString(P.Run_at, TM_Run);
-					//std::time_t tm_End1;
-					////std::time_t tm_End = DataTimeOfString(P.End_at, TM_End);
-					////std::time_t tm_All = (time_t)difftime(tm_End1, tm_Run);
-					//
-					////gmtime_s(&TM_All, &tm_All);
-					////TM_All.tm_year -= 1900;
-					////TM_All.tm_mday -= 1;
-					//
-					//tm_Fin = DataTimeOfString(P.End_at, TM_Fin);
-					//tm_Fin = tm_End1 + (60 * 15); //+15 минут
-					//localtime_s(&TM_Fin, &tm_Fin);
-					//
-					////P1.End_at
-					//P.Finish_at = GetDataTimeString(TM_Fin);
-					//
-					//std::stringstream sg2;
-					S107::GetFinishCassete(conn, CassetteLogger, it);
-					{
-						s1 << Stoi(it.Id) << ";";
-						s1 << " " << it.Run_at << ";";
-						s1 << " " << it.End_at << ";";
-						s1 << " " << it.Finish_at << ";";
-						s1 << Stoi(it.Year) << ";";
-						s1 << Stoi(it.Month) << ";";
-						s1 << Stoi(it.Day) << ";";
-						s1 << Stoi(it.Hour) << ";";
-						s1 << Stoi(it.CassetteNo) << ";";
-						s1 << Stoi(it.Peth) << ";";
-							//<< " " << P.Error_at << ";";
-
-						s1 << Stof(it.PointRef_1) << ";";		//Уставка температуры
-						s1 << Stof(it.facttemper) << ";";		//Фактическое значение температуры
-
-						s1 << Stof(it.PointTime_1) << ";";		//Задание Время нагрева
-						s1 << Stof(it.HeatAcc) << ";";			//Факт время нагрева
-						s1 << Stof(it.PointTime_2) << ";";	//Задание Время выдержки
-						s1 << Stof(it.HeatWait) << ";";		//Факт время выдержки
-
-						s1 << Stof(it.TimeProcSet) << ";";		//Полное время процесса (уставка), мин
-						s1 << Stof(it.Total) << ";";			//Факт общее время
-
-						s1 << std::endl;
-					}
-
-
-				}
-			}
-			CATCH(CassetteLogger, "");
-		}
-
-
-		void GetCassettes::GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it)
-		{
-			try
-			{
-				std::stringstream com;
-				com << "SELECT * FROM cassette WHERE";
-
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
-					com << " hour = " << Stoi(it.Hour);
-				//else
-				//	com << " hour < 1 ";
-				com << " AND day = " << Stoi(it.Day);
-				com << " AND month = " << Stoi(it.Month);
-				com << " AND year = " << Stoi(it.Year);
-				com << " AND cassetteno = " << Stoi(it.CassetteNo);
-				com << " AND correct IS NULL";
-				com << " ORDER BY start_at DESC LIMIT 1";
-
-				std::string command = com.str();
-				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-				PGresult* res = conn.PGexec(command);
-				//LOG_INFO(CassetteLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					if(PQntuples(res))
-						S107::GetCassette(conn, res, ct, 0);
-				} else
-					LOG_ERR_SQL(CassetteLogger, res, command);
-				PQclear(res);
-			}
-			CATCH(CassetteLogger, "");
-		}
-
-		void GetCassettes::SaveFileSdg(MapRunn& CassetteTodos)
-		{
-#ifdef _DEBUG
-			try
-			{
-#pragma region Запись в файл заголовка Sdg.csv
-				std::fstream sdg("Sdg.csv", std::fstream::binary | std::fstream::out);
-
-				sdg << "first;";
-				sdg << "id;";
-				sdg << "create_at;";
-				sdg << "id_name;";
-				sdg << "value;";
-				sdg << "Petch;";
-				sdg << "id_name;";
-				sdg << "id_name_at;";
-				sdg << std::endl;
-#pragma endregion
-
-#pragma region Запись в файл тела Sdg.csv
-				for(auto& a : CassetteTodos)
-				{
-					sdg << a.first << ";";
-					sdg << a.second.id << ";";
-					sdg << " " << a.second.create_at << ";";
-					sdg << a.second.id_name << ";";
-					sdg << a.second.value << ";";
-					sdg << a.second.Petch << ";";
-					sdg << a.second.id_name << ";";
-					sdg << a.second.id_name_at << ";";
-					sdg << std::endl;
-				}
-				sdg.close();
-#pragma endregion
-			}
-			CATCH(CassetteLogger, "");
-#endif
-		}
-
-
-		int GetCassettes::GetCountSheet(PGConnection& conn, TCassette& ct)
-		{
-			int countSheet = 0;
-			std::stringstream set;
-			set << "SELECT COUNT(*) FROM sheet WHERE"; //delete_at IS NULL AND 
-			set << " year = '" << Stoi(ct.Year) << "'";
-			set << " AND month = '" << Stoi(ct.Month) << "'";
-			set << " AND day = '" << Stoi(ct.Day) << "'";
-			set << " AND cassetteno = " << Stoi(ct.CassetteNo);;
-			if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
-				set << " AND hour = " << Stoi(ct.Hour);
-
-			std::string command = set.str();
-			PGresult* res = conn.PGexec(command);
-			if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-				countSheet = Stoi(conn.PGgetvalue(res, 0, 0));
-			PQclear(res);
-			return countSheet;
-		}
-
-
-		void GetCassettes::SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it)
-		{
-			std::stringstream sg2;
-			try
-			{
-				//sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
-				//SetWindowText(hWndDebug, sg2.str().c_str());
-				int countSheet = GetCountSheet(conn, it);
-				if(!countSheet) countSheet = -1;
-
-				if(it.Create_at.length())ct.Create_at = it.Create_at;
-				else
-					if(it.Run_at.length())ct.Create_at = it.Run_at;
-
-				if(it.Id.length())ct.Id = it.Id;
-				if(it.Year.length())ct.Year = it.Year;
-				if(it.Month.length())ct.Month =it.Month;
-				if(it.Day.length())ct.Day = it.Day;
-
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
-					ct.Hour = it.Hour;
-				else
-				{
-					if(it.Create_at.length())
-						ct.Hour = getHour(it.Create_at);
-					else if(it.Run_at.length())
-						ct.Hour = getHour(it.Run_at);
-					else 
-						if(it.Hour.length())
-							ct.Hour = it.Hour;
-				}
-
-				if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
-				if(it.Peth.length())ct.Peth = it.Peth;
-				if(it.Run_at.length())ct.Run_at = it.Run_at;
-				if(it.Error_at.length())ct.Error_at = it.Error_at;
-				if(it.End_at.length())ct.End_at = it.End_at;
-				if(it.PointTime_1.length())ct.PointTime_1 = it.PointTime_1;    //Время разгона
-				if(it.PointRef_1.length())ct.PointRef_1 = it.PointRef_1;      //Уставка температуры
-				if(it.TimeProcSet.length())ct.TimeProcSet = it.TimeProcSet;    //Полное время процесса (уставка), мин
-				if(it.PointTime_2.length())ct.PointTime_2 =it.PointTime_2;   //Время выдержки
-				if(it.facttemper.length())ct.facttemper = it.facttemper;			//Факт температуры за 5 минут до конца отпуска
-				if(it.Finish_at.length())ct.Finish_at = it.Finish_at;        //Завершение процесса + 15 минут
-				if(it.HeatAcc.length())ct.HeatAcc = it.HeatAcc;			//Факт время нагрева
-				if(it.HeatWait.length())ct.HeatWait = it.HeatWait;          //Факт время выдержки
-				if(it.Total.length())ct.Total = it.Total;				//Факт общее время
-
-				std::stringstream ssd;
-				ssd << "UPDATE cassette SET ";
-				ssd << "";
-
-				if(ct.Run_at.length())
-					ssd << "run_at = '" << ct.Run_at << "', ";
-				else
-					ssd << "run_at = DEFAULT, ";
-
-				if(ct.End_at.length())
-					ssd << "end_at = '" << ct.End_at << "', ";
-				else
-					ssd << "end_at = DEFAULT, ";
-
-				if(ct.Finish_at.length())
-					ssd << "finish_at = '" << ct.Finish_at << "', correct = now()";
-				else
-					ssd << "finish_at = DEFAULT, correct = now()";
-
-
-				if(Stof(ct.PointRef_1))
-					ssd << ", pointref_1 = " << ct.PointRef_1;
-
-				if(Stof(ct.facttemper))
-					ssd << ", facttemper = " << ct.facttemper; //Факт температуры за 5 минут до конца отпуска
-
-
-				if(Stof(ct.PointTime_1))
-					ssd << ", pointtime_1 = " << ct.PointTime_1;
-				if(Stof(ct.HeatAcc))
-					ssd << ", heatacc = " << ct.HeatAcc;
-
-
-				if(Stof(ct.PointTime_2))
-					ssd << ", pointdtime_2 = " << ct.PointTime_2;
-				if(Stof(ct.HeatWait))
-					ssd << ", heatwait = " << ct.HeatWait;
-
-				if(Stof(ct.TimeProcSet))
-					ssd << ", timeprocset = " << ct.TimeProcSet;
-				if(Stof(ct.Total))
-					ssd << ", total = " << ct.Total;
-				
-				if(countSheet)
-					ssd << ", sheetincassette = " << countSheet;
-				else
-					ssd << ", sheetincassette = -1";
-
-
-				ssd << " WHERE id = " << ct.Id;
-				std::string command = ssd.str();
-
-				LOG_INFO(CassetteLogger, "{:89}| {}", FUNCTION_LINE_NAME, ssd.str());
-				SETUPDATESQL(CassetteLogger, conn, ssd);
-
-
-				fUpdateCassette << ssd.str() << std::endl;
-				fUpdateCassette.flush();
-
-				//PrintCassettePdfAuto(ct);
-			}
-			CATCH(CassetteLogger, "")
-		}
-
-
-		void GetCassettes::SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it)
-		{
-			try
-			{
-				int countSheet = GetCountSheet(conn, it);
-				if(!countSheet) countSheet = -1;
-
-				//if(!countSheet) return;
-
-
-				if(it.Create_at.length())ct.Create_at = it.Create_at;
-				else
-					if(it.Run_at.length())ct.Create_at = it.Run_at;
-																													
-				if(it.Id.length())ct.Id = it.Id;
-				if(it.Year.length())ct.Year = it.Year;
-				if(it.Month.length())ct.Month =it.Month;
-				if(it.Day.length())ct.Day = it.Day;
-
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
-					ct.Hour = it.Hour;
-				else
-				{
-					if(it.Create_at.length())
-						ct.Hour = getHour(it.Create_at);
-					else if(it.Run_at.length())
-						ct.Hour = getHour(it.Run_at);
-					else
-						if(it.Hour.length())
-							ct.Hour = it.Hour;
-				}
-
-				if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
-
-				if(it.Peth.length())ct.Peth = it.Peth;
-				if(it.Run_at.length())ct.Run_at = it.Run_at;
-				if(it.Error_at.length())ct.Error_at = it.Error_at;
-				if(it.End_at.length())ct.End_at = it.End_at;
-
-				if(it.PointTime_1.length())ct.PointTime_1 = it.PointTime_1;    //Время разгона
-				if(it.PointRef_1.length())ct.PointRef_1 = it.PointRef_1;      //Уставка температуры
-				if(it.TimeProcSet.length())ct.TimeProcSet = it.TimeProcSet;    //Полное время процесса (уставка), мин
-				if(it.PointTime_2.length())ct.PointTime_2 =it.PointTime_2;   //Время выдержки
-				if(it.facttemper.length())ct.facttemper = it.facttemper;			//Факт температуры за 5 минут до конца отпуска
-				if(it.Finish_at.length())ct.Finish_at = it.Finish_at;        //Завершение процесса + 15 минут
-				if(it.HeatAcc.length())ct.HeatAcc = it.HeatAcc;			//Факт время нагрева
-				if(it.HeatWait.length())ct.HeatWait = it.HeatWait;          //Факт время выдержки
-				if(it.Total.length())ct.Total = it.Total;				//Факт общее время
-
-				{
 					std::stringstream ssd;
-					ssd << "INSERT INTO cassette ";
-					ssd << "("
-						"create_at, "
-						"event, "
-						"year, "
-						"month, "
-						"day, "
-						"hour, "
-						"cassetteno, "
-						"sheetincassette, "
-						"peth, "
-						"run_at, "
-						"error_at, "
-						"end_at, "
-						"finish_at, "
-						"pointtime_1, "
-						"pointref_1, "
-						"timeprocset, "
-						"pointdtime_2, "
-						"facttemper, "
-						"heatacc, "
-						"heatwait, "
-						"total, "
-						"correct"
-						") VALUES (";
+					ssd << "SELECT run_at, ";
+					ssd << "run_at - TIME '02:00:00'";	//Минус 2 часа
+					ssd << "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND delete_at IS NULL AND run_at >= "; //delete_at IS NULL AND 
+					ssd << ss1.str();
+					ssd << "AND peth = " << peth;
+					ssd << " ORDER BY run_at ASC LIMIT 1;";
 
-					if(ct.Create_at.length())
-						ssd << "'" << ct.Create_at << "', ";
-					else
-						ssd << "now(), ";
+					//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
+					//comand1 += peth;
+					//comand1 += " ORDER BY run_at DESC LIMIT 1)";
+					//
+					//std::string command = "SELECT run_at";
+					//command += " - TIME '06:00:00'";	//Минус 6 часов
+					//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+					//command += comand1;
+					//command += peth;
+					//command += " ORDER BY run_at ASC LIMIT 1;";
 
-					ssd << "5, ";
-					ssd << Stoi(ct.Year) << ", ";
-					ssd << Stoi(ct.Month) << ", ";
-					ssd << Stoi(ct.Day) << ", ";
-					ssd << Stoi(ct.Hour) << ", ";
-					ssd << Stoi(ct.CassetteNo) << ", ";
-
-					ssd << countSheet << ", ";
-
-					ssd << Stoi(ct.Peth) << ", ";
-
-					if(ct.Run_at.length())
-						ssd << "'" << ct.Run_at << "', ";
-					else
-						ssd << "DEFAULT, ";
-
-					if(ct.Error_at.length())
-						ssd << "'" << ct.Error_at << "', ";
-					else
-						ssd << "DEFAULT, ";
-
-					if(ct.End_at.length())
-						ssd << "'" << ct.End_at << "', ";
-					else
-						ssd << "DEFAULT, ";
-					if(ct.Finish_at.length())
-						ssd << "'" << ct.Finish_at << "', ";
-					else
-						ssd << "DEFAULT, ";
-
-					ssd << Stof(ct.PointTime_1) << ", ";
-					ssd << Stof(ct.PointRef_1) << ", ";
-					ssd << Stof(ct.TimeProcSet) << ", ";
-					ssd << Stof(ct.PointTime_2) << ", ";
-					ssd << Stof(ct.facttemper) << ", ";
-					ssd << Stof(ct.HeatAcc) << ", ";
-					ssd << Stof(ct.HeatWait) << ", ";
-					ssd << Stof(ct.Total) << ", ";
-					ssd << "now());";
-					LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-					SETUPDATESQL(CassetteLogger, conn, ssd);
-
-					fUpdateCassette << ssd.str();
-					fUpdateCassette << "\t" << ct.Id << std::endl;
-					fUpdateCassette.flush();
-				}
-
-				{
-					std::stringstream ssd;
-					ssd << "SELECT id FROM cassette ";
-					ssd << "WHERE hour = " << ct.Hour;
-					ssd << " AND day = " << ct.Day;
-					ssd << " AND month = " << ct.Month;
-					ssd << " AND year = " << ct.Year;
-					ssd << " AND cassetteno = " << ct.CassetteNo;
-					ssd << " ORDER BY id LIMIT 1";
-					//command = ssg.str();
-
-					PGresult* res = conn.PGexec(ssd.str());
-					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-						it.Id = conn.PGgetvalue(res, 0, 0);
-					PQclear(res);
-					ct.Id = it.Id;
-				}
-				//PrintCassettePdfAuto(ct);
-			}
-			CATCH(CassetteLogger, "");
-		}
-
-		void GetCassettes::SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it)
-		{
-			try
-			{
-		 //Запись в базу
-				std::stringstream ssg;
-				ssg << "SELECT id FROM cassette ";
-				ssg << "WHERE";
-				if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
-					ssg << " hour = " << Stoi(it.Hour);
-				//else
-				//{
-				//	if(it.Create_at.length())
-				//		ssg << " hour = " << getHour(it.Create_at);
-				//	else if(it.Run_at.length())
-				//		ssg << " hour = " << getHour(it.Run_at);
-				//	//else ssg << "-1 ";
-				//}
-
-				ssg << " AND day = " << Stoi(it.Day);
-				ssg << " AND month = " << Stoi(it.Month);
-				ssg << " AND year = " << Stoi(it.Year);
-				ssg << " AND cassetteno = " << Stoi(it.CassetteNo);
-				ssg << " ORDER BY id LIMIT 1";
-				std::string command = ssg.str();
-
-				if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					it.Id = conn.PGgetvalue(res, 0, 0);
-				PQclear(res);
-
-				if(Stoi(it.Id))
-				{
-					SaveDataBaseForId(conn, ct, it);
-				}
-				else
-				{
-					SaveDataBaseNotId(conn, ct, it);
-				}
-			}
-			CATCH(CassetteLogger, "");
-		}
-
-		void GetCassettes::SaveFileCass1(TCASS& P0)
-		{
-
-	//#ifdef _DEBUG
-			try
-			{
-#pragma region Запись в файл Cass.csv заголовка
-				std::fstream s1("Cass.csv", std::fstream::binary | std::fstream::out);
-				s1 << "Индекс;"
-					<< "Старт;"
-					<< "Стоп;"
-					<< "Финиш;"
-					<< "Год;"
-					<< "Месяц;"
-					<< "День;"
-					<< "Кассета;"
-					<< "Авария;"
-					<< "Печь;"
-					<< "Уставка T;"			//Уставка температуры
-					<< "Факт Т;"			//Фактическое значение температуры
-					<< "Задание нагрева;"	//Задание Время нагрева
-					<< "Факт нагрева;"		//Факт время нагрева
-					<< "Задание выдержки;"	//Задание Время выдержки
-					<< "Факт выдержки;"		//Факт время выдержки
-					<< "Задание процесса;"	//Полное время процесса (уставка), мин
-					<< "Факт процесса;"		//Факт общее время
-					<< std::endl;
-#pragma endregion
-
-#pragma region Запись в файл Cass.csv тела
-				for(auto& it : P0)
-				{
-					if(!isRun)return;
-					if(it.second.Run_at.length() && it.second.End_at.length() && S107::IsCassette(it.second))
-					{
-						s1 << it.first << ";"
-							<< " " << it.second.Run_at << ";"
-							<< " " << it.second.End_at << ";"
-							<< " " << it.second.Finish_at << ";"
-							<< it.second.Year << ";"
-							<< it.second.Month << ";"
-							<< it.second.Day << ";"
-							<< it.second.Hour << ";"
-							<< it.second.CassetteNo << ";"
-							<< " " << it.second.Error_at << ";"
-							<< it.second.Peth << ";"
-							<< it.second.PointRef_1 << ";"		//Уставка температуры
-							<< it.second.facttemper << ";"		//Фактическое значение температуры
-							<< it.second.PointTime_1 << ";"		//Задание Время нагрева
-							<< it.second.HeatAcc << ";"			//Факт время нагрева
-							<< it.second.PointTime_2 << ";"	//Задание Время выдержки
-							<< it.second.HeatWait << ";"		//Факт время выдержки
-							<< it.second.TimeProcSet << ";"		//Полное время процесса (уставка), мин
-							<< it.second.Total << ";"			//Факт общее время
-
-							<< std::endl;
-					}
-				}
-				s1.close();
-#pragma endregion
-			}
-			CATCH(CassetteLogger, "");
-	//#endif
-		}
+					//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
+					//comand1 += peth;
+					//comand1 += " ORDER BY run_at DESC LIMIT 1)";
+					//
+					//std::string command = "SELECT run_at";
+					//command += " - TIME '06:00:00'";	//Минус 5 часов
+					//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+					//command += comand1;
+					//command += peth;
+					//command += " ORDER BY run_at ASC LIMIT 1;";
 
 
-		void GetCassettes::SaveBaseCassete(PGConnection& conn, TCassette& it)
-		{
-			try
-			{
-				TCassette ct;
-				if(it.Run_at.length() && it.End_at.length() && S107::IsCassette(it))
-				{
-					//std::string sg = std::string("Получение кассеты из базы ") + std::to_string(P0.size()) + std::string(" :") + std::to_string(lin++);
-					//SetWindowText(hWndDebug, sg.c_str());
-
-					GetCassetteData(conn, it.Id, ct, it);
-
-					if(ct.facttemper.length())	it.facttemper = ct.facttemper;
-					if(ct.Id.length())			it.Id = ct.Id;
-
-					if(S107::GetFinishCassete(conn, CassetteLogger, it))
-						SaveDataBase(conn, ct, it);
-				}
-			}CATCH(CassetteLogger, "");
-		}
-
-
-
-		bool IsCassette(Tcass& p)
-		{
-			//int Hour = Stoi(p.Hour);
-			int Day = Stoi(p.Day);
-			int Month = Stoi(p.Month);
-			int Year = Stoi(p.Year);
-			int CassetteNo = Stoi(p.CassetteNo);
-
-			return (Day && Month && Year && CassetteNo);
-		}
-
-		bool IsCassette(TCassette& p)
-		{
-			//int Hour = Stoi(p.Hour);
-			int Day = Stoi(p.Day);
-			int Month = Stoi(p.Month);
-			int Year = Stoi(p.Year);
-			int CassetteNo = Stoi(p.CassetteNo);
-
-			return (Day && Month && Year && CassetteNo);
-		}
-
-		void GetCassettes::PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int first, int Petch, std::fstream& s1)
-		{
-			T_ForBase_RelFurn* Furn = NULL;
-
-			if(Petch == 1)
-			{
-				Furn = &ForBase_RelFurn_1;
-			}
-			if(Petch == 2)
-			{
-				Furn = &ForBase_RelFurn_2;
-			}
-
-			if(Furn == NULL) return;
-
-			try
-			{
-				//Furn->Cassette.Hour->ID
-				if(a.id_name == Furn->Cassette.Hour->ID)
-				{
-					int v = Stoi(a.value);
-					if(!cass.Hour.length() && (v || !cass.Run_at.length()))
-						cass.Hour = std::to_string(v);
-				}
-
-				//Furn->Cassette.Day->ID
-				if(a.id_name == Furn->Cassette.Day->ID && a.content.As<int32_t>())
-				{
-					int v = Stoi(a.value);
-					if(!cass.Day.length() && v && !cass.Run_at.size())
-						cass.Day = std::to_string(v);
-				}
-
-				//Furn->Cassette.Month->ID
-				if(a.id_name == Furn->Cassette.Month->ID && a.content.As<int32_t>())
-				{
-					int v = Stoi(a.value);
-					if(!cass.Month.length() && v && !cass.Run_at.size())
-						cass.Month = std::to_string(v);
-				}
-
-				//Furn->Cassette.Year->ID
-				if(a.id_name == Furn->Cassette.Year->ID && a.content.As<int32_t>())
-				{
-					int v = Stoi(a.value);
-					if(!cass.Year.length() && v && !cass.Run_at.size())
-						cass.Year = std::to_string(v);
-				}
-
-				//Furn->Cassette.CassetteNo->ID
-				if(a.id_name == Furn->Cassette.CassetteNo->ID && a.content.As<int32_t>())
-				{
-					if(!cass.CassetteNo.length() && (Stoi(a.value) || !cass.Run_at.size()))
-						cass.CassetteNo = a.value;
-
-				}
-
-				//Furn->ProcRun->ID
-				if(a.id_name == Furn->ProcRun->ID && a.content.As<bool>())
-				{
-					if(IsCassette(cass))
-					{
-						if(!cass.Run_at.size())
-						{
-							cass.Run_at = a.create_at;
-							P = cass;
-						} 
-						else
-						{
-							if(
-								IsCassette(P) &&
-								(
-									Stoi(P.Hour) != Stoi(cass.Hour) ||
-									Stoi(P.Day) != Stoi(cass.Day) ||
-									Stoi(P.Month) != Stoi(cass.Month) ||
-									Stoi(P.Year) != Stoi(cass.Year) ||
-									Stoi(P.CassetteNo) != Stoi(cass.CassetteNo)
-									)
-								)
-							{
-								//P = cass;
-								P.End_at = a.create_at;
-								EndCassette(conn, P, Petch, s1);
-								SaveBaseCassete(conn, P);
-
-								P = TCassette();
-								P = cass;
-							}
-						}
-					}
-				}
-
-				//Furn->ProcEnd->ID
-				if(a.id_name == Furn->ProcEnd->ID && a.content.As<bool>())
-				{
-					if(IsCassette(cass) && cass.Run_at.size())
-					{
-						P = cass;
-						P.End_at = a.create_at;
-
-						EndCassette(conn, P, Petch, s1);
-						SaveBaseCassete(conn, P);
-					}
-					P = TCassette();
-					cass = Tcass(Petch);
-				}
-
-				//Furn->ProcFault->ID
-				if(a.id_name == Furn->ProcFault->ID && a.content.As<bool>())
-				{
-					if(!P.Error_at.length() && S107::IsCassette(P))
-					{
-						P.Error_at = a.create_at;
-					}
-				}
-			}
-			CATCH(CassetteLogger, "");
-		}
-
-		void GetCassettes::GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
-		{
-			T_ForBase_RelFurn* Furn = NULL;
-			try
-			{
-				if(Petch == 1)
-				{
-					Furn = &ForBase_RelFurn_1;
-				}
-				else if(Petch == 2)
-				{
-					Furn = &ForBase_RelFurn_2;
-				}
-				else return;
-
-				if(Furn == NULL) return;
-
-				if(!DateStart.length())
-				{
-					GetStartTime(conn, Petch);
-					if(!DateStart.length()) return;
-
-					//GetStopTime(conn, DateStart, Furn->ProcEnd->ID);
-				}
-				int t = 0;
-				//LOG_INFO(CassetteLogger, "{:90}| Печь = {}, DateStart = {}", FUNCTION_LINE_NAME, Petch, DateStart);
-
-				{
-					std::stringstream ssd;
-					ssd << "SELECT create_at, id, id_name, content";
-					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
-					ssd << "FROM todos WHERE ";
-					ssd << "create_at >= '" << DateStart << "' AND ";
-
-					if(DateStop.length())
-						ssd << "create_at < '" << DateStop << "' AND ";
-
-					ssd << "(id_name = " << Furn->ProcEnd->ID;
-					ssd << " OR id_name = " << Furn->ProcRun->ID;
-					ssd << " OR id_name = " << Furn->ProcFault->ID;
-
-					ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Day->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Month->ID;
-					ssd << " OR id_name = " << Furn->Cassette.Year->ID;
-					ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
-					ssd << ") ORDER BY create_at DESC"; //AND content <> 'false' AND content <> '0' 
+					//std::string comand1 = "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
+					//comand1 += peth;
+					//comand1 += " ORDER BY run_at DESC LIMIT 1)";
+					//
+					//std::string command = "SELECT run_at";
+					//command += " - TIME '06:00:00'";	//Минус 5 часов
+					//command += " FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND CAST(event AS integer) = 5 AND run_at > "; //delete_at IS NULL AND 
+					//command += comand1;
+					//command += peth;
+					//command += " ORDER BY run_at ASC LIMIT 1;";
 
 					std::string command = ssd.str();
 					PGresult* res = conn.PGexec(command);
 					if(PQresultStatus(res) == PGRES_TUPLES_OK)
 					{
-						TodosColumn(res);
+						if(conn.PQntuples(res))
+						{
+							DateCorrect = conn.PGgetvalue(res, 0, 0);
+							DateStart = conn.PGgetvalue(res, 0, 1);
+							DateStop = "";
+						}
+					}
+					else
+					{
+						LOG_ERR_SQL(CassetteLogger, res, command);
+					}
+					PQclear(res);
+				}CATCH(CassetteLogger, "");
+			}
+			void GetStopTime(PGConnection& conn, std::string Start, int ID)
+			{
+				if(!DateStart.length()) return;
+				std::stringstream sss;
+				sss << "SELECT create_at"
+					//", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)"
+					" FROM todos WHERE id_name = " << ID	    //Конец отпуска
+					<< " AND create_at >= '" << Start << "'"
+					<< " AND content = 'true'"
+					<< " ORDER BY create_at DESC LIMIT 1"; // LIMIT 3
+				std::string command = sss.str();
+				PGresult* res = conn.PGexec(command);
+				//Заполняем данные
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				{
+					if(PQntuples(res))
+						DateStop = conn.PGgetvalue(res, 0, 0);
+				}
+				else
+				{
+					LOG_ERR_SQL(CassetteLogger, res, command);
+				}
+				PQclear(res);
+			}
 
+			std::string GetVal(PGConnection& conn, int ID, std::string Run_at, std::string End_at)
+			{
+				std::string f = "0";
+				try
+				{
+					std::stringstream sss;
+					sss << "SELECT content FROM todos WHERE ";
+					sss << " id_name = " << ID; 			//Фактическое значение температуры
+					sss << " AND create_at >= '" << Run_at << "'";
+					sss << " AND create_at < '" << End_at << "'";
+					sss << " ORDER BY create_at DESC LIMIT 1";
+					std::string command = sss.str();
+					PGresult* res = conn.PGexec(command);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
 						int line = PQntuples(res);
-						std::string old_value = "";
+						if(line)
+							f = conn.PGgetvalue(res, line - 1, 0);
+					}
+					else
+					{
+						LOG_ERR_SQL(CassetteLogger, res, command);
+					}
+					PQclear(res);
+				}
+				CATCH(CassetteLogger, "");;
+				return f;
+			}
+
+			void GetVal(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
+			{
+				try
+				{
+	#pragma region Готовим запрос в базу
+
+					std::stringstream sss;
+					sss << "SELECT DISTINCT ON (id_name) id_name, content";
+					sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+					sss << " FROM todos WHERE (";
+					sss << " id_name = " << Furn->ActTimeHeatAcc->ID << " OR";	//Факт время нагрева
+					sss << " id_name = " << Furn->ActTimeHeatWait->ID << " OR";	//Факт время выдержки
+					sss << " id_name = " << Furn->ActTimeTotal->ID;				//Факт общее время
+					sss << ")";
+					sss << " AND create_at >= '" << it.Run_at << "'";
+					sss << " AND create_at < '" << it.End_at << "'";
+					sss << " AND cast (content as numeric) <> 0";
+					sss << " ORDER BY id_name, create_at DESC"; // LIMIT 3
+
+	#pragma endregion
+
+	#pragma region Запрос в базу
+
+					std::string command = sss.str();
+					PGresult* res = conn.PGexec(command);
+					//Заполняем данные
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						int line = PQntuples(res);
+						//Заполняем данные
 						for(int l = 0; l < line && isRun; l++)
 						{
-							T_Todos ct;
-							ct.value = conn.PGgetvalue(res, l, TODOS::content);
-							ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
-							ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-							ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
-							ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-							ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
-							ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
-							ct.Petch = Petch;
-							CassetteTodos[ct.id] = ct;
+							int id = Stoi(conn.PGgetvalue(res, l, 0));
+							std::string f = conn.PGgetvalue(res, l, 1);
+
+							if(f.length())
+							{
+								if(id == Furn->ActTimeHeatAcc->ID && !it.HeatAcc.length()) it.HeatAcc = f;
+								if(id == Furn->ActTimeHeatWait->ID && !it.HeatWait.length()) it.HeatWait = f;
+								if(id == Furn->ActTimeTotal->ID && !it.Total.length()) it.Total = f;
+							}
 						}
 					}
 					else
@@ -3198,181 +2357,1044 @@ namespace PDF
 					}
 					PQclear(res);
 
+	#pragma endregion
 				}
-				//{
-				//	std::stringstream ssd;
-				//	ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
-				//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
-				//	ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
-				//	ssd << "FROM todos WHERE ";
-				//	ssd << "create_at >= '" << DateStart << "' AND ";
-				//
-				//	if(DateStop.length())
-				//		ssd << "create_at < '" << DateStop << "' AND ";
-				//
-				//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
-				//	ssd << " ORDER BY id";
-				//
-				//	std::string command = ssd.str();
-				//	PGresult* res = conn.PGexec(command);
-				//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				//	{
-				//		TodosColumn(res);
-				//
-				//		int line = PQntuples(res);
-				//		std::string old_value = "";
-				//		for(int l = 0; l < line && isRun; l++)
-				//		{
-				//			T_Todos ct;
-				//			ct.value = conn.PGgetvalue(res, l, TODOS::content);
-				//			ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
-				//			ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
-				//			ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
-				//			ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
-				//			ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
-				//			ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
-				//			ct.Petch = Petch;
-				//			CassetteTodos[ct.id] = ct;
-				//		}
-				//	}
-				//	else
-				//	{
-				//		LOG_ERR_SQL(PdfLogger, res, command);
-				//	}
-				//	PQclear(res);
-				//}
-			}
-			CATCH(CassetteLogger, "");
+				CATCH(CassetteLogger, "");
 
-			SaveFileSdg(CassetteTodos);
-		}
-
-		void GetCassettes::SetAllCorrect(PGConnection& conn, std::string Date, int Petch)
-		{
-			std::stringstream as;
-			as << "UPDATE cassette SET correct = now() WHERE ";
-			as << " peth = " << Petch;
-			if(Date.length())
-			as << " AND run_at >= '" << Date << "'";
-			as << " AND delete_at IS NULL";
-			as << " AND correct IS NULL";
-			as << " AND finish_at IS NOT NULL";
-			as << " AND end_at IS NOT NULL";
-			as << " AND run_at IS NOT NULL";
-			//as << " AND sheetincassette > 0";
-			SETUPDATESQL(CassetteLogger, conn, as);
-		}
-
-		void GetCassettes::GetCassette(PGConnection& conn, std::string start, std::string stop)
-		{
-			MapRunn CassetteTodos;
-
-			//DateStart = "2024-03-01 00:00:00";
-			//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
-			DateStart = start;
-			DateCorrect = start;
-			DateStop = stop;
-			GetCassetDataBase(conn, CassetteTodos, 1);
-			std::string DateCorrect1 = DateCorrect;
-
-			DateStart = start;
-			DateCorrect = start;
-			DateStop = stop;
-			GetCassetDataBase(conn, CassetteTodos, 2);
-			std::string DateCorrect2 = DateCorrect;
-
-			try
-			{
-				std::string name = "cass 1_2.csv";
-				std::fstream s1(name, std::fstream::binary | std::fstream::out | std::fstream::app);
-
-				//int lin = 0;
-				//auto size = CassetteTodos.size();
-
-				Tcass TP1 = Tcass (1);
-				Tcass TP2 = Tcass (2);
-
-				TCassette P1;
-				TCassette P2;
-				for(auto& a : CassetteTodos)
+				try
 				{
-					if(!isRun)break;
-					PrepareDataBase(conn, TP1, P1, a.second, a.first, 1, s1);
-					PrepareDataBase(conn, TP2, P2, a.second, a.first, 2, s1);
+	#pragma region Гогтвим запрос в базу
 
-					//lin++;
+					std::stringstream sss;
+					sss << "SELECT DISTINCT ON (id_name) id_name, content";
+					sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+					sss << " FROM todos WHERE (";
+					sss << " id_name = " << Furn->PointRef_1->ID << " OR";		//Уставка температуры
+					sss << " id_name = " << Furn->PointTime_1->ID << " OR";		//Задание Время нагрева
+					sss << " id_name = " << Furn->PointTime_2->ID << " OR";	//Задание Время выдержки
+					sss << " id_name = " << Furn->TimeProcSet->ID;				//Полное время процесса (уставка), мин
+					sss << ")";	//Факт время выдержки
+					sss << " AND create_at < '" << it.End_at << "'";
+					sss << " ORDER BY id_name, create_at DESC"; // LIMIT 4
+
+	#pragma endregion
+
+	#pragma region Запрос в базу
+
+					std::string command = sss.str();
+					PGresult* res = conn.PGexec(command);
+					//Заполняем данные
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						int line = PQntuples(res);
+						//Заполняем данные
+						for(int l = 0; l < line && isRun; l++)
+						{
+							int id = Stoi(conn.PGgetvalue(res, l, 0));
+							std::string f = conn.PGgetvalue(res, l, 1);
+
+							if(f.length())
+							{
+								if(id == Furn->PointRef_1->ID && !it.PointRef_1.length())  it.PointRef_1 = f;
+								if(id == Furn->PointTime_1->ID && !it.PointTime_1.length()) it.PointTime_1 = f;
+								if(id == Furn->PointTime_2->ID && !it.PointTime_2.length()) it.PointTime_2 = f;
+								if(id == Furn->TimeProcSet->ID && !it.TimeProcSet.length()) it.TimeProcSet = f;
+							}
+						}
+					}
+					else
+					{
+						LOG_ERR_SQL(CassetteLogger, res, command);
+					}
+					PQclear(res);
+
+	#pragma endregion
 				}
+				CATCH(CassetteLogger, "");
+
+				try
+				{
+					time_t temp  = (time_t)difftime(DataTimeOfString(it.End_at), 5 * 60); //Вычисть 5 минут до конца отпуска
+					std::string End_at  = GetStringOfDataTime(&temp);
+					it.facttemper = GetVal(conn, Furn->TempAct->ID, it.Run_at, End_at);
+
+				}
+				CATCH(CassetteLogger, "");
+			}
+		
+			void EndCassette(PGConnection& conn, TCassette& it, int Petch, std::fstream& s1)
+			{
+				try
+				{
+					T_ForBase_RelFurn* Furn = NULL;
+					if(Petch == 1)
+						Furn = &ForBase_RelFurn_1;
+					if(Petch == 2)
+						Furn = &ForBase_RelFurn_2;
+					if(Furn == NULL)
+						throw std::runtime_error(__FUN(("Error patametr Furn = ") + std::to_string(Petch)));
+
+					it.Peth = std::to_string(Petch);
+
+					if(S107::IsCassette(it) && it.Run_at.length())
+					{
+						GetVal(conn, it, Furn);
+
+						//std::tm TM_Run;
+						//std::tm TM_End;
+						//std::tm TM_All;
+						//std::tm TM_Fin;
+						////struct tm TM_All;
+						//std::time_t tm_Fin;
+						//
+						//std::time_t tm_Run = DataTimeOfString(P.Run_at, TM_Run);
+						//std::time_t tm_End1;
+						////std::time_t tm_End = DataTimeOfString(P.End_at, TM_End);
+						////std::time_t tm_All = (time_t)difftime(tm_End1, tm_Run);
+						//
+						////gmtime_s(&TM_All, &tm_All);
+						////TM_All.tm_year -= 1900;
+						////TM_All.tm_mday -= 1;
+						//
+						//tm_Fin = DataTimeOfString(P.End_at, TM_Fin);
+						//tm_Fin = tm_End1 + (60 * 15); //+15 минут
+						//localtime_s(&TM_Fin, &tm_Fin);
+						//
+						////P1.End_at
+						//P.Finish_at = GetDataTimeString(TM_Fin);
+						//
+						//std::stringstream sg2;
+						S107::GetFinishCassete(conn, CassetteLogger, it);
+						{
+							s1 << Stoi(it.Id) << ";";
+							s1 << " " << it.Run_at << ";";
+							s1 << " " << it.End_at << ";";
+							s1 << " " << it.Finish_at << ";";
+							s1 << Stoi(it.Year) << ";";
+							s1 << Stoi(it.Month) << ";";
+							s1 << Stoi(it.Day) << ";";
+							s1 << Stoi(it.Hour) << ";";
+							s1 << Stoi(it.CassetteNo) << ";";
+							s1 << Stoi(it.Peth) << ";";
+								//<< " " << P.Error_at << ";";
+
+							s1 << Stof(it.PointRef_1) << ";";		//Уставка температуры
+							s1 << Stof(it.facttemper) << ";";		//Фактическое значение температуры
+
+							s1 << Stof(it.PointTime_1) << ";";		//Задание Время нагрева
+							s1 << Stof(it.HeatAcc) << ";";			//Факт время нагрева
+							s1 << Stof(it.PointTime_2) << ";";	//Задание Время выдержки
+							s1 << Stof(it.HeatWait) << ";";		//Факт время выдержки
+
+							s1 << Stof(it.TimeProcSet) << ";";		//Полное время процесса (уставка), мин
+							s1 << Stof(it.Total) << ";";			//Факт общее время
+
+							s1 << std::endl;
+						}
+
+
+					}
+				}
+				CATCH(CassetteLogger, "");
+			}
+
+
+			void GetCassetteData(PGConnection& conn, std::string id, TCassette& ct, TCassette& it)
+			{
+				try
+				{
+					std::stringstream com;
+					com << "SELECT * FROM cassette WHERE";
+
+					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
+						com << " hour = " << Stoi(it.Hour);
+					//else
+					//	com << " hour < 1 ";
+					com << " AND day = " << Stoi(it.Day);
+					com << " AND month = " << Stoi(it.Month);
+					com << " AND year = " << Stoi(it.Year);
+					com << " AND cassetteno = " << Stoi(it.CassetteNo);
+					com << " AND correct IS NULL";
+					com << " ORDER BY start_at DESC LIMIT 1";
+
+					std::string command = com.str();
+					if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
+					//LOG_INFO(CassetteLogger, "{:90}| sMaxId = {}", FUNCTION_LINE_NAME, FilterComand.str());
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						if(PQntuples(res))
+							S107::GetCassette(conn, res, ct, 0);
+					} else
+						LOG_ERR_SQL(CassetteLogger, res, command);
+					PQclear(res);
+				}
+				CATCH(CassetteLogger, "");
+			}
+
+
+			void SaveFileSdg(MapRunn& CassetteTodos)
+			{
+	#ifdef _DEBUG
+				try
+				{
+	#pragma region Запись в файл заголовка Sdg.csv
+					std::fstream sdg("Sdg.csv", std::fstream::binary | std::fstream::out);
+
+					sdg << "first;";
+					sdg << "id;";
+					sdg << "create_at;";
+					sdg << "id_name;";
+					sdg << "value;";
+					sdg << "Petch;";
+					sdg << "id_name;";
+					sdg << "id_name_at;";
+					sdg << std::endl;
+	#pragma endregion
+
+	#pragma region Запись в файл тела Sdg.csv
+					int index = 0;
+					for(auto& a : CassetteTodos)
+					{
+						sdg << a.first << ";";
+						sdg << a.second.id << ";";
+						sdg << " " << a.second.create_at << ";";
+						sdg << a.second.id_name << ";";
+						sdg << a.second.value << ";";
+						sdg << a.second.Petch << ";";
+						sdg << a.second.id_name << ";";
+						sdg << a.second.id_name_at << ";";
+						sdg << std::endl;
+					}
+					sdg.close();
+	#pragma endregion
+				}
+				CATCH(CassetteLogger, "");
+	#endif
+			}
+
+
+			int GetCountSheet(PGConnection& conn, TCassette& ct)
+			{
+				int countSheet = 0;
+				std::stringstream set;
+				set << "SELECT COUNT(*) FROM sheet WHERE"; //delete_at IS NULL AND 
+				set << " year = '" << Stoi(ct.Year) << "'";
+				set << " AND month = '" << Stoi(ct.Month) << "'";
+				set << " AND day = '" << Stoi(ct.Day) << "'";
+				set << " AND cassetteno = " << Stoi(ct.CassetteNo);;
+				if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
+					set << " AND hour = " << Stoi(ct.Hour);
+
+				std::string command = set.str();
+				PGresult* res = conn.PGexec(command);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+					countSheet = Stoi(conn.PGgetvalue(res, 0, 0));
+				PQclear(res);
+				return countSheet;
+			}
+
+
+			void SaveDataBaseForId(PGConnection& conn, TCassette& ct, TCassette& it)
+			{
+				std::stringstream sg2;
+				try
+				{
+					//sg2 << "Коррекция базы " << P0.size() << " id = " << it.Id;
+					//SetWindowText(hWndDebug, sg2.str().c_str());
+					int countSheet = GetCountSheet(conn, it);
+					if(!countSheet) countSheet = -1;
+
+					if(it.Create_at.length())ct.Create_at = it.Create_at;
+					else
+						if(it.Run_at.length())ct.Create_at = it.Run_at;
+
+					if(it.Id.length())ct.Id = it.Id;
+					if(it.Year.length())ct.Year = it.Year;
+					if(it.Month.length())ct.Month =it.Month;
+					if(it.Day.length())ct.Day = it.Day;
+
+					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
+						ct.Hour = it.Hour;
+					else
+					{
+						if(it.Create_at.length())
+							ct.Hour = getHour(it.Create_at);
+						else if(it.Run_at.length())
+							ct.Hour = getHour(it.Run_at);
+						else 
+							if(it.Hour.length())
+								ct.Hour = it.Hour;
+					}
+
+					if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
+					if(it.Peth.length())ct.Peth = it.Peth;
+					if(it.Run_at.length())ct.Run_at = it.Run_at;
+					if(it.Error_at.length())ct.Error_at = it.Error_at;
+					if(it.End_at.length())ct.End_at = it.End_at;
+					if(it.PointTime_1.length())ct.PointTime_1 = it.PointTime_1;    //Время разгона
+					if(it.PointRef_1.length())ct.PointRef_1 = it.PointRef_1;      //Уставка температуры
+					if(it.TimeProcSet.length())ct.TimeProcSet = it.TimeProcSet;    //Полное время процесса (уставка), мин
+					if(it.PointTime_2.length())ct.PointTime_2 =it.PointTime_2;   //Время выдержки
+					if(it.facttemper.length())ct.facttemper = it.facttemper;			//Факт температуры за 5 минут до конца отпуска
+					if(it.Finish_at.length())ct.Finish_at = it.Finish_at;        //Завершение процесса + 15 минут
+					if(it.HeatAcc.length())ct.HeatAcc = it.HeatAcc;			//Факт время нагрева
+					if(it.HeatWait.length())ct.HeatWait = it.HeatWait;          //Факт время выдержки
+					if(it.Total.length())ct.Total = it.Total;				//Факт общее время
+
+					std::stringstream ssd;
+					ssd << "UPDATE cassette SET ";
+					ssd << "";
+
+					if(ct.Run_at.length())
+						ssd << "run_at = '" << ct.Run_at << "', ";
+					else
+						ssd << "run_at = DEFAULT, ";
+
+					if(ct.End_at.length())
+						ssd << "end_at = '" << ct.End_at << "', ";
+					else
+						ssd << "end_at = DEFAULT, ";
+
+					if(ct.Finish_at.length())
+						ssd << "finish_at = '" << ct.Finish_at << "', correct = now()";
+					else
+						ssd << "finish_at = DEFAULT, correct = now()";
+
+
+					if(Stof(ct.PointRef_1))
+						ssd << ", pointref_1 = " << ct.PointRef_1;
+
+					if(Stof(ct.facttemper))
+						ssd << ", facttemper = " << ct.facttemper; //Факт температуры за 5 минут до конца отпуска
+
+
+					if(Stof(ct.PointTime_1))
+						ssd << ", pointtime_1 = " << ct.PointTime_1;
+					if(Stof(ct.HeatAcc))
+						ssd << ", heatacc = " << ct.HeatAcc;
+
+
+					if(Stof(ct.PointTime_2))
+						ssd << ", pointdtime_2 = " << ct.PointTime_2;
+					if(Stof(ct.HeatWait))
+						ssd << ", heatwait = " << ct.HeatWait;
+
+					if(Stof(ct.TimeProcSet))
+						ssd << ", timeprocset = " << ct.TimeProcSet;
+					if(Stof(ct.Total))
+						ssd << ", total = " << ct.Total;
 				
-				//SaveFileCass(PP1);
-				//SaveFileCass(PP2);
-				s1.close();
+					if(countSheet)
+						ssd << ", sheetincassette = " << countSheet;
+					else
+						ssd << ", sheetincassette = -1";
 
-				SetAllCorrect(conn, DateCorrect1, 1);
-				SetAllCorrect(conn, DateCorrect2, 2);
 
+					ssd << " WHERE id = " << ct.Id;
+					std::string command = ssd.str();
+
+					LOG_INFO(CassetteLogger, "{:89}| {}", FUNCTION_LINE_NAME, ssd.str());
+					SETUPDATESQL(CassetteLogger, conn, ssd);
+
+
+					fUpdateCassette << ssd.str() << std::endl;
+					fUpdateCassette.flush();
+
+					//PrintCassettePdfAuto(ct);
+				}
+				CATCH(CassetteLogger, "")
 			}
-			CATCH(CassetteLogger, "");
-		}
 
-		void GetCassettes::PrepareCassette(PGConnection& conn, std::string start, std::string stop)
-		{
-			SetWindowText(hWndDebug, "SaveCassette");
-			try
+
+			void SaveDataBaseNotId(PGConnection& conn, TCassette& ct, TCassette& it)
 			{
-				remove("UpdateCassette.txt");
-				fUpdateCassette = std::fstream("UpdateCassette.txt", std::fstream::binary | std::fstream::out | std::ios::app);
-				GetCassette(conn, start, stop);
-				fUpdateCassette.close();
+				try
+				{
+					int countSheet = GetCountSheet(conn, it);
+					if(!countSheet) countSheet = -1;
+
+					//if(!countSheet) return;
+
+
+					if(it.Create_at.length())ct.Create_at = it.Create_at;
+					else
+						if(it.Run_at.length())ct.Create_at = it.Run_at;
+																													
+					if(it.Id.length())ct.Id = it.Id;
+					if(it.Year.length())ct.Year = it.Year;
+					if(it.Month.length())ct.Month =it.Month;
+					if(it.Day.length())ct.Day = it.Day;
+
+					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
+						ct.Hour = it.Hour;
+					else
+					{
+						if(it.Create_at.length())
+							ct.Hour = getHour(it.Create_at);
+						else if(it.Run_at.length())
+							ct.Hour = getHour(it.Run_at);
+						else
+							if(it.Hour.length())
+								ct.Hour = it.Hour;
+					}
+
+					if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
+
+					if(it.Peth.length())ct.Peth = it.Peth;
+					if(it.Run_at.length())ct.Run_at = it.Run_at;
+					if(it.Error_at.length())ct.Error_at = it.Error_at;
+					if(it.End_at.length())ct.End_at = it.End_at;
+
+					if(it.PointTime_1.length())ct.PointTime_1 = it.PointTime_1;    //Время разгона
+					if(it.PointRef_1.length())ct.PointRef_1 = it.PointRef_1;      //Уставка температуры
+					if(it.TimeProcSet.length())ct.TimeProcSet = it.TimeProcSet;    //Полное время процесса (уставка), мин
+					if(it.PointTime_2.length())ct.PointTime_2 =it.PointTime_2;   //Время выдержки
+					if(it.facttemper.length())ct.facttemper = it.facttemper;			//Факт температуры за 5 минут до конца отпуска
+					if(it.Finish_at.length())ct.Finish_at = it.Finish_at;        //Завершение процесса + 15 минут
+					if(it.HeatAcc.length())ct.HeatAcc = it.HeatAcc;			//Факт время нагрева
+					if(it.HeatWait.length())ct.HeatWait = it.HeatWait;          //Факт время выдержки
+					if(it.Total.length())ct.Total = it.Total;				//Факт общее время
+
+					{
+						std::stringstream ssd;
+						ssd << "INSERT INTO cassette ";
+						ssd << "("
+							"create_at, "
+							"event, "
+							"year, "
+							"month, "
+							"day, "
+							"hour, "
+							"cassetteno, "
+							"sheetincassette, "
+							"peth, "
+							"run_at, "
+							"error_at, "
+							"end_at, "
+							"finish_at, "
+							"pointtime_1, "
+							"pointref_1, "
+							"timeprocset, "
+							"pointdtime_2, "
+							"facttemper, "
+							"heatacc, "
+							"heatwait, "
+							"total, "
+							"correct"
+							") VALUES (";
+
+						if(ct.Create_at.length())
+							ssd << "'" << ct.Create_at << "', ";
+						else
+							ssd << "now(), ";
+
+						ssd << "5, ";
+						ssd << Stoi(ct.Year) << ", ";
+						ssd << Stoi(ct.Month) << ", ";
+						ssd << Stoi(ct.Day) << ", ";
+						ssd << Stoi(ct.Hour) << ", ";
+						ssd << Stoi(ct.CassetteNo) << ", ";
+
+						ssd << countSheet << ", ";
+
+						ssd << Stoi(ct.Peth) << ", ";
+
+						if(ct.Run_at.length())
+							ssd << "'" << ct.Run_at << "', ";
+						else
+							ssd << "DEFAULT, ";
+
+						if(ct.Error_at.length())
+							ssd << "'" << ct.Error_at << "', ";
+						else
+							ssd << "DEFAULT, ";
+
+						if(ct.End_at.length())
+							ssd << "'" << ct.End_at << "', ";
+						else
+							ssd << "DEFAULT, ";
+						if(ct.Finish_at.length())
+							ssd << "'" << ct.Finish_at << "', ";
+						else
+							ssd << "DEFAULT, ";
+
+						ssd << Stof(ct.PointTime_1) << ", ";
+						ssd << Stof(ct.PointRef_1) << ", ";
+						ssd << Stof(ct.TimeProcSet) << ", ";
+						ssd << Stof(ct.PointTime_2) << ", ";
+						ssd << Stof(ct.facttemper) << ", ";
+						ssd << Stof(ct.HeatAcc) << ", ";
+						ssd << Stof(ct.HeatWait) << ", ";
+						ssd << Stof(ct.Total) << ", ";
+						ssd << "now());";
+						LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+						SETUPDATESQL(CassetteLogger, conn, ssd);
+
+						fUpdateCassette << ssd.str();
+						fUpdateCassette << "\t" << ct.Id << std::endl;
+						fUpdateCassette.flush();
+					}
+
+					{
+						std::stringstream ssd;
+						ssd << "SELECT id FROM cassette ";
+						ssd << "WHERE hour = " << ct.Hour;
+						ssd << " AND day = " << ct.Day;
+						ssd << " AND month = " << ct.Month;
+						ssd << " AND year = " << ct.Year;
+						ssd << " AND cassetteno = " << ct.CassetteNo;
+						ssd << " ORDER BY id LIMIT 1";
+						//command = ssg.str();
+
+						PGresult* res = conn.PGexec(ssd.str());
+						if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+							it.Id = conn.PGgetvalue(res, 0, 0);
+						PQclear(res);
+						ct.Id = it.Id;
+					}
+					//PrintCassettePdfAuto(ct);
+				}
+				CATCH(CassetteLogger, "");
 			}
-			CATCH(CassetteLogger, "");
-		}
 
-
-		GetCassettes::GetCassettes(std::string start, std::string stop)
-		{
-			InitLogger(CassetteLogger);
-			try
+			void SaveDataBase(PGConnection& conn, TCassette& ct, TCassette& it)
 			{
-				PGConnection conn;
-				CONNECTION1(conn, CassetteLogger);
-#if _DEBUG
-				//if(Server == "SERVER11")
-				//	DelAllPdf(lpLogPdf2);
-#endif
+				try
+				{
+			 //Запись в базу
+					std::stringstream ssg;
+					ssg << "SELECT id FROM cassette ";
+					ssg << "WHERE";
+					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
+						ssg << " hour = " << Stoi(it.Hour);
+					//else
+					//{
+					//	if(it.Create_at.length())
+					//		ssg << " hour = " << getHour(it.Create_at);
+					//	else if(it.Run_at.length())
+					//		ssg << " hour = " << getHour(it.Run_at);
+					//	//else ssg << "-1 ";
+					//}
 
-				//if(!DateStart.length()) return;
+					ssg << " AND day = " << Stoi(it.Day);
+					ssg << " AND month = " << Stoi(it.Month);
+					ssg << " AND year = " << Stoi(it.Year);
+					ssg << " AND cassetteno = " << Stoi(it.CassetteNo);
+					ssg << " ORDER BY id LIMIT 1";
+					std::string command = ssg.str();
 
-				remove("Cass.csv");
-				remove("cass 1_2.csv");
-				//remove("cass2.csv");
-				remove("Sdg.csv");
-				remove("all_tag.csv");
+					if(DEB)LOG_INFO(CassetteLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+						it.Id = conn.PGgetvalue(res, 0, 0);
+					PQclear(res);
 
-				//Коррекция и ПДФ	
-//#ifndef _DEBUG
-				PrepareCassette(conn, start, stop);
-//#endif
-
-				//ПДФ без коррекции
-				HendCassettePDF(conn);
-
-#if _DEBUG
-				//SetWindowText(hWndDebug, "Копирую паспорта");
-				//if(Server == "SERVER11")
-				//	CopyAllFile();
-#endif
-				SetWindowText(hWndDebug, "Закончил копирование паспортов");
-
-				//SetWindowText(hWndDebug, "Закончили коррекцию кассет");
-				//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+					if(Stoi(it.Id))
+					{
+						SaveDataBaseForId(conn, ct, it);
+					}
+					else
+					{
+						SaveDataBaseNotId(conn, ct, it);
+					}
+				}
+				CATCH(CassetteLogger, "");
 			}
-			CATCH(CassetteLogger, "");
 
-		}
+			void SaveFileCass1(TCASS& P0)
+			{
+
+		//#ifdef _DEBUG
+				try
+				{
+	#pragma region Запись в файл Cass.csv заголовка
+					std::fstream s1("Cass.csv", std::fstream::binary | std::fstream::out);
+					s1 << "Индекс;"
+						<< "Старт;"
+						<< "Стоп;"
+						<< "Финиш;"
+						<< "Год;"
+						<< "Месяц;"
+						<< "День;"
+						<< "Кассета;"
+						<< "Авария;"
+						<< "Печь;"
+						<< "Уставка T;"			//Уставка температуры
+						<< "Факт Т;"			//Фактическое значение температуры
+						<< "Задание нагрева;"	//Задание Время нагрева
+						<< "Факт нагрева;"		//Факт время нагрева
+						<< "Задание выдержки;"	//Задание Время выдержки
+						<< "Факт выдержки;"		//Факт время выдержки
+						<< "Задание процесса;"	//Полное время процесса (уставка), мин
+						<< "Факт процесса;"		//Факт общее время
+						<< std::endl;
+	#pragma endregion
+
+	#pragma region Запись в файл Cass.csv тела
+					for(auto& it : P0)
+					{
+						if(!isRun)return;
+						if(it.second.Run_at.length() && it.second.End_at.length() && S107::IsCassette(it.second))
+						{
+							s1 << it.first << ";"
+								<< " " << it.second.Run_at << ";"
+								<< " " << it.second.End_at << ";"
+								<< " " << it.second.Finish_at << ";"
+								<< it.second.Year << ";"
+								<< it.second.Month << ";"
+								<< it.second.Day << ";"
+								<< it.second.Hour << ";"
+								<< it.second.CassetteNo << ";"
+								<< " " << it.second.Error_at << ";"
+								<< it.second.Peth << ";"
+								<< it.second.PointRef_1 << ";"		//Уставка температуры
+								<< it.second.facttemper << ";"		//Фактическое значение температуры
+								<< it.second.PointTime_1 << ";"		//Задание Время нагрева
+								<< it.second.HeatAcc << ";"			//Факт время нагрева
+								<< it.second.PointTime_2 << ";"	//Задание Время выдержки
+								<< it.second.HeatWait << ";"		//Факт время выдержки
+								<< it.second.TimeProcSet << ";"		//Полное время процесса (уставка), мин
+								<< it.second.Total << ";"			//Факт общее время
+
+								<< std::endl;
+						}
+					}
+					s1.close();
+	#pragma endregion
+				}
+				CATCH(CassetteLogger, "");
+		//#endif
+			}
+
+
+			void SaveBaseCassete(PGConnection& conn, TCassette& it)
+			{
+				try
+				{
+					TCassette ct;
+					if(it.Run_at.length() && it.End_at.length() && S107::IsCassette(it))
+					{
+						//std::string sg = std::string("Получение кассеты из базы ") + std::to_string(P0.size()) + std::string(" :") + std::to_string(lin++);
+						//SetWindowText(hWndDebug, sg.c_str());
+
+						GetCassetteData(conn, it.Id, ct, it);
+
+						if(ct.facttemper.length())	it.facttemper = ct.facttemper;
+						if(ct.Id.length())			it.Id = ct.Id;
+
+						if(S107::GetFinishCassete(conn, CassetteLogger, it))
+							SaveDataBase(conn, ct, it);
+					}
+				}CATCH(CassetteLogger, "");
+			}
+
+
+
+			bool IsCassette(Tcass& p)
+			{
+				//int Hour = Stoi(p.Hour);
+				int Day = Stoi(p.Day);
+				int Month = Stoi(p.Month);
+				int Year = Stoi(p.Year);
+				int CassetteNo = Stoi(p.CassetteNo);
+
+				return (Day && Month && Year && CassetteNo);
+			}
+
+			bool IsCassette(TCassette& p)
+			{
+				//int Hour = Stoi(p.Hour);
+				int Day = Stoi(p.Day);
+				int Month = Stoi(p.Month);
+				int Year = Stoi(p.Year);
+				int CassetteNo = Stoi(p.CassetteNo);
+
+				return (Day && Month && Year && CassetteNo);
+			}
+
+			void PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int Petch, std::fstream& s1)
+			{
+				T_ForBase_RelFurn* Furn = NULL;
+
+				if(Petch == 1)
+				{
+					Furn = &ForBase_RelFurn_1;
+				}
+				if(Petch == 2)
+				{
+					Furn = &ForBase_RelFurn_2;
+				}
+
+				if(Furn == NULL) return;
+
+				try
+				{
+					//Furn->Cassette.Hour->ID
+					if(a.id_name == Furn->Cassette.Hour->ID)
+					{
+						int v = Stoi(a.value);
+						if(!cass.Hour.length() && (v || !cass.Run_at.length()))
+							cass.Hour = std::to_string(v);
+					}
+
+					//Furn->Cassette.Day->ID
+					if(a.id_name == Furn->Cassette.Day->ID && a.content.As<int32_t>())
+					{
+						int v = Stoi(a.value);
+						if(!cass.Day.length() && v && !cass.Run_at.size())
+							cass.Day = std::to_string(v);
+					}
+
+					//Furn->Cassette.Month->ID
+					if(a.id_name == Furn->Cassette.Month->ID && a.content.As<int32_t>())
+					{
+						int v = Stoi(a.value);
+						if(!cass.Month.length() && v && !cass.Run_at.size())
+							cass.Month = std::to_string(v);
+					}
+
+					//Furn->Cassette.Year->ID
+					if(a.id_name == Furn->Cassette.Year->ID && a.content.As<int32_t>())
+					{
+						int v = Stoi(a.value);
+						if(!cass.Year.length() && v && !cass.Run_at.size())
+							cass.Year = std::to_string(v);
+					}
+
+					//Furn->Cassette.CassetteNo->ID
+					if(a.id_name == Furn->Cassette.CassetteNo->ID && a.content.As<int32_t>())
+					{
+						if(!cass.CassetteNo.length() && (Stoi(a.value) || !cass.Run_at.size()))
+							cass.CassetteNo = a.value;
+
+					}
+
+					//Furn->ProcRun->ID
+					if(a.id_name == Furn->ProcRun->ID && a.content.As<bool>())
+					{
+						if(IsCassette(cass))
+						{
+							if(!cass.Run_at.size())
+							{
+								cass.Run_at = a.create_at;
+								P = cass;
+							} 
+							else
+							{
+								if(
+									IsCassette(P) &&
+									(
+										Stoi(P.Hour) != Stoi(cass.Hour) ||
+										Stoi(P.Day) != Stoi(cass.Day) ||
+										Stoi(P.Month) != Stoi(cass.Month) ||
+										Stoi(P.Year) != Stoi(cass.Year) ||
+										Stoi(P.CassetteNo) != Stoi(cass.CassetteNo)
+										)
+									)
+								{
+									//P = cass;
+									P.End_at = a.create_at;
+									EndCassette(conn, P, Petch, s1);
+									SaveBaseCassete(conn, P);
+
+									P = TCassette();
+									P = cass;
+								}
+							}
+						}
+					}
+
+					//Furn->ProcEnd->ID
+					if(a.id_name == Furn->ProcEnd->ID && a.content.As<bool>())
+					{
+						if(IsCassette(cass) && cass.Run_at.size())
+						{
+							P = cass;
+							P.End_at = a.create_at;
+
+							EndCassette(conn, P, Petch, s1);
+							SaveBaseCassete(conn, P);
+						}
+						P = TCassette();
+						cass = Tcass(Petch);
+					}
+
+					//Furn->ProcFault->ID
+					if(a.id_name == Furn->ProcFault->ID && a.content.As<bool>())
+					{
+						if(!P.Error_at.length() && S107::IsCassette(P))
+						{
+							P.Error_at = a.create_at;
+						}
+					}
+				}
+				CATCH(CassetteLogger, "");
+			}
+
+			void GetCassetDataBase(PGConnection& conn, MapRunn& CassetteTodos, int Petch)
+			{
+				T_ForBase_RelFurn* Furn = NULL;
+				try
+				{
+					if(Petch == 1)
+					{
+						Furn = &ForBase_RelFurn_1;
+					}
+					else if(Petch == 2)
+					{
+						Furn = &ForBase_RelFurn_2;
+					}
+					else return;
+
+					if(Furn == NULL) return;
+
+					if(!DateStart.length())
+					{
+						GetStartTime(conn, Petch);
+						if(!DateStart.length()) return;
+
+						//GetStopTime(conn, DateStart, Furn->ProcEnd->ID);
+					}
+					int t = 0;
+					//LOG_INFO(CassetteLogger, "{:90}| Печь = {}, DateStart = {}", FUNCTION_LINE_NAME, Petch, DateStart);
+
+					{
+						std::stringstream ssd;
+						ssd << "SELECT create_at, id, id_name, content";
+						ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+						ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
+						ssd << "FROM todos WHERE ";
+						ssd << "create_at >= '" << DateStart << "' AND ";
+
+						if(DateStop.length())
+							ssd << "create_at < '" << DateStop << "' AND ";
+
+						ssd << "(id_name = " << Furn->ProcEnd->ID;
+						ssd << " OR id_name = " << Furn->ProcRun->ID;
+						ssd << " OR id_name = " << Furn->ProcFault->ID;
+
+						ssd << " OR id_name = " << Furn->Cassette.Hour->ID;
+						ssd << " OR id_name = " << Furn->Cassette.Day->ID;
+						ssd << " OR id_name = " << Furn->Cassette.Month->ID;
+						ssd << " OR id_name = " << Furn->Cassette.Year->ID;
+						ssd << " OR id_name = " << Furn->Cassette.CassetteNo->ID;
+						ssd << ") ORDER BY create_at DESC"; //AND content <> 'false' AND content <> '0' 
+
+						std::string command = ssd.str();
+						//GetTodosSQL(conn, CassetteTodos, command, Petch);
+
+
+						PGresult* res = conn.PGexec(command);
+						if(PQresultStatus(res) == PGRES_TUPLES_OK)
+						{
+							TodosColumn(res);
+						
+							int line = PQntuples(res);
+							std::string old_value = "";
+							for(int l = 0; l < line && isRun; l++)
+							{
+								T_Todos ct;
+								ct.value = conn.PGgetvalue(res, l, TODOS::content);
+								ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
+								ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
+								ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
+								ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
+								ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+								ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
+								ct.Petch = Petch;
+
+								CassetteTodos[ct.id] = ct;
+								//CassetteTodos.push_back(ct);
+							}
+						}
+						else
+						{
+							LOG_ERR_SQL(CassetteLogger, res, command);
+						}
+						PQclear(res);
+
+					}
+					//{
+					//	std::stringstream ssd;
+					//	ssd << "SELECT todos.create_at, todos.id, todos.id_name, todos.content";
+					//	ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name) ";
+					//	ssd << ", (SELECT comment AS name FROM tag WHERE tag.id = todos.id_name) ";
+					//	ssd << "FROM todos WHERE ";
+					//	ssd << "create_at >= '" << DateStart << "' AND ";
+					//
+					//	if(DateStop.length())
+					//		ssd << "create_at < '" << DateStop << "' AND ";
+					//
+					//	ssd << "id_name = " << Furn->Cassette.Hour->ID;
+					//	ssd << " ORDER BY id";
+					//
+					//	std::string command = ssd.str();
+					//	PGresult* res = conn.PGexec(command);
+					//	if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					//	{
+					//		TodosColumn(res);
+					//
+					//		int line = PQntuples(res);
+					//		std::string old_value = "";
+					//		for(int l = 0; l < line && isRun; l++)
+					//		{
+					//			T_Todos ct;
+					//			ct.value = conn.PGgetvalue(res, l, TODOS::content);
+					//			ct.create_at = conn.PGgetvalue(res, l, TODOS::create_at);
+					//			ct.id = Stoi(conn.PGgetvalue(res, l, TODOS::id));
+					//			ct.id_name = Stoi(conn.PGgetvalue(res, l, TODOS::id_name));
+					//			ct.type =  Stoi(conn.PGgetvalue(res, l, TODOS::type));
+					//			ct.content = PDF::GetVarVariant((OpcUa::VariantType)ct.type, ct.value);
+					//			ct.id_name_at = conn.PGgetvalue(res, l, TODOS::name);
+					//			ct.Petch = Petch;
+					//			CassetteTodos[ct.id] = ct;
+					//		}
+					//	}
+					//	else
+					//	{
+					//		LOG_ERR_SQL(PdfLogger, res, command);
+					//	}
+					//	PQclear(res);
+					//}
+				}
+				CATCH(CassetteLogger, "");
+
+				SaveFileSdg(CassetteTodos);
+			}
+
+			void SetAllCorrect(PGConnection& conn, std::string Date, int Petch)
+			{
+				std::stringstream as;
+				as << "UPDATE cassette SET correct = now() WHERE ";
+				as << " peth = " << Petch;
+				if(Date.length())
+				as << " AND run_at >= '" << Date << "'";
+				as << " AND delete_at IS NULL";
+				as << " AND correct IS NULL";
+				as << " AND finish_at IS NOT NULL";
+				as << " AND end_at IS NOT NULL";
+				as << " AND run_at IS NOT NULL";
+				//as << " AND sheetincassette > 0";
+				SETUPDATESQL(CassetteLogger, conn, as);
+			}
+
+			void GetCassette(PGConnection& conn, std::string start, std::string stop)
+			{
+				MapRunn CassetteTodos;
+				//MapTodos CassetteTodos2;
+
+				//DateStart = "2024-03-01 00:00:00";
+				//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
+				DateStart = start;
+				DateCorrect = start;
+				DateStop = stop;
+				GetCassetDataBase(conn, CassetteTodos, 1);
+				std::string DateCorrect1 = DateCorrect;
+				//std::sort(CassetteTodos1.begin(), CassetteTodos1.end(), cmpData);
+
+				DateStart = start;
+				DateCorrect = start;
+				DateStop = stop;
+				GetCassetDataBase(conn, CassetteTodos, 2);
+				std::string DateCorrect2 = DateCorrect;
+				//std::sort(CassetteTodos2.begin(), CassetteTodos2.end(), cmpData);
+
+				try
+				{
+					std::string name = "cass 1_2.csv";
+					std::fstream s1(name, std::fstream::binary | std::fstream::out | std::fstream::app);
+
+					//int lin = 0;
+					//auto size = CassetteTodos.size();
+
+					Tcass TP1 = Tcass (1);
+					Tcass TP2 = Tcass (2);
+
+					TCassette P1;
+					TCassette P2;
+					for(auto& a1 : CassetteTodos)
+					{
+						if(!isRun)break;
+						PrepareDataBase(conn, TP1, P1, a1.second, 1, s1);
+						PrepareDataBase(conn, TP2, P2, a1.second, 2, s1);
+					}
+					//for(auto& a2 : CassetteTodos2)
+					//{
+					//	if(!isRun)break;
+					//	PrepareDataBase(conn, TP2, P2, a2, 2, s1);
+					//}
+				
+					//SaveFileCass(PP1);
+					//SaveFileCass(PP2);
+					s1.close();
+
+					SetAllCorrect(conn, DateCorrect1, 1);
+					SetAllCorrect(conn, DateCorrect2, 2);
+
+				}
+				CATCH(CassetteLogger, "");
+			}
+
+			void PrepareCassette(PGConnection& conn, std::string start, std::string stop)
+			{
+				SetWindowText(hWndDebug, "SaveCassette");
+				try
+				{
+					remove("UpdateCassette.txt");
+					fUpdateCassette = std::fstream("UpdateCassette.txt", std::fstream::binary | std::fstream::out | std::ios::app);
+					GetCassette(conn, start, stop);
+					fUpdateCassette.close();
+				}
+				CATCH(CassetteLogger, "");
+			}
+
+
+			GetCassettes(std::string start, std::string stop)
+			{
+				InitLogger(CassetteLogger);
+				try
+				{
+					PGConnection conn;
+					CONNECTION1(conn, CassetteLogger);
+	#if _DEBUG
+					//if(Server == "SERVER11")
+					//	DelAllPdf(lpLogPdf2);
+	#endif
+
+					//if(!DateStart.length()) return;
+
+					remove("Cass.csv");
+					remove("cass 1_2.csv");
+					//remove("cass2.csv");
+					remove("Sdg.csv");
+					remove("all_tag.csv");
+
+					//Коррекция и ПДФ	
+	//#ifndef _DEBUG
+					PrepareCassette(conn, start, stop);
+	//#endif
+
+					//ПДФ без коррекции
+					HendCassettePDF(conn);
+
+	#if _DEBUG
+					//SetWindowText(hWndDebug, "Копирую паспорта");
+					//if(Server == "SERVER11")
+					//	CopyAllFile();
+	#endif
+					SetWindowText(hWndDebug, "Закончил копирование паспортов");
+
+					//SetWindowText(hWndDebug, "Закончили коррекцию кассет");
+					//LOG_INFO(CassetteLogger, "{:90}| End CassetteSQL", FUNCTION_LINE_NAME);
+				}
+				CATCH(CassetteLogger, "");
+
+			}
+		};
+
 	};
 		
-
-
 
 	namespace SHEET
 	{
@@ -3404,61 +3426,7 @@ namespace PDF
 
 			std::string StartSheet;
 			std::string StopSheet;
-
-			void SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error);
-			std::fstream SaveHeadCsv(std::string name);
-			bool isSheet(T_IdSheet& t);
-
-			T_IdSheet GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t i);
-
-			float GetTime(std::string Start, std::vector<T_Todos>& allTime);
-
-			void GetAllTime(PGConnection& conn, std::vector<T_Todos>& allTime);
-
-			void GetMask(uint16_t v, std::string& MaskV);
-
-			//Фиксируем на начало входа в печь State_1 = 3;
-			void GetDataSheet1(PGConnection& conn, T_IdSheet& ids);
-
-			//Фиксируем на начало входа в печь State_2 = 5;
-			void GetDataSheet2(PGConnection& conn, T_IdSheet& ids);
-
-			//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
-			void GetDataSheet3(PGConnection& conn, T_IdSheet& ids);
-
-			void GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos);
-			void GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos);
-			void GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos);
-			void GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos);
-
-			float GetDataTime_All(std::string TimeStart, std::string Start3);
-
-			void Get_ID_S(PGConnection& conn, T_IdSheet& td);
-			int Get_ID_C(PGConnection& conn, T_IdSheet& td);
-			void GetID(PGConnection& conn, T_IdSheet& td);
-
-			void SetCountSheetInCassette(PGConnection& conn, T_IdSheet& td);
-				
-			void GetTemperatute(PGConnection& conn, T_IdSheet& td);
 			std::fstream fUpdateSheet;
-			void UpdateSheet(PGConnection& conn, T_IdSheet& td);
-
-			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i);
-			bool InZone2(PGConnection& conn, std::string create_at);
-			bool InZone3(PGConnection& conn, std::string create_at);
-			bool InZone5(PGConnection& conn, std::string create_at);
-
-			void InZone62(PGConnection& conn, T_IdSheet& ids, std::string create_at);
-			void InZone6(PGConnection& conn, std::string create_at);
-
-			std::fstream SaveStepHeadCsv(std::string name);
-			void SaveStepBodyCsv(std::fstream& ss1, T_Todos& td);
-
-			std::fstream SaveT_IdSheetHeadCsv(std::string name);
-			void SaveT_IdSheetBodyCsv(std::fstream& ss1, T_IdSheet& ids);
-			void GetSheetCassette(PGConnection& conn, T_IdSheet& ids);
-
-			GetSheets(PGConnection& conn, std::string datestart, std::string datestop = "");
 
 			V_Todos allTime;
 
@@ -3471,1109 +3439,946 @@ namespace PDF
 			V_IdSheet Ids6;
 
 			std::fstream ss1;
-		};
 
 
-		void GetSheets::SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error)
-		{
-			try
+			//void SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error);
+			//std::fstream SaveHeadCsv(std::string name);
+			//bool isSheet(T_IdSheet& t);
+			//
+			//T_IdSheet GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t i);
+			//
+			//float GetTime(std::string Start, std::vector<T_Todos>& allTime);
+			//
+			//void GetAllTime(PGConnection& conn, std::vector<T_Todos>& allTime);
+			//
+			//void GetMask(uint16_t v, std::string& MaskV);
+			//
+			////Фиксируем на начало входа в печь State_1 = 3;
+			//void GetDataSheet1(PGConnection& conn, T_IdSheet& ids);
+			//
+			////Фиксируем на начало входа в печь State_2 = 5;
+			//void GetDataSheet2(PGConnection& conn, T_IdSheet& ids);
+			//
+			////Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
+			//void GetDataSheet3(PGConnection& conn, T_IdSheet& ids);
+			//
+			//void GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos);
+			//void GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos);
+			//void GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos);
+			//void GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos);
+			//
+			//float GetDataTime_All(std::string TimeStart, std::string Start3);
+			//
+			//void Get_ID_S(PGConnection& conn, T_IdSheet& td);
+			//int Get_ID_C(PGConnection& conn, T_IdSheet& td);
+			//void GetID(PGConnection& conn, T_IdSheet& td);
+			//
+			//void SetCountSheetInCassette(PGConnection& conn, T_IdSheet& td);
+			//	
+			//void GetTemperatute(PGConnection& conn, T_IdSheet& td);
+			//void UpdateSheet(PGConnection& conn, T_IdSheet& td);
+			//
+			//bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i);
+			//bool InZone2(PGConnection& conn, std::string create_at);
+			//bool InZone3(PGConnection& conn, std::string create_at);
+			//bool InZone5(PGConnection& conn, std::string create_at);
+			//
+			//void InZone62(PGConnection& conn, T_IdSheet& ids, std::string create_at);
+			//void InZone6(PGConnection& conn, std::string create_at);
+			//
+			//std::fstream SaveStepHeadCsv(std::string name);
+			//void SaveStepBodyCsv(std::fstream& ss1, T_Todos& td);
+			//
+			//std::fstream SaveT_IdSheetHeadCsv(std::string name);
+			//void SaveT_IdSheetBodyCsv(std::fstream& ss1, T_IdSheet& ids);
+			//void GetSheetCassette(PGConnection& conn, T_IdSheet& ids);
+			//
+			//GetSheets(PGConnection& conn, std::string datestart, std::string datestop = "");
+
+
+			void SaveBodyCsv(std::fstream& s1, T_IdSheet& ids, std::string Error)
 			{
-				std::stringstream ssd;
-
-				ssd << ids.id << ";";
-
-				ssd << " " << GetStringData(ids.Start1) << ";";
-				ssd << " " << GetStringData(ids.Start2) << ";";
-				ssd << " " << GetStringData(ids.Start3) << ";";
-				ssd << " " << GetStringData(ids.Start5) << ";";
-
-
-				ssd << " " << GetStringData(ids.DataTime_End) << ";";
-				ssd << " " << GetStringData(ids.InCant) << ";";
-				ssd << " " << GetStringData(ids.Cant) << ";";
-				//ssd << " " << GetStringData(ids.Start4) << ";";
-
-				ssd << std::fixed << std::setprecision(1) << ids.DataTime_All << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.TimeForPlateHeat << ";";
-				ssd << " " << GetStringData(ids.DataTime) << ";";
-
-				ssd << ids.Alloy << ";";
-				ssd << ids.Thikness << ";";
-
-				ssd << ids.Melt << ";";
-				ssd << ids.PartNo << ";";
-				ssd << ids.Pack << ";";
-				ssd << ids.Slab << ";";
-				ssd << ids.Sheet << ";";
-				ssd << ids.SubSheet << ";";
-
-				ssd << std::fixed << std::setprecision(1) << ids.Temper << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Speed << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Za_PT3 << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Za_TE3 << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.LaminPressTop << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.LaminPressBot << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.SpeedTopSet << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.SpeedBotSet << ";";
-				ssd << "\'" << ids.Mask << "\';";
-				ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanTop << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanBot << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanTop << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanBot << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.LAM_TE1 << ";";
-				ssd << std::fixed << std::setprecision(1) << ids.Temperature << ";";
-
-				ssd << ids.year << ";";
-				ssd << ids.month << ";";
-				ssd << ids.day << ";";
-				ssd << ids.cassetteno << ";";
-				ssd << ids.sheetincassette << ";";
-				ssd << ids.Pos << ";";
-
-				ssd << Error << ";";
-				ssd << " " << GetStringData(ids.TimeTest) << ";";
-
-
-				//ssd << std::fixed << std::setprecision(1) << ids.TempSet1 << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.UnloadSpeed << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LaminPressTop << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LaminPressBot << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.SpeedTopSet << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.SpeedBotSet << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LAM1_TopSet << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LAM1_BotSet << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LAM2_TopSet << ";";
-				//ssd << std::fixed << std::setprecision(1) << ids.LAM2_BotSet << ";";
-
-
-				std::string Time = ssd.str();
-
-				boost::replace_all(Time, ".", ",");
-				s1 << Time;
-				s1 << std::endl;
-			}CATCH(SheetLogger, "");
-		}
-
-		std::fstream GetSheets::SaveHeadCsv(std::string name)
-		{
-			std::fstream ss1(name, std::fstream::binary | std::fstream::out);
-			try
-			{
-
-				//Дата, время загрузки листа в закалочную печь
-				//Марка стали
-				//Толщина листа, мм
-				//Плавка
-				//партия
-				//пачка
-				//номер листа
-				//Заданная температура
-				//скорость выдачи, мм/с
-				//
-				//Скоростная секция. Давление воды в баке
-				//Скоростная секция. Температура воды в баке
-				//Скоростная секция. Давление в верхнем коллекторе
-				//Скоростная секция. Давление нижнем коллекторе
-				//Скоростная секция. Положение клапана верх
-				//Скоростная секция. Положение клапана низ
-				// 
-				//Ламинарная секция1  Положение клапана верх
-				//Ламинарная секция1  Положение клапана низ
-				//Ламинарная секция2  Положение клапана верх
-				//Ламинарная секция2  Положение клапана низ
-				//Температура воды в поддоне
-
-				ss1
-					<< "Id;"
-					<< "В зону 1;"
-					<< "В зону 2;"
-					<< "В охлаждение;"
-					<< "В Кантовку;"
-					<< "DataTime_End;"
-					<< "В кантовку;"
-					<< "Кантовка;"
-
-					<< "DataTime_All;"
-					<< "TimeForPlateHeat;"
-					<< "TimeStart;"
-
-					<< "Марка;"
-					<< "Толщина;"
-					<< "Плавка;"
-					<< "Партия;"
-					<< "Пачка;"
-					<< "Сляб;"
-					<< "Лист;"
-					<< "Сублист;"
-					<< "TempSet1;"
-					<< "UnloadSpeed;"
-					<< "Za_PT3;"
-					<< "Za_TE3;"
-					<< "LaminPressTop;"
-					<< "LaminPressBot;"
-					<< "SpeedTopSet;"
-					<< "SpeedBotSet;"
-					<< "Маскирование;"
-					<< "LAM1_BotSet;"
-					<< "LAM1_TopSet;"
-					<< "LAM2_TopSet;"
-					<< "LAM2_BotSet;"
-					<< "LAM_TE1;"
-					<< "Temperature;"
-
-					<< "Year;"
-					<< "Month;"
-					<< "Day;"
-					<< "CassetteNo;"
-					<< "SheetInCassette;"
-					<< "Pos;"
-
-					<< "Ошибка;"
-					<< "TimeTest;"
-
-					<< std::endl;
-			}CATCH(SheetLogger, "");
-			return ss1;
-		}
-
-		bool GetSheets::isSheet(T_IdSheet& t)
-		{
-			return t.Melt /*&& t.Pack*/ && t.PartNo && t.Sheet;
-		}
-
-		T_IdSheet GetSheets::GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t)
-		{
-			T_IdSheet ids;
-			try
-			{
+				try
 				{
+					std::stringstream ssd;
+
+					ssd << ids.id << ";";
+
+					ssd << " " << GetStringData(ids.Start1) << ";";
+					ssd << " " << GetStringData(ids.Start2) << ";";
+					ssd << " " << GetStringData(ids.Start3) << ";";
+					ssd << " " << GetStringData(ids.Start5) << ";";
+
+
+					ssd << " " << GetStringData(ids.DataTime_End) << ";";
+					ssd << " " << GetStringData(ids.InCant) << ";";
+					ssd << " " << GetStringData(ids.Cant) << ";";
+					//ssd << " " << GetStringData(ids.Start4) << ";";
+
+					ssd << std::fixed << std::setprecision(1) << ids.DataTime_All << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.TimeForPlateHeat << ";";
+					ssd << " " << GetStringData(ids.DataTime) << ";";
+
+					ssd << ids.Alloy << ";";
+					ssd << ids.Thikness << ";";
+
+					ssd << ids.Melt << ";";
+					ssd << ids.PartNo << ";";
+					ssd << ids.Pack << ";";
+					ssd << ids.Slab << ";";
+					ssd << ids.Sheet << ";";
+					ssd << ids.SubSheet << ";";
+
+					ssd << std::fixed << std::setprecision(1) << ids.Temper << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Speed << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Za_PT3 << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Za_TE3 << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.LaminPressTop << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.LaminPressBot << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.SpeedTopSet << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.SpeedBotSet << ";";
+					ssd << "\'" << ids.Mask << "\';";
+					ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanTop << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Lam1PosClapanBot << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanTop << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Lam2PosClapanBot << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.LAM_TE1 << ";";
+					ssd << std::fixed << std::setprecision(1) << ids.Temperature << ";";
+
+					ssd << ids.year << ";";
+					ssd << ids.month << ";";
+					ssd << ids.day << ";";
+					ssd << ids.cassetteno << ";";
+					ssd << ids.sheetincassette << ";";
+					ssd << ids.Pos << ";";
+
+					ssd << Error << ";";
+					ssd << " " << GetStringData(ids.TimeTest) << ";";
+
+
+					//ssd << std::fixed << std::setprecision(1) << ids.TempSet1 << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.UnloadSpeed << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LaminPressTop << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LaminPressBot << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.SpeedTopSet << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.SpeedBotSet << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LAM1_TopSet << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LAM1_BotSet << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LAM2_TopSet << ";";
+					//ssd << std::fixed << std::setprecision(1) << ids.LAM2_BotSet << ";";
+
+
+					std::string Time = ssd.str();
+
+					boost::replace_all(Time, ".", ",");
+					s1 << Time;
+					s1 << std::endl;
+				}CATCH(SheetLogger, "");
+			}
+
+			std::fstream SaveHeadCsv(std::string name)
+			{
+				std::fstream ss1(name, std::fstream::binary | std::fstream::out);
+				try
+				{
+
+					//Дата, время загрузки листа в закалочную печь
+					//Марка стали
+					//Толщина листа, мм
+					//Плавка
+					//партия
+					//пачка
+					//номер листа
+					//Заданная температура
+					//скорость выдачи, мм/с
+					//
+					//Скоростная секция. Давление воды в баке
+					//Скоростная секция. Температура воды в баке
+					//Скоростная секция. Давление в верхнем коллекторе
+					//Скоростная секция. Давление нижнем коллекторе
+					//Скоростная секция. Положение клапана верх
+					//Скоростная секция. Положение клапана низ
+					// 
+					//Ламинарная секция1  Положение клапана верх
+					//Ламинарная секция1  Положение клапана низ
+					//Ламинарная секция2  Положение клапана верх
+					//Ламинарная секция2  Положение клапана низ
+					//Температура воды в поддоне
+
+					ss1
+						<< "Id;"
+						<< "В зону 1;"
+						<< "В зону 2;"
+						<< "В охлаждение;"
+						<< "В Кантовку;"
+						<< "DataTime_End;"
+						<< "В кантовку;"
+						<< "Кантовка;"
+
+						<< "DataTime_All;"
+						<< "TimeForPlateHeat;"
+						<< "TimeStart;"
+
+						<< "Марка;"
+						<< "Толщина;"
+						<< "Плавка;"
+						<< "Партия;"
+						<< "Пачка;"
+						<< "Сляб;"
+						<< "Лист;"
+						<< "Сублист;"
+						<< "TempSet1;"
+						<< "UnloadSpeed;"
+						<< "Za_PT3;"
+						<< "Za_TE3;"
+						<< "LaminPressTop;"
+						<< "LaminPressBot;"
+						<< "SpeedTopSet;"
+						<< "SpeedBotSet;"
+						<< "Маскирование;"
+						<< "LAM1_BotSet;"
+						<< "LAM1_TopSet;"
+						<< "LAM2_TopSet;"
+						<< "LAM2_BotSet;"
+						<< "LAM_TE1;"
+						<< "Temperature;"
+
+						<< "Year;"
+						<< "Month;"
+						<< "Day;"
+						<< "CassetteNo;"
+						<< "SheetInCassette;"
+						<< "Pos;"
+
+						<< "Ошибка;"
+						<< "TimeTest;"
+
+						<< std::endl;
+				}CATCH(SheetLogger, "");
+				return ss1;
+			}
+
+			bool isSheet(T_IdSheet& t)
+			{
+				return t.Melt /*&& t.Pack*/ && t.PartNo && t.Sheet;
+			}
+
+			T_IdSheet GetIdSheet(PGConnection& conn, std::string Start, size_t count, size_t)
+			{
+				T_IdSheet ids;
+				try
+				{
+					{
+						std::stringstream ssd;
+						ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
+						ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+						//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+						ssd << " FROM todos WHERE";
+						ssd << " create_at <= '" << Start << "' AND ";
+						ssd << "(id_name = " << PlateData[0].AlloyCodeText->ID;
+						ssd << " OR id_name = " << PlateData[0].ThiknessText->ID;
+						ssd << " OR id_name = " << PlateData[0].Melt->ID;
+						ssd << " OR id_name = " << PlateData[0].Slab->ID;
+						ssd << " OR id_name = " << PlateData[0].PartNo->ID;
+						ssd << " OR id_name = " << PlateData[0].Pack->ID;
+						ssd << " OR id_name = " << PlateData[0].Sheet->ID;
+						ssd << " OR id_name = " << PlateData[0].SubSheet->ID;
+						ssd << ") ORDER BY id_name, create_at DESC;";
+
+						std::string comand1 = ssd.str();
+
+						MapTodos idSheet1;
+						GetTodosSQL(conn, idSheet1, comand1);
+						for(auto t : idSheet1)
+						{
+							if(t.id_name == PlateData[0].AlloyCodeText->ID) ids.Alloy = t.value;
+							if(t.id_name == PlateData[0].ThiknessText->ID) ids.Thikness = t.value;
+							if(t.id_name == PlateData[0].Melt->ID)		ids.Melt = t.content.As<int32_t>();
+							if(t.id_name == PlateData[0].Slab->ID)		ids.Slab = t.content.As<int32_t>();
+							if(t.id_name == PlateData[0].PartNo->ID)	ids.PartNo = t.content.As<int32_t>();
+							if(t.id_name == PlateData[0].Pack->ID)		ids.Pack = t.content.As<int32_t>();
+							if(t.id_name == PlateData[0].Sheet->ID)		ids.Sheet = t.content.As<int32_t>();
+							if(t.id_name == PlateData[0].SubSheet->ID)	ids.SubSheet = t.content.As<int32_t>();
+						}
+					}
+				}CATCH(SheetLogger, "");
+				return ids;
+			}
+
+			float GetTime(std::string Start, std::vector<T_Todos>& allTime)
+			{
+				try
+				{
+					for(auto& a : allTime)
+					{
+						if(a.create_at <= Start)
+						{
+							return a.content.As<float>();
+						}
+					}
+				}CATCH(SheetLogger, "");
+				return 0.0f;
+			}
+
+			void GetAllTime(PGConnection& conn, std::vector<T_Todos>& allTime)
+			{
+				try
+				{
+					std::stringstream ssd;
+					ssd << "SELECT create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " id_name = " << Par_Gen.TimeForPlateHeat->ID;
+					ssd << " AND CAST(content AS DOUBLE PRECISION) <> 0.0";
+					ssd << " ORDER BY create_at DESC;";
+					std::string command = ssd.str();
+
+					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+					{
+						int line = PQntuples(res);
+						if(line)
+						{
+							int nFields = PQnfields(res);
+							for(int l = 0; l < line; l++)
+							{
+								T_Todos td;
+								td.create_at = conn.PGgetvalue(res, l, 0);
+								td.id = Stoi(conn.PGgetvalue(res, l, 1));
+								td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
+								td.value = conn.PGgetvalue(res, l, 3);
+								int type = Stoi(conn.PGgetvalue(res, l, 4));
+								td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
+								if(nFields >= 6)
+									td.id_name_at = conn.PGgetvalue(res, l, 5);
+								allTime.push_back(td);
+							}
+						}
+					}
+				}
+				CATCH(SheetLogger, "");
+			}
+
+			void GetMask(uint16_t v, std::string& MaskV)
+			{
+				try
+				{
+					for(int i = 0; i < 9; i++)
+					{
+						if((1 << i) & v)
+						{
+							MaskV[i] = '1';
+						}
+						else
+						{
+							MaskV[i] = '0';
+						}
+					}
+				}CATCH(SheetLogger, "");
+			}
+
+			//Фиксируем на начало входа в печь State_1 = 3;
+			void GetDataSheet1(PGConnection& conn, T_IdSheet& ids)
+			{
+				try
+				{
+					MapTodos DataSheetTodos;
 					std::stringstream ssd;
 					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
 					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
 					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 					ssd << " FROM todos WHERE";
-					ssd << " create_at <= '" << Start << "' AND ";
-					ssd << "(id_name = " << PlateData[0].AlloyCodeText->ID;
-					ssd << " OR id_name = " << PlateData[0].ThiknessText->ID;
-					ssd << " OR id_name = " << PlateData[0].Melt->ID;
-					ssd << " OR id_name = " << PlateData[0].Slab->ID;
-					ssd << " OR id_name = " << PlateData[0].PartNo->ID;
-					ssd << " OR id_name = " << PlateData[0].Pack->ID;
-					ssd << " OR id_name = " << PlateData[0].Sheet->ID;
-					ssd << " OR id_name = " << PlateData[0].SubSheet->ID;
+					ssd << " create_at <= '" << ids.Start1 << "' AND ";
+					ssd << "(id_name = " << GenSeqFromHmi.TempSet1->ID;			//Уставка температуры
+					ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;			//Уставка скорости
+					ssd << " OR id_name = " << Par_Gen.TimeForPlateHeat->ID;	//Уставка времени
+					ssd << " OR id_name = " << Par_Gen.PresToStartComp->ID;
+					ssd << " OR id_name = " << HMISheetData.SpeedSection.Top->ID;
+					ssd << " OR id_name = " << HMISheetData.SpeedSection.Bot->ID;
+					ssd << " OR id_name = " << HMISheetData.LaminarSection1.Top->ID;
+					ssd << " OR id_name = " << HMISheetData.LaminarSection1.Bot->ID;
+					ssd << " OR id_name = " << HMISheetData.LaminarSection2.Top->ID;
+					ssd << " OR id_name = " << HMISheetData.LaminarSection2.Bot->ID;
+					ssd << " OR id_name = " << HMISheetData.Valve_1x->ID;
+					ssd << " OR id_name = " << HMISheetData.Valve_2x->ID;
 					ssd << ") ORDER BY id_name, create_at DESC;";
 
-					std::string comand1 = ssd.str();
+					std::string command = ssd.str();
+					GetTodosSQL(conn, DataSheetTodos, command);
 
-					MapTodos idSheet1;
-					GetTodosSQL(conn, idSheet1, comand1);
-					for(auto t : idSheet1)
+					for(auto a : DataSheetTodos)
 					{
-						if(t.id_name == PlateData[0].AlloyCodeText->ID) ids.Alloy = t.value;
-						if(t.id_name == PlateData[0].ThiknessText->ID) ids.Thikness = t.value;
-						if(t.id_name == PlateData[0].Melt->ID)		ids.Melt = t.content.As<int32_t>();
-						if(t.id_name == PlateData[0].Slab->ID)		ids.Slab = t.content.As<int32_t>();
-						if(t.id_name == PlateData[0].PartNo->ID)	ids.PartNo = t.content.As<int32_t>();
-						if(t.id_name == PlateData[0].Pack->ID)		ids.Pack = t.content.As<int32_t>();
-						if(t.id_name == PlateData[0].Sheet->ID)		ids.Sheet = t.content.As<int32_t>();
-						if(t.id_name == PlateData[0].SubSheet->ID)	ids.SubSheet = t.content.As<int32_t>();
-					}
-				}
-			}CATCH(SheetLogger, "");
-			return ids;
-		}
+						if(a.id_name == GenSeqFromHmi.TempSet1->ID)				ids.Temper = a.content.As<float>();				//Уставка температуры
+						if(a.id_name == Par_Gen.UnloadSpeed->ID)				ids.Speed = a.content.As<float>();				//Уставка скорости
+						if(a.id_name == Par_Gen.TimeForPlateHeat->ID)			ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
 
-		float GetSheets::GetTime(std::string Start, std::vector<T_Todos>& allTime)
-		{
-			try
-			{
-				for(auto& a : allTime)
-				{
-					if(a.create_at <= Start)
-					{
-						return a.content.As<float>();
-					}
-				}
-			}CATCH(SheetLogger, "");
-			return 0.0f;
-		}
-
-		void GetSheets::GetAllTime(PGConnection& conn, std::vector<T_Todos>& allTime)
-		{
-			try
-			{
-				std::stringstream ssd;
-				ssd << "SELECT create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " id_name = " << Par_Gen.TimeForPlateHeat->ID;
-				ssd << " AND CAST(content AS DOUBLE PRECISION) <> 0.0";
-				ssd << " ORDER BY create_at DESC;";
-				std::string command = ssd.str();
-
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
-				{
-					int line = PQntuples(res);
-					if(line)
-					{
-						int nFields = PQnfields(res);
-						for(int l = 0; l < line; l++)
+						if(a.id_name == Par_Gen.PresToStartComp->ID)			ids.PresToStartComp = a.content.As<float>();
+						if(a.id_name == HMISheetData.SpeedSection.Top->ID)		ids.SpeedTopSet = a.content.As<float>();
+						if(a.id_name == HMISheetData.SpeedSection.Bot->ID)		ids.SpeedBotSet = a.content.As<float>();
+						if(a.id_name == HMISheetData.LaminarSection1.Top->ID)	ids.Lam1PosClapanTop = a.content.As<float>();
+						if(a.id_name == HMISheetData.LaminarSection1.Bot->ID)	ids.Lam1PosClapanBot = a.content.As<float>();
+						if(a.id_name == HMISheetData.LaminarSection2.Top->ID)	ids.Lam2PosClapanTop = a.content.As<float>();
+						if(a.id_name == HMISheetData.LaminarSection2.Bot->ID)	ids.Lam2PosClapanBot = a.content.As<float>();
+						if(a.id_name == HMISheetData.Valve_1x->ID)
 						{
-							T_Todos td;
-							td.create_at = conn.PGgetvalue(res, l, 0);
-							td.id = Stoi(conn.PGgetvalue(res, l, 1));
-							td.id_name = Stoi(conn.PGgetvalue(res, l, 2));
-							td.value = conn.PGgetvalue(res, l, 3);
-							int type = Stoi(conn.PGgetvalue(res, l, 4));
-							td.content = PDF::GetVarVariant((OpcUa::VariantType)type, td.value);
-							if(nFields >= 6)
-								td.id_name_at = conn.PGgetvalue(res, l, 5);
-							allTime.push_back(td);
+							ids.Valve_1x = a.content.As<uint16_t>();
+							GetMask(ids.Valve_1x, ids.Mask1);
+							ids.Mask = ids.Mask1 + " " + ids.Mask2;
+
+						}
+						if(a.id_name == HMISheetData.Valve_2x->ID)
+						{
+							ids.Valve_2x = a.content.As<uint16_t>();
+							GetMask(ids.Valve_2x, ids.Mask2);
+							ids.Mask = ids.Mask1 + " " + ids.Mask2;
 						}
 					}
-				}
+				}CATCH(SheetLogger, "");
 			}
-			CATCH(SheetLogger, "");
-		}
 
-		void GetSheets::GetMask(uint16_t v, std::string& MaskV)
-		{
-			try
+			//Фиксируем на начало входа в печь State_2 = 5;
+			void GetDataSheet2(PGConnection& conn, T_IdSheet& ids)
 			{
-				for(int i = 0; i < 9; i++)
+				try
 				{
-					if((1 << i) & v)
+					MapTodos DataSheetTodos;
+
+					std::stringstream ssd;
+					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at < '" << ids.DataTime_End << "' AND ";
+					ssd << "(id_name = " << AI_Hmi_210.Za_TE3->ID;
+					ssd << " OR id_name = " << AI_Hmi_210.Za_PT3->ID;
+					ssd << " OR id_name = " << AI_Hmi_210.LAM_TE1->ID;
+					ssd << ") ORDER BY id_name, create_at DESC LIMIT 3;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, DataSheetTodos, command);
+
+					for(auto a : DataSheetTodos)
 					{
-						MaskV[i] = '1';
+						if(a.id_name == AI_Hmi_210.Za_TE3->ID) ids.Za_TE3 = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.Za_PT3->ID) ids.Za_PT3 = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.LAM_TE1->ID) ids.LAM_TE1 = a.content.As<float>();
 					}
-					else
+				}CATCH(SheetLogger, "");
+			}
+
+			//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
+			void GetDataSheet3(PGConnection& conn, T_IdSheet& ids)
+			{
+				try
+				{
+					MapTodos DataSheetTodos;
+					std::tm tmp;
+					time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
+					std::string Start = GetStringOfDataTime(&t1);
+
+					std::stringstream ssd;
+					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at < '" << Start << "' AND ";
+					ssd << "(id_name = " << AI_Hmi_210.LaminPressTop->ID;
+					ssd << " OR id_name = " << AI_Hmi_210.LaminPressBot->ID;
+					ssd << ") ORDER BY id_name, create_at DESC LIMIT 2;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, DataSheetTodos, command);
+
+					for(auto a : DataSheetTodos)
 					{
-						MaskV[i] = '0';
+						if(a.id_name == AI_Hmi_210.LaminPressTop->ID) ids.LaminPressTop = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.LaminPressBot->ID) ids.LaminPressBot = a.content.As<float>();
 					}
-				}
-			}CATCH(SheetLogger, "");
-		}
+				}CATCH(SheetLogger, "");
+			}
 
-		//Фиксируем на начало входа в печь State_1 = 3;
-		void GetSheets::GetDataSheet1(PGConnection& conn, T_IdSheet& ids)
-		{
-			try
+			void GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos)
 			{
-				MapTodos DataSheetTodos;
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at <= '" << ids.Start1 << "' AND ";
-				ssd << "(id_name = " << GenSeqFromHmi.TempSet1->ID;			//Уставка температуры
-				ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;			//Уставка скорости
-				ssd << " OR id_name = " << Par_Gen.TimeForPlateHeat->ID;	//Уставка времени
-				ssd << " OR id_name = " << Par_Gen.PresToStartComp->ID;
-				ssd << " OR id_name = " << HMISheetData.SpeedSection.Top->ID;
-				ssd << " OR id_name = " << HMISheetData.SpeedSection.Bot->ID;
-				ssd << " OR id_name = " << HMISheetData.LaminarSection1.Top->ID;
-				ssd << " OR id_name = " << HMISheetData.LaminarSection1.Bot->ID;
-				ssd << " OR id_name = " << HMISheetData.LaminarSection2.Top->ID;
-				ssd << " OR id_name = " << HMISheetData.LaminarSection2.Bot->ID;
-				ssd << " OR id_name = " << HMISheetData.Valve_1x->ID;
-				ssd << " OR id_name = " << HMISheetData.Valve_2x->ID;
-				ssd << ") ORDER BY id_name, create_at DESC;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, command);
-
-				for(auto a : DataSheetTodos)
-				{
-					if(a.id_name == GenSeqFromHmi.TempSet1->ID)				ids.Temper = a.content.As<float>();				//Уставка температуры
-					if(a.id_name == Par_Gen.UnloadSpeed->ID)				ids.Speed = a.content.As<float>();				//Уставка скорости
-					if(a.id_name == Par_Gen.TimeForPlateHeat->ID)			ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
-
-					if(a.id_name == Par_Gen.PresToStartComp->ID)			ids.PresToStartComp = a.content.As<float>();
-					if(a.id_name == HMISheetData.SpeedSection.Top->ID)		ids.SpeedTopSet = a.content.As<float>();
-					if(a.id_name == HMISheetData.SpeedSection.Bot->ID)		ids.SpeedBotSet = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection1.Top->ID)	ids.Lam1PosClapanTop = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection1.Bot->ID)	ids.Lam1PosClapanBot = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection2.Top->ID)	ids.Lam2PosClapanTop = a.content.As<float>();
-					if(a.id_name == HMISheetData.LaminarSection2.Bot->ID)	ids.Lam2PosClapanBot = a.content.As<float>();
-					if(a.id_name == HMISheetData.Valve_1x->ID)
-					{
-						ids.Valve_1x = a.content.As<uint16_t>();
-						GetMask(ids.Valve_1x, ids.Mask1);
-						ids.Mask = ids.Mask1 + " " + ids.Mask2;
-
-					}
-					if(a.id_name == HMISheetData.Valve_2x->ID)
-					{
-						ids.Valve_2x = a.content.As<uint16_t>();
-						GetMask(ids.Valve_2x, ids.Mask2);
-						ids.Mask = ids.Mask1 + " " + ids.Mask2;
-					}
-				}
-			}CATCH(SheetLogger, "");
-		}
-
-		//Фиксируем на начало входа в печь State_2 = 5;
-		void GetSheets::GetDataSheet2(PGConnection& conn, T_IdSheet& ids)
-		{
-			try
-			{
-				MapTodos DataSheetTodos;
-
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at < '" << ids.DataTime_End << "' AND ";
-				ssd << "(id_name = " << AI_Hmi_210.Za_TE3->ID;
-				ssd << " OR id_name = " << AI_Hmi_210.Za_PT3->ID;
-				ssd << " OR id_name = " << AI_Hmi_210.LAM_TE1->ID;
-				ssd << ") ORDER BY id_name, create_at DESC LIMIT 3;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, command);
-
-				for(auto a : DataSheetTodos)
-				{
-					if(a.id_name == AI_Hmi_210.Za_TE3->ID) ids.Za_TE3 = a.content.As<float>();
-					if(a.id_name == AI_Hmi_210.Za_PT3->ID) ids.Za_PT3 = a.content.As<float>();
-					if(a.id_name == AI_Hmi_210.LAM_TE1->ID) ids.LAM_TE1 = a.content.As<float>();
-				}
-			}CATCH(SheetLogger, "");
-		}
-
-		//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
-		void GetSheets::GetDataSheet3(PGConnection& conn, T_IdSheet& ids)
-		{
-			try
-			{
-				MapTodos DataSheetTodos;
-				std::tm tmp;
-				time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
-				std::string Start = GetStringOfDataTime(&t1);
-
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at < '" << Start << "' AND ";
-				ssd << "(id_name = " << AI_Hmi_210.LaminPressTop->ID;
-				ssd << " OR id_name = " << AI_Hmi_210.LaminPressBot->ID;
-				ssd << ") ORDER BY id_name, create_at DESC LIMIT 2;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, command);
-
-				for(auto a : DataSheetTodos)
-				{
-					if(a.id_name == AI_Hmi_210.LaminPressTop->ID) ids.LaminPressTop = a.content.As<float>();
-					if(a.id_name == AI_Hmi_210.LaminPressBot->ID) ids.LaminPressBot = a.content.As<float>();
-				}
-			}CATCH(SheetLogger, "");
-		}
-
-		void GetSheets::GetSeq_1(PGConnection& conn, MapTodos& allSheetTodos)
-		{
-			try
-			{
-				std::stringstream ssd;
-
-				ssd << "SELECT create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at >= '" << StartSheet << "'";
-				if(StopSheet.length()) ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " AND id_name = " << GenSeqToHmi.Seq_1_StateNo->ID;
-				ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
-				//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
-				ssd << " ORDER BY create_at;";
-				std::string command = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, command);
-			}CATCH(SheetLogger, "");
-		}
-		void GetSheets::GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos)
-		{
-			try
-			{
-				std::stringstream ssd;
-				ssd << "SELECT create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at >= '" << StartSheet << "'";
-				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " AND id_name = " << GenSeqToHmi.Seq_2_StateNo->ID;
-				ssd << " AND CAST(content AS integer) >= " << st2_3;
-				ssd << " AND CAST(content AS integer) <> " << st2_4;
-				ssd << " ORDER BY create_at;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, command);
-			}CATCH(SheetLogger, "");
-		}
-
-		void GetSheets::GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos)
-		{
-			try
-			{
-				std::stringstream ssd;
-				ssd << "SELECT create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at >= '" << StartSheet << "'";
-				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " AND id_name = " << GenSeqToHmi.Seq_3_StateNo->ID;
-				ssd << " AND (CAST(content AS integer) = " << st3_3;
-				ssd << " OR CAST(content AS integer) = " << st3_4;
-				ssd << ") ORDER BY create_at;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, command);
-			}CATCH(SheetLogger, "");
-		}
-		void GetSheets::GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos)
-		{
-			try
-			{
-				std::stringstream ssd;
-				ssd << "SELECT create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at >= '" << StartSheet << "'";
-				if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
-				ssd << " AND id_name = " << HMISheetData.NewData->ID;
-				ssd << " AND content <> 'false'";
-				ssd << " ORDER BY create_at;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, allSheetTodos, command);
-			}CATCH(SheetLogger, "");
-		}
-
-
-		float GetSheets::GetDataTime_All(std::string TimeStart, std::string Start3)
-		{
-			return float(DataTimeDiff(Start3, TimeStart)) / 60.0f;
-		}
-
-		void GetSheets::Get_ID_S(PGConnection& conn, T_IdSheet& td)
-		{
-			try
-			{
-				std::stringstream ssd;
-				ssd << "SELECT id, day, month, year, hour, cassetteno, sheetincassette, pos, news, correct FROM sheet ";
-				ssd << "WHERE melt = " << td.Melt;
-				ssd << " AND partno = " << td.PartNo;
-				ssd << " AND pack = " << td.Pack;
-				ssd << " AND sheet = " << td.Sheet;
-				ssd << " AND slab = " << td.Slab;
-				ssd << " AND subsheet = " << td.SubSheet;
-				ssd << " ORDER BY start_at LIMIT 1";
-				std::string command = ssd.str();
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-				{
-					td.id = Stoi(conn.PGgetvalue(res, 0, 0));
-					td.day = Stoi(conn.PGgetvalue(res, 0, 1));
-					td.month = Stoi(conn.PGgetvalue(res, 0, 2));
-					td.year = Stoi(conn.PGgetvalue(res, 0, 3));
-					td.hour = Stoi(conn.PGgetvalue(res, 0, 4));
-					td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 5));
-					td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 6));
-					td.Pos = Stoi(conn.PGgetvalue(res, 0, 7));
-					td.news = Stoi(conn.PGgetvalue(res, 0, 8));
-					td.Correct = GetStringData(conn.PGgetvalue(res, 0, 9));
-
-				}
-				PQclear(res);
-			}CATCH(SheetLogger, "");
-		}
-
-		void GetSheets::GetID(PGConnection& conn, T_IdSheet& td)
-		{
-			try
-			{
-				if(isSheet(td))
+				try
 				{
 					std::stringstream ssd;
-					ssd << "SELECT id FROM sheet ";
+
+					ssd << "SELECT create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at >= '" << StartSheet << "'";
+					if(StopSheet.length()) ssd << " AND create_at < '" << StopSheet << "'";
+					ssd << " AND id_name = " << GenSeqToHmi.Seq_1_StateNo->ID;
+					ssd << " AND CAST(content AS INTEGER) >= " << st1_3;
+					//ssd << " AND CAST(content AS INTEGER) <> " << st1_6;
+					ssd << " ORDER BY create_at;";
+					std::string command = ssd.str();
+					GetTodosSQL(conn, allSheetTodos, command);
+				}CATCH(SheetLogger, "");
+			}
+			void GetSeq_2(PGConnection& conn, MapTodos& allSheetTodos)
+			{
+				try
+				{
+					std::stringstream ssd;
+					ssd << "SELECT create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at >= '" << StartSheet << "'";
+					if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+					ssd << " AND id_name = " << GenSeqToHmi.Seq_2_StateNo->ID;
+					ssd << " AND CAST(content AS integer) >= " << st2_3;
+					ssd << " AND CAST(content AS integer) <> " << st2_4;
+					ssd << " ORDER BY create_at;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, allSheetTodos, command);
+				}CATCH(SheetLogger, "");
+			}
+
+			void GetSeq_3(PGConnection& conn, MapTodos& allSheetTodos)
+			{
+				try
+				{
+					std::stringstream ssd;
+					ssd << "SELECT create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at >= '" << StartSheet << "'";
+					if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+					ssd << " AND id_name = " << GenSeqToHmi.Seq_3_StateNo->ID;
+					ssd << " AND (CAST(content AS integer) = " << st3_3;
+					ssd << " OR CAST(content AS integer) = " << st3_4;
+					ssd << ") ORDER BY create_at;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, allSheetTodos, command);
+				}CATCH(SheetLogger, "");
+			}
+			void GetSeq_6(PGConnection& conn, MapTodos& allSheetTodos)
+			{
+				try
+				{
+					std::stringstream ssd;
+					ssd << "SELECT create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at >= '" << StartSheet << "'";
+					if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
+					ssd << " AND id_name = " << HMISheetData.NewData->ID;
+					ssd << " AND content <> 'false'";
+					ssd << " ORDER BY create_at;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, allSheetTodos, command);
+				}CATCH(SheetLogger, "");
+			}
+
+
+			float GetDataTime_All(std::string TimeStart, std::string Start3)
+			{
+				return float(DataTimeDiff(Start3, TimeStart)) / 60.0f;
+			}
+
+			void Get_ID_S(PGConnection& conn, T_IdSheet& td)
+			{
+				try
+				{
+					std::stringstream ssd;
+					ssd << "SELECT id, day, month, year, hour, cassetteno, sheetincassette, pos, news, correct FROM sheet ";
 					ssd << "WHERE melt = " << td.Melt;
-					ssd << " AND slab = " << td.Slab;
 					ssd << " AND partno = " << td.PartNo;
 					ssd << " AND pack = " << td.Pack;
 					ssd << " AND sheet = " << td.Sheet;
+					ssd << " AND slab = " << td.Slab;
 					ssd << " AND subsheet = " << td.SubSheet;
-					ssd << " ORDER BY id LIMIT 1";
-					PGresult* res = conn.PGexec(ssd.str());
+					ssd << " ORDER BY start_at LIMIT 1";
+					std::string command = ssd.str();
+					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
 					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+					{
 						td.id = Stoi(conn.PGgetvalue(res, 0, 0));
+						td.day = Stoi(conn.PGgetvalue(res, 0, 1));
+						td.month = Stoi(conn.PGgetvalue(res, 0, 2));
+						td.year = Stoi(conn.PGgetvalue(res, 0, 3));
+						td.hour = Stoi(conn.PGgetvalue(res, 0, 4));
+						td.cassetteno = Stoi(conn.PGgetvalue(res, 0, 5));
+						td.sheetincassette = Stoi(conn.PGgetvalue(res, 0, 6));
+						td.Pos = Stoi(conn.PGgetvalue(res, 0, 7));
+						td.news = Stoi(conn.PGgetvalue(res, 0, 8));
+						td.Correct = GetStringData(conn.PGgetvalue(res, 0, 9));
+
+					}
 					PQclear(res);
-				}
-			}CATCH(SheetLogger, "");
-		}
-		int GetSheets::Get_ID_C(PGConnection& conn, T_IdSheet& td)
-		{
-			int id = 0;
-			try
+				}CATCH(SheetLogger, "");
+			}
+
+			void GetID(PGConnection& conn, T_IdSheet& td)
 			{
-				std::stringstream ssd;
-				ssd << "SELECT id FROM cassette ";
-				ssd << "WHERE day = " << td.day;
-				ssd << " AND month = " << td.month;
-				ssd << " AND year = " << td.year;
-				if(td.year >= 2024 && td.month >= 8)
-					ssd << " AND hour = " << td.hour;
-				else
-					ssd << " AND hour < 1";
-
-				ssd << " AND cassetteno = " << td.cassetteno;
-				ssd << " ORDER BY id LIMIT 1";
-				std::string command = ssd.str();
-
-				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
-					id = Stoi(conn.PGgetvalue(res, 0, 0));
-				PQclear(res);
-			}CATCH(SheetLogger, "");
-			return id;
-		}
-
-		void GetSheets::SetCountSheetInCassette(PGConnection& conn, T_IdSheet& td)
-		{
-			try
-			{
-				//KPVL::UpdateCountSheet(conn, td.cassetteno);
-
-				std::stringstream ssd;
-				ssd << "SELECT id FROM cassette WHERE";
-				ssd << " year = " << td.year << " AND";
-				ssd << " month = " << td.month << " AND";
-				ssd << " day = " << td.day << " AND";
-				if(td.year >= 2024 && td.month >= 8)
-					ssd << " hour = " << td.hour << " AND";
-				ssd << " cassetteno = " << td.cassetteno;
-				ssd << " ORDER BY run_at DESC LIMIT 1;";
-				std::string command = ssd.str();
-				PGresult* res = conn.PGexec(command);
-				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				try
 				{
-					if(PQntuples(res))
-						td.cassette = Stoi(conn.PGgetvalue(res, 0, 0));
-				}
-				else
-					LOG_ERR_SQL(SheetLogger, res, "");
-				PQclear(res);
-			}CATCH(SheetLogger, "");
-		}
-
-		void GetSheets::GetTemperatute(PGConnection& conn, T_IdSheet& td)
-		{
-			try
+					if(isSheet(td))
+					{
+						std::stringstream ssd;
+						ssd << "SELECT id FROM sheet ";
+						ssd << "WHERE melt = " << td.Melt;
+						ssd << " AND slab = " << td.Slab;
+						ssd << " AND partno = " << td.PartNo;
+						ssd << " AND pack = " << td.Pack;
+						ssd << " AND sheet = " << td.Sheet;
+						ssd << " AND subsheet = " << td.SubSheet;
+						ssd << " ORDER BY id LIMIT 1";
+						PGresult* res = conn.PGexec(ssd.str());
+						if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+							td.id = Stoi(conn.PGgetvalue(res, 0, 0));
+						PQclear(res);
+					}
+				}CATCH(SheetLogger, "");
+			}
+			int Get_ID_C(PGConnection& conn, T_IdSheet& td)
 			{
-				MapTodos DataSheetTodos;
-				std::tm tmp;
-				time_t t1 = DataTimeOfString(td.DataTime_End, tmp);
-				std::string Start = GetStringOfDataTime(&t1); 
-
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE";
-				ssd << " create_at < '" << Start << "' AND ";
-				ssd << "(id_name = " << Hmi210_1.Htr1_1->ID;
-				ssd << " OR id_name = " << Hmi210_1.Htr1_2->ID;
-				ssd << " OR id_name = " << Hmi210_1.Htr1_3->ID;
-				ssd << " OR id_name = " << Hmi210_1.Htr1_4->ID;
-				ssd << ") ORDER BY id_name, create_at DESC LIMIT 4;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, command);
-
-				float Htr1_1 = 0;
-				float Htr1_2 = 0;
-				float Htr1_3 = 0;
-				float Htr1_4 = 0;
-
-				for(auto a : DataSheetTodos)
+				int id = 0;
+				try
 				{
-					if(a.id_name == Hmi210_1.Htr1_1->ID) Htr1_1 = a.content.As<float>();
-					if(a.id_name == Hmi210_1.Htr1_2->ID) Htr1_2 = a.content.As<float>();
-					if(a.id_name == Hmi210_1.Htr1_3->ID) Htr1_3 = a.content.As<float>();
-					if(a.id_name == Hmi210_1.Htr1_4->ID) Htr1_4 = a.content.As<float>();
-				}
-				td.Temperature = (Htr1_1 + Htr1_2 + Htr1_3 + Htr1_4) / 4.0f;
-
-				int tt = 0;
-			}CATCH(SheetLogger, "");
-
-		}
-
-		void GetSheets::UpdateSheet(PGConnection& conn, T_IdSheet& td)
-		{
-			try
-			{
-				GetTemperatute(conn, td);
-				SetCountSheetInCassette(conn, td);
-				if(!td.Start1.length() || !td.DataTime_End.length()) return;
-				if(td.id)
-				{
-				//#if !(NO_UPDATE)
-				#pragma region MyRegion
 					std::stringstream ssd;
-					ssd << "UPDATE sheet SET";
+					ssd << "SELECT id FROM cassette ";
+					ssd << "WHERE day = " << td.day;
+					ssd << " AND month = " << td.month;
+					ssd << " AND year = " << td.year;
+					if(td.year >= 2024 && td.month >= 8)
+						ssd << " AND hour = " << td.hour;
+					else
+						ssd << " AND hour < 1";
 
-					ssd << " start_at = '" << td.Start1 << "'";				//Дата, время загрузки листа в закалочную печь
-					ssd << ", datatime_end = '" << td.DataTime_End << "'";		//Дата, время выдачи листа из закалочной печи
+					ssd << " AND cassetteno = " << td.cassetteno;
+					ssd << " ORDER BY id LIMIT 1";
+					std::string command = ssd.str();
 
-					if(td.Start2.length())			ssd << ", secondpos_at = '" << td.Start2 << "'";		//Преход во вторую зону
-					if(td.InCant.length())			ssd << ", incant_at = '" << td.InCant << "'";		//Преход на кантовку
-					if(td.Cant.length())			ssd << ", cant_at = '" << td.Cant << "'";			//Канитовка
+					if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+					PGresult* res = conn.PGexec(command);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res))
+						id = Stoi(conn.PGgetvalue(res, 0, 0));
+					PQclear(res);
+				}CATCH(SheetLogger, "");
+				return id;
+			}
 
-					ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
-					ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
-
-					if(td.TimeForPlateHeat)
-						ssd << ", timeforplateheat = " << std::setprecision(1) << std::fixed <<  td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
-					if(td.DataTime_All)
-						ssd << ", datatime_all = " << std::setprecision(1) << std::fixed << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
-
-
-					if(td.Speed)
-						ssd << ", speed = " << std::setprecision(1) << std::fixed << td.Speed;						//Скорость выгрузки
-					if(td.Temper)
-						ssd << ", temper = " << std::setprecision(1) << std::fixed << td.Temper;						//Уставка температуры
-
-					if(td.PresToStartComp)
-						ssd << ", prestostartcomp = " << std::setprecision(1) << std::fixed << td.PresToStartComp;				//
-					if(td.SpeedTopSet)
-						ssd << ", posclapantop = " << std::setprecision(1) << std::fixed << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
-					if(td.SpeedBotSet)
-						ssd << ", posclapanbot = " << std::setprecision(1) << std::fixed << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
-					if(td.Lam1PosClapanTop)
-						ssd << ", lam1posclapantop = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
-					if(td.Lam1PosClapanBot)
-						ssd << ", lam1posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
-					if(td.Lam2PosClapanTop)
-						ssd << ", lam2posclapantop = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
-					if(td.Lam2PosClapanBot)
-						ssd << ", lam2posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
-					ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
-					//Фиксируем на выходе из печи State_2 = 5;
-					if(td.LAM_TE1)
-						ssd << ", lam_te1 = " << std::setprecision(1) << std::fixed << td.LAM_TE1;					//Температура воды в поддоне
-					if(td.Za_TE3)
-						ssd << ", za_te3 = " << std::setprecision(1) << std::fixed << td.Za_TE3;						//Температура воды в баке
-					if(td.Za_PT3)
-						ssd << ", za_pt3 = " << std::setprecision(1) << std::fixed << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-
-					//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
-					if(td.LaminPressTop)
-						ssd << ", lampresstop = " << std::setprecision(1) << std::fixed << td.LaminPressTop;			//Давление в верхнем коллекторе
-					if(td.LaminPressBot)
-						ssd << ", lampressbot = " << std::setprecision(1) << std::fixed << td.LaminPressBot;			//Давление в нижнем коллекторе
-
-					if(td.Temperature)
-						ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
-
-					#pragma endregion
-
-					ssd << ", day = " << td.day;
-					ssd << ", month = " << td.month;
-					ssd << ", year = " << td.year;
-					ssd << ", hour = " << td.hour;
-					ssd << ", cassetteno = " << td.cassetteno;
-					ssd << ", sheetincassette = " << td.sheetincassette;
-					ssd << ", cassette = " << td.cassette;
-					ssd << ", pos = " << td.Pos;
-					ssd << ", delete_at = DEFAULT, correct = now()";
-					ssd << " WHERE id = " << td.id;
-				#pragma region MyRegion
-
-					SETUPDATESQL(SheetLogger, conn, ssd);
-
-					SetWindowText(hWndDebug, ssd.str().c_str());
-					fUpdateSheet << ssd.str() << std::endl;
-					fUpdateSheet.flush();
-					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-				#pragma endregion
-				//#endif
-				}
-				else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
+			void SetCountSheetInCassette(PGConnection& conn, T_IdSheet& td)
+			{
+				try
 				{
-					if(iAllId) td.id = iAllId++;
+					//KPVL::UpdateCountSheet(conn, td.cassetteno);
+
 					std::stringstream ssd;
-					ssd << "INSERT INTO sheet (";
-					ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
-					ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
-					ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
-
-					if(td.Start2.length())			ssd << "secondpos_at, ";	//Преход во вторую зону
-					if(td.InCant.length())			ssd << "incant_at, ";		//Преход на кантовку
-					if(td.Cant.length())			ssd << "cant_at, ";			//Канитовка
-
-					ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
-					ssd << "alloy, ";
-					ssd << "thikness, ";
-					ssd << "melt, ";
-					ssd << "slab, ";
-					ssd << "partno, ";
-					ssd << "pack, ";
-					ssd << "sheet, ";
-					ssd << "subsheet, ";
-					ssd << "temper, ";
-					ssd << "speed, ";
-					ssd << "timeforplateheat, ";
-					ssd << "prestostartcomp, ";
-					ssd << "posclapantop, ";
-					ssd << "posclapanbot, ";
-					ssd << "lam1posclapantop, ";
-					ssd << "lam1posclapanbot, ";
-					ssd << "lam2posclapantop, ";
-					ssd << "lam2posclapanbot, ";
-					ssd << "mask, ";
-
-					ssd << "lampresstop, ";				//Давление в верхнем коллекторе
-					ssd << "lampressbot, ";				//Давление в нижнем коллекторе
-					ssd << "lam_te1, ";					//Температура воды в поддоне
-					ssd << "za_te3, ";					//Температура воды в баке
-					ssd << "za_pt3, ";					//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
-					ssd << "temperature, ";
-
-					ssd << " day, ";
-					ssd << " month, ";
-					ssd << " year, ";
-					ssd << " hour, ";
-					ssd << " cassetteno, ";
-					ssd << " sheetincassette, ";
-					ssd << " cassette, ";
-
-
-					ssd << "correct, ";
-					//ssd << "pdf, ";
-					ssd << "pos, ";
-					ssd << "news";
-
-
-					ssd << ") VALUES (";
-					ssd << "'" << td.DataTime << "', ";
-					ssd << "'" << td.Start1 << "', ";
-					ssd << "'" << td.DataTime_End << "', ";
-
-					if(td.Start2.length())			ssd << "'" << td.Start2 << "', ";	//Преход во вторую зону
-					if(td.InCant.length())			ssd << "'" << td.InCant << "', ";	//Преход на кантовку
-					if(td.Cant.length())			ssd << "'" << td.Cant << "', ";		//Канитовка
-					ssd << std::setprecision(1) << std::fixed << td.DataTime_All;
-					//ssd << std::round(td.DataTime_All*10.0f) / 10.0f << ", ";
-					ssd << "'" << td.Alloy << "', ";
-					ssd << "'" << td.Thikness << "', ";
-					ssd << td.Melt << ", ";
-					ssd << td.Slab << ", "; //Slab
-					ssd << td.PartNo << ", ";
-					ssd << td.Pack << ", ";
-					ssd << td.Sheet << ", ";
-					ssd << td.SubSheet << ", ";
-					ssd << td.Temper << ", ";
-					ssd << td.Speed << ", ";
-					ssd << td.TimeForPlateHeat << ", ";
-					ssd << td.PresToStartComp << ", ";
-					ssd << td.SpeedTopSet << ", ";
-					ssd << td.SpeedBotSet << ", ";
-					ssd << td.Lam1PosClapanTop << ", ";
-					ssd << td.Lam1PosClapanBot << ", ";
-					ssd << td.Lam2PosClapanTop << ", ";
-					ssd << td.Lam2PosClapanBot << ", ";
-					ssd << "'" + td.Mask + "', ";
-
-					ssd << td.LaminPressTop << ", ";
-					ssd << td.LaminPressBot << ", ";
-
-					ssd << td.LAM_TE1 << ", ";
-					ssd << td.Za_TE3 << ", ";
-					ssd << td.Za_PT3 << ", ";
-					ssd << td.Temperature << ", ";
-
-					ssd << "'" << td.day << "', ";
-					ssd << "'" << td.month << "', ";
-					ssd << "'" << td.year << "', ";
-					ssd << td.hour << ", ";
-					ssd << td.cassetteno << ", ";
-					ssd << td.sheetincassette << ", ";
-					ssd << td.cassette << ", ";
-
-					ssd << "now(), ";
-					ssd << td.Pos << ", ";
-					ssd << td.news << ");";
-					SETUPDATESQL(SQLLogger, conn, ssd);
-
-					SetWindowText(hWndDebug, ssd.str().c_str());
-					fUpdateSheet << ssd.str() << std::endl;
-					fUpdateSheet.flush();
-					LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
-
-					GetID(conn, td);
-					//std::stringstream ssf;
-					//ssf << "SELECT id FROM sheet ";
-					//ssf << "WHERE melt = '" << td.Melt << "'";
-					//ssf << " AND slab = " << td.Slab;
-					//ssf << " AND partno = " << td.PartNo;
-					//ssf << " AND pack = " << td.Pack;
-					//ssf << " AND sheet = " << td.Sheet;
-					//ssf << " AND subsheet = " << td.SubSheet;
-					//
-					//if(DEB)LOG_INFO(SheetLogger, ssf.str());
-					//PGresult* res = conn.PGexec(ssf.str());
-					//if(PQresultStatus(res) == PGRES_TUPLES_OK)
-					//{
-					//	if(PQntuples(res))
-					//		td.id = Stoi(conn.PGgetvalue(res, 0, 0));
-					//}
-					//else
-					//	LOG_ERR_SQL(SheetLogger, res, ssf.str());
-					//PQclear(res);
-					LOG_INFO(SheetLogger, "{:90}| Sheet ID = {}", FUNCTION_LINE_NAME, td.id);
-				}
-			}CATCH(SheetLogger, "");
-		}
-
-		bool GetSheets::InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
-		{
-			try
-			{
-				T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
-				if(!ids.id)
-					GetID(conn, ids);
-
-			#pragma region Вывод инфы
-				std::stringstream sss;
-				sss << "InZone1 №" << i;
-				sss << " Start1: " << ids.Start1;
-				sss << " Id: " << ids.id;
-				sss << " Melt: " << ids.Melt;
-				sss << " PartNo: " << ids.PartNo;
-				sss << " Pack: " << ids.Pack;
-				sss << " Slab: " << ids.Slab;
-				sss << " Sheet: " << ids.Sheet;
-				sss << " SubSheet: " << ids.SubSheet;
-				SetWindowText(hWndDebug, sss.str().c_str());
-			#pragma endregion
-
-				if(isSheet(ids))
-				{
-					if(isSheet(Ids1))
+					ssd << "SELECT id FROM cassette WHERE";
+					ssd << " year = " << td.year << " AND";
+					ssd << " month = " << td.month << " AND";
+					ssd << " day = " << td.day << " AND";
+					if(td.year >= 2024 && td.month >= 8)
+						ssd << " hour = " << td.hour << " AND";
+					ssd << " cassetteno = " << td.cassetteno;
+					ssd << " ORDER BY run_at DESC LIMIT 1;";
+					std::string command = ssd.str();
+					PGresult* res = conn.PGexec(command);
+					if(PQresultStatus(res) == PGRES_TUPLES_OK)
 					{
-						InZone2(conn, create_at);
+						if(PQntuples(res))
+							td.cassette = Stoi(conn.PGgetvalue(res, 0, 0));
 					}
+					else
+						LOG_ERR_SQL(SheetLogger, res, "");
+					PQclear(res);
+				}CATCH(SheetLogger, "");
+			}
 
-					Ids1 = ids;
-					Ids1.DataTime = create_at;
-					Ids1.Start1 = create_at;
-
-				}
-			}CATCH(SheetLogger, "");
-			return true;
-		}
-
-		bool GetSheets::InZone2(PGConnection& conn, std::string create_at)
-		{
-			try
+			void GetTemperatute(PGConnection& conn, T_IdSheet& td)
 			{
-				if(isSheet(Ids1))
+				try
 				{
-					if(isSheet(Ids2))
+					MapTodos DataSheetTodos;
+					std::tm tmp;
+					time_t t1 = DataTimeOfString(td.DataTime_End, tmp);
+					std::string Start = GetStringOfDataTime(&t1); 
+
+					std::stringstream ssd;
+					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE";
+					ssd << " create_at < '" << Start << "' AND ";
+					ssd << "(id_name = " << Hmi210_1.Htr1_1->ID;
+					ssd << " OR id_name = " << Hmi210_1.Htr1_2->ID;
+					ssd << " OR id_name = " << Hmi210_1.Htr1_3->ID;
+					ssd << " OR id_name = " << Hmi210_1.Htr1_4->ID;
+					ssd << ") ORDER BY id_name, create_at DESC LIMIT 4;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, DataSheetTodos, command);
+
+					float Htr1_1 = 0;
+					float Htr1_2 = 0;
+					float Htr1_3 = 0;
+					float Htr1_4 = 0;
+
+					for(auto a : DataSheetTodos)
 					{
-						InZone3(conn, create_at);
+						if(a.id_name == Hmi210_1.Htr1_1->ID) Htr1_1 = a.content.As<float>();
+						if(a.id_name == Hmi210_1.Htr1_2->ID) Htr1_2 = a.content.As<float>();
+						if(a.id_name == Hmi210_1.Htr1_3->ID) Htr1_3 = a.content.As<float>();
+						if(a.id_name == Hmi210_1.Htr1_4->ID) Htr1_4 = a.content.As<float>();
 					}
+					td.Temperature = (Htr1_1 + Htr1_2 + Htr1_3 + Htr1_4) / 4.0f;
 
-					Ids2 = Ids1;
-					Ids2.Start2 = create_at;
-					Ids1 = T_IdSheet();
-					if(!Ids2.id)
-						GetID(conn, Ids2);
+					int tt = 0;
+				}CATCH(SheetLogger, "");
 
-				#pragma region Вывод инфы
-					std::stringstream sss;
-					sss << "InZone2";
-					sss << " Start1: " << Ids2.Start1;
-					sss << " Id: " << Ids2.id;
-					sss << " Melt: " << Ids2.Melt;
-					sss << " PartNo: " << Ids2.PartNo;
-					sss << " Pack: " << Ids2.Pack;
-					sss << " Slab: " << Ids2.Slab;
-					sss << " Sheet: " << Ids2.Sheet;
-					sss << " SubSheet: " << Ids2.SubSheet;
-					SetWindowText(hWndDebug, sss.str().c_str());
-				#pragma endregion
-				}
-			}CATCH(SheetLogger, "");
-			return true;
-		}
+			}
 
-		bool GetSheets::InZone3(PGConnection& conn, std::string create_at)
-		{
-			try
+			void UpdateSheet(PGConnection& conn, T_IdSheet& td)
 			{
-				if(isSheet(Ids2))
+				try
 				{
-					if(isSheet(Ids3))
+					GetTemperatute(conn, td);
+					SetCountSheetInCassette(conn, td);
+					if(!td.Start1.length() || !td.DataTime_End.length()) return;
+					if(td.id)
 					{
-						InZone5(conn, create_at);
-					}
-					Ids3 = Ids2;
-					Ids3.DataTime_End = create_at;
-					Ids3.Start3 = create_at;
-					Ids2 = T_IdSheet();
+					//#if !(NO_UPDATE)
+					#pragma region MyRegion
+						std::stringstream ssd;
+						ssd << "UPDATE sheet SET";
 
-					if(!Ids3.id)
-						GetID(conn, Ids3);
-				#pragma region Вывод инфы
-					std::stringstream sss;
-					sss << "InZone3";
-					sss << " Start1: " << Ids3.Start1;
-					sss << " Id: " << Ids3.id;
-					sss << " Melt: " << Ids3.Melt;
-					sss << " PartNo: " << Ids3.PartNo;
-					sss << " Pack: " << Ids3.Pack;
-					sss << " Slab: " << Ids3.Slab;
-					sss << " Sheet: " << Ids3.Sheet;
-					sss << " SubSheet: " << Ids3.SubSheet;
-					SetWindowText(hWndDebug, sss.str().c_str());
-				#pragma endregion
-				}
-			}CATCH(SheetLogger, "");
-			return true;
-		}
-		bool GetSheets::InZone5(PGConnection& conn, std::string create_at)
-		{
-			try
-			{
-				if(isSheet(Ids3))
-				{
-					if(isSheet(Ids5))
-					{
-						InZone6(conn, create_at);
-					}
+						ssd << " start_at = '" << td.Start1 << "'";				//Дата, время загрузки листа в закалочную печь
+						ssd << ", datatime_end = '" << td.DataTime_End << "'";		//Дата, время выдачи листа из закалочной печи
 
-					if(isSheet(Ids3))
-					{
-						Ids5 = Ids3;
-						//Ids5.Start5 = create_at;
-						Ids5.Start5 = create_at;
-						Ids5.InCant = create_at;
-						Ids3 = T_IdSheet();
+						if(td.Start2.length())			ssd << ", secondpos_at = '" << td.Start2 << "'";		//Преход во вторую зону
+						if(td.InCant.length())			ssd << ", incant_at = '" << td.InCant << "'";		//Преход на кантовку
+						if(td.Cant.length())			ssd << ", cant_at = '" << td.Cant << "'";			//Канитовка
 
-						if(!Ids5.id)
-							GetID(conn, Ids5);
-					#pragma region Вывод инфы
-						std::stringstream sss;
-						sss << "InZone5";
-						sss << " Start1: " << Ids5.Start1;
-						sss << " Id: " << Ids5.id;
-						sss << " Melt: " << Ids5.Melt;
-						sss << " PartNo: " << Ids5.PartNo;
-						sss << " Pack: " << Ids5.Pack;
-						sss << " Slab: " << Ids5.Slab;
-						sss << " Sheet: " << Ids5.Sheet;
-						sss << " SubSheet: " << Ids5.SubSheet;
-						SetWindowText(hWndDebug, sss.str().c_str());
+						ssd << ", alloy = '" << td.Alloy << "'";				//Марка стали
+						ssd << ", thikness = '" << td.Thikness << "'";			//Толщина листа, мм
+
+						if(td.TimeForPlateHeat)
+							ssd << ", timeforplateheat = " << std::setprecision(1) << std::fixed <<  td.TimeForPlateHeat;	//Задание Время нахождения листа в закалочной печи. мин
+						if(td.DataTime_All)
+							ssd << ", datatime_all = " << std::setprecision(1) << std::fixed << td.DataTime_All;			//Факт Время нахождения листа в закалочной печи. мин
+
+
+						if(td.Speed)
+							ssd << ", speed = " << std::setprecision(1) << std::fixed << td.Speed;						//Скорость выгрузки
+						if(td.Temper)
+							ssd << ", temper = " << std::setprecision(1) << std::fixed << td.Temper;						//Уставка температуры
+
+						if(td.PresToStartComp)
+							ssd << ", prestostartcomp = " << std::setprecision(1) << std::fixed << td.PresToStartComp;				//
+						if(td.SpeedTopSet)
+							ssd << ", posclapantop = " << std::setprecision(1) << std::fixed << td.SpeedTopSet;			//Клапан. Скоростная секция. Верх
+						if(td.SpeedBotSet)
+							ssd << ", posclapanbot = " << std::setprecision(1) << std::fixed << td.SpeedBotSet;			//Клапан. Скоростная секция. Низ
+						if(td.Lam1PosClapanTop)
+							ssd << ", lam1posclapantop = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanTop;		//Клапан. Ламинарная секция 1. Верх
+						if(td.Lam1PosClapanBot)
+							ssd << ", lam1posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam1PosClapanBot;		//Клапан. Ламинарная секция 1. Низ
+						if(td.Lam2PosClapanTop)
+							ssd << ", lam2posclapantop = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanTop;		//Клапан. Ламинарная секция 2. Верх
+						if(td.Lam2PosClapanBot)
+							ssd << ", lam2posclapanbot = " << std::setprecision(1) << std::fixed << td.Lam2PosClapanBot;		//Клапан. Ламинарная секция 2. Низ
+						ssd << ", mask = '" << td.Mask << "'";					//Режим работы клапана
+						//Фиксируем на выходе из печи State_2 = 5;
+						if(td.LAM_TE1)
+							ssd << ", lam_te1 = " << std::setprecision(1) << std::fixed << td.LAM_TE1;					//Температура воды в поддоне
+						if(td.Za_TE3)
+							ssd << ", za_te3 = " << std::setprecision(1) << std::fixed << td.Za_TE3;						//Температура воды в баке
+						if(td.Za_PT3)
+							ssd << ", za_pt3 = " << std::setprecision(1) << std::fixed << td.Za_PT3;						//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+
+						//Фиксируем на выходе из печи State_2 = 5 плюс 5 секунд;
+						if(td.LaminPressTop)
+							ssd << ", lampresstop = " << std::setprecision(1) << std::fixed << td.LaminPressTop;			//Давление в верхнем коллекторе
+						if(td.LaminPressBot)
+							ssd << ", lampressbot = " << std::setprecision(1) << std::fixed << td.LaminPressBot;			//Давление в нижнем коллекторе
+
+						if(td.Temperature)
+							ssd << ", temperature = " << std::setprecision(1) << std::fixed << td.Temperature;
+
+						#pragma endregion
+
+						ssd << ", day = " << td.day;
+						ssd << ", month = " << td.month;
+						ssd << ", year = " << td.year;
+						ssd << ", hour = " << td.hour;
+						ssd << ", cassetteno = " << td.cassetteno;
+						ssd << ", sheetincassette = " << td.sheetincassette;
+						ssd << ", cassette = " << td.cassette;
+						ssd << ", pos = " << td.Pos;
+						ssd << ", delete_at = DEFAULT, correct = now()";
+						ssd << " WHERE id = " << td.id;
+					#pragma region MyRegion
+
+						SETUPDATESQL(SheetLogger, conn, ssd);
+
+						SetWindowText(hWndDebug, ssd.str().c_str());
+						fUpdateSheet << ssd.str() << std::endl;
+						fUpdateSheet.flush();
+						LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
 					#pragma endregion
+					//#endif
 					}
-				}
-			}CATCH(SheetLogger, "");
-			return true;
-		}
-		void GetSheets::GetSheetCassette(PGConnection& conn, T_IdSheet& ids)
-		{
-			try
+					else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
+					{
+						if(iAllId) td.id = iAllId++;
+						std::stringstream ssd;
+						ssd << "INSERT INTO sheet (";
+						ssd << "create_at, ";				//Дата, время загрузки листа в закалочную печь
+						ssd << "start_at, ";				//Дата, время загрузки листа в закалочную печь
+						ssd << "datatime_end, ";			//Дата, время выдачи листа из закалочной печи
+
+						if(td.Start2.length())			ssd << "secondpos_at, ";	//Преход во вторую зону
+						if(td.InCant.length())			ssd << "incant_at, ";		//Преход на кантовку
+						if(td.Cant.length())			ssd << "cant_at, ";			//Канитовка
+
+						ssd << "datatime_all,";			//Факт Время нахождения листа в закалочной печи. мин
+						ssd << "alloy, ";
+						ssd << "thikness, ";
+						ssd << "melt, ";
+						ssd << "slab, ";
+						ssd << "partno, ";
+						ssd << "pack, ";
+						ssd << "sheet, ";
+						ssd << "subsheet, ";
+						ssd << "temper, ";
+						ssd << "speed, ";
+						ssd << "timeforplateheat, ";
+						ssd << "prestostartcomp, ";
+						ssd << "posclapantop, ";
+						ssd << "posclapanbot, ";
+						ssd << "lam1posclapantop, ";
+						ssd << "lam1posclapanbot, ";
+						ssd << "lam2posclapantop, ";
+						ssd << "lam2posclapanbot, ";
+						ssd << "mask, ";
+
+						ssd << "lampresstop, ";				//Давление в верхнем коллекторе
+						ssd << "lampressbot, ";				//Давление в нижнем коллекторе
+						ssd << "lam_te1, ";					//Температура воды в поддоне
+						ssd << "za_te3, ";					//Температура воды в баке
+						ssd << "za_pt3, ";					//Давление воды в баке (фиксировать в момент команды " в закалку" там шаг меняется по биту)
+						ssd << "temperature, ";
+
+						ssd << " day, ";
+						ssd << " month, ";
+						ssd << " year, ";
+						ssd << " hour, ";
+						ssd << " cassetteno, ";
+						ssd << " sheetincassette, ";
+						ssd << " cassette, ";
+
+
+						ssd << "correct, ";
+						//ssd << "pdf, ";
+						ssd << "pos, ";
+						ssd << "news";
+
+
+						ssd << ") VALUES (";
+						ssd << "'" << td.DataTime << "', ";
+						ssd << "'" << td.Start1 << "', ";
+						ssd << "'" << td.DataTime_End << "', ";
+
+						if(td.Start2.length())			ssd << "'" << td.Start2 << "', ";	//Преход во вторую зону
+						if(td.InCant.length())			ssd << "'" << td.InCant << "', ";	//Преход на кантовку
+						if(td.Cant.length())			ssd << "'" << td.Cant << "', ";		//Канитовка
+						ssd << std::setprecision(1) << std::fixed << td.DataTime_All;
+						//ssd << std::round(td.DataTime_All*10.0f) / 10.0f << ", ";
+						ssd << "'" << td.Alloy << "', ";
+						ssd << "'" << td.Thikness << "', ";
+						ssd << td.Melt << ", ";
+						ssd << td.Slab << ", "; //Slab
+						ssd << td.PartNo << ", ";
+						ssd << td.Pack << ", ";
+						ssd << td.Sheet << ", ";
+						ssd << td.SubSheet << ", ";
+						ssd << td.Temper << ", ";
+						ssd << td.Speed << ", ";
+						ssd << td.TimeForPlateHeat << ", ";
+						ssd << td.PresToStartComp << ", ";
+						ssd << td.SpeedTopSet << ", ";
+						ssd << td.SpeedBotSet << ", ";
+						ssd << td.Lam1PosClapanTop << ", ";
+						ssd << td.Lam1PosClapanBot << ", ";
+						ssd << td.Lam2PosClapanTop << ", ";
+						ssd << td.Lam2PosClapanBot << ", ";
+						ssd << "'" + td.Mask + "', ";
+
+						ssd << td.LaminPressTop << ", ";
+						ssd << td.LaminPressBot << ", ";
+
+						ssd << td.LAM_TE1 << ", ";
+						ssd << td.Za_TE3 << ", ";
+						ssd << td.Za_PT3 << ", ";
+						ssd << td.Temperature << ", ";
+
+						ssd << "'" << td.day << "', ";
+						ssd << "'" << td.month << "', ";
+						ssd << "'" << td.year << "', ";
+						ssd << td.hour << ", ";
+						ssd << td.cassetteno << ", ";
+						ssd << td.sheetincassette << ", ";
+						ssd << td.cassette << ", ";
+
+						ssd << "now(), ";
+						ssd << td.Pos << ", ";
+						ssd << td.news << ");";
+						SETUPDATESQL(SQLLogger, conn, ssd);
+
+						SetWindowText(hWndDebug, ssd.str().c_str());
+						fUpdateSheet << ssd.str() << std::endl;
+						fUpdateSheet.flush();
+						LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, ssd.str());
+
+						GetID(conn, td);
+						//std::stringstream ssf;
+						//ssf << "SELECT id FROM sheet ";
+						//ssf << "WHERE melt = '" << td.Melt << "'";
+						//ssf << " AND slab = " << td.Slab;
+						//ssf << " AND partno = " << td.PartNo;
+						//ssf << " AND pack = " << td.Pack;
+						//ssf << " AND sheet = " << td.Sheet;
+						//ssf << " AND subsheet = " << td.SubSheet;
+						//
+						//if(DEB)LOG_INFO(SheetLogger, ssf.str());
+						//PGresult* res = conn.PGexec(ssf.str());
+						//if(PQresultStatus(res) == PGRES_TUPLES_OK)
+						//{
+						//	if(PQntuples(res))
+						//		td.id = Stoi(conn.PGgetvalue(res, 0, 0));
+						//}
+						//else
+						//	LOG_ERR_SQL(SheetLogger, res, ssf.str());
+						//PQclear(res);
+						LOG_INFO(SheetLogger, "{:90}| Sheet ID = {}", FUNCTION_LINE_NAME, td.id);
+					}
+				}CATCH(SheetLogger, "");
+			}
+
+			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
 			{
-				int Hour = 0;
-				int Day = 0;
-				int Month = 0;
-				int Year = 0;
-				int CassetteNo = 0;
-				int SheetInCassette = 0;
-
-				MapTodos DataSheetTodos;
-				std::stringstream ssd;
-				ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
-				ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
-				//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
-				ssd << " FROM todos WHERE ";
-				//ssd << "create_at >= '" << ids.Start3 << "' AND ";
-				if(ids.Cant.length())
-					ssd << "create_at < '" << ids.Cant << "' AND ";
-				else if(ids.InCant.length())
-					ssd << "create_at < '" << ids.InCant << "' AND ";
-				else
-					throw std::exception(__FUN("ids.Cant = NULL AND ids.InCant = NULL"));
-
-				ssd << "(id_name = " << HMISheetData.Cassette.Hour->ID << " OR";
-				ssd << " id_name = " << HMISheetData.Cassette.Day->ID << " OR";
-				ssd << " id_name = " << HMISheetData.Cassette.Month->ID << " OR";
-				ssd << " id_name = " << HMISheetData.Cassette.Year->ID << " OR";
-				ssd << " id_name = " << HMISheetData.Cassette.CassetteNo->ID << " OR";
-				ssd << " id_name = " << HMISheetData.Cassette.SheetInCassette->ID;
-				ssd << ") ORDER BY id_name, create_at DESC;";
-
-				std::string command = ssd.str();
-				GetTodosSQL(conn, DataSheetTodos, command);
-
-				for(auto a : DataSheetTodos)
+				try
 				{
-					if(a.id_name == HMISheetData.Cassette.Hour->ID) Hour = Stoi(a.value);
-					if(a.id_name == HMISheetData.Cassette.Day->ID) Day = Stoi(a.value);
-					if(a.id_name == HMISheetData.Cassette.Month->ID) Month = Stoi(a.value);
-					if(a.id_name == HMISheetData.Cassette.Year->ID) Year = Stoi(a.value);
-					if(a.id_name == HMISheetData.Cassette.CassetteNo->ID) CassetteNo = Stoi(a.value);
-					if(a.id_name == HMISheetData.Cassette.SheetInCassette->ID) SheetInCassette = Stoi(a.value);
-				}
-
-				if(Day && Month && Year && CassetteNo)
-				{
-					ids.hour = Hour;
-					ids.day = Day;
-					ids.month = Month;
-					ids.year = Year;
-					ids.cassetteno = CassetteNo;
-					ids.sheetincassette = SheetInCassette + 1;
-				}
-
-			}CATCH(SheetLogger, "");
-
-			if(ids.day && ids.month && ids.year && ids.cassetteno)
-				ids.Pos = 7;
-			else
-				ids.Pos = 16;
-		}
-
-
-		void GetSheets::InZone62(PGConnection& conn, T_IdSheet& Ids, std::string create_at)
-		{
-			try
-			{
-				T_IdSheet ids = Ids;
-
-				Ids = T_IdSheet();
-
-				ids.Cant = create_at;
-				GetDataSheet1(conn, ids);
-				GetDataSheet2(conn, ids);
-				GetDataSheet3(conn, ids);
-				Get_ID_S(conn, ids);
+					T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
+					if(!ids.id)
+						GetID(conn, ids);
 
 				#pragma region Вывод инфы
 					std::stringstream sss;
-					sss << "InZone6 ";
+					sss << "InZone1 №" << i;
 					sss << " Start1: " << ids.Start1;
 					sss << " Id: " << ids.id;
 					sss << " Melt: " << ids.Melt;
@@ -4585,290 +4390,502 @@ namespace PDF
 					SetWindowText(hWndDebug, sss.str().c_str());
 				#pragma endregion
 
-				if(!ids.Start2.length())
-				{
-					std::tm TM;
-					time_t tm1 = DataTimeOfString(ids.DataTime_End, TM);
-					time_t tm2 = DataTimeOfString(ids.Start1, TM);
+					if(isSheet(ids))
+					{
+						if(isSheet(Ids1))
+						{
+							InZone2(conn, create_at);
+						}
 
-					time_t tm = time_t(tm1 + (difftime(tm1, tm2) / 2.0));
-					ids.Start2 = GetStringOfDataTime(&tm);
-				}
+						Ids1 = ids;
+						Ids1.DataTime = create_at;
+						Ids1.Start1 = create_at;
 
-				float t = GetTime(ids.DataTime_End, allTime);
-				if(t) ids.TimeForPlateHeat = t;
+					}
+				}CATCH(SheetLogger, "");
+				return true;
+			}
 
-				ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
-				float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
-				if(f > 2.0f)
-					ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
-
-
-				GetSheetCassette(conn, ids);
-
-				SaveBodyCsv(ss1, ids, "");
-				UpdateSheet(conn, ids);
-				Ids6.push_back(ids);
-			}CATCH(SheetLogger, "");
-		}
-
-		void GetSheets::InZone6(PGConnection& conn, std::string create_at)
-		{
-			try
+			bool InZone2(PGConnection& conn, std::string create_at)
 			{
-				if(isSheet(Ids5))
+				try
 				{
-					InZone62(conn, Ids5, create_at);
-				}
-				else if(isSheet(Ids3))
-				{
-					InZone62(conn, Ids3, create_at);
-				}
-			}CATCH(SheetLogger, "");
-		}
+					if(isSheet(Ids1))
+					{
+						if(isSheet(Ids2))
+						{
+							InZone3(conn, create_at);
+						}
 
-		std::fstream GetSheets::SaveStepHeadCsv(std::string name)
-		{
-			std::fstream ss1(name, std::fstream::binary | std::fstream::out);
-			try
+						Ids2 = Ids1;
+						Ids2.Start2 = create_at;
+						Ids1 = T_IdSheet();
+						if(!Ids2.id)
+							GetID(conn, Ids2);
+
+					#pragma region Вывод инфы
+						std::stringstream sss;
+						sss << "InZone2";
+						sss << " Start1: " << Ids2.Start1;
+						sss << " Id: " << Ids2.id;
+						sss << " Melt: " << Ids2.Melt;
+						sss << " PartNo: " << Ids2.PartNo;
+						sss << " Pack: " << Ids2.Pack;
+						sss << " Slab: " << Ids2.Slab;
+						sss << " Sheet: " << Ids2.Sheet;
+						sss << " SubSheet: " << Ids2.SubSheet;
+						SetWindowText(hWndDebug, sss.str().c_str());
+					#pragma endregion
+					}
+				}CATCH(SheetLogger, "");
+				return true;
+			}
+
+			bool InZone3(PGConnection& conn, std::string create_at)
 			{
-				ss1 << "create_at;";
-				ss1 << "id;";
-				ss1 << "value;";
-				ss1 << "id_name;";
-				ss1 << "comment;";
-				ss1 << std::endl;
-			}CATCH(SheetLogger, "");
-			return ss1;
-		}
-		void GetSheets::SaveStepBodyCsv(std::fstream& ss1, T_Todos& td)
-		{
-			try
+				try
+				{
+					if(isSheet(Ids2))
+					{
+						if(isSheet(Ids3))
+						{
+							InZone5(conn, create_at);
+						}
+						Ids3 = Ids2;
+						Ids3.DataTime_End = create_at;
+						Ids3.Start3 = create_at;
+						Ids2 = T_IdSheet();
+
+						if(!Ids3.id)
+							GetID(conn, Ids3);
+					#pragma region Вывод инфы
+						std::stringstream sss;
+						sss << "InZone3";
+						sss << " Start1: " << Ids3.Start1;
+						sss << " Id: " << Ids3.id;
+						sss << " Melt: " << Ids3.Melt;
+						sss << " PartNo: " << Ids3.PartNo;
+						sss << " Pack: " << Ids3.Pack;
+						sss << " Slab: " << Ids3.Slab;
+						sss << " Sheet: " << Ids3.Sheet;
+						sss << " SubSheet: " << Ids3.SubSheet;
+						SetWindowText(hWndDebug, sss.str().c_str());
+					#pragma endregion
+					}
+				}CATCH(SheetLogger, "");
+				return true;
+			}
+			bool InZone5(PGConnection& conn, std::string create_at)
 			{
-				ss1 << " " << td.create_at << ";";
-				ss1 << td.id << ";";
-				if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID)
-					ss1 << GenSeq1[Stoi(td.value)] << ";";
-				else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
-					ss1 << GenSeq2[Stoi(td.value)] << ";";
-				else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
-					ss1 << GenSeq3[Stoi(td.value)] << ";";
+				try
+				{
+					if(isSheet(Ids3))
+					{
+						if(isSheet(Ids5))
+						{
+							InZone6(conn, create_at);
+						}
+
+						if(isSheet(Ids3))
+						{
+							Ids5 = Ids3;
+							//Ids5.Start5 = create_at;
+							Ids5.Start5 = create_at;
+							Ids5.InCant = create_at;
+							Ids3 = T_IdSheet();
+
+							if(!Ids5.id)
+								GetID(conn, Ids5);
+						#pragma region Вывод инфы
+							std::stringstream sss;
+							sss << "InZone5";
+							sss << " Start1: " << Ids5.Start1;
+							sss << " Id: " << Ids5.id;
+							sss << " Melt: " << Ids5.Melt;
+							sss << " PartNo: " << Ids5.PartNo;
+							sss << " Pack: " << Ids5.Pack;
+							sss << " Slab: " << Ids5.Slab;
+							sss << " Sheet: " << Ids5.Sheet;
+							sss << " SubSheet: " << Ids5.SubSheet;
+							SetWindowText(hWndDebug, sss.str().c_str());
+						#pragma endregion
+						}
+					}
+				}CATCH(SheetLogger, "");
+				return true;
+			}
+			void GetSheetCassette(PGConnection& conn, T_IdSheet& ids)
+			{
+				try
+				{
+					int Hour = 0;
+					int Day = 0;
+					int Month = 0;
+					int Year = 0;
+					int CassetteNo = 0;
+					int SheetInCassette = 0;
+
+					MapTodos DataSheetTodos;
+					std::stringstream ssd;
+					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
+					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
+					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
+					ssd << " FROM todos WHERE ";
+					//ssd << "create_at >= '" << ids.Start3 << "' AND ";
+					if(ids.Cant.length())
+						ssd << "create_at < '" << ids.Cant << "' AND ";
+					else if(ids.InCant.length())
+						ssd << "create_at < '" << ids.InCant << "' AND ";
+					else
+						throw std::exception(__FUN("ids.Cant = NULL AND ids.InCant = NULL"));
+
+					ssd << "(id_name = " << HMISheetData.Cassette.Hour->ID << " OR";
+					ssd << " id_name = " << HMISheetData.Cassette.Day->ID << " OR";
+					ssd << " id_name = " << HMISheetData.Cassette.Month->ID << " OR";
+					ssd << " id_name = " << HMISheetData.Cassette.Year->ID << " OR";
+					ssd << " id_name = " << HMISheetData.Cassette.CassetteNo->ID << " OR";
+					ssd << " id_name = " << HMISheetData.Cassette.SheetInCassette->ID;
+					ssd << ") ORDER BY id_name, create_at DESC;";
+
+					std::string command = ssd.str();
+					GetTodosSQL(conn, DataSheetTodos, command);
+
+					for(auto a : DataSheetTodos)
+					{
+						if(a.id_name == HMISheetData.Cassette.Hour->ID) Hour = Stoi(a.value);
+						if(a.id_name == HMISheetData.Cassette.Day->ID) Day = Stoi(a.value);
+						if(a.id_name == HMISheetData.Cassette.Month->ID) Month = Stoi(a.value);
+						if(a.id_name == HMISheetData.Cassette.Year->ID) Year = Stoi(a.value);
+						if(a.id_name == HMISheetData.Cassette.CassetteNo->ID) CassetteNo = Stoi(a.value);
+						if(a.id_name == HMISheetData.Cassette.SheetInCassette->ID) SheetInCassette = Stoi(a.value);
+					}
+
+					if(Day && Month && Year && CassetteNo)
+					{
+						ids.hour = Hour;
+						ids.day = Day;
+						ids.month = Month;
+						ids.year = Year;
+						ids.cassetteno = CassetteNo;
+						ids.sheetincassette = SheetInCassette + 1;
+					}
+
+				}CATCH(SheetLogger, "");
+
+				if(ids.day && ids.month && ids.year && ids.cassetteno)
+					ids.Pos = 7;
 				else
-					ss1 << td.value << ";";
-				ss1 << td.id_name << ";";
-				ss1 << td.id_name_at << ";";
-				ss1 << std::endl;
-			}CATCH(SheetLogger, "");
-		}
+					ids.Pos = 16;
+			}
 
-		std::fstream GetSheets::SaveT_IdSheetHeadCsv(std::string name)
-		{
-			std::fstream ss1(name, std::fstream::binary | std::fstream::out);
-			try
+
+			void InZone62(PGConnection& conn, T_IdSheet& Ids, std::string create_at)
 			{
-				ss1 << " " << "Start1" << ";";
-				ss1 << " " << "TimeStart" << ";";
-				ss1 << "Melt" << ";";
-				ss1 << "PartNo" << ";";
-				ss1 << "Pack" << ";";
-				ss1 << "Sheet" << ";";
-				ss1 << "SubSheet" << ";";
-				ss1 << std::endl;
-			}CATCH(SheetLogger, "");
-			return ss1;
-		}
-		void GetSheets::SaveT_IdSheetBodyCsv(std::fstream& ss1, T_IdSheet& ids)
-		{
-			try
-			{
-				ss1 << " " << ids.Start1 << ";";
-				ss1 << " " << ids.DataTime << ";";
-				ss1 << ids.Melt << ";";
-				ss1 << ids.PartNo << ";";
-				ss1 << ids.Pack << ";";
-				ss1 << ids.Sheet << ";";
-				ss1 << ids.SubSheet << ";";
-				ss1 << std::endl;
-			}CATCH(SheetLogger, "");
-		}
-
-		bool cmpData(T_Todos& first, T_Todos& second)
-		{
-			return first.create_at < second.create_at;
-		}
-
-		GetSheets::GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
-		{
-			InitLogger(SheetLogger);
-			try
-			{
-				StartSheet = datestart;
-				StopSheet = datestop;
-
-				MapTodos allSheetTodos;
-
-
-				remove("UpdateSheet.txt");
-				fUpdateSheet = std::fstream("UpdateSheet.txt", std::fstream::binary | std::fstream::out | std::ios::app);
-
-
-				ss1 = SaveHeadCsv("Sheet.csv");
-
-
-				GetAllTime(conn, allTime);
-
-				//GenSeqToHmi.Seq_1_StateNo
-				GetSeq_1(conn, allSheetTodos);
-
-				//GenSeqToHmi.Seq_2_StateNo
-				GetSeq_2(conn, allSheetTodos);
-
-				//GenSeqToHmi.Seq_3_StateNo
-				GetSeq_3(conn, allSheetTodos);
-
-				//HMISheetData.NewData
-				GetSeq_6(conn, allSheetTodos);
-
-
-				//Сортируем по времени
-				std::sort(allSheetTodos.begin(), allSheetTodos.end(), cmpData);
-
-				////GenSeqToHmi.Seq_3_StateNo
-				//GetSeq_3(conn);
-
-
-				size_t count = allSheetTodos.size();
-				size_t i = count;
-				std::fstream ff1 = SaveStepHeadCsv("Step.csv");
-				std::fstream ff2 = SaveT_IdSheetHeadCsv("T_IdSheet.csv");
-
-
-				for(MapTodos::iterator it = allSheetTodos.begin(); isRun && it != allSheetTodos.end(); it++)
+				try
 				{
-					T_Todos& td = *it;
+					T_IdSheet ids = Ids;
 
-					SaveStepBodyCsv(ff1, td);
+					Ids = T_IdSheet();
 
-					//Загрузка в печь
+					ids.Cant = create_at;
+					GetDataSheet1(conn, ids);
+					GetDataSheet2(conn, ids);
+					GetDataSheet3(conn, ids);
+					Get_ID_S(conn, ids);
+
+					#pragma region Вывод инфы
+						std::stringstream sss;
+						sss << "InZone6 ";
+						sss << " Start1: " << ids.Start1;
+						sss << " Id: " << ids.id;
+						sss << " Melt: " << ids.Melt;
+						sss << " PartNo: " << ids.PartNo;
+						sss << " Pack: " << ids.Pack;
+						sss << " Slab: " << ids.Slab;
+						sss << " Sheet: " << ids.Sheet;
+						sss << " SubSheet: " << ids.SubSheet;
+						SetWindowText(hWndDebug, sss.str().c_str());
+					#pragma endregion
+
+					if(!ids.Start2.length())
+					{
+						std::tm TM;
+						time_t tm1 = DataTimeOfString(ids.DataTime_End, TM);
+						time_t tm2 = DataTimeOfString(ids.Start1, TM);
+
+						time_t tm = time_t(tm1 + (difftime(tm1, tm2) / 2.0));
+						ids.Start2 = GetStringOfDataTime(&tm);
+					}
+
+					float t = GetTime(ids.DataTime_End, allTime);
+					if(t) ids.TimeForPlateHeat = t;
+
+					ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
+					float f = fabsf(ids.DataTime_All - ids.TimeForPlateHeat);
+					if(f > 2.0f)
+						ids.DataTime_All = GetDataTime_All(ids.Start1, ids.DataTime_End);
+
+
+					GetSheetCassette(conn, ids);
+
+					SaveBodyCsv(ss1, ids, "");
+					UpdateSheet(conn, ids);
+					Ids6.push_back(ids);
+				}CATCH(SheetLogger, "");
+			}
+
+			void InZone6(PGConnection& conn, std::string create_at)
+			{
+				try
+				{
+					if(isSheet(Ids5))
+					{
+						InZone62(conn, Ids5, create_at);
+					}
+					else if(isSheet(Ids3))
+					{
+						InZone62(conn, Ids3, create_at);
+					}
+				}CATCH(SheetLogger, "");
+			}
+
+			std::fstream SaveStepHeadCsv(std::string name)
+			{
+				std::fstream ss1(name, std::fstream::binary | std::fstream::out);
+				try
+				{
+					ss1 << "create_at;";
+					ss1 << "id;";
+					ss1 << "value;";
+					ss1 << "id_name;";
+					ss1 << "comment;";
+					ss1 << std::endl;
+				}CATCH(SheetLogger, "");
+				return ss1;
+			}
+			void SaveStepBodyCsv(std::fstream& ss1, T_Todos& td)
+			{
+				try
+				{
+					ss1 << " " << td.create_at << ";";
+					ss1 << td.id << ";";
 					if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID)
-					{
-						int16_t st = td.content.As<int16_t>();
-						//Открыть входную дверь
-						if(st == st1_3)
-						{
-							InZone1(conn, td.create_at, count, i);
-							SaveT_IdSheetBodyCsv(ff2, Ids1);
-						}
-						//"Загрузка в печь"
-						else if(st == st1_4)
-						{
-							if(!isSheet(Ids1))
-							{
-								InZone1(conn, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, Ids1);
-							}
-							if(!Ids1.CloseInDor.length())
-							{
-								if(isSheet(Ids1))
-								{
-									Ids1.CloseInDor = td.create_at;
-									Ids1.Start1 = td.create_at;
-								}
-							}
-						}
-						//"Закрыть входную дверь"
-						else if(st == st1_5)
-						{ 
-							if(!isSheet(Ids1))
-							{
-								InZone1(conn, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, Ids1);
-							}
-							if(!Ids1.CloseInDor.length())
-							{
-								if(isSheet(Ids1))
-								{
-									Ids1.CloseInDor = td.create_at;
-									Ids1.Start1 = td.create_at;
-								}
-							}
-
-							if(!Ids1.Nagrev.length())
-							{
-								if(!isSheet(Ids1))
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-								}
-								if(isSheet(Ids1))
-								{
-									Ids1.Nagrev = td.create_at;
-									Ids1.Start1 = td.create_at;
-								}
-							}
-
-						}
-						//"Нагрев листа"
-						else if(st == st1_6)
-						{
-							if(!Ids1.Nagrev.length())
-							{
-								if(!isSheet(Ids1))
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-								}
-								if(isSheet(Ids1))
-								{
-									Ids1.Nagrev = td.create_at;
-									Ids1.Start1 = td.create_at;
-								}
-							}
-						}
-						//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
-						else if(st == st1_7 || st == st1_8)
-						{
-							InZone2(conn, td.create_at);
-						}
-					}
-
-					//Вторая зона печи
+						ss1 << GenSeq1[Stoi(td.value)] << ";";
 					else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
-					{
-						int16_t st = td.content.As<int16_t>();
-						if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
-						{
-							InZone2(conn, td.create_at);
-						}
-						else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
-						{
-							InZone3(conn, td.create_at);
-						}
-					}
-
-					//Зона Охлаждения
+						ss1 << GenSeq2[Stoi(td.value)] << ";";
 					else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
-					{
-						int16_t st = td.content.As<int16_t>();
-						if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
-							InZone5(conn, td.create_at);
-					}
+						ss1 << GenSeq3[Stoi(td.value)] << ";";
+					else
+						ss1 << td.value << ";";
+					ss1 << td.id_name << ";";
+					ss1 << td.id_name_at << ";";
+					ss1 << std::endl;
+				}CATCH(SheetLogger, "");
+			}
 
-					//Кантовка
-					else if(td.id_name == HMISheetData.NewData->ID && td.content.As<bool>())
-					{
-						InZone6(conn, td.create_at);
-					}
+			std::fstream SaveT_IdSheetHeadCsv(std::string name)
+			{
+				std::fstream ss1(name, std::fstream::binary | std::fstream::out);
+				try
+				{
+					ss1 << " " << "Start1" << ";";
+					ss1 << " " << "TimeStart" << ";";
+					ss1 << "Melt" << ";";
+					ss1 << "PartNo" << ";";
+					ss1 << "Pack" << ";";
+					ss1 << "Sheet" << ";";
+					ss1 << "SubSheet" << ";";
+					ss1 << std::endl;
+				}CATCH(SheetLogger, "");
+				return ss1;
+			}
+			void SaveT_IdSheetBodyCsv(std::fstream& ss1, T_IdSheet& ids)
+			{
+				try
+				{
+					ss1 << " " << ids.Start1 << ";";
+					ss1 << " " << ids.DataTime << ";";
+					ss1 << ids.Melt << ";";
+					ss1 << ids.PartNo << ";";
+					ss1 << ids.Pack << ";";
+					ss1 << ids.Sheet << ";";
+					ss1 << ids.SubSheet << ";";
+					ss1 << std::endl;
+				}CATCH(SheetLogger, "");
+			}
 
-					i--;
-				}
-				ff2.close();
-				ff1.close();
-				ss1.close();
-				fUpdateSheet.close();
-				INT II = 0;
-			}CATCH(SheetLogger, "");
-		}
+			GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
+			{
+				InitLogger(SheetLogger);
+				try
+				{
+					StartSheet = datestart;
+					StopSheet = datestop;
+
+					MapTodos allSheetTodos;
+
+
+					remove("UpdateSheet.txt");
+					fUpdateSheet = std::fstream("UpdateSheet.txt", std::fstream::binary | std::fstream::out | std::ios::app);
+
+
+					ss1 = SaveHeadCsv("Sheet.csv");
+
+
+					GetAllTime(conn, allTime);
+
+					//GenSeqToHmi.Seq_1_StateNo
+					GetSeq_1(conn, allSheetTodos);
+
+					//GenSeqToHmi.Seq_2_StateNo
+					GetSeq_2(conn, allSheetTodos);
+
+					//GenSeqToHmi.Seq_3_StateNo
+					GetSeq_3(conn, allSheetTodos);
+
+					//HMISheetData.NewData
+					GetSeq_6(conn, allSheetTodos);
+
+					////Сортируем по времени
+					std::sort(allSheetTodos.begin(), allSheetTodos.end(), cmpData);
+
+					////GenSeqToHmi.Seq_3_StateNo
+					//GetSeq_3(conn);
+
+
+					size_t count = allSheetTodos.size();
+					size_t i = count;
+					std::fstream ff1 = SaveStepHeadCsv("Step.csv");
+					std::fstream ff2 = SaveT_IdSheetHeadCsv("T_IdSheet.csv");
+
+
+					for(MapTodos::iterator it = allSheetTodos.begin(); isRun && it != allSheetTodos.end(); it++)
+					{
+						T_Todos& td = *it;
+
+						SaveStepBodyCsv(ff1, td);
+
+						//Загрузка в печь
+						if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID)
+						{
+							int16_t st = td.content.As<int16_t>();
+							//Открыть входную дверь
+							if(st == st1_3)
+							{
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
+							}
+							//"Загрузка в печь"
+							else if(st == st1_4)
+							{
+								if(!isSheet(Ids1))
+								{
+									InZone1(conn, td.create_at, count, i);
+									SaveT_IdSheetBodyCsv(ff2, Ids1);
+								}
+								if(!Ids1.CloseInDor.length())
+								{
+									if(isSheet(Ids1))
+									{
+										Ids1.CloseInDor = td.create_at;
+										Ids1.Start1 = td.create_at;
+									}
+								}
+							}
+							//"Закрыть входную дверь"
+							else if(st == st1_5)
+							{ 
+								if(!isSheet(Ids1))
+								{
+									InZone1(conn, td.create_at, count, i);
+									SaveT_IdSheetBodyCsv(ff2, Ids1);
+								}
+								if(!Ids1.CloseInDor.length())
+								{
+									if(isSheet(Ids1))
+									{
+										Ids1.CloseInDor = td.create_at;
+										Ids1.Start1 = td.create_at;
+									}
+								}
+
+								if(!Ids1.Nagrev.length())
+								{
+									if(!isSheet(Ids1))
+									{
+										InZone1(conn, td.create_at, count, i);
+										SaveT_IdSheetBodyCsv(ff2, Ids1);
+									}
+									if(isSheet(Ids1))
+									{
+										Ids1.Nagrev = td.create_at;
+										Ids1.Start1 = td.create_at;
+									}
+								}
+
+							}
+							//"Нагрев листа"
+							else if(st == st1_6)
+							{
+								if(!Ids1.Nagrev.length())
+								{
+									if(!isSheet(Ids1))
+									{
+										InZone1(conn, td.create_at, count, i);
+										SaveT_IdSheetBodyCsv(ff2, Ids1);
+									}
+									if(isSheet(Ids1))
+									{
+										Ids1.Nagrev = td.create_at;
+										Ids1.Start1 = td.create_at;
+									}
+								}
+							}
+							//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
+							else if(st == st1_7 || st == st1_8)
+							{
+								InZone2(conn, td.create_at);
+							}
+						}
+
+						//Вторая зона печи
+						else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
+						{
+							int16_t st = td.content.As<int16_t>();
+							if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
+							{
+								InZone2(conn, td.create_at);
+							}
+							else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
+							{
+								InZone3(conn, td.create_at);
+							}
+						}
+
+						//Зона Охлаждения
+						else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
+						{
+							int16_t st = td.content.As<int16_t>();
+							if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
+								InZone5(conn, td.create_at);
+						}
+
+						//Кантовка
+						else if(td.id_name == HMISheetData.NewData->ID && td.content.As<bool>())
+						{
+							InZone6(conn, td.create_at);
+						}
+
+						i--;
+					}
+					ff2.close();
+					ff1.close();
+					ss1.close();
+					fUpdateSheet.close();
+					INT II = 0;
+				}CATCH(SheetLogger, "");
+			}
+		};
 
 
 		std::string GetStartTime(PGConnection& conn)
@@ -5010,7 +5027,7 @@ namespace PDF
 		return 0;
 	}
 
-		std::string GetSheetOfBaseString(PGConnection& conn, std::string id)
+	std::string GetSheetOfBaseString(PGConnection& conn, std::string id)
 	{
 		try
 		{
