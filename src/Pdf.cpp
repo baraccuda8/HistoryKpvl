@@ -4642,10 +4642,10 @@ namespace PDF
 					{
 						InZone62(conn, Ids5, create_at);
 					}
-					else if(isSheet(Ids3))
-					{
-						InZone62(conn, Ids3, create_at);
-					}
+					//else if(isSheet(Ids3))
+					//{
+					//	InZone62(conn, Ids3, create_at);
+					//}
 				}CATCH(SheetLogger, "");
 			}
 
@@ -5280,8 +5280,9 @@ namespace PDF
 
 			PGConnection conn;
 			CONNECTION1(conn, CorrectLog);
-			std::string start = "2024-11-01 00:00:00";
-			std::string stop =  "2024-12-03 00:00:00";
+			//2024-12-24 21:40:00
+			std::string start = "2024-12-24 21:40:00";
+			std::string stop =  "2024-12-24 22:10:00";
 			SHEET::GetSheets sheets(conn, start, stop);
 
 			//CASSETTE::GetCassettes cass("", "");
