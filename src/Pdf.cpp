@@ -5256,7 +5256,7 @@ namespace PDF
 		isCorrectCassette = true;
 		try
 		{
-			std::string start = "2024-12-17 00:00:00";
+			std::string start = "";
 			std::string stop = "";
 			CASSETTE::GetCassettes cass(start, stop);
 		}
