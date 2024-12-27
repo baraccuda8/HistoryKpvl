@@ -1337,7 +1337,7 @@ namespace Cassete
 typedef struct Tcass{
     std::string Peth = "";
     std::string Run_at = "";
-    std::string Hour = "";
+    std::string Hour = "-1";
     std::string Day = "";
     std::string Month = "";
     std::string Year = "";
@@ -1352,7 +1352,7 @@ typedef struct TCassette{
     std::string Create_at = "";
     std::string Id = "";
     std::string Event = "";
-    std::string Hour = "";
+    std::string Hour = "-1";
     std::string Day = "";
     std::string Month = "";
     std::string Year = "";

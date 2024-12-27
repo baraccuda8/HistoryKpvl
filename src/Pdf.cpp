@@ -3002,7 +3002,7 @@ namespace PDF
 				int Year = Stoi(p.Year);
 				int CassetteNo = Stoi(p.CassetteNo);
 
-				return (Day && Month && Year && CassetteNo && p.Hour.length());
+				return (Day && Month && Year && CassetteNo && p.Hour.length() && p.Hour != "-1");
 			}
 
 			bool IsCassette(TCassette& p)
@@ -3013,7 +3013,7 @@ namespace PDF
 				int Year = Stoi(p.Year);
 				int CassetteNo = Stoi(p.CassetteNo);
 
-				return (Day && Month && Year && CassetteNo);
+				return (Day && Month && Year && CassetteNo && p.Hour.length() && p.Hour != "-1");
 			}
 
 			void PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int Petch, std::fstream& s1)
@@ -3036,7 +3036,9 @@ namespace PDF
 					//Furn->Cassette.Hour->ID
 					if(a.id_name == Furn->Cassette.Hour->ID)
 					{
-						if(a.value.length() /*&& !cass.Run_at.length()*/)
+						if(a.value.length() && 
+						   (!cass.Run_at.length() || cass.Hour == "-1")
+						   )
 							cass.Hour = a.value;
 					}
 
@@ -3305,9 +3307,6 @@ namespace PDF
 					std::string name = "cass 1_2.csv";
 					std::fstream s1(name, std::fstream::binary | std::fstream::out | std::fstream::app);
 
-					//int lin = 0;
-					//auto size = CassetteTodos.size();
-
 					Tcass TP1 = Tcass (1);
 					Tcass TP2 = Tcass (2);
 
@@ -3326,14 +3325,6 @@ namespace PDF
 							PrepareDataBase(conn, TP2, P2, a1.second, 2, s1);
 					}
 						
-					//for(auto& a2 : CassetteTodos2)
-					//{
-					//	if(!isRun)break;
-					//	PrepareDataBase(conn, TP2, P2, a2, 2, s1);
-					//}
-				
-					//SaveFileCass(PP1);
-					//SaveFileCass(PP2);
 					s1.close();
 
 					SetAllCorrect(conn, DateCorrect1, 1);
@@ -5256,8 +5247,13 @@ namespace PDF
 		isCorrectCassette = true;
 		try
 		{
+			#ifdef _DEBUG
+			std::string start = "2024-10-01 00:00:00";
+			std::string stop  = "";
+			#else
 			std::string start = "";
-			std::string stop = "";
+			std::string stop  = "";
+			#endif
 			CASSETTE::GetCassettes cass(start, stop);
 		}
 		CATCH(CassetteLogger, "");
@@ -5304,7 +5300,7 @@ namespace PDF
 			//CASSETTE::GetCassettes cass(start, stop);
 			//CASSETTE::GetCassettes cass("", "");
 			
-			//CorrectCassette(0);
+			CorrectCassette(0);
 
 			//CorrectSheetDebug(conn);
 			//SetWindowText(hWndDebug, "Закончил");
