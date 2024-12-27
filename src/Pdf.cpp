@@ -2718,6 +2718,7 @@ namespace PDF
 					//if(!countSheet) return;
 
 
+
 					if(it.Create_at.length())ct.Create_at = it.Create_at;
 					else
 						if(it.Run_at.length())ct.Create_at = it.Run_at;
@@ -3002,7 +3003,7 @@ namespace PDF
 				int Year = Stoi(p.Year);
 				int CassetteNo = Stoi(p.CassetteNo);
 
-				return (Day && Month && Year && CassetteNo && p.Hour.length() && p.Hour != "-1");
+				return (Day && Month && Year && CassetteNo);
 			}
 
 			bool IsCassette(TCassette& p)
@@ -3013,7 +3014,7 @@ namespace PDF
 				int Year = Stoi(p.Year);
 				int CassetteNo = Stoi(p.CassetteNo);
 
-				return (Day && Month && Year && CassetteNo && p.Hour.length() && p.Hour != "-1");
+				return (Day && Month && Year && CassetteNo);
 			}
 
 			void PrepareDataBase(PGConnection& conn, Tcass& cass, TCassette& P, T_Todos& a, int Petch, std::fstream& s1)
@@ -3031,49 +3032,70 @@ namespace PDF
 
 				if(Furn == NULL) return;
 
+				//2024	ID касеты год
+				//10	ID касеты месяц
+				//7	ID касеты день
+				//4	ID касеты номер
+
 				try
 				{
 					//Furn->Cassette.Hour->ID
 					if(a.id_name == Furn->Cassette.Hour->ID)
 					{
-						if(a.value.length() && 
-						   (!cass.Run_at.length() || cass.Hour == "-1")
-						   )
+						if(!cass.Run)
 							cass.Hour = a.value;
 					}
 
 					//Furn->Cassette.Day->ID
 					if(a.id_name == Furn->Cassette.Day->ID && a.content.As<int32_t>())
 					{
-						if(Stoi(a.value) /*&& !cass.Run_at.length()*/)
+						if(!cass.Run)
 							cass.Day = a.value;
 					}
 
 					//Furn->Cassette.Month->ID
 					if(a.id_name == Furn->Cassette.Month->ID && a.content.As<int32_t>())
 					{
-						if(Stoi(a.value) /*&& !cass.Run_at.length()*/)
+						if(!cass.Run)
 							cass.Month = a.value;
 					}
 
 					//Furn->Cassette.Year->ID
 					if(a.id_name == Furn->Cassette.Year->ID && a.content.As<int32_t>())
 					{
-						int v = Stoi(a.value);
-						if(Stoi(a.value) /*&& !cass.Run_at.length()*/)
+						if(!cass.Run)
 							cass.Year = a.value;
 					}
 
 					//Furn->Cassette.CassetteNo->ID
 					if(a.id_name == Furn->Cassette.CassetteNo->ID && a.content.As<int32_t>())
 					{
-						if(Stoi(a.value) /*&& !cass.Run_at.length()*/)
+						if(!cass.Run)
 							cass.CassetteNo = a.value;
+					}
+
+					//2024
+					//31
+					//10
+					//2
+					//1
+
+					if(Petch == 1 &&
+					   cass.Year == "2024" &&
+					   cass.Month == "10" &&
+					   cass.Day == "31" &&
+					   //cass.Hour == "0" &&
+					   (cass.CassetteNo == "1" || cass.CassetteNo == "2")
+					   )
+					{
+						int tt = 0;
 					}
 
 					//Furn->ProcRun->ID
 					if(a.id_name == Furn->ProcRun->ID && a.content.As<bool>())
 					{
+						cass.Run = a.content.As<bool>();
+
 						if(IsCassette(cass))
 						{
 							if(!cass.Run_at.size())
@@ -3086,7 +3108,7 @@ namespace PDF
 								if(
 									IsCassette(P) &&
 									(
-										Stoi(P.Hour) != Stoi(cass.Hour) ||
+										//Stoi(P.Hour) != Stoi(cass.Hour) ||
 										Stoi(P.Day) != Stoi(cass.Day) ||
 										Stoi(P.Month) != Stoi(cass.Month) ||
 										Stoi(P.Year) != Stoi(cass.Year) ||
@@ -3113,7 +3135,6 @@ namespace PDF
 						{
 							P = cass;
 							P.End_at = a.create_at;
-
 							EndCassette(conn, P, Petch, s1);
 							SaveBaseCassete(conn, P);
 						}
@@ -3129,6 +3150,8 @@ namespace PDF
 							P.Error_at = a.create_at;
 						}
 					}
+
+
 				}
 				CATCH(CassetteLogger, "");
 			}

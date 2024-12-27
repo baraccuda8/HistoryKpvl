@@ -746,7 +746,7 @@ void TestSheet(PGConnection& conn)
     {
         std::stringstream command;
         //command << "DELETE FROM sheet WHERE id = " << ids;
-        command << "UPDATE sheet SET delete_at = now() WHERE id = " << ids;
+        command << "UPDATE sheet SET delete_at = now(), correct = now() WHERE id = " << ids;
         LOG_INFO(HardLogger, "{:90}| {}", command.str());
         SETUPDATESQL(HardLogger, conn, command);
     }

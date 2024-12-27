@@ -1337,11 +1337,12 @@ namespace Cassete
 typedef struct Tcass{
     std::string Peth = "";
     std::string Run_at = "";
-    std::string Hour = "-1";
+    std::string Hour = "0";
     std::string Day = "";
     std::string Month = "";
     std::string Year = "";
     std::string CassetteNo = "";
+	bool Run = false;
     Tcass(int p)
     {
         Peth = std::to_string(p);
@@ -1352,7 +1353,7 @@ typedef struct TCassette{
     std::string Create_at = "";
     std::string Id = "";
     std::string Event = "";
-    std::string Hour = "-1";
+    std::string Hour = "0";
     std::string Day = "";
     std::string Month = "";
     std::string Year = "";
@@ -1367,16 +1368,17 @@ typedef struct TCassette{
     std::string TempRef = "";           //Заданное значение температуры
     std::string PointRef_1 = "";        //Уставка температуры
     std::string PointTime_1 = "";       //Время разгона
-    std::string PointTime_2 = "";      //Время выдержки
+    std::string PointTime_2 = "";		//Время выдержки
     std::string TimeProcSet = "";       //Полное время процесса (уставка), мин
-    std::string facttemper = "";          //Факт температуры за 5 минут до конца отпуска
+    std::string facttemper = "";        //Факт температуры за 5 минут до конца отпуска
     std::string Finish_at = "";         //Завершение процесса + 15 минут
     std::string HeatAcc = "";           //Факт время нагрева
     std::string HeatWait = "";          //Факт время выдержки
     std::string Total = "";             //Факт общее время
     std::string Correct = "";           //
     std::string Pdf = "";               //
-    std::string Return_at = "";     //Вернули в список
+    std::string Return_at = "";			//Вернули в список
+	bool Run = false;
 
     bool compare(const TCassette& rhs)
     {
@@ -1398,6 +1400,8 @@ typedef struct TCassette{
         Month = cass.Month;
         Year = cass.Year;
         CassetteNo = cass.CassetteNo;
+		Run = cass.Run;
+
         return *this;
     }
 }TCassette;
