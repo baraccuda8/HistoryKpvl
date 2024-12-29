@@ -864,9 +864,10 @@ int SetCassetteInDelete(PGConnection& conn, std::shared_ptr<spdlog::logger> L, T
         it.Event = "7";
         it.Delete_at = GetStringDataTime();
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = " << it.Event << ", ";
-        sd << "delete_at = '" << it.Delete_at << "', ";
-		//sd << "correct = now()";
+        sd << "UPDATE cassette SET event = " << it.Event;
+        sd << ", delete_at = '" << it.Delete_at << "'";
+		//sd << ", correct = now()";
+		//sd << ", pdf = now()";
         sd << "WHERE id = " + it.Id;
         std::string command = sd.str();
         LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);

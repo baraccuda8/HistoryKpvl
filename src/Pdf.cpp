@@ -3032,11 +3032,6 @@ namespace PDF
 
 				if(Furn == NULL) return;
 
-				//2024	ID касеты год
-				//10	ID касеты месяц
-				//7	ID касеты день
-				//4	ID касеты номер
-
 				try
 				{
 					//Furn->Cassette.Hour->ID
@@ -3079,17 +3074,16 @@ namespace PDF
 					//10
 					//2
 					//1
-
-					if(Petch == 1 &&
-					   cass.Year == "2024" &&
-					   cass.Month == "10" &&
-					   cass.Day == "31" &&
-					   //cass.Hour == "0" &&
-					   (cass.CassetteNo == "1" || cass.CassetteNo == "2")
-					   )
-					{
-						int tt = 0;
-					}
+					//if(Petch == 1 &&
+					//   cass.Year == "2024" &&
+					//   cass.Month == "10" &&
+					//   cass.Day == "31" &&
+					//   //cass.Hour == "0" &&
+					//   (cass.CassetteNo == "1" || cass.CassetteNo == "2")
+					//   )
+					//{
+					//	int tt = 0;
+					//}
 
 					//Furn->ProcRun->ID
 					if(a.id_name == Furn->ProcRun->ID && a.content.As<bool>())
