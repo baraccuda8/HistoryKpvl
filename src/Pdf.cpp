@@ -3689,14 +3689,16 @@ namespace PDF
 						ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
 						//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 						ssd << " FROM todos WHERE";
+						//ssd << " create_at <= '" << Start << "' + INTERVAL '2 min' AND ";
 						ssd << " create_at <= '" << Start << "' AND ";
 						ssd << "(id_name = " << PlateData[0].AlloyCodeText->ID;
 						ssd << " OR id_name = " << PlateData[0].ThiknessText->ID;
-						ssd << " OR id_name = " << PlateData[0].Melt->ID;
+						ssd << " OR (id_name = " << PlateData[0].Melt->ID << " AND content <> '0')";
+						ssd << " OR (id_name = " << PlateData[0].PartNo->ID << " AND content <> '0')";
+						ssd << " OR (id_name = " << PlateData[0].Sheet->ID << " AND content <> '0')";
+
 						ssd << " OR id_name = " << PlateData[0].Slab->ID;
-						ssd << " OR id_name = " << PlateData[0].PartNo->ID;
 						ssd << " OR id_name = " << PlateData[0].Pack->ID;
-						ssd << " OR id_name = " << PlateData[0].Sheet->ID;
 						ssd << " OR id_name = " << PlateData[0].SubSheet->ID;
 						ssd << ") ORDER BY id_name, create_at DESC;";
 
@@ -3853,7 +3855,7 @@ namespace PDF
 				}CATCH(SheetLogger, "");
 			}
 
-			//Фиксируем на начало входа в печь State_2 = 5;
+			//Фиксируем на начало выхода из печи State_2 = 5;
 			void GetDataSheet2(PGConnection& conn, T_IdSheet& ids)
 			{
 				try
@@ -3869,21 +3871,29 @@ namespace PDF
 					ssd << "(id_name = " << AI_Hmi_210.Za_TE3->ID;
 					ssd << " OR id_name = " << AI_Hmi_210.Za_PT3->ID;
 					ssd << " OR id_name = " << AI_Hmi_210.LAM_TE1->ID;
-					ssd << ") ORDER BY id_name, create_at DESC LIMIT 3;";
+					ssd << " OR id_name = " << GenSeqFromHmi.TempSet1->ID;		//Уставка температуры
+					ssd << " OR id_name = " << Par_Gen.UnloadSpeed->ID;			//Уставка скорости
+					ssd << " OR id_name = " << Par_Gen.TimeForPlateHeat->ID;	//Уставка времени
+
+					ssd << ") ORDER BY id_name, create_at DESC";
 
 					std::string command = ssd.str();
 					GetTodosSQL(conn, DataSheetTodos, command);
 
 					for(auto a : DataSheetTodos)
 					{
-						if(a.id_name == AI_Hmi_210.Za_TE3->ID) ids.Za_TE3 = a.content.As<float>();
-						if(a.id_name == AI_Hmi_210.Za_PT3->ID) ids.Za_PT3 = a.content.As<float>();
-						if(a.id_name == AI_Hmi_210.LAM_TE1->ID) ids.LAM_TE1 = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.Za_TE3->ID)			ids.Za_TE3 = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.Za_PT3->ID)			ids.Za_PT3 = a.content.As<float>();
+						if(a.id_name == AI_Hmi_210.LAM_TE1->ID)			ids.LAM_TE1 = a.content.As<float>();
+
+						if(a.id_name == GenSeqFromHmi.TempSet1->ID)		ids.Temper = a.content.As<float>();				//Уставка температуры
+						if(a.id_name == Par_Gen.UnloadSpeed->ID)		ids.Speed = a.content.As<float>();				//Уставка скорости
+						if(a.id_name == Par_Gen.TimeForPlateHeat->ID)	ids.TimeForPlateHeat = a.content.As<float>();	//Уставка времени
 					}
 				}CATCH(SheetLogger, "");
 			}
 
-			//Фиксируем на начало входа в печь State_2 = 5 плюс 5 секунд;
+			//Фиксируем на начало выхода из печи State_2 = 5 плюс 5 секунд;
 			void GetDataSheet3(PGConnection& conn, T_IdSheet& ids)
 			{
 				try
@@ -4383,7 +4393,7 @@ namespace PDF
 				}CATCH(SheetLogger, "");
 			}
 
-			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
+			bool InZone11(PGConnection& conn, std::string create_at, size_t count, size_t i)
 			{
 				try
 				{
@@ -4421,6 +4431,32 @@ namespace PDF
 				return true;
 			}
 
+			bool InZone12(PGConnection& conn, std::string create_at, size_t count, size_t i)
+			{
+				T_IdSheet ids = GetIdSheet(conn, create_at, count, i);
+				Ids1.Alloy = ids.Alloy;
+				Ids1.Thikness = ids.Thikness;
+				Ids1.Melt = ids.Melt;
+				Ids1.Slab = ids.Slab;
+				Ids1.PartNo = ids.PartNo;
+				Ids1.Pack = ids.Pack;
+				Ids1.Sheet = ids.Sheet;
+				Ids1.SubSheet = ids.SubSheet;
+
+				if(!Ids1.DataTime.length())Ids1.DataTime = create_at;
+				if(!Ids1.Start1.length())Ids1.Start1 = create_at;
+				return true;
+			}
+
+			bool InZone1(PGConnection& conn, std::string create_at, size_t count, size_t i)
+			{
+				if(!isSheet(Ids1))
+					return InZone11(conn, create_at, count, i);
+				else
+					return InZone12(conn, create_at, count, i);
+			}
+
+
 			bool InZone2(PGConnection& conn, std::string create_at)
 			{
 				try
@@ -4455,7 +4491,6 @@ namespace PDF
 				}CATCH(SheetLogger, "");
 				return true;
 			}
-
 			bool InZone3(PGConnection& conn, std::string create_at)
 			{
 				try
@@ -4787,17 +4822,15 @@ namespace PDF
 							//Открыть входную дверь
 							if(st == st1_3)
 							{
-								InZone1(conn, td.create_at, count, i);
+								InZone11(conn, td.create_at, count, i);
 								SaveT_IdSheetBodyCsv(ff2, Ids1);
 							}
 							//"Загрузка в печь"
 							else if(st == st1_4)
 							{
-								if(!isSheet(Ids1))
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-								}
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
+
 								if(!Ids1.CloseInDor.length())
 								{
 									if(isSheet(Ids1))
@@ -4810,11 +4843,9 @@ namespace PDF
 							//"Закрыть входную дверь"
 							else if(st == st1_5)
 							{ 
-								if(!isSheet(Ids1))
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-								}
+								InZone1(conn, td.create_at, count, i);
+								SaveT_IdSheetBodyCsv(ff2, Ids1);
+
 								if(!Ids1.CloseInDor.length())
 								{
 									if(isSheet(Ids1))
@@ -4826,11 +4857,9 @@ namespace PDF
 
 								if(!Ids1.Nagrev.length())
 								{
-									if(!isSheet(Ids1))
-									{
-										InZone1(conn, td.create_at, count, i);
-										SaveT_IdSheetBodyCsv(ff2, Ids1);
-									}
+									InZone1(conn, td.create_at, count, i);
+									SaveT_IdSheetBodyCsv(ff2, Ids1);
+
 									if(isSheet(Ids1))
 									{
 										Ids1.Nagrev = td.create_at;
@@ -4844,11 +4873,9 @@ namespace PDF
 							{
 								if(!Ids1.Nagrev.length())
 								{
-									if(!isSheet(Ids1))
-									{
-										InZone1(conn, td.create_at, count, i);
-										SaveT_IdSheetBodyCsv(ff2, Ids1);
-									}
+									InZone1(conn, td.create_at, count, i);
+									SaveT_IdSheetBodyCsv(ff2, Ids1);
+
 									if(isSheet(Ids1))
 									{
 										Ids1.Nagrev = td.create_at;
@@ -5265,7 +5292,7 @@ namespace PDF
 		try
 		{
 			#ifdef _DEBUG
-			std::string start = "2024-10-01 00:00:00";
+			std::string start = "";
 			std::string stop  = "";
 			#else
 			std::string start = "";
@@ -5298,12 +5325,12 @@ namespace PDF
 			#endif
 			SetWindowText(hWndDebug, "Стартанул");
 
-			//PGConnection conn;
-			//CONNECTION1(conn, CorrectLog);
-			//
-			//std::string start = "2024-12-24 21:40:00";
-			//std::string stop =  "2024-12-24 22:10:00";
-			//SHEET::GetSheets sheets(conn, start, stop);
+			PGConnection conn;
+			CONNECTION1(conn, CorrectLog);
+			
+			std::string start = "01-12-2024 00:00:00"; //29-12-2024 00:00:00
+			std::string stop =  "";
+			SHEET::GetSheets sheets(conn, start, stop);
 			//26-12-2024 03:47:43
 			// 
 			//CASSETTE::GetCassettes cass("", "");
@@ -5317,7 +5344,7 @@ namespace PDF
 			//CASSETTE::GetCassettes cass(start, stop);
 			//CASSETTE::GetCassettes cass("", "");
 			
-			CorrectCassette(0);
+			//CorrectCassette(0);
 
 			//CorrectSheetDebug(conn);
 			//SetWindowText(hWndDebug, "Закончил");
