@@ -3433,7 +3433,8 @@ namespace PDF
 			const int st2_7 = 7;	//Закрыть выходную дверь
 
 			//GenSeqToHmi.Seq_3_StateNo
-			const int st3_3 = 3;	//Выдача заготовки
+			const int st3_1 = 1;	//Ожидание заготовки
+			//const int st3_3 = 3;	//Выдача заготовки
 			const int st3_4 = 4;	//Окончание цикла обработки
 
 			int AllId;
@@ -3977,7 +3978,7 @@ namespace PDF
 					ssd << " create_at >= '" << StartSheet << "'";
 					if(StopSheet.length())	ssd << " AND create_at < '" << StopSheet << "'";
 					ssd << " AND id_name = " << GenSeqToHmi.Seq_3_StateNo->ID;
-					ssd << " AND (CAST(content AS integer) = " << st3_3;
+					ssd << " AND (CAST(content AS integer) = " << st3_1;
 					ssd << " OR CAST(content AS integer) = " << st3_4;
 					ssd << ") ORDER BY create_at;";
 
@@ -4536,30 +4537,49 @@ namespace PDF
 							InZone6(conn, create_at);
 						}
 
-						if(isSheet(Ids3))
-						{
-							Ids5 = Ids3;
-							//Ids5.Start5 = create_at;
-							Ids5.Start5 = create_at;
-							Ids5.InCant = create_at;
-							Ids3 = T_IdSheet();
+						Ids5 = Ids3;
+						//Ids5.Start5 = create_at;
+						Ids5.Start5 = create_at;
+						Ids5.InCant = create_at;
+						Ids3 = T_IdSheet();
 
-							if(!Ids5.id)
-								GetID(conn, Ids5);
+						if(!Ids5.id)
+							GetID(conn, Ids5);
 						#pragma region Вывод инфы
-							std::stringstream sss;
-							sss << "InZone5";
-							sss << " Start1: " << Ids5.Start1;
-							sss << " Id: " << Ids5.id;
-							sss << " Melt: " << Ids5.Melt;
-							sss << " PartNo: " << Ids5.PartNo;
-							sss << " Pack: " << Ids5.Pack;
-							sss << " Slab: " << Ids5.Slab;
-							sss << " Sheet: " << Ids5.Sheet;
-							sss << " SubSheet: " << Ids5.SubSheet;
-							SetWindowText(hWndDebug, sss.str().c_str());
+						std::stringstream sss;
+						sss << "InZone5";
+						sss << " Start1: " << Ids5.Start1;
+						sss << " Id: " << Ids5.id;
+						sss << " Melt: " << Ids5.Melt;
+						sss << " PartNo: " << Ids5.PartNo;
+						sss << " Pack: " << Ids5.Pack;
+						sss << " Slab: " << Ids5.Slab;
+						sss << " Sheet: " << Ids5.Sheet;
+						sss << " SubSheet: " << Ids5.SubSheet;
+						SetWindowText(hWndDebug, sss.str().c_str());
 						#pragma endregion
-						}
+					}
+					if(isSheet(Ids5))
+					{
+						Ids5.Start5 = create_at;
+						Ids5.InCant = create_at;
+						Ids3 = T_IdSheet();
+
+						if(!Ids5.id)
+							GetID(conn, Ids5);
+						#pragma region Вывод инфы
+						std::stringstream sss;
+						sss << "InZone5";
+						sss << " Start1: " << Ids5.Start1;
+						sss << " Id: " << Ids5.id;
+						sss << " Melt: " << Ids5.Melt;
+						sss << " PartNo: " << Ids5.PartNo;
+						sss << " Pack: " << Ids5.Pack;
+						sss << " Slab: " << Ids5.Slab;
+						sss << " Sheet: " << Ids5.Sheet;
+						sss << " SubSheet: " << Ids5.SubSheet;
+						SetWindowText(hWndDebug, sss.str().c_str());
+						#pragma endregion
 					}
 				}CATCH(SheetLogger, "");
 				return true;
@@ -4764,6 +4784,103 @@ namespace PDF
 				}CATCH(SheetLogger, "");
 			}
 
+			//Загрузка в печь
+			void GetSeq_1_StateNo(PGConnection& conn, T_Todos& td, size_t count, size_t i, std::fstream& ff2)
+			{
+				int16_t st = td.content.As<int16_t>();
+//Открыть входную дверь
+				if(st == st1_3)
+				{
+					InZone11(conn, td.create_at, count, i);
+					SaveT_IdSheetBodyCsv(ff2, Ids1);
+				}
+				//"Загрузка в печь"
+				else if(st == st1_4)
+				{
+					InZone1(conn, td.create_at, count, i);
+					SaveT_IdSheetBodyCsv(ff2, Ids1);
+
+					if(!Ids1.CloseInDor.length())
+					{
+						if(isSheet(Ids1))
+						{
+							Ids1.CloseInDor = td.create_at;
+							Ids1.Start1 = td.create_at;
+						}
+					}
+				}
+				//"Закрыть входную дверь"
+				else if(st == st1_5)
+				{
+					InZone1(conn, td.create_at, count, i);
+					SaveT_IdSheetBodyCsv(ff2, Ids1);
+
+					if(!Ids1.CloseInDor.length())
+					{
+						if(isSheet(Ids1))
+						{
+							Ids1.CloseInDor = td.create_at;
+							Ids1.Start1 = td.create_at;
+						}
+					}
+
+					if(!Ids1.Nagrev.length())
+					{
+						InZone1(conn, td.create_at, count, i);
+						SaveT_IdSheetBodyCsv(ff2, Ids1);
+
+						if(isSheet(Ids1))
+						{
+							Ids1.Nagrev = td.create_at;
+							Ids1.Start1 = td.create_at;
+						}
+					}
+
+				}
+				//"Нагрев листа"
+				else if(st == st1_6)
+				{
+					if(!Ids1.Nagrev.length())
+					{
+						InZone1(conn, td.create_at, count, i);
+						SaveT_IdSheetBodyCsv(ff2, Ids1);
+
+						if(isSheet(Ids1))
+						{
+							Ids1.Nagrev = td.create_at;
+							Ids1.Start1 = td.create_at;
+						}
+					}
+				}
+				//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
+				else if(st == st1_7 || st == st1_8)
+				{
+					InZone2(conn, td.create_at);
+				}
+			}
+
+			//Вторая зона печи
+			void GetSeq_2_StateNo(PGConnection& conn, T_Todos& td)
+			{
+				int16_t st = td.content.As<int16_t>();
+				if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
+				{
+					InZone2(conn, td.create_at);
+				} else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
+				{
+					InZone3(conn, td.create_at);
+				}
+			}
+
+			//Зона Охлаждения
+			void GetSeq_3_StateNo(PGConnection& conn, T_Todos& td)
+			{
+				int16_t st = td.content.As<int16_t>();
+				if(st == st3_1 || st == st3_4)	//1 = Ожидание заготовки; 4 - Окончание цикла обработки
+					InZone5(conn, td.create_at);
+
+			}
+
 			GetSheets(PGConnection& conn, std::string datestart, std::string datestop)
 			{
 				InitLogger(SheetLogger);
@@ -4818,100 +4935,18 @@ namespace PDF
 						//Загрузка в печь
 						if(td.id_name == GenSeqToHmi.Seq_1_StateNo->ID)
 						{
-							int16_t st = td.content.As<int16_t>();
-							//Открыть входную дверь
-							if(st == st1_3)
-							{
-								InZone11(conn, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, Ids1);
-							}
-							//"Загрузка в печь"
-							else if(st == st1_4)
-							{
-								InZone1(conn, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, Ids1);
-
-								if(!Ids1.CloseInDor.length())
-								{
-									if(isSheet(Ids1))
-									{
-										Ids1.CloseInDor = td.create_at;
-										Ids1.Start1 = td.create_at;
-									}
-								}
-							}
-							//"Закрыть входную дверь"
-							else if(st == st1_5)
-							{ 
-								InZone1(conn, td.create_at, count, i);
-								SaveT_IdSheetBodyCsv(ff2, Ids1);
-
-								if(!Ids1.CloseInDor.length())
-								{
-									if(isSheet(Ids1))
-									{
-										Ids1.CloseInDor = td.create_at;
-										Ids1.Start1 = td.create_at;
-									}
-								}
-
-								if(!Ids1.Nagrev.length())
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-
-									if(isSheet(Ids1))
-									{
-										Ids1.Nagrev = td.create_at;
-										Ids1.Start1 = td.create_at;
-									}
-								}
-
-							}
-							//"Нагрев листа"
-							else if(st == st1_6)
-							{
-								if(!Ids1.Nagrev.length())
-								{
-									InZone1(conn, td.create_at, count, i);
-									SaveT_IdSheetBodyCsv(ff2, Ids1);
-
-									if(isSheet(Ids1))
-									{
-										Ids1.Nagrev = td.create_at;
-										Ids1.Start1 = td.create_at;
-									}
-								}
-							}
-							//"Передача на 2 рольганг" || "Передача на 2-й рольганг печи"
-							else if(st == st1_7 || st == st1_8)
-							{
-								InZone2(conn, td.create_at);
-							}
+							GetSeq_1_StateNo(conn, td, count, i, ff2);
 						}
-
 						//Вторая зона печи
 						else if(td.id_name == GenSeqToHmi.Seq_2_StateNo->ID)
 						{
-							int16_t st = td.content.As<int16_t>();
-							if(st == st2_3)	//3 = Прием заготовки с 1-го рольганга печи
-							{
-								InZone2(conn, td.create_at);
-							}
-							else if(st == st2_5 || st == st2_6 || st == st2_7) //Выгрузка из печи - "Открыть выходную дверь" || Выдача в линию закалки" || "Закрыть выходную дверь"
-							{
-								InZone3(conn, td.create_at);
-							}
+							GetSeq_2_StateNo(conn, td);
 						}
-
 						//Зона Охлаждения
 						else if(td.id_name == GenSeqToHmi.Seq_3_StateNo->ID)
 						{
-							int16_t st = td.content.As<int16_t>();
-							if(st == st2_3 || st == st2_4)	//3 = Выдача заготовки; 4 - Окончание цикла обработки
-								InZone5(conn, td.create_at);
+							GetSeq_3_StateNo(conn, td);
 						}
-
 						//Кантовка
 						else if(td.id_name == HMISheetData.NewData->ID && td.content.As<bool>())
 						{
@@ -5328,8 +5363,8 @@ namespace PDF
 			PGConnection conn;
 			CONNECTION1(conn, CorrectLog);
 			
-			std::string start = "01-12-2024 00:00:00"; //29-12-2024 00:00:00
-			std::string stop =  "";
+			std::string start = "30-12-2024 18:52:22"; //29-12-2024 00:00:00
+			std::string stop =  "2024-12-30 19:22:00.00";
 			SHEET::GetSheets sheets(conn, start, stop);
 			//26-12-2024 03:47:43
 			// 
