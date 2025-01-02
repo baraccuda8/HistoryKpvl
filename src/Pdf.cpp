@@ -440,7 +440,7 @@ namespace PDF
 				sd << " year = " << Stoi(Sheet.Year);
 				sd << " AND month = " << Stoi(Sheet.Month);
 				sd << " AND day = " << Stoi(Sheet.Day);
-				if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
+				//if(Stoi(Sheet.Year) >= 2024 && Stoi(Sheet.Month) >= 8)
 					sd << " AND hour = " << Sheet.Hour;
 		
 				sd << " AND cassetteno = " << Sheet.CassetteNo;
@@ -469,7 +469,7 @@ namespace PDF
 				std::stringstream sd;
 				sd << "SELECT * FROM sheet WHERE "; //delete_at IS NULL AND 
 
-				if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
+				//if(Stoi(Cassette.Year) >= 2024 && Stoi(Cassette.Month) >= 8)
 					sd << "hour = " << Stoi(Cassette.Hour) << " AND ";
 
 				sd << "day = '" << Stoi(Cassette.Day) << "' AND ";
@@ -2503,14 +2503,15 @@ namespace PDF
 			{
 				try
 				{
+					//02-01-2025 12:48:42
 					std::stringstream com;
 					com << "SELECT * FROM cassette WHERE";
 
-					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
-						com << " hour = " << Stoi(it.Hour);
+					//if(Stoi(it.Year) >= 2024 && /*Stoi(it.Month) >= 8 && */it.Hour.length())
+						com << " hour = " << Stoi(it.Hour) << " AND ";
 					//else
 					//	com << " hour < 1 ";
-					com << " AND day = " << Stoi(it.Day);
+					com << " day = " << Stoi(it.Day);
 					com << " AND month = " << Stoi(it.Month);
 					com << " AND year = " << Stoi(it.Year);
 					com << " AND cassetteno = " << Stoi(it.CassetteNo);
@@ -2583,7 +2584,7 @@ namespace PDF
 				set << " AND month = '" << Stoi(ct.Month) << "'";
 				set << " AND day = '" << Stoi(ct.Day) << "'";
 				set << " AND cassetteno = " << Stoi(ct.CassetteNo);;
-				if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
+				//if(Stoi(ct.Year) >= 2024 && Stoi(ct.Month) >= 8)
 					set << " AND hour = " << Stoi(ct.Hour);
 
 				std::string command = set.str();
@@ -2614,18 +2615,18 @@ namespace PDF
 					if(it.Month.length())ct.Month =it.Month;
 					if(it.Day.length())ct.Day = it.Day;
 
-					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
+					//if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
 						ct.Hour = it.Hour;
-					else
-					{
-						if(it.Create_at.length())
-							ct.Hour = getHour(it.Create_at);
-						else if(it.Run_at.length())
-							ct.Hour = getHour(it.Run_at);
-						else 
-							if(it.Hour.length())
-								ct.Hour = it.Hour;
-					}
+					//else
+					//{
+					//	if(it.Create_at.length())
+					//		ct.Hour = getHour(it.Create_at);
+					//	else if(it.Run_at.length())
+					//		ct.Hour = getHour(it.Run_at);
+					//	else 
+					//		if(it.Hour.length())
+					//			ct.Hour = it.Hour;
+					//}
 
 					if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
 					if(it.Peth.length())ct.Peth = it.Peth;
@@ -2728,18 +2729,18 @@ namespace PDF
 					if(it.Month.length())ct.Month =it.Month;
 					if(it.Day.length())ct.Day = it.Day;
 
-					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
+					//if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8)
 						ct.Hour = it.Hour;
-					else
-					{
-						if(it.Create_at.length())
-							ct.Hour = getHour(it.Create_at);
-						else if(it.Run_at.length())
-							ct.Hour = getHour(it.Run_at);
-						else
-							if(it.Hour.length())
-								ct.Hour = it.Hour;
-					}
+					//else
+					//{
+					//	if(it.Create_at.length())
+					//		ct.Hour = getHour(it.Create_at);
+					//	else if(it.Run_at.length())
+					//		ct.Hour = getHour(it.Run_at);
+					//	else
+					//		if(it.Hour.length())
+					//			ct.Hour = it.Hour;
+					//}
 
 					if(it.CassetteNo.length())ct.CassetteNo = it.CassetteNo;
 
@@ -2870,7 +2871,7 @@ namespace PDF
 					std::stringstream ssg;
 					ssg << "SELECT id FROM cassette ";
 					ssg << "WHERE";
-					if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
+					//if(Stoi(it.Year) >= 2024 && Stoi(it.Month) >= 8 && it.Hour.length())
 						ssg << " hour = " << Stoi(it.Hour);
 					//else
 					//{
@@ -4078,10 +4079,10 @@ namespace PDF
 					ssd << "WHERE day = " << td.day;
 					ssd << " AND month = " << td.month;
 					ssd << " AND year = " << td.year;
-					if(td.year >= 2024 && td.month >= 8)
+					//if(td.year >= 2024 && td.month >= 8)
 						ssd << " AND hour = " << td.hour;
-					else
-						ssd << " AND hour < 1";
+					//else
+					//	ssd << " AND hour < 1";
 
 					ssd << " AND cassetteno = " << td.cassetteno;
 					ssd << " ORDER BY id LIMIT 1";
@@ -4107,7 +4108,7 @@ namespace PDF
 					ssd << " year = " << td.year << " AND";
 					ssd << " month = " << td.month << " AND";
 					ssd << " day = " << td.day << " AND";
-					if(td.year >= 2024 && td.month >= 8)
+					//if(td.year >= 2024 && td.month >= 8)
 						ssd << " hour = " << td.hour << " AND";
 					ssd << " cassetteno = " << td.cassetteno;
 					ssd << " ORDER BY run_at DESC LIMIT 1;";
