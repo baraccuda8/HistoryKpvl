@@ -720,7 +720,10 @@ namespace KPVL {
 
                             sd << ", mask";
                         }
-
+						else
+						{ 
+                            sd << ", correct, delete_at"; //"= now(), = now()"
+						}
                         sd << ") VALUES (";
 
 #pragma region ID листа
@@ -733,7 +736,7 @@ namespace KPVL {
                         sd << ", " << PD.Pack->strVal;
                         sd << ", " << PD.Sheet->strVal;
                         sd << ", " << PD.SubSheet->strVal;
-                        sd << ", " << Pos; //start_at
+                        sd << ", " << Pos;
 #pragma endregion
 
                         if(Pos == 1 || Pos == 2)
@@ -766,6 +769,10 @@ namespace KPVL {
 
                             sd << ", "<< "'" + MaskKlapan + "'";
                         }
+						else
+						{ 
+							sd << ", now(), now()"; //", correct, delete_at"
+						}
 
                         sd << ");";
 

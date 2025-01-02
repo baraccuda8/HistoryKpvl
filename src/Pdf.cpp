@@ -3869,7 +3869,7 @@ namespace PDF
 					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 					ssd << " FROM todos WHERE";
 					ssd << " create_at < '" << ids.DataTime_End << "' AND ";
-					ssd << "(id_name = " << AI_Hmi_210.Za_TE3->ID;
+					ssd << "(id_name = "    << AI_Hmi_210.Za_TE3->ID;
 					ssd << " OR id_name = " << AI_Hmi_210.Za_PT3->ID;
 					ssd << " OR id_name = " << AI_Hmi_210.LAM_TE1->ID;
 					ssd << " OR id_name = " << GenSeqFromHmi.TempSet1->ID;		//Уставка температуры
@@ -3902,14 +3902,14 @@ namespace PDF
 					MapTodos DataSheetTodos;
 					std::tm tmp;
 					time_t t1 = DataTimeOfString(ids.DataTime_End, tmp) + 5;
-					std::string Start = GetStringOfDataTime(&t1);
+					std::string start = GetStringOfDataTime(&t1);
 
 					std::stringstream ssd;
 					ssd << "SELECT DISTINCT ON (id_name) create_at, id, id_name, content";
 					ssd << ", (SELECT type FROM tag WHERE tag.id = todos.id_name)";
 					//ssd << ", (SELECT comment FROM tag WHERE tag.id = todos.id_name)";
 					ssd << " FROM todos WHERE";
-					ssd << " create_at < '" << Start << "' AND ";
+					ssd << " create_at < '" << start << "' AND ";
 					ssd << "(id_name = " << AI_Hmi_210.LaminPressTop->ID;
 					ssd << " OR id_name = " << AI_Hmi_210.LaminPressBot->ID;
 					ssd << ") ORDER BY id_name, create_at DESC LIMIT 2;";
