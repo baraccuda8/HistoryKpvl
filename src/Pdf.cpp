@@ -4975,7 +4975,7 @@ namespace PDF
 					"SELECT start_at "
 					"- INTERVAL '2 MINUTES' "						//Минус 2 минуты
 					"FROM sheet WHERE "
-					"correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at LIMIT 1";
+					"delete_at IS NULL AND correct IS NULL AND CAST(pos AS integer) > 6 ORDER BY start_at LIMIT 1";
 					//" FROM sheet WHERE correct IS NULL AND start_at > ("
 					//"SELECT start_at FROM sheet WHERE correct IS NOT NULL ORDER BY start_at DESC LIMIT 1"
 					//") AND CAST(pos AS integer) > 6 "
