@@ -1149,7 +1149,7 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                 if(Event != 5 && !YesSh && !YesF1 && !YesF2)
                 {
                     //Если нет количества кассет оитправляем в удаленный
-                    if(SheetInCassette <= 0)
+                    if(SheetInCassette <= 0 && (!it.End_at.length() || !it.Run_at.length()))
                     {
                         //В удаленные Event = 7
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);
