@@ -580,8 +580,11 @@ void PLC_KPVL::Run(int count)
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode1), "Чтение данных");
         //KPVL::Sheet::Z6::Old_SheetInCassette = HMISheetData.Cassette.SheetInCassette->GetValue().As<int16_t>();
-        while(isRun && KeepAlive.Running)
+        while(isRun /*&& KeepAlive.Running*/)
         {
+			if(!KeepAlive.Running)
+				LOG_WARN(Logger, "{:90}| KeepAlive.Running = 0", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+
             HMISheetData.WDG_fromBase->Set_Value(true);
 
             //Проверяем на новый лист на кантовке

@@ -1900,13 +1900,13 @@ namespace PDF
 #pragma endregion
 
 				if(!Sheet.Correct.length())
-					throw std::exception("Ошибка Sheet.Correct = 0");
+					throw std::exception((std::string("Ошибка Sheet.Correct = 0, Sheet.Id") + Sheet.id).c_str());
 
 				try
 				{
 					GetCassette(Cassette, Sheet);
 					if(Cassette.Event != "5" || !Cassette.Correct.length())
-						throw std::exception(("Касета не готова: Event = " + Cassette.Event + "Correct = " + Cassette.Correct).c_str());
+						throw std::exception(("Касета не готова: Event = " + Cassette.Event + "Correct = " + Cassette.Correct + ", Sheet.Id" + Sheet.id).c_str());
 #pragma region Номер печи для FurnRef и FurnAct
 
 
@@ -2691,6 +2691,8 @@ namespace PDF
 					else
 						ssd << ", sheetincassette = -1";
 
+					if(ct.Peth.length())
+						ssd << ", peth = " << ct.Peth;
 
 					ssd << " WHERE id = " << ct.Id;
 					std::string command = ssd.str();
@@ -3297,56 +3299,64 @@ namespace PDF
 				//as << " AND sheetincassette > 0";
 				SETUPDATESQL(CassetteLogger, conn, as);
 			}
-
 			void GetCassette(PGConnection& conn, std::string start, std::string stop)
 			{
-				MapRunn CassetteTodos1;
-				MapRunn CassetteTodos2;
-				//MapTodos CassetteTodos2;
-
-				//DateStart = "2024-03-01 00:00:00";
-				//DateStop = "2024-03-31 23:59:59.999";// "2024-08-01 00:00:00";
-				DateStart = start;
-				DateCorrect = start;
-				DateStop = stop;
-				GetCassetDataBase(conn, CassetteTodos1, 1);
-				std::string DateCorrect1 = DateCorrect;
-				//std::sort(CassetteTodos1.begin(), CassetteTodos1.end(), cmpData);
-
-				DateStart = start;
-				DateCorrect = start;
-				DateStop = stop;
-				GetCassetDataBase(conn, CassetteTodos2, 2);
-				std::string DateCorrect2 = DateCorrect;
-				//std::sort(CassetteTodos2.begin(), CassetteTodos2.end(), cmpData);
+			#ifdef _DEBUG
+				#define CASSETE1
+				//#define CASSETE2
+			#else
+				#define CASSETE1
+				#define CASSETE2
+			#endif
 
 				try
 				{
 					std::string name = "cass 1_2.csv";
 					std::fstream s1(name, std::fstream::binary | std::fstream::out | std::fstream::app);
 
-					Tcass TP1 = Tcass (1);
-					Tcass TP2 = Tcass (2);
+			#ifdef CASSETE1
+					MapRunn CassetteTodos1;
+					DateStart = start;
+					DateCorrect = start;
+					DateStop = stop;
+					GetCassetDataBase(conn, CassetteTodos1, 1);
+					std::string DateCorrect1 = DateCorrect;
 
+					Tcass TP1 = Tcass (1);
 					TCassette P1;
-					TCassette P2;
 					for(auto& a1 : CassetteTodos1)
 					{
 						if(!isRun)break;
 						if(a1.second.Petch == 1)
 							PrepareDataBase(conn, TP1, P1, a1.second, 1, s1);
 					}
+				#endif
+				#ifdef CASSETE2
+					MapRunn CassetteTodos2;
+					DateStart = start;
+					DateCorrect = start;
+					DateStop = stop;
+					GetCassetDataBase(conn, CassetteTodos2, 2);
+					std::string DateCorrect2 = DateCorrect;
+
+					Tcass TP2 = Tcass (2);
+					TCassette P2;
 					for(auto& a1 : CassetteTodos2)
 					{
 						if(!isRun)break;
 						if(a1.second.Petch == 2)
 							PrepareDataBase(conn, TP2, P2, a1.second, 2, s1);
 					}
-						
+				#endif
+
 					s1.close();
 
+				#ifdef CASSETE1
 					SetAllCorrect(conn, DateCorrect1, 1);
+				#endif
+				#ifdef CASSETE2
 					SetAllCorrect(conn, DateCorrect2, 2);
+				#endif
 
 				}
 				CATCH(CassetteLogger, "");
@@ -5364,9 +5374,9 @@ namespace PDF
 			PGConnection conn;
 			CONNECTION1(conn, CorrectLog);
 			
-			std::string start = "30-12-2024 18:52:22"; //29-12-2024 00:00:00
-			std::string stop =  "2024-12-30 19:22:00.00";
-			SHEET::GetSheets sheets(conn, start, stop);
+			std::string start = "2025-01-04 07:20:00"; //29-12-2024 00:00:00
+			std::string stop =  "2025-01-04 13:00:00";
+			//SHEET::GetSheets sheets(conn, start, stop);
 			//26-12-2024 03:47:43
 			// 
 			//CASSETTE::GetCassettes cass("", "");
@@ -5377,7 +5387,7 @@ namespace PDF
 			//CASSETTE::HendCassettePDF(conn);
 
 
-			//CASSETTE::GetCassettes cass(start, stop);
+			CASSETTE::GetCassettes cass(start, stop);
 			//CASSETTE::GetCassettes cass("", "");
 			
 			//CorrectCassette(0);

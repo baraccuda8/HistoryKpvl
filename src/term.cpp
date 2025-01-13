@@ -393,8 +393,12 @@ void PLC_S107::Run(int count)
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode2), "Чтение данных");
         
-        while(isRun && KeepAlive.Running)
+        while(isRun /*&& KeepAlive.Running*/)
         {
+			if(!KeepAlive.Running)
+				LOG_WARN(Logger, "{:90}| KeepAlive.Running = 0", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+
+
             AppFurn1.WDG_fromBase->Set_Value(true);
             AppFurn2.WDG_fromBase->Set_Value(true);
 
