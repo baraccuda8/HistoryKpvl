@@ -5289,35 +5289,40 @@ namespace PDF
 		{
 			PGConnection conn;
 			CONNECTION1(conn, SheetLogger);
-	
-			//std::string start = "2024-11-21 06:35:47";
-			std::string start = SHEET::GetStartTime(conn);
-			std::string stop =  "";// "2024-10-17 12:00:00";
-	
-			//Проверка и коррекция всех листов не имеющих метку correct
-			//CorrectSheetDebug(conn);
+			std::string start = "";
+			std::string stop = "";
+			do{
+				//std::string start = "2024-11-21 06:35:47";
+				start = SHEET::GetStartTime(conn);
+				stop = "";// "2024-10-17 12:00:00";
+
+				//Проверка и коррекция всех листов не имеющих метку correct
+				//CorrectSheetDebug(conn);
+				if(start.length())
+				{
+					try
+					{
+						if(start.length())
+						{
+							SetWindowText(hWndDebug, ("Коррекции листов: " + GetStringDataTime()).c_str());
+							SHEET::GetSheets sheets(conn, start, stop);
+						}
+					}
+					CATCH(SheetLogger, "");
+				}
+			} while(start.length());
+
+			SetWindowText(hWndDebug, ("Отметка о корекции: " + GetStringDataTime()).c_str());
 			if(start.length())
 			{
-				try
-				{
-					std::string out = "Коррекции листов: " + GetStringDataTime();
-					SetWindowText(hWndDebug, out.c_str());
-					SHEET::GetSheets sheets(conn, start, stop);
-				}
-				CATCH(SheetLogger, "");
-
-				std::string out = "Отметка о корекции: " + GetStringDataTime();
-				SetWindowText(hWndDebug, out.c_str());
 				std::stringstream as;
 				as << "UPDATE sheet SET correct = now() WHERE correct IS NULL AND start_at <= '" << start << "' AND pos > 6;";
 				if(DEB)LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, as.str());
 				SETUPDATESQL(SheetLogger, conn, as);
 			}
-
-			std::string out = "DbugPdf: " + GetStringDataTime();
-			SetWindowText(hWndDebug, out.c_str());
+			SetWindowText(hWndDebug, ("DbugPdf: " + GetStringDataTime()).c_str());
 			DbugPdf(conn);
-	
+
 		}
 		CATCH(SheetLogger, "");
 	
@@ -5423,9 +5428,14 @@ namespace PDF
 					}
 #else
 					}
-					int f = (NotCorrect ? 30 : 300); //30 секунд или 5 минут
-					while(isRun && --f > 0 && OldNotCorrect == NotCorrect)
+					int f = (NotCorrect ? 10 : 60); //10 секунд или 1 минута
+					while(isRun && --f > 0 /*&& OldNotCorrect == NotCorrect*/)
+					{
+						if(!isCorrectCassette && !isCorrectSheet)
+							SetWindowText(hWndDebug, ("Закончили создание паспортов: Ожидаю " + std::to_string(f) + " сек.").c_str());
+
 						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+					}
 #endif // _DEBUG
 					OldNotCorrect = NotCorrect;
 				}
