@@ -3408,7 +3408,7 @@ namespace PDF
 
 			int AllId = 0;
 			int iAllId = 0;
-			std::string ID = "";
+			int ID = 0;
 
 			std::string StartSheet = "";
 			std::string StopSheet = "";
@@ -4355,7 +4355,7 @@ namespace PDF
 					if(!td.Start1.length() || !td.DataTime_End.length()) return false;
 					if(td.id)
 					{
-						if(ID.length() && Stoi(ID) != td.id) return false;
+						if(ID && ID != td.id) return false;
 						return Update(conn, td);
 					}
 					else if(td.Melt /*&& td.Pack*/ && td.PartNo && td.Sheet)
@@ -4630,6 +4630,7 @@ namespace PDF
 					Ids = T_IdSheet();
 
 					ids.Cant = create_at;
+					if(ID && ID != ids.id) return false;
 					GetDataSheet1(conn, ids);
 					GetDataSheet2(conn, ids);
 					GetDataSheet3(conn, ids);
@@ -4856,7 +4857,7 @@ namespace PDF
 
 			}
 
-			GetSheets(PGConnection& conn, std::string id, std::string datestart, std::string datestop)
+			GetSheets(PGConnection& conn, int id, std::string datestart, std::string datestop)
 			{
 				InitLogger(SheetLogger);
 				try
@@ -4942,11 +4943,12 @@ namespace PDF
 		};
 
 
-		std::string GetStartTime(PGConnection& conn, std::string& id, std::string& start, std::string& stop)
+		std::string GetStartTime(PGConnection& conn, int& id, std::string& start, std::string& stop)
 		{
 			//std::string start = "";
 			try
 			{
+				id = 0;
 				start = "";
 				stop = "";
 				//std::string command = "SELECT now() - INTERVAL '30 MINUTES'";
@@ -4966,7 +4968,8 @@ namespace PDF
 				{
 					if(conn.PQntuples(res))
 					{
-						id = conn.PGgetvalue(res, 0, 0);
+						std::string ids = conn.PGgetvalue(res, 0, 0);
+						id = Stoi(ids);
 						start = conn.PGgetvalue(res, 0, 1);
 						stop = conn.PGgetvalue(res, 0, 2);
 					}
@@ -5218,7 +5221,7 @@ namespace PDF
 	void DbugPdf(PGConnection& conn)
 	{
 		std::string deb = "SELECT * FROM sheet WHERE pdf = '' AND cassette <> '0' "
-			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette) IS NOT NULL "
+			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette AND pdf IS NOT NULL) IS NOT NULL "
 			"ORDER BY start_at DESC;";
 		std::deque<TSheet>MasSheet;
 		PGresult* res = conn.PGexec(deb);
@@ -5247,24 +5250,23 @@ namespace PDF
 
 	}
 
-	void SetDefCorrect(PGConnection& conn, std::string id)
+	void SetDefCorrect(PGConnection& conn, int id)
 	{
 		try{
-			std::stringstream as;
-			LOG_INFO(CorrectLog, "{:90}| UPDATE sheet id <= {}", FUNCTION_LINE_NAME, id);
 
 			std::time_t st = time(NULL);
 			tm curr_tm;
 			localtime_s(&curr_tm, &st);
 
+			std::stringstream as;
 			as << "UPDATE sheet SET correct = '2000-";//01-01 00:00:00' ";
-			as << (curr_tm.tm_mon + 1);
-			as << curr_tm.tm_mday;
-			as << curr_tm.tm_hour;
-			as << curr_tm.tm_min;
-			as << curr_tm.tm_sec;
-			as << "' WHERE correct IS NULL AND id = '" << id << "' AND pos > 6;";
-			LOG_INFO(CorrectLog, "{:90}| UPDATE sheet correct = {}", FUNCTION_LINE_NAME, as.str());
+			as << std::setw(2) << std::setfill('0') << (curr_tm.tm_mon + 1) << "-";
+			as << std::setw(2) << std::setfill('0') << curr_tm.tm_mday << " ";
+			as << std::setw(2) << std::setfill('0') << curr_tm.tm_hour << ":";
+			as << std::setw(2) << std::setfill('0') << curr_tm.tm_min << ":";
+			as << std::setw(2) << std::setfill('0') << curr_tm.tm_sec;
+			as << "' WHERE correct IS NULL AND pos > 6 AND id = " << id;
+			LOG_INFO(SheetLogger, "{:90}| {}", FUNCTION_LINE_NAME, as.str());
 
 			SETUPDATESQL(SheetLogger, conn, as);
 		}
@@ -5282,13 +5284,13 @@ namespace PDF
 		{
 			PGConnection conn;
 			CONNECTION1(conn, SheetLogger);
-			std::string id = "";
 			std::string start = "";
 			std::string stop = "";
+			int id = 0;
 			do{
 				//std::string start = "2024-11-21 06:35:47";
-				SHEET::GetStartTime(conn, id, start, stop);
 				
+				SHEET::GetStartTime(conn, id, start, stop);
 
 				if(start.length())
 				{
@@ -5300,18 +5302,15 @@ namespace PDF
 							SHEET::GetSheets sheets(conn, id, start, stop);
 
 							SetWindowText(hWndDebug, ("Отметка о корекции: " + GetStringDataTime()).c_str());
-							SetDefCorrect(conn, id);
+							if(id)
+								SetDefCorrect(conn, id);
 						}
 					}
 					CATCH(SheetLogger, "");
 				}
 			} while(start.length());
 
-			//SetWindowText(hWndDebug, ("Отметка о корекции: " + GetStringDataTime()).c_str());
-			//SetWindowText(hWndDebug, ("DbugPdf: " + GetStringDataTime()).c_str());
 			DbugPdf(conn);
-			//SetWindowText(hWndDebug, ("Закончили коррекчию листов: " + GetStringDataTime()).c_str());
-
 		}
 		CATCH(SheetLogger, "");
 	
