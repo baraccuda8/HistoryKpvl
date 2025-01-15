@@ -1343,10 +1343,11 @@ typedef struct Tcass{
     std::string Year = "";
     std::string CassetteNo = "";
 	bool Run = false;
-    Tcass(int p)
-    {
-        Peth = std::to_string(p);
-    }
+	Tcass(){};
+	Tcass(int p)
+	{
+		Peth = std::to_string(p);
+	};
 }Tcass;
 
 typedef struct TCassette{
