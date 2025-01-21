@@ -316,10 +316,47 @@ void PLC_S107::InitNodeId()
     CATCH(PethLogger, "");
 }
 
+void GetFurnIdCassette(T_ForBase_RelFurn& F, Tcass& P)
+{
+	//F.ProcRun->GetValue();
+	//F.Cassette.Year->GetValue();
+	//F.Cassette.Month->GetValue();
+	//F.Cassette.Day->GetValue();
+	//F.Cassette.Hour->GetValue();
+	//F.Cassette.CassetteNo->GetValue();
+
+	P.Run = F.ProcRun->GetBool();
+	P.Year = F.Cassette.Year->GetString();
+	P.Month = F.Cassette.Month->GetString();
+	P.Day = F.Cassette.Day->GetString();
+	P.Hour = F.Cassette.Hour->GetString();
+	P.CassetteNo = F.Cassette.CassetteNo->GetString();
+
+	if(P.Peth == "1")
+	{
+		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Year), P.Year);
+		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Month), P.Month);
+		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Day), P.Day);
+		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Hour), P.Hour);
+		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_CassetteNo), P.CassetteNo);
+	}
+	else if(P.Peth == "2")
+	{
+		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Year), P.Year);
+		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Month), P.Month);
+		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Day), P.Day);
+		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Hour), P.Hour);
+		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_CassetteNo), P.CassetteNo);
+	}
+}
 
 void PLC_S107::InitTag()
 {
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+
+	GetFurnIdCassette(ForBase_RelFurn_1, S107::Furn1::Petch);
+	GetFurnIdCassette(ForBase_RelFurn_2, S107::Furn2::Petch);
+
     try
     {
         //Текушее время контроллера
@@ -346,6 +383,7 @@ void PLC_S107::InitTag()
         } 
         CATCHINIT();
     }
+
 }
 
 void PLC_S107::Run(int count)
@@ -502,53 +540,6 @@ DWORD WINAPI Open_FURN_RUN(LPVOID)
 
     return 0;
 }
-
-//float GetTime(std::string command)
-//{
-//    float f = 0;
-//    PGresult* res = conn_spic.PGexec(command);
-//    if(PQresultStatus(res) == PGRES_TUPLES_OK)
-//    {
-//        if(PQntuples(res))
-//            f = Stof(conn_spic.PGgetvalue(res, 0, 0));
-//    }
-//    else
-//        LOG_ERR_SQL(PethLogger, res, command);
-//    PQclear(res);
-//    return f;
-//}
-
-//void GetCasseteTimeRun(T_ForBase_RelFurn& app, TCassette& TC)
-//{
-//    try
-//    {
-// //std::string command = "";
-//        std::stringstream sd1;
-//        std::stringstream sd2;
-//        if(!TC.Run_at.length() || !TC.Finish_at.length()) return;
-//
-//        //AppFurn1.ActTimeHeatAcc        // Факт время нагрева
-//        sd1 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatAcc->ID;
-//        sd1 << " AND create_at >= '" << TC.Run_at << "'";
-//        sd1 << " AND create_at <= '" << TC.Finish_at << "'";
-//        sd1 << ");";
-//
-//        float f1 = GetTime(sd1.str());
-//
-//        //AppFurn1.ActTimeHeatWait        // Факт время нагрева
-//        sd2 << "SELECT content FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID << " AND create_at = (SELECT max(create_at) FROM todos WHERE id_name = " << app.ActTimeHeatWait->ID;
-//        sd2 << " AND create_at >= '" << TC.Run_at << "'";
-//        sd2 << " AND create_at <= '" << TC.Finish_at << "'";
-//        sd2 << ");";
-//
-//        float f2 = GetTime(sd2.str());
-//        if(f1 || f2)
-//        {
-//            int tt = 0;
-//        }
-//    }
-//    CATCH(PethLogger, "");
-//}
 
 
 typedef struct isrun_s{
@@ -948,25 +939,6 @@ void FindEnd(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& i
     CATCH(L, "");
 }
 
-////Ждем 15 минут финал
-//void FindFinish(std::shared_ptr<spdlog::logger> L, PGConnection& conn, TCassette& it)
-//{
-//    try
-//    {
-//        //Если нет конца отпуска
-//        S107::GetFinishCassete(conn, it);
-//        //time_t tmp_at = DataTimeOfString(it.End_at);
-//        //time_t tStop1 = tmp_at + (60 * 15); //+15 минут
-//        //
-//        //std::string final = GetDataTimeString(&tStop1);;
-//        //std::string Currt = GetDataTimeString();
-//        //
-//        //Финализируем если прошло 15 минут после конца отпуска
-//        //if(Currt >= final)
-//        //    it.Finish_at = final;
-//    }
-//    CATCH(L, "");
-//}
 
 //В финал Event = 5
 int SetCassetteInFinal(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCassette& it)
@@ -978,6 +950,7 @@ int SetCassetteInFinal(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TC
         sd << "UPDATE cassette SET event = 5, finish_at = '" << it.Finish_at << "' WHERE id = " << it.Id;
         LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
         SETUPDATESQL(L, conn, sd);
+		CreateThread(0, 0, PDF::CorrectCassetteFinal, (LPVOID)&it, 0, 0);
     }
     CATCH(L, "");
 
@@ -1043,9 +1016,10 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                 OutLoggin(L, FUNCTION_LINE_NAME, "<< В удаленные", it);
             }
             int SheetInCassette = Stoi(it.SheetInCassette);
+			int CassetteNo = Stoi(it.CassetteNo); 
 
             //Если кассета не удаленв
-            if(Event != 7)
+            if(Event != 7 && CassetteNo != 255)
             {
                 SheetIT = _cassette(it);
                 int Peth = Stoi(it.Peth);
@@ -1122,7 +1096,9 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                                     {
                                         //Финализируем
                                         //OutLoggin(L, FUNCTION_LINE_NAME, ">> Финализируем", it);
+										//FindFinish(conn, L, it);
                                         S107::GetFinishCassete(conn, L, it);
+										//CreateThread(0, 0, PDF::CorrectCassetteFinal, (LPVOID)0, 0, 0);
                                         //FindFinish(L, conn, it);
                                         //OutLoggin(L, FUNCTION_LINE_NAME, "<< Финализируем", it);
                                     }
@@ -1153,7 +1129,7 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                 if(Event != 5 && !YesSh && !YesF1 && !YesF2)
                 {
                     //Если нет количества кассет оитправляем в удаленный
-                    if(SheetInCassette <= 0 && !it.End_at.length())
+                    if(SheetInCassette <= 0 && CassetteNo != 255 && !it.End_at.length())
                     {
                         //В удаленные Event = 7
                         OutLoggin(L, FUNCTION_LINE_NAME, ">> В удаленные", it);

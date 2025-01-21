@@ -1337,10 +1337,10 @@ namespace Cassete
 typedef struct Tcass{
     std::string Peth = "";
     std::string Run_at = "";
-    std::string Hour = "0";
-    std::string Day = "";
-    std::string Month = "";
     std::string Year = "";
+    std::string Month = "";
+    std::string Day = "";
+    std::string Hour = "0";
     std::string CassetteNo = "";
 	bool Run = false;
 	Tcass(){};
@@ -1392,7 +1392,7 @@ typedef struct TCassette{
 
     };
 
-    TCassette& operator = (Tcass& cass)
+    TCassette& operator = (const Tcass& cass)
     {
         Run_at = cass.Run_at;
         Peth = cass.Peth;
@@ -1405,7 +1405,20 @@ typedef struct TCassette{
 
         return *this;
     }
+	//TCassette(){}
+	//TCassette(const T_Fcassette& cass)
+	////TCassette& operator = (T_Fcassette& cass)
+	//{
+ //       Hour = cass.Hour->GetString();
+ //       Day = cass.Day->GetString();
+ //       Month = cass.Month->GetString();
+ //       Year = cass.Year->GetString();
+ //       CassetteNo = cass.CassetteNo->GetString();
+	//	return *this;
+	//}
+
 }TCassette;
+
 
 
 //Создание главного окна

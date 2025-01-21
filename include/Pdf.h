@@ -24,6 +24,8 @@ namespace PDF
 	DWORD WINAPI RunCassettelPdf(LPVOID);
 
 	DWORD CorrectSheet(LPVOID);
+	DWORD CorrectCassetteFinal(LPVOID);
+
 #ifdef _DEBUG
 	DWORD CorrectSheet2(LPVOID);
 #endif

@@ -64,8 +64,10 @@ namespace S107
 
     //Печ отпуска #1
     namespace Furn1{
-        //extern T_cass Petch;
-
+        extern const int nPetch;
+		extern Tcass Petch;
+        extern int CassetteId;
+		extern T_ForBase_RelFurn& Furn;
         DWORD Data_WDG_toBase(Value* value);
 
         //BOOL Работа
@@ -142,7 +144,10 @@ namespace S107
 
     //Печ отпуска #2
     namespace Furn2{
-        //extern T_cass Petch;
+        extern const int nPetch;
+		extern Tcass Petch;
+        extern int CassetteId;
+		extern T_ForBase_RelFurn& Furn;
 
         DWORD Data_WDG_toBase(Value* value);
 

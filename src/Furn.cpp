@@ -14,6 +14,9 @@
 #include "Pdf.h"
 
 extern std::shared_ptr<spdlog::logger> PethLogger;
+std::shared_ptr<spdlog::logger> FurnLogger_1;
+std::shared_ptr<spdlog::logger> FurnLogger_2;
+
 
 namespace S107
 {
@@ -193,6 +196,40 @@ namespace S107
         CATCH(PethLogger, "");
         return id;
     }
+	int GetId(PGConnection& conn, int Year, int Month, int Day, int CassetteNo, int Hour )
+    {
+        int id = 0;
+        try
+        {
+            std::stringstream ss;
+            ss << "SELECT id FROM cassette WHERE";
+            ss << " year = '" << Year << "'";
+            ss << " AND month = '" << Month << "'";
+            ss << " AND day = '" << Day << "'";
+            ss << " AND cassetteno = " << CassetteNo;
+            ss << " AND hour = " << Hour;
+            std::string command = ss.str();
+            PGresult* res = conn.PGexec(command);
+            if(PQresultStatus(res) == PGRES_TUPLES_OK)
+            {
+                   
+                if(PQntuples(res))
+                {
+                    std::string s = conn.PGgetvalue(res, 0, 0);
+                    if(s.length())
+                        id = Stoi(s);
+                    else
+                        id = 0;
+                }
+            }
+            else
+                LOG_ERR_SQL(PethLogger, res, command);
+            PQclear(res);
+        }
+        CATCH(PethLogger, "");
+        return id;
+    }
+
     int GetEvent(PGConnection& conn, T_Fcassette& CD)
     {
         int events = 0;
@@ -207,7 +244,7 @@ namespace S107
             ss << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
             std::string command = ss.str();
 
-            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+            //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
             PGresult* res = conn.PGexec(command);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -367,6 +404,18 @@ namespace S107
 
 
 #pragma region Функции с кассетами в базе
+	void GetFurn(Tcass& Petch, int Peth)
+	{
+			if(Peth == 1)
+			{
+				Petch = Furn1::Petch;
+			}
+			if(Peth == 2)
+			{
+				Petch = Furn2::Petch;
+			}
+	}
+
 
     bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it)
     {
@@ -396,6 +445,23 @@ namespace S107
         int id = 0;
         try
         {
+			Tcass& P = Furn1::Petch;
+			GetFurn(P, Peth);
+			if(!P.Run)
+			{
+
+				P.Run = true;
+				P.Run_at = GetStringDataTime();
+				P.Year = Furn.Cassette.Year->GetString();
+				P.Month = Furn.Cassette.Month->GetString();
+				P.Day = Furn.Cassette.Day->GetString();
+				P.Hour = Furn.Cassette.Hour->GetString();
+				P.CassetteNo = Furn.Cassette.CassetteNo->GetString();
+			}
+
+			LOG_INFO(PethLogger, "{:90}| ProcRun Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
+					 FUNCTION_LINE_NAME, P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo);
+
             T_Fcassette& CD = Furn.Cassette;
             if(IsFCassete(CD))
             {
@@ -435,6 +501,8 @@ namespace S107
                 }
                 else
                 {
+					#pragma region MyRegion
+
                     std::stringstream sd;
                     sd << "INSERT INTO cassette (";
                     sd << "event, ";
@@ -475,9 +543,11 @@ namespace S107
                     sd << CD.Hour->Val.As<uint16_t>() << ", ";
                     sd << CD.CassetteNo->Val.As<int32_t>() << ", ";
                     sd << "-1)";
+					#pragma endregion
+
                     LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                     SETUPDATESQL(PethLogger, conn, sd);
-
+					
                     id = GetId(conn, CD);
                 }
             }
@@ -486,22 +556,89 @@ namespace S107
         return id;
     }
 
+	//TCassette itTCassette;
     int UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
     {
         int id = 0;
         try
         {
+			Tcass& P = Furn1::Petch;
+			GetFurn(P, Peth);
+
+			LOG_INFO(TestLogger, "{:90}| ProcEnd Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
+					 FUNCTION_LINE_NAME,P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo);
+
+			P = Tcass(Peth);
+
             T_Fcassette& CD = Furn.Cassette;
+
             if(IsFCassete(CD))
             {
                 id = GetId(conn, CD);
                 std::stringstream sd;
                 sd << "UPDATE cassette SET end_at = now() WHERE id = " << id;
-                LOG_INFO(TestLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(PethLogger, conn, sd);
-                LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
-                         FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
+                //LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={}",
+                //         FUNCTION_LINE_NAME, Peth, Furn.Cassette.Year->GetString(), Furn.Cassette.Month->GetString(), Furn.Cassette.Day->GetString(), Furn.Cassette.Hour->GetString(), Furn.Cassette.CassetteNo->GetString());
             }
+			//else
+			//{ 
+			//	std::time_t st = time(NULL);
+			//	tm curr_tm;
+			//	localtime_s(&curr_tm, &st);
+			//	int32_t Year = (curr_tm.tm_year + 1900);
+			//	int32_t Month = (curr_tm.tm_mon + 1);
+			//	int32_t Day = (curr_tm.tm_mday);
+			//	uint16_t Hour = (curr_tm.tm_hour);
+			//	int32_t CassetteNo = 255;
+			//
+			//	std::string str = GetStringOfDataTime(st);
+			//
+			//	std::stringstream sd;
+			//	sd << "INSERT INTO cassette (";
+			//	sd << "event, ";
+			//	sd << "run_at, ";
+			//	sd << "end_at, ";
+			//	sd << "finish_at, ";
+			//	sd << "peth, ";
+			//
+			//	sd << "year, ";
+			//	sd << "month, ";
+			//	sd << "day, ";
+			//	sd << "hour, ";
+			//	sd << "cassetteno, ";
+			//	sd << "sheetincassette";
+			//
+			//	sd << ") VALUES (5";
+			//	
+			//	sd << ", " << str;
+			//	sd << ", " << str;
+			//	sd << ", " << str;
+			//
+			//	sd << ", " << Peth;
+			//	sd << ", " << Year;
+			//	sd << ", " << Month;
+			//	sd << ", " << Day;
+			//	sd << ", " << Hour;
+			//	sd << ", " << CassetteNo;
+			//	sd << ", 0)";
+			//	
+			//	LOG_INFO(TestLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+			//    SETUPDATESQL(PethLogger, conn, sd);
+			//	id = GetId(conn, Year, Month, Day, CassetteNo, Hour);
+			//      LOG_INFO(PethLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Id={}", FUNCTION_LINE_NAME, Peth, Year, Month, Day, Hour, CassetteNo, id);
+			//
+			//	itTCassette = TCassette();
+			//	itTCassette.Id = std::to_string(id);
+			//	itTCassette.Peth = std::to_string(Peth);
+			//	itTCassette.Run_at = str;
+			//	itTCassette.End_at = str;
+			//	itTCassette.Finish_at = str;
+			//
+			//	CreateThread(0, 0, PDF::CorrectCassetteFinal, (LPVOID)&itTCassette, 0, 0);
+			//
+			//}
         }
         CATCH(PethLogger, "");
         return 0;
@@ -603,22 +740,23 @@ namespace S107
 
     //Печ отпуска #1
     namespace Furn1{
-        //T_cass Petch;
-        int CassetteId = 0;
-
-
         const int nPetch = 1;
+		Tcass Petch(nPetch);
+        int CassetteId = 0;
+		T_ForBase_RelFurn& Furn = ForBase_RelFurn_1;
+
+
         DWORD Data_WDG_toBase(Value* value)
         {
             try
             {
                 if(value->GetBool())
                 {
-                    AppFurn1.Furn_old_dt = time(NULL);
+                    Furn.Furn_old_dt = time(NULL);
                     try
                     {
-                        //AppFurn1.WDG_toBase->Set_Value(false);
-                        AppFurn1.WDG_fromBase->Set_Value(true);
+                        //Furn.WDG_toBase->Set_Value(false);
+                        Furn.WDG_fromBase->Set_Value(true);
                     }
                     CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_1.Data.WDG_fromBase.Set_Value");
                     //catch(std::exception& exc)
@@ -631,7 +769,7 @@ namespace S107
                     //};
 
                     struct tm TM;
-                    localtime_s(&TM, &AppFurn1.Furn_old_dt);
+                    localtime_s(&TM, &Furn.Furn_old_dt);
                     SetWindowText(winmap(value->winId), string_time(&TM).c_str());
                 }
             }
@@ -645,10 +783,11 @@ namespace S107
             try
             {
                 std::string out = "Простой";
-                if(value->GetBool()/*= GetBool()*/)
-                {
+				
+				if(value->GetBool())
+				{
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(*value->Conn, AppFurn1, nPetch);
+                    CassetteId = UpdateCassetteProcRun(*value->Conn, Furn, nPetch);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -665,19 +804,10 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcEnd(*value->Conn, AppFurn1, nPetch);
-                    AppFurn1.Cassette.facttemper = "0";
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
-                    //{
-                    //    Petch.End_at = GetDataTimeString();
-                    //    UpdateCassette(conn_temp, Petch, nPetch);
-                    //    write(Petch, nPetch);
-                    //}
-#pragma endregion
+                    CassetteId = UpdateCassetteProcEnd(*value->Conn, Furn, nPetch);
+                    Furn.Cassette.facttemper = "0";
 
                 }
-                //Petch = T_cass();
 
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -695,15 +825,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, AppFurn1, nPetch);
-
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
-                    //{
-                    //    Petch.Err_at = GetDataTimeString();
-                    //    UpdateCassette(conn_temp, Petch, nPetch);
-                    //}
-#pragma endregion
+                    CassetteId = UpdateCassetteProcError(*value->Conn, Furn, nPetch);
 
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
@@ -721,7 +843,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, AppFurn1, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, Furn, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
                 }
@@ -736,8 +858,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Hour = value->GetInt();//value->GetInt();
+				if(!Petch.Run)
+					Petch.Hour = ForBase_RelFurn_1.Cassette.Hour->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Hour);
+                //MySetWindowText(value);
             }
             CATCH(PethLogger, "");
 
@@ -747,8 +871,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Day = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+				if(!Petch.Run)
+					Petch.Day = Furn.Cassette.Day->GetString();
+				MySetWindowText(winmap(value->winId),  Petch.Day);
             }
             CATCH(PethLogger, "");
 
@@ -758,8 +884,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Month = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+				if(!Petch.Run)
+					Petch.Month = Furn.Cassette.Month->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Month);
             }
             CATCH(PethLogger, "");
 
@@ -769,8 +897,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Year = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+				if(!Petch.Run)
+					Petch.Year = Furn.Cassette.Year->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Year);
             }
             CATCH(PethLogger, "");
 
@@ -780,8 +910,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.CassetteNo = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+				if(!Petch.Run)
+					Petch.CassetteNo = Furn.Cassette.CassetteNo->GetString();
+				MySetWindowText(winmap(value->winId), Petch.CassetteNo);
             }
             CATCH(PethLogger, "");
 
@@ -794,7 +926,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//value->GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn1, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString());
             }
             CATCH(PethLogger, "");
 
@@ -806,7 +938,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn1, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -817,7 +949,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn1, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -832,13 +964,13 @@ namespace S107
                 float f = value->GetFloat();//GetFloat();
                 if(f <= 5.0 && f >= 4.9)
                 {
-                    MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.TempAct->GetString().c_str());
-                    SetTemperCassette(*value->Conn, AppFurn1.Cassette, AppFurn1.TempAct->GetString());
+                    MySetWindowText(winmap(RelF1_Edit_Proc1), Furn.TempAct->GetString().c_str());
+                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString());
                 }
-                else if(f >= AppFurn1.TimeProcSet->GetFloat())//GetFloat())
+                else if(f >= Furn.TimeProcSet->GetFloat())//GetFloat())
                 {
-                    AppFurn1.Cassette.facttemper = "0";
-                    MySetWindowText(winmap(RelF1_Edit_Proc1), AppFurn1.Cassette.facttemper.c_str());
+                    Furn.Cassette.facttemper = "0";
+                    MySetWindowText(winmap(RelF1_Edit_Proc1), Furn.Cassette.facttemper.c_str());
 
                 }
             }
@@ -852,22 +984,21 @@ namespace S107
 
     //Печ отпуска #2
     namespace Furn2{
-        //T_cass Petch;
-        int CassetteId = 0;
-
-
         const int nPetch = 2;
+		Tcass Petch(nPetch);
+        int CassetteId = 0;
+		T_ForBase_RelFurn& Furn = ForBase_RelFurn_2;
 
         DWORD Data_WDG_toBase(Value* value)
         {
             try{
                 if(value->GetBool())
                 {
-                    AppFurn2.Furn_old_dt = time(NULL);
+                    Furn.Furn_old_dt = time(NULL);
                     try
                     {
-                        //AppFurn2.WDG_toBase->Set_Value(false);
-                        AppFurn2.WDG_fromBase->Set_Value(true);
+                        //Furn.WDG_toBase->Set_Value(false);
+                        Furn.WDG_fromBase->Set_Value(true);
                     }
                     CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value");
                     //catch(std::exception& exc)
@@ -880,7 +1011,7 @@ namespace S107
                     //};
 
                     struct tm TM;
-                    localtime_s(&TM, &AppFurn2.Furn_old_dt);
+                    localtime_s(&TM, &Furn.Furn_old_dt);
                     SetWindowText(winmap(value->winId), string_time(&TM).c_str());
                 }
             }
@@ -894,11 +1025,12 @@ namespace S107
             try
             {
                 std::string out = "Простой";
-                if(value->GetBool())
-                {
-                    out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(*value->Conn, AppFurn2, nPetch);
-
+				
+				if(value->GetBool())
+				{
+					out = GetShortTimes();
+					CassetteId = UpdateCassetteProcRun(*value->Conn, Furn, nPetch);
+				
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
                     //{
@@ -928,9 +1060,9 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    UpdateCassetteProcEnd(*value->Conn, AppFurn2, nPetch);
+                    UpdateCassetteProcEnd(*value->Conn, Furn, nPetch);
                     CassetteId = 0;
-                    AppFurn1.Cassette.facttemper = "0";
+                    Furn.Cassette.facttemper = "0";
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
@@ -957,7 +1089,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, AppFurn2, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, Furn, nPetch);
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch))
@@ -981,7 +1113,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, AppFurn2, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, Furn, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
                 }
@@ -996,8 +1128,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Hour = value->GetInt();//value->GetInt();
+				//MySetWindowText(value);
+                if(!Petch.Run)
+					Petch.Hour = Furn.Cassette.Hour->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Hour);
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1006,8 +1140,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Day = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+				if(!Petch.Run)
+					Petch.Day = Furn.Cassette.Day->GetString();
+				MySetWindowText(winmap(value->winId),  Petch.Day);
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1016,8 +1152,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.Month = value->GetInt();//value->GetInt();
+                //MySetWindowText(value);
+                if(!Petch.Run)
+					Petch.Month = Furn.Cassette.Month->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Month);
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1027,7 +1165,9 @@ namespace S107
             try
             {
                 MySetWindowText(value);
-                //Petch.Year = value->GetInt();//value->GetInt();
+                if(!Petch.Run)
+					Petch.Year = Furn.Cassette.Year->GetString();
+				MySetWindowText(winmap(value->winId), Petch.Year);
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1036,8 +1176,10 @@ namespace S107
         {
             try
             {
-                MySetWindowText(value);
-                //Petch.CassetteNo =value->GetInt();// value->GetInt();
+                //MySetWindowText(value);
+                if(!Petch.Run)
+					Petch.CassetteNo = Furn.Cassette.CassetteNo->GetString();
+				MySetWindowText(winmap(value->winId), Petch.CassetteNo);
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1049,7 +1191,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn2, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1060,7 +1202,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn2, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1071,7 +1213,7 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, AppFurn2, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString());
             }
             CATCH(PethLogger, "");
             return 0;
@@ -1086,13 +1228,13 @@ namespace S107
                 float f = value->GetFloat();// GetFloat();
                 if(f <= 5.0 && f >= 4.9)
                 {
-                    MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.TempAct->GetString().c_str());
-                    SetTemperCassette(*value->Conn, AppFurn2.Cassette, AppFurn2.TempAct->GetString());
+                    MySetWindowText(winmap(RelF2_Edit_Proc1), Furn.TempAct->GetString().c_str());
+                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString());
                 }
-                else if(f >= AppFurn2.TimeProcSet->GetFloat())//GetFloat())
+                else if(f >= Furn.TimeProcSet->GetFloat())//GetFloat())
                 {
-                    AppFurn2.Cassette.facttemper = "0";
-                    MySetWindowText(winmap(RelF2_Edit_Proc1), AppFurn2.Cassette.facttemper.c_str());
+                    Furn.Cassette.facttemper = "0";
+                    MySetWindowText(winmap(RelF2_Edit_Proc1), Furn.Cassette.facttemper.c_str());
 
                 }
             }
