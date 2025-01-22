@@ -322,11 +322,18 @@ void InitFurnIdCassette(int Peth)
 	Tcass& P = S107::GetIgCassetteFurn(Peth);
 
 	P.Run = F.ProcRun->GetBool();
-	P.Year = F.Cassette.Year->GetString();
-	P.Month = F.Cassette.Month->GetString();
-	P.Day = F.Cassette.Day->GetString();
-	P.Hour = F.Cassette.Hour->GetString();
-	P.CassetteNo = F.Cassette.CassetteNo->GetString();
+	if(P.Run)
+	{
+		P.Year = F.Cassette.Year->GetString();
+		P.Month = F.Cassette.Month->GetString();
+		P.Day = F.Cassette.Day->GetString();
+		P.Hour = F.Cassette.Hour->GetString();
+		P.CassetteNo = F.Cassette.CassetteNo->GetString();
+	}
+	else
+	{
+		P = Tcass(Peth);
+	}
 
 	MySetWindowText(winmap(F.Cassette.Year->winId), P.Year);
 	MySetWindowText(winmap(F.Cassette.Month->winId), P.Month);
