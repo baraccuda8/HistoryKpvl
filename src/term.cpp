@@ -324,6 +324,7 @@ void InitFurnIdCassette(int Peth)
 	P.Run = F.ProcRun->GetBool();
 	if(P.Run)
 	{
+		P.Run_at = GetStringDataTime();
 		P.Year = F.Cassette.Year->GetString();
 		P.Month = F.Cassette.Month->GetString();
 		P.Day = F.Cassette.Day->GetString();
