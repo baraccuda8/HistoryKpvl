@@ -1335,13 +1335,13 @@ namespace Cassete
 };
 
 typedef struct Tcass{
-    std::string Peth = "";
-    std::string Run_at = "";
-    std::string Year = "";
-    std::string Month = "";
-    std::string Day = "";
+    std::string Peth = "0";
+    std::string Run_at = "0";
+    std::string Year = "0";
+    std::string Month = "0";
+    std::string Day = "0";
     std::string Hour = "0";
-    std::string CassetteNo = "";
+    std::string CassetteNo = "0";
 	bool Run = false;
 	Tcass(){};
 	Tcass(int p)

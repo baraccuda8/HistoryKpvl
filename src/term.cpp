@@ -334,6 +334,12 @@ void InitFurnIdCassette(int Peth)
 	else
 	{
 		P = Tcass(Peth);
+		//P.Run_at = "";
+		//P.Year = "0";
+		//P.Month = "0";
+		//P.Day = "0";
+		//P.Hour = "0";
+		//P.CassetteNo = "0";
 	}
 
 	MySetWindowText(winmap(F.Cassette.Year->winId), P.Year);
