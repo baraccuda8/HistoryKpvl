@@ -528,8 +528,8 @@ void InitText()
         SetText(HMISheetData.CasseteIsFill, CassetTextOut);
 
         SetWindowText(winmap(hEditState_12), GenSeq1[GenSeqToHmi.Seq_1_StateNo->GetInt()].c_str());
-        SetWindowText(winmap(hEditState_22), GenSeq1[GenSeqToHmi.Seq_2_StateNo->GetInt()].c_str());
-        SetWindowText(winmap(hEditState_32), GenSeq1[GenSeqToHmi.Seq_3_StateNo->GetInt()].c_str());
+        SetWindowText(winmap(hEditState_22), GenSeq2[GenSeqToHmi.Seq_2_StateNo->GetInt()].c_str());
+        SetWindowText(winmap(hEditState_32), GenSeq3[GenSeqToHmi.Seq_3_StateNo->GetInt()].c_str());
 }
 
 void PLC_KPVL::Run(int count)
