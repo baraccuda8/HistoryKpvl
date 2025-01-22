@@ -321,6 +321,7 @@ void InitFurnIdCassette(int Peth)
 	T_ForBase_RelFurn & F = S107::GetBaseRelFurn(Peth);
 	Tcass& P = S107::GetIgCassetteFurn(Peth);
 
+
 	P.Run = F.ProcRun->GetBool();
 	if(P.Run)
 	{
