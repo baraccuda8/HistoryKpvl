@@ -1090,10 +1090,21 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                                 }
                                 else
                                 {
-                                    //В ожидание
-                                    OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
-                                    Event = SetCassetteInWait(conn, L, it);
-                                    OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
+									Tcass& P = S107::GetIgCassetteFurn(Peth);
+									if(S107::IsCassette(P))
+									{ 
+										if(Sheet.Year != Stoi(P.Year) ||
+											  Sheet.Month != Stoi(P.Month) ||
+											  Sheet.Day != Stoi(P.Day) ||
+											  Sheet.Hour != Stoi(P.Hour) ||
+											  Sheet.CassetteNo != Stoi(P.CassetteNo))
+										{
+											//В ожидание
+											OutLoggin(L, FUNCTION_LINE_NAME, ">> В ожидание", it);
+											Event = SetCassetteInWait(conn, L, it);
+											OutLoggin(L, FUNCTION_LINE_NAME, "<< В ожидание", it);
+										}
+									}
                                 }
 
                             }

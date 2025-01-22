@@ -411,7 +411,7 @@ namespace S107
                 ss << boost::format("%|02|:") % TM_Beg.tm_hour;
                 ss << boost::format("%|02|:") % TM_Beg.tm_min;
                 ss << boost::format("%|02|'") % TM_Beg.tm_sec;
-                ss << " AND delete_at IS NULL ORDER BY event ASC, create_at DESC;"; //DESC
+                ss << " AND finish_at IS NULL AND delete_at IS NULL ORDER BY event ASC, create_at DESC;"; //DESC
                 std::string command = ss.str();
 
                 PGresult* res = conn.PGexec(command);
@@ -539,7 +539,6 @@ namespace S107
 
 		try
 		{
-			Tcass& P = GetIgCassetteFurn(Peth);
 			if(!P.Run)
 			{
 				P.Run = true;
@@ -696,7 +695,6 @@ namespace S107
 			}
         }
         CATCH(FurnLogger, "");
-		P = Tcass(Peth);
         return 0;
     }
 
@@ -903,7 +901,7 @@ namespace S107
                     out = GetShortTimes();
                     CassetteId = UpdateCassetteProcEnd(*value->Conn, nPetch);
                     Furn.Cassette.facttemper = "0";
-
+					Petch = Tcass (nPetch);
                 }
 
                 MySetWindowText(winmap(value->winId), out.c_str());
@@ -942,9 +940,8 @@ namespace S107
                 {
                     CassetteId = ReturnCassette(*value->Conn, nPetch);
                     value->Set_Value(false);
-                    LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
+                    //LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
                 }
-                if(DEB)LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
             }
             CATCH(PethLogger, "");
 
@@ -1127,20 +1124,6 @@ namespace S107
 				{
 					out = GetShortTimes();
 					CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch);
-				
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
-                    //{
-                    //    Petch.Run_at = GetDataTimeString();
-                    //    std::stringstream sd;
-                    //    sd << "INSERT INTO cassette2 (";
-                    //    sd << "hour, day, month, year, cassetteno, peth, run_at";
-                    //    sd << ") VALUES (";
-                    //    sd << Petch.Hour << ", " << Petch.Day << ", " << Petch.Month << ", " << Petch.Year << ", " << Petch.CassetteNo << ", " << nPetch << ", '" << Petch.Run_at << "');";
-                    //    SETUPDATESQL(PethLogger, conn_temp, sd);
-                    //}
-#pragma endregion
-
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -1160,17 +1143,8 @@ namespace S107
                     UpdateCassetteProcEnd(*value->Conn, nPetch);
                     CassetteId = 0;
                     Furn.Cassette.facttemper = "0";
-
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch) && Petch.Run_at.size())
-                    //{
-                    //    Petch.End_at = GetDataTimeString();
-                    //    UpdateCassette(conn_temp, Petch, nPetch);
-                    //}
-#pragma endregion
+					Petch = Tcass (nPetch);
                 }
-                //Petch = T_cass();
-
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
             CATCH(PethLogger, "");
@@ -1187,14 +1161,6 @@ namespace S107
                 {
                     out = GetShortTimes();
                     CassetteId = UpdateCassetteProcError(*value->Conn, nPetch);
-
-#pragma region Добавление в таблицу cassette2
-                    //if(isCassete(conn_temp, Petch))
-                    //{
-                    //    Petch.Err_at = GetDataTimeString();
-                    //    UpdateCassette(conn_temp, Petch, nPetch);
-                    //}
-#pragma endregion
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -1212,9 +1178,8 @@ namespace S107
                 {
                     CassetteId = ReturnCassette(*value->Conn, nPetch);
                     value->Set_Value(false);
-                    LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
+                    //LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
                 }
-                if(DEB)LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
             }
             CATCH(PethLogger, "");
             return 0;
