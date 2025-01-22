@@ -47,7 +47,10 @@ namespace S107
     void GetCassette(PGConnection& conn, PGresult* res, TCassette& cassette, int line);
 
     bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it);
-    bool IsCassette(TCassette& CD);
+    //bool IsCassette(TCassette& CD);
+	template <class T>
+	bool IsCassette(T& CD);
+
 
     namespace SQL{
 
