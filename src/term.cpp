@@ -1155,6 +1155,7 @@ void TestCassete(PGConnection& conn, std::shared_ptr<spdlog::logger>L, std::dequ
                     //В финал Event = 5
                     OutLoggin(L, FUNCTION_LINE_NAME, ">> В финал", it);
                     Event = SetCassetteInFinal(conn, L, it);
+					//CreateThread(0, 0, PDF::CorrectCassetteFinal, (LPVOID)&it, 0, 0);
                     OutLoggin(L, FUNCTION_LINE_NAME, "<< В финал", it);
                 }
 
