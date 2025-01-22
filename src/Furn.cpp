@@ -442,7 +442,7 @@ namespace S107
 
 #pragma region Функции с кассетами в базе
 	
-	Tcass& GetFurn(int Peth)
+	Tcass& GetIgCassetteFurn(int Peth)
 	{
 		static Tcass T;
 		//try
@@ -461,6 +461,39 @@ namespace S107
 		//CATCH(FurnLogger, "");
 		return T;
 	}
+
+	T_ForBase_RelFurn& GetBaseRelFurn(int Peth)
+	{
+		//try
+		{
+			if(Peth == 1)
+			{
+				return Furn1::Furn;
+			}
+			else if(Peth == 2)
+			{
+				return Furn2::Furn;
+			}
+			else
+				throw std::exception(__FUN("Ошибка номера печи: " + std::to_string(Peth)));
+		}
+		//CATCH(FurnLogger, "");
+		return Furn1::Furn;
+	}
+
+	std::string GetErrorIdCassete(int Peth)
+	{
+		Tcass& P = GetIgCassetteFurn(Peth);
+		std::stringstream ss;
+		ss << "Ошибка номера кассеты: " << Peth;
+		ss << " Year = " << P.Year;
+		ss << " Month = " << P.Month;
+		ss << " Day = " << P.Day;
+		ss << " Hour =  " << P.Hour;
+		ss << " CassetteNo =  " << P.CassetteNo;
+		return ss.str();
+	}
+
 
 
     bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it)
@@ -486,21 +519,36 @@ namespace S107
         return false;
     }
 
-	int UpdateCassetteProcRun(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
+	int UpdateCassetteProcRun(PGConnection& conn, int Peth)
 	{
 		int id = 0;
+		T_ForBase_RelFurn& F = GetBaseRelFurn(Peth);
+		Tcass& P = GetIgCassetteFurn(Peth);
+		T_Fcassette& CD = F.Cassette;
+
+		std::string Year = F.Cassette.Year->GetString();
+		std::string Month = F.Cassette.Month->GetString();
+		std::string Day = F.Cassette.Day->GetString();
+		std::string Hour = F.Cassette.Hour->GetString();
+		std::string CassetteNo = F.Cassette.CassetteNo->GetString();
+
+		std::string PointRef_1 = F.PointRef_1->GetString();
+		std::string PointTime_1 = F.PointTime_1->GetString();
+		std::string PointTime_2 = F.PointTime_2->GetString();
+		std::string TimeProcSet = F.TimeProcSet->GetString();
+
 		try
 		{
-			Tcass& P = GetFurn(Peth);
+			Tcass& P = GetIgCassetteFurn(Peth);
 			if(!P.Run)
 			{
 				P.Run = true;
 				P.Run_at = GetStringDataTime();
-				P.Year = Furn.Cassette.Year->GetString();
-				P.Month = Furn.Cassette.Month->GetString();
-				P.Day = Furn.Cassette.Day->GetString();
-				P.Hour = Furn.Cassette.Hour->GetString();
-				P.CassetteNo = Furn.Cassette.CassetteNo->GetString();
+				P.Year = Year;
+				P.Month = Month;
+				P.Day = Day;
+				P.Hour = Hour;
+				P.CassetteNo = CassetteNo;
 			}
 
 			LOG_INFO(FurnLogger, "{:90}| ProcRun Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
@@ -510,7 +558,6 @@ namespace S107
 
 		try
 		{
-			T_Fcassette& CD = Furn.Cassette;
 			if(IsFCassete(CD))
 			{
 				id = GetId(conn, CD);
@@ -531,22 +578,18 @@ namespace S107
 						sd << "pdf = DEFAULT, ";
 					}
 
-					sd << "pointref_1 = " << Furn.PointRef_1->Val.As<float>() << ", ";
-					sd << "pointtime_1 = " << Furn.PointTime_1->Val.As<float>() << ", ";
-					sd << "pointdtime_2 = " << Furn.PointTime_2->Val.As<float>() << ", ";
-					sd << "timeprocset = " << Furn.TimeProcSet->Val.As<float>() << " ";
+					sd << "pointref_1 = " << PointRef_1 << ", ";
+					sd << "pointtime_1 = " << PointTime_1 << ", ";
+					sd << "pointdtime_2 = " << PointTime_2 << ", ";
+					sd << "timeprocset = " << TimeProcSet << " ";
 					sd << "WHERE id = " << id;
 
 					LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
 					SETUPDATESQL(FurnLogger, conn, sd);
 					LOG_INFO(FurnLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
-							 FUNCTION_LINE_NAME, Peth,
-							 Furn.Cassette.Year->GetString(),
-							 Furn.Cassette.Month->GetString(),
-							 Furn.Cassette.Day->GetString(),
-							 Furn.Cassette.Hour->GetString(),
-							 Furn.Cassette.CassetteNo->GetString());
-				} else
+							 FUNCTION_LINE_NAME, Peth, Year, Month, Day, Hour, CassetteNo);
+				} 
+				else
 				{
 					#pragma region MyRegion
 
@@ -580,15 +623,15 @@ namespace S107
 					sd << "DEFAULT, ";
 					sd << "DEFAULT, ";
 					sd << "DEFAULT, ";
-					sd << Furn.PointRef_1->Val.As<float>() << ", ";
-					sd << Furn.PointTime_1->Val.As<float>() << ", ";
-					sd << Furn.PointTime_2->Val.As<float>() << ", ";
-					sd << Furn.TimeProcSet->Val.As<float>() << ", ";
-					sd << CD.Year->Val.As<int32_t>() << ", ";
-					sd << CD.Month->Val.As<int32_t>() << ", ";
-					sd << CD.Day->Val.As<int32_t>() << ", ";
-					sd << CD.Hour->Val.As<uint16_t>() << ", ";
-					sd << CD.CassetteNo->Val.As<int32_t>() << ", ";
+					sd << PointRef_1 << ", ";
+					sd << PointTime_1 << ", ";
+					sd << PointTime_2 << ", ";
+					sd << TimeProcSet << ", ";
+					sd << Year << ", ";
+					sd << Month << ", ";
+					sd << Day << ", ";
+					sd << Hour << ", ";
+					sd << CassetteNo << ", ";
 					sd << "-1)";
 					#pragma endregion
 
@@ -598,59 +641,75 @@ namespace S107
 					id = GetId(conn, CD);
 				}
 			}
+			else
+			{ 
+				P = Tcass(Peth);
+				throw std::exception(__FUN(GetErrorIdCassete(Peth)));
+			}
 		}
 		CATCH(FurnLogger, "");
 		return id;
 	}
 
 	//TCassette itTCassette;
-    int UpdateCassetteProcEnd(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
+    int UpdateCassetteProcEnd(PGConnection& conn, int Peth)
     {
         int id = 0;
-		T_Fcassette& CD = Furn.Cassette;
+		Tcass& P = GetIgCassetteFurn(Peth);
+		T_Fcassette& CD = GetBaseRelFurn(Peth).Cassette;
+
         try
         {
-				Tcass& P = GetFurn(Peth);
+			#pragma region Инит stringstream sd
+			std::stringstream sd;
+			sd << "UPDATE cassette SET end_at = now() WHERE id = ";
+			#pragma endregion
 
-				LOG_INFO(FurnLogger, "{:90}| ProcEnd Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
-						 FUNCTION_LINE_NAME, P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo);
-
-				//std::stringstream sd;
-				//sd << "UPDATE cassette SET end_at = now() WHERE id = " << id;
-				//LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-				//SETUPDATESQL(FurnLogger, conn, sd);
-
-				P = Tcass(Peth);
-        }
-        CATCH(FurnLogger, "");
-        try
-        {
-            if(IsFCassete(CD))
+			if(IsFCassete(CD)) id = GetId(conn, CD);
+            if(id)
             {
-                id = GetId(conn, CD);
-                std::stringstream sd;
-                sd << "UPDATE cassette SET end_at = now() WHERE id = " << id;
+				LOG_INFO(FurnLogger, "{:90}| ProcEnd Peth = {}, End_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
+						 FUNCTION_LINE_NAME, Peth, 
+						 GetStringDataTime(), CD.Year->GetString(),  CD.Month->GetString(),  CD.Day->GetString(),  CD.Hour->GetString(),  CD.CassetteNo->GetString(),  id);
+
+				sd << id;
                 LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(FurnLogger, conn, sd);
             }
 			else
 			{ 
-				#define STRING2(x) #x
-				#define STRING(x) STRING2(x)
-				#pragma message ("Тут и вставить после проверки строка: " STRING(__LINE__))
-				#undef STRING
-				#undef STRING2
+				if(IsCassette(P)) id = GetId(conn, P);
+				if(id)
+				{
+					LOG_INFO(FurnLogger, "{:90}| ProcEnd Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
+							 FUNCTION_LINE_NAME, P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo, id);
+
+					sd << id;
+					LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(FurnLogger, conn, sd);
+				}
+				else
+				{
+					throw std::exception(__FUN(GetErrorIdCassete(Peth)));
+				}
+
 			}
         }
         CATCH(FurnLogger, "");
+		P = Tcass(Peth);
         return 0;
     }
-    int UpdateCassetteProcError(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
+
+    int UpdateCassetteProcError(PGConnection& conn, int Peth)
     {
         int id = 0;
+		Tcass& P = GetIgCassetteFurn(Peth);
+		T_Fcassette& CD = GetBaseRelFurn(Peth).Cassette;
+
         try
         {
-            T_Fcassette& CD = Furn.Cassette;
+
+			#pragma region Инит stringstream sd
             std::stringstream sd;
             sd << "UPDATE cassette SET ";
             sd << "run_at = DEFAULT";
@@ -658,23 +717,28 @@ namespace S107
             sd << ", event = 4";
             sd << " WHERE";
             sd << " id = ";
+			#pragma endregion
 
-            if(IsFCassete(CD))
+			if(IsFCassete(CD)) id = GetId(conn, CD);
+
+            if(id)
             {
-                id = GetId(conn, CD);
                 sd << id;
                 LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(PethLogger, conn, sd);
             }
 			else
 			{
-				Tcass& P = GetFurn(Peth);
-				if(IsCassette(P))
+				if(IsCassette(P)) id = GetId(conn, P);
+				if(id)
 				{
-	                id = GetId(conn, P);
 					sd << id;
 					LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
 					SETUPDATESQL(PethLogger, conn, sd);
+				}
+				else
+				{
+					throw std::exception(__FUN(GetErrorIdCassete(Peth)));
 				}
 			}
         }
@@ -682,12 +746,16 @@ namespace S107
         return id;
     }
 
-    int ReturnCassette(PGConnection& conn, T_ForBase_RelFurn& Furn, int Peth)
+    int ReturnCassette(PGConnection& conn, int Peth)
     {
         int id = 0;
-        try
+		Tcass& P = GetIgCassetteFurn(Peth);
+		T_Fcassette& CD = GetBaseRelFurn(Peth).Cassette;
+
+		try
         {
-            T_Fcassette& CD = Furn.Cassette;
+		
+			#pragma region Инит stringstream sd
 			std::stringstream sd;
 			sd << "UPDATE cassette SET";
 			sd << " event = 2, ";
@@ -699,23 +767,27 @@ namespace S107
 			sd << " return_at = now(), ";
 			sd << " peth = " << Peth;
 			sd << " WHERE id = ";
+			#pragma endregion
 
-            if(IsFCassete(Furn.Cassette))
+			if(IsFCassete(CD)) id = GetId(conn, CD);
+            if(id)
             {
-                id = GetId(conn, CD);
                 sd << id;
                 LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
                 SETUPDATESQL(PethLogger, conn, sd);
             }
 			else
 			{ 
-				Tcass& P = GetFurn(Peth);
-				if(IsCassette(P))
-				{ 
-	                id = GetId(conn, P);
+				if(IsCassette(P)) id = GetId(conn, P);
+				if(id)
+				{
 					sd << id;
 					LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
 					SETUPDATESQL(PethLogger, conn, sd);
+				}
+				else
+				{
+					throw std::exception(__FUN(GetErrorIdCassete(Peth)));
 				}
 			}
         }
@@ -812,7 +884,7 @@ namespace S107
 				if(value->GetBool())
 				{
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(*value->Conn, Furn, nPetch);
+                    CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
@@ -829,7 +901,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcEnd(*value->Conn, Furn, nPetch);
+                    CassetteId = UpdateCassetteProcEnd(*value->Conn, nPetch);
                     Furn.Cassette.facttemper = "0";
 
                 }
@@ -850,7 +922,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, Furn, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch);
 
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
@@ -868,7 +940,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, Furn, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
                 }
@@ -1054,7 +1126,7 @@ namespace S107
 				if(value->GetBool())
 				{
 					out = GetShortTimes();
-					CassetteId = UpdateCassetteProcRun(*value->Conn, Furn, nPetch);
+					CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch);
 				
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch) && !Petch.Run_at.size())
@@ -1085,7 +1157,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    UpdateCassetteProcEnd(*value->Conn, Furn, nPetch);
+                    UpdateCassetteProcEnd(*value->Conn, nPetch);
                     CassetteId = 0;
                     Furn.Cassette.facttemper = "0";
 
@@ -1114,7 +1186,7 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, Furn, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch);
 
 #pragma region Добавление в таблицу cassette2
                     //if(isCassete(conn_temp, Petch))
@@ -1138,7 +1210,7 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, Furn, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, nPetch);
                     value->Set_Value(false);
                     LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
                 }

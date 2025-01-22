@@ -50,6 +50,8 @@ namespace S107
     //bool IsCassette(TCassette& CD);
 	template <class T>
 	bool IsCassette(T& CD);
+	Tcass& GetIgCassetteFurn(int Peth);
+	T_ForBase_RelFurn& GetBaseRelFurn(int Peth);
 
 
     namespace SQL{

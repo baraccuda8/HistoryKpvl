@@ -316,14 +316,10 @@ void PLC_S107::InitNodeId()
     CATCH(PethLogger, "");
 }
 
-void GetFurnIdCassette(T_ForBase_RelFurn& F, Tcass& P)
+void InitFurnIdCassette(int Peth)
 {
-	//F.ProcRun->GetValue();
-	//F.Cassette.Year->GetValue();
-	//F.Cassette.Month->GetValue();
-	//F.Cassette.Day->GetValue();
-	//F.Cassette.Hour->GetValue();
-	//F.Cassette.CassetteNo->GetValue();
+	T_ForBase_RelFurn & F = S107::GetBaseRelFurn(Peth);
+	Tcass& P = S107::GetIgCassetteFurn(Peth);
 
 	P.Run = F.ProcRun->GetBool();
 	P.Year = F.Cassette.Year->GetString();
@@ -332,30 +328,19 @@ void GetFurnIdCassette(T_ForBase_RelFurn& F, Tcass& P)
 	P.Hour = F.Cassette.Hour->GetString();
 	P.CassetteNo = F.Cassette.CassetteNo->GetString();
 
-	if(P.Peth == "1")
-	{
-		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Year), P.Year);
-		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Month), P.Month);
-		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Day), P.Day);
-		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_Cassette_Hour), P.Hour);
-		MySetWindowText(winmap(HWNDCLIENT::RelF1_Edit_CassetteNo), P.CassetteNo);
-	}
-	else if(P.Peth == "2")
-	{
-		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Year), P.Year);
-		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Month), P.Month);
-		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Day), P.Day);
-		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_Cassette_Hour), P.Hour);
-		MySetWindowText(winmap(HWNDCLIENT::RelF2_Edit_CassetteNo), P.CassetteNo);
-	}
+	MySetWindowText(winmap(F.Cassette.Year->winId), P.Year);
+	MySetWindowText(winmap(F.Cassette.Month->winId), P.Month);
+	MySetWindowText(winmap(F.Cassette.Day->winId), P.Day);
+	MySetWindowText(winmap(F.Cassette.Hour->winId), P.Hour);
+	MySetWindowText(winmap(F.Cassette.CassetteNo->winId), P.CassetteNo);
 }
 
 void PLC_S107::InitTag()
 {
     LOG_INFO(Logger, "{:90}| Инициализация переменных... countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 
-	GetFurnIdCassette(ForBase_RelFurn_1, S107::Furn1::Petch);
-	GetFurnIdCassette(ForBase_RelFurn_2, S107::Furn2::Petch);
+	InitFurnIdCassette(1);
+	InitFurnIdCassette(2);
 
     try
     {
