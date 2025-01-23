@@ -4,7 +4,7 @@
 #include "main.h"
 #include "file.h"
 
-void addLogMessage(const char* ss);
+//void addLogMessage(const char* ss);
 void addLogMessage(std::string ss);
 
 #define CATCH3(_s) catch(std::exception& exc){\

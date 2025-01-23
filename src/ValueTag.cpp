@@ -332,8 +332,8 @@ Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, M
     if(!Patch.length())
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
 
-    if(!Sec)
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
+	if(!Sec)
+		throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
 
     if(!Conn)
         throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
@@ -344,39 +344,25 @@ Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, M
     }
 }
 
-Value::Value(const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn):
-    Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn)
-{
-    if(!Patch.length())
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
-
-    if(!Conn)
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
-
-
-    if(Patch.find("WDG") != std::string::npos)
-    {
-        Arhive = false;
-    }
-}
 
 Value::Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC sec, std::string fo, OpcUa::Variant v, std::string com):
-    Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn), Arhive(ar), format(fo), Sec(sec), Val(v), OldVal(v), Comment(com)
+	Patch(n), strVal(""), oldstrVal(""), winId(hc), FunctionCallbak(fn), Conn(conn), Arhive(ar), format(fo), Sec(sec), Val(v), OldVal(v), Comment(com)
 {
-    if(!Patch.length())
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
+	if(!Patch.length())
+		throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Patch = NULL")).c_str());
 
-    if(!Sec)
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
+	if(!Sec)
+		throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Sec = NULL, Patch = ") + Patch).c_str());
 
-    if(!Conn)
-        throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
+	if(!Conn)
+		throw std::runtime_error(std::string(FUNCTION_LINE_NAME + std::string("; Error Conn = NULL, Patch = ") + Patch).c_str());
 
-    if(Patch.find("WDG") != std::string::npos)
-    {
-        Arhive = false;
-    }
+	if(Patch.find("WDG") != std::string::npos)
+	{
+		Arhive = false;
+	}
 }
+
 
 int ouu = 0;
 void vvv (std::string ss)
@@ -605,7 +591,7 @@ bool Value::Find(const uint32_t h, const std::string p, const OpcUa::Variant& v,
     {
         if(p.length() && p == Patch)
         {
-            attr = a;
+            //attr = a;
             handle = h;
             return Find(h, v);
         }

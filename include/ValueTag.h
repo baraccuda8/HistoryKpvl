@@ -45,6 +45,8 @@ public:
     MSSEC Sec =  sec00000;
     float coeff = 1.0;
     float hist = 1.0;
+	uint32_t handle = 0;
+	//OpcUa::AttributeId attr;
 
     void InsertVal();
 
@@ -57,11 +59,8 @@ public:
 
     void SetGraff();
 
-
-
-    Value(){};
-    Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn);
-    Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s);
+	//Value(){};
+    Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, MSSEC s = sec01000);
     Value (const std::string n, HWNDCLIENT hc, myfun fn, PGConnection* conn, bool ar, float co, float hi, MSSEC s, std::string fo, OpcUa::Variant v, std::string com);
     void InitNodeId(Client* cds);
     OpcUa::NodeId GetId();
@@ -71,9 +70,7 @@ public:
     OpcUa::Variant GetValue();
     void Set_Value(OpcUa::Variant var);
     void Set_Value();
-    uint32_t handle = 0;
-    OpcUa::AttributeId attr;
-
+    
     std::string GetString();
     bool GetBool();
     int GetInt();

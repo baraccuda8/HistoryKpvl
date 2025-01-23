@@ -85,7 +85,7 @@ void DisplayContextMenu(HWND hwnd, int ID)
 
 std::string GetLastErrorString()
 {
-    char* lpMsgBuf;
+    char* lpMsgBuf = NULL;
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
         GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -93,7 +93,7 @@ std::string GetLastErrorString()
     );
     std::string out = lpMsgBuf;
     LocalFree(lpMsgBuf);
-    return lpMsgBuf;
+    return std::string(lpMsgBuf);
 }
 
 
@@ -101,13 +101,14 @@ std::string GetLastErrorString()
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction)
 {
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
+    LPVOID lpMsgBuf = NULL;
+    LPVOID lpDisplayBuf = NULL;
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
-    StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
+	auto size = (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40);
+    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, size * sizeof(TCHAR));
+    StringCchPrintf((LPTSTR)lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
 
     LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
     
@@ -218,7 +219,7 @@ void CheckDir(std::string dir)
 {
     struct stat buff;
     if(stat(dir.c_str(), &buff))
-        _mkdir(dir.c_str());
+        int t = _mkdir(dir.c_str());
 }
 
 

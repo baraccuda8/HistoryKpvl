@@ -40,10 +40,11 @@ T_ForBase_RelFurn ForBase_RelFurn_1;
 T_ForBase_RelFurn ForBase_RelFurn_2;
 
 struct T_FcassetteArray{
-        T_Fcassette cassette[7];
-        Value* selected_cassetFurn1;
-        Value* selected_cassetFurn2;
+	T_Fcassette cassette[7];
+	Value* selected_cassetFurn1 = NULL;
+	Value* selected_cassetFurn2 = NULL;
 }FcassetteArray;
+
 
 #define SETALLTAG2(_t, _f, _e, _s,  _d) SETALLTAG(PathPeth, _t, _f, _e, _s,  _d)
 
@@ -213,7 +214,7 @@ void PLC_S107::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
                             {
                                 a->Node = node;
                                 a->handle = handle;
-                                a->attr = attr;
+                                //a->attr = attr;
                             }
                             a->Find(handle, vals);
                             return;
@@ -262,9 +263,11 @@ bool PLC_S107::WD()
         WatchDog = FALSE;
         if(WatchDogWait)
         {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+			if(WatchDogWait >= CountWatchDogWait - 1)
+			{
+				LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
+				SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+			}
         }
         WatchDogWait = 0;
     }
@@ -273,20 +276,22 @@ bool PLC_S107::WD()
         WatchDogWait++; //Инкрементируем счетчик ошибок связи
         if(WatchDogWait >= CountWatchDogWait) //Если бита жизни нет больше CountWatchDogWait секунд
         {
-
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
             SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
             SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
+			throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
             return true;
         }
         else
         {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+			if(WatchDogWait >= CountWatchDogWait - 1)
+			{
+				LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+				SetWindowText(winmap(hEditTime_2), S107::ServerDataTime.c_str());
+			}
         }
     }
-    SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
+    //SetWindowText(winmap(hEditTime_1), std::to_string(WatchDogWait).c_str());
     return false;
 }
 
@@ -440,8 +445,8 @@ void PLC_S107::Run(int count)
             AppFurn2.WDG_fromBase->Set_Value(true);
 
             //Проверяем WatchDog
-            if(WD())
-                throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
+			WD();
+                //throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
 
             TestTimeRun(time1);
 
@@ -818,8 +823,8 @@ int SetCassetteInWait(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCa
         it.Run_at = "";
         std::stringstream sd;
         sd << "UPDATE cassette SET event = " << it.Event << ", run_at = DEFAULT";
-        if(run_at.length())
-            sd << ", return_at = '" << run_at << "'";
+        //if(run_at.length())
+        //    sd << ", return_at = '" << run_at << "'";
         sd << " WHERE id = " << it.Id;
         std::string command = sd.str();
         LOG_INFO(L, "{:90}| {}", FUNCTION_LINE_NAME, command);

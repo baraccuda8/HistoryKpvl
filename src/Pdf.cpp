@@ -341,15 +341,15 @@ namespace PDF
 		class PdfClass{
 		public:
 
-			HPDF_Doc  pdf;
-			HPDF_Font font;
-			HPDF_Page page;
+			HPDF_Doc  pdf = NULL;
+			HPDF_Font font = NULL;
+			HPDF_Page page = NULL;
 			HPDF_REAL Height = 0;
 			HPDF_REAL Width = 0;
 			HPDF_REAL coeff = 0;
 			float SrTemp = 0.0f;
 			//std::string strSrTemp = "";
-			std::string FileName;
+			std::string FileName = "";
 			int StepSec = 5;
 
 
@@ -5133,7 +5133,7 @@ namespace PDF
 			PQclear(res);
 		}
 		CATCH(SheetLogger, "");
-		return 0;
+		return "";
 	}
 
 	//void CorrectSheetDebug(PGConnection& conn, std::string start, std::string id)

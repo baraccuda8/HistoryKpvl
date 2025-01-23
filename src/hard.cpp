@@ -341,7 +341,7 @@ void PLC_KPVL::DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa:
                             {
                                 a->Node = node;
                                 a->handle = handle;
-                                a->attr = attr;
+                                //a->attr = attr;
                             }
                             a->Find(handle, vals);
                             return;
@@ -424,9 +424,11 @@ bool PLC_KPVL::WD()
         WatchDog = FALSE;
         if(WatchDogWait)
         {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+			if(WatchDogWait >= CountWatchDogWait - 1)
+			{
+				LOG_INFO(Logger, "{:90}| Продолжаем опрос {}", FUNCTION_LINE_NAME, WatchDogWait);
+				SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+			}
         }
         WatchDogWait = 0;
     }
@@ -438,16 +440,19 @@ bool PLC_KPVL::WD()
             LOG_INFO(Logger, "{:90}| Перезапуск: Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, CountWatchDogWait);
             SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
             SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+			throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
             return true;
         }
         else
         {
-            if(WatchDogWait >= CountWatchDogWait - 1)
-                LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
-            SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
+			if(WatchDogWait >= CountWatchDogWait - 1)
+			{
+				LOG_INFO(Logger, "{:90}| Бита жизни нет больше {} секунд", FUNCTION_LINE_NAME, WatchDogWait);
+			}
+			SetWindowText(winmap(hEditDiagnose8), KPVL::ServerDataTime.c_str());
         }
     }
-    SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
+    //SetWindowText(winmap(hEditDiagnose6), std::to_string(WatchDogWait).c_str());
     return false;
 }
 
@@ -606,8 +611,8 @@ void PLC_KPVL::Run(int count)
 
 
             //Проверяем WatchDog
-            if(WD())
-                throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
+            WD();
+            //    throw std::runtime_error(std::string(std::string("Перезапуск: Бита жизни нет больше ") + std::to_string(CountWatchDogWait) + " секунд").c_str());
 
             //задержка 1 секунда, минус время затраченое на работу
             TestTimeRun(time1);

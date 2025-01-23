@@ -43,7 +43,7 @@ namespace S107
     };
 
 #pragma region Функции с кассетами в базе
-    void GetColl(PGresult* res);
+    //void GetColl(PGresult* res);
     void GetCassette(PGConnection& conn, PGresult* res, TCassette& cassette, int line);
 
     bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it);
