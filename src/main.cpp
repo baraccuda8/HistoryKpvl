@@ -85,7 +85,7 @@ void DisplayContextMenu(HWND hwnd, int ID)
 
 std::string GetLastErrorString()
 {
-    char* lpMsgBuf = NULL;
+    char* lpMsgBuf = (char*)"No error";
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
         GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -108,7 +108,8 @@ int WinErrorExit(HWND hWnd, const char* lpszFunction)
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
 	auto size = (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40);
     lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, size * sizeof(TCHAR));
-    StringCchPrintf((LPTSTR)lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
+	if(lpDisplayBuf != NULL)
+		StringCchPrintf((LPTSTR)lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
 
     LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
     
