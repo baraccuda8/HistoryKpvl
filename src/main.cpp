@@ -101,17 +101,17 @@ std::string GetLastErrorString()
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction)
 {
-    LPVOID lpMsgBuf = NULL;
-    LPVOID lpDisplayBuf = NULL;
+    LPTSTR lpMsgBuf = (LPTSTR)"No error";
+    LPTSTR lpDisplayBuf = (LPTSTR)"No error";
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-	auto size = (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40);
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, size * sizeof(TCHAR));
+	auto size = (lstrlen(lpMsgBuf) + lstrlen(lpszFunction) + 40);
+    lpDisplayBuf = (LPTSTR)LocalAlloc(LMEM_ZEROINIT, size * sizeof(TCHAR));
 	if(lpDisplayBuf != NULL)
 	{
-		StringCchPrintf((LPTSTR)lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
-
+		StringCchPrintf(lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
+		
 		LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
 	    LocalFree(lpMsgBuf);
 		LocalFree(lpDisplayBuf);
