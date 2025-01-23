@@ -101,8 +101,8 @@ std::string GetLastErrorString()
 //Вывод строки ошибки выполнения программы
 int WinErrorExit(HWND hWnd, const char* lpszFunction)
 {
-    LPTSTR lpMsgBuf = (LPTSTR)"No error";
-    LPTSTR lpDisplayBuf = (LPTSTR)"No error";
+    LPTSTR lpMsgBuf = NULL;
+    LPTSTR lpDisplayBuf = NULL;
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
