@@ -93,7 +93,7 @@ std::string GetLastErrorString()
     );
     std::string out = lpMsgBuf;
     LocalFree(lpMsgBuf);
-    return std::string(lpMsgBuf);
+    return std::string(out);
 }
 
 
@@ -109,12 +109,14 @@ int WinErrorExit(HWND hWnd, const char* lpszFunction)
 	auto size = (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40);
     lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, size * sizeof(TCHAR));
 	if(lpDisplayBuf != NULL)
+	{
 		StringCchPrintf((LPTSTR)lpDisplayBuf, size, TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf);
 
-    LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
+		LOG_ERROR(AllLogger, std::string((char*)lpDisplayBuf));
+	    LocalFree(lpMsgBuf);
+		LocalFree(lpDisplayBuf);
+	}
     
-    LocalFree(lpMsgBuf);
-    LocalFree(lpDisplayBuf);
     PostQuitMessage(0);
     return 1;
 }
