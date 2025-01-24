@@ -31,3 +31,6 @@ namespace PDF
 #endif
 };
 
+void Open_PDF();
+void Close_PDF();
+

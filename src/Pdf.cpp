@@ -281,6 +281,32 @@ namespace PDF
 		}
 		PQclear(res);
 	}
+	void OutDebugInfo(TCassette& Cassette, TSheet& Sheet)
+	{
+		try
+		{
+			std::stringstream sss;
+			sss << "Печь №" << Cassette.Peth << "   "
+				<< "Дата: " << Cassette.Run_at << "   "
+				<< "Кассета: "
+				<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
+				<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
+				<< std::setw(2) << std::setfill('0') << Cassette.Day << " "
+				<< std::setw(2) << std::setfill('0') << Cassette.Hour << " № "
+				<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo << "   "
+				<< "Лист: "
+				<< "Дата старт: " << Sheet.Start_at << "   "
+				<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
+				<< std::setw(2) << std::setfill('0') << Sheet.Slab << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
+				<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
+				<< std::setw(2) << std::setfill('0') << Sheet.SubSheet
+
+				;
+			SetWindowText(hWndDebug, sss.str().c_str());
+		}CATCH(PdfLog, "");
+	}
 
 	namespace PASSPORT
 	{
@@ -1660,35 +1686,6 @@ namespace PDF
 			return Y;
 		}
 
-
-
-		void OutDebugInfo(TCassette& Cassette, TSheet& Sheet)
-		{
-			try
-			{
-				std::stringstream sss;
-				sss << "Печь №" << Cassette.Peth << "   "
-					<< "Дата: " << Cassette.Run_at << "   "
-					<< "Кассета: "
-					<< std::setw(4) << std::setfill('0') << Cassette.Year << "-"
-					<< std::setw(2) << std::setfill('0') << Cassette.Month << "-"
-					<< std::setw(2) << std::setfill('0') << Cassette.Day << " "
-					<< std::setw(2) << std::setfill('0') << Cassette.Hour << " № "
-					<< std::setw(2) << std::setfill('0') << Cassette.CassetteNo << "   "
-					<< "Лист: "
-					<< "Дата старт: " << Sheet.Start_at << "   "
-					<< std::setw(6) << std::setfill('0') << Sheet.Melt << "-"
-					<< std::setw(2) << std::setfill('0') << Sheet.Slab << "-"
-					<< std::setw(3) << std::setfill('0') << Sheet.PartNo << "-"
-					<< std::setw(3) << std::setfill('0') << Sheet.Pack << "-"
-					<< std::setw(3) << std::setfill('0') << Sheet.Sheet << "/"
-					<< std::setw(2) << std::setfill('0') << Sheet.SubSheet
-				
-					;
-					SetWindowText(hWndDebug, sss.str().c_str());
-			}CATCH(PdfLog, "");
-		}
-
 		PdfClass::PdfClass(TCassette& Cassette, bool end)
 		{
 			InitLogger(PdfLog);
@@ -2422,11 +2419,11 @@ namespace PDF
 					std::stringstream com;
 					com << "SELECT * FROM cassette WHERE";
 
-					if(Stoi(ct.Year) > 2024 || (Stoi(ct.Year) == 2024 && Stoi(ct.Month) >= 8) )
-						com << " hour = " << Stoi(it.Hour) << " AND ";
+					if(Stoi(it.Year) > 2024 || (Stoi(it.Year) <= 2024 && Stoi(it.Month) >= 8) )
+						com << " hour = " << Stoi(it.Hour);
 					else
-						com << " hour < 1 ";
-					com << " day = " << Stoi(it.Day);
+						com << " hour < 1";;
+					com << " AND day = " << Stoi(it.Day);
 					com << " AND month = " << Stoi(it.Month);
 					com << " AND year = " << Stoi(it.Year);
 					com << " AND cassetteno = " << Stoi(it.CassetteNo);
@@ -3041,7 +3038,7 @@ namespace PDF
 
 						if(IsCassette(conn, cass))
 						{
-							if(!cass.Run_at.size())
+							if(!cass.Run_at.length())
 							{
 								cass.Run_at = a.create_at;
 								P = cass;
@@ -3063,7 +3060,7 @@ namespace PDF
 									P.End_at = a.create_at;
 									EndCassette(conn, P, s1);
 									SaveBaseCassete(conn, P);
-
+							
 									P = TCassette();
 									P = cass;
 								}
@@ -3249,7 +3246,7 @@ namespace PDF
 
 				std::stringstream sss;
 				sss << "SELECT DISTINCT ON (id_name) id_name, create_at";
-				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+				//sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
 				sss << " FROM todos WHERE";
 				sss << " id_name = " << Furn->ProcEnd->ID;
 				sss << " AND create_at <= '" << Start << "'";
@@ -3286,7 +3283,7 @@ namespace PDF
 
 				std::stringstream sss;
 				sss << "SELECT DISTINCT ON (id_name) id_name, create_at + INTERVAL '15 min'";
-				sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
+				//sss << ", (SELECT tag.comment AS name FROM tag WHERE tag.id = todos.id_name)";
 				sss << " FROM todos WHERE";
 				sss << " id_name = " << Furn->ProcEnd->ID;
 				sss << " AND create_at >= '" << Stop << "'";
@@ -5443,6 +5440,11 @@ namespace PDF
 						CorrectCassette(0);
 						out = "Закончили создание паспортов: " + GetStringDataTime();
 						SetWindowText(hWndDebug, out.c_str());
+
+#ifdef _ReleaseD
+						isRun = false;
+#endif
+
 #ifdef _DEBUG
 						//В дебаге один проход и выход из программы
 						isRun = false;
@@ -5474,5 +5476,13 @@ namespace PDF
 	}
 }
 
+HANDLE hRunAllPdf = NULL;
+void Open_PDF()
+{
+	hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
+}
 
-
+void Close_PDF()
+{
+    WaitCloseTheread(hRunAllPdf, "hRunAllPdf");
+}

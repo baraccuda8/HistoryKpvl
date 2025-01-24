@@ -86,7 +86,6 @@ TextInt GenSeq3 ={
 
 HANDLE hKPVLURI = NULL;
 HANDLE hKPVLSQL = NULL;
-HANDLE hRunAllPdf = NULL;
 HANDLE hThreadState2 = NULL;
 
 
@@ -839,6 +838,7 @@ DWORD WINAPI Open_KPVL_SQL(LPVOID)
 void Open_KPVL()
 {
     InitLogger(HardLogger);
+#ifndef _ReleaseD
 
     if(AllTagKpvl.size() > 2)
         std::sort(AllTagKpvl.begin() + 2, AllTagKpvl.end(), cmpAllTagKpvl);
@@ -848,30 +848,21 @@ void Open_KPVL()
 #ifndef TESTGRAFF
     hKPVLURI = CreateThread(0, 0, Open_KPVL_RUN, (LPVOID)0, 0, 0);
     hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
-    hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
-    //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
+#endif
 #endif
 
-#ifdef _DEBUG
-    //hKPVLSQL = CreateThread(0, 0, Open_KPVL_SQL, (LPVOID)0, 0, 0);
-    //CreateThread(0, 0, PDF::CorrectSheet2, (LPVOID)0, 0, 0);
-    hRunAllPdf = CreateThread(0, 0, PDF::RunCassettelPdf, (LPVOID)0, 0, 0);
-    //CreateThread(0, 0, PDF::CorrectSheet, (LPVOID)0, 0, 0);
-#endif // _DEBUG
-
-#endif
 #endif
 
 
     
-
+#endif
 }
 
 void Close_KPVL()
 {
+#ifndef _ReleaseD
     WaitCloseTheread(hThreadState2, "ThreadState2");
     WaitCloseTheread(hKPVLURI, "hKPVLURI");
     WaitCloseTheread(hKPVLSQL, "hKPVLSQL");
-    WaitCloseTheread(hRunAllPdf, "hRunAllPdf");
-       
+#endif       
 }

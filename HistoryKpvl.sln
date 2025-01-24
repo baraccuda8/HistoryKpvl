@@ -9,6 +9,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
+		ReleaseD|x64 = ReleaseD|x64
 		TestDebug|x64 = TestDebug|x64
 		TestRelease|x64 = TestRelease|x64
 	EndGlobalSection
@@ -17,6 +18,8 @@ Global
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.Debug|x64.Build.0 = Debug|x64
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.Release|x64.ActiveCfg = Release|x64
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.Release|x64.Build.0 = Release|x64
+		{586EEC6A-D77A-43B8-86AD-403B4753E502}.ReleaseD|x64.ActiveCfg = ReleaseD|x64
+		{586EEC6A-D77A-43B8-86AD-403B4753E502}.ReleaseD|x64.Build.0 = ReleaseD|x64
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.TestDebug|x64.ActiveCfg = TestDebug|x64
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.TestDebug|x64.Build.0 = TestDebug|x64
 		{586EEC6A-D77A-43B8-86AD-403B4753E502}.TestRelease|x64.ActiveCfg = TestRelease|x64

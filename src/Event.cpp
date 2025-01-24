@@ -69,14 +69,18 @@ DWORD WINAPI Event_Run(LPVOID pv)
 
 void Open_Event()
 {
-#ifndef _DEBUG
-	hEvent = CreateThread(0, 0, Event_Run, 0, 0, 0);
+#ifndef _ReleaseD
+	#ifndef _DEBUG
+		hEvent = CreateThread(0, 0, Event_Run, 0, 0, 0);
+	#endif
 #endif
 }
 
 void Close_Event()
 {
-#ifndef _DEBUG
-	DWORD dwEvent = WaitForSingleObject(hEvent, INFINITE);
+#ifndef _ReleaseD
+	#ifndef _DEBUG
+		DWORD dwEvent = WaitForSingleObject(hEvent, INFINITE);
+	#endif
 #endif
 }

@@ -9,6 +9,7 @@
 
 #include "SQL.h"
 #include "Event.h"
+#include "Pdf.h"
 
 #ifdef _MYDEBUG
 #define FULLRUN 0
@@ -326,6 +327,8 @@ void Start()
     Open_Event();
     Open_KPVL();
     Open_FURN();
+	Open_PDF();
+
     //OpenClientUDP();
 }
 
@@ -335,6 +338,7 @@ void Stop()
     Close_FURN();
     Close_KPVL();
     Close_Event();
+	Close_PDF();
 }
 
 DWORD EnumProcess();

@@ -1250,6 +1250,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 void Open_FURN()
 {
     InitLogger(PethLogger);
+#ifndef _ReleaseD
 
     //Сортировка переменных по имени
     std::sort(AllTagPeth.begin(), AllTagPeth.end(), cmpAllTagPeth);
@@ -1279,11 +1280,15 @@ void Open_FURN()
 
 #endif
 #endif
+
+#endif
 }
 
 void Close_FURN()
 {
+#ifndef _ReleaseD
     WaitCloseTheread(hS107URI, "hS107URI");
     WaitCloseTheread(hS107SQL, "hS107SQL");
     WaitCloseTheread(hSQL, "hSQL");
+#endif
 }

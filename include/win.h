@@ -1336,7 +1336,7 @@ namespace Cassete
 
 typedef struct Tcass{
     std::string Peth = "0";
-    std::string Run_at = "0";
+    std::string Run_at = "";
     std::string Year = "0";
     std::string Month = "0";
     std::string Day = "0";
