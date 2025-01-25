@@ -735,9 +735,9 @@ void CaseteInRel(std::deque<TCassette>& CIl)
             else
             {
                 CassetteInRel[i] = TCassette();
-                if(AppCassette[i].TestNull())
+                if(AppCassette[i].TestNull(PethLogger))
                 {
-                    AppCassette[i].SetNull(); //Отбравляем в печь
+                    AppCassette[i].SetNull(PethLogger); //Отбравляем в печь
                     SCassett[i] = 0;
                 }
             }
@@ -822,7 +822,7 @@ int SetCassetteInWait(PGConnection& conn, std::shared_ptr<spdlog::logger> L, TCa
         it.Event = "2";
         it.Run_at = "";
         std::stringstream sd;
-        sd << "UPDATE cassette SET event = " << it.Event << ", run_at = DEFAULT";
+		sd << "UPDATE cassette SET run_at = DEFAULT, end_at = DEFAULT, finish_at = DEFAULT, event = " << it.Event;
         //if(run_at.length())
         //    sd << ", return_at = '" << run_at << "'";
         sd << " WHERE id = " << it.Id;
@@ -1212,7 +1212,7 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 #pragma region Запрашиваем список кассет
             try
             {
-                S107::SQL::FURN_SQL(conn, AllCassette);
+                S107::SQL::FURN_SQL(conn, AllCassette, PethLogger);
             }
             catch(...) {}
 #pragma endregion
@@ -1250,6 +1250,11 @@ DWORD WINAPI Open_FURN_SQL(LPVOID)
 void Open_FURN()
 {
     InitLogger(PethLogger);
+	InitLogger(PethLogger);
+	
+	S107::Furn1::Logger = InitLogger2("Furn1");
+	S107::Furn2::Logger = InitLogger2("Furn2");
+
 #ifndef _ReleaseD
 
     //Сортировка переменных по имени
@@ -1261,16 +1266,6 @@ void Open_FURN()
 #ifndef TESTSPIS
 #ifndef TESTWIN
 #ifndef TESTGRAFF
-    //S107::Furn1::Petch.Day = AppFurn1.Cassette.Day->GetInt();
-    //S107::Furn1::Petch.Month = AppFurn1.Cassette.Month->GetInt();
-    //S107::Furn1::Petch.Year = AppFurn1.Cassette.Year->GetInt();
-    //S107::Furn1::Petch.CassetteNo = AppFurn1.Cassette.CassetteNo->GetInt();
-
-    //S107::Furn2::Petch.Day = AppFurn2.Cassette.Day->GetInt();
-    //S107::Furn2::Petch.Month = AppFurn2.Cassette.Month->GetInt();
-    //S107::Furn2::Petch.Year = AppFurn2.Cassette.Year->GetInt();
-    //S107::Furn2::Petch.CassetteNo = AppFurn2.Cassette.CassetteNo->GetInt();
-
     hS107URI = CreateThread(0, 0, Open_FURN_RUN, (LPVOID)0, 0, 0);
     hS107SQL = CreateThread(0, 0, Open_FURN_SQL, (LPVOID)0, 0, 0);
 #else

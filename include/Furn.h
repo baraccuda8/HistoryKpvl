@@ -46,7 +46,7 @@ namespace S107
     //void GetColl(PGresult* res);
     void GetCassette(PGConnection& conn, PGresult* res, TCassette& cassette, int line);
 
-    bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it);
+    bool GetFinishCassete(PGConnection& conn, LOGGER Logger, TCassette& it);
     //bool IsCassette(TCassette& CD);
 	template <class T>
 	bool IsCassette(T& CD);
@@ -56,7 +56,7 @@ namespace S107
 
     namespace SQL{
 
-        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette);
+        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette, LOGGER Logger);
         //bool isCasseteCant(T_CassetteData& Cassette, TCassette& CD);
         //bool isCasseteFurn(T_Fcassette& Cassette, TCassette& CD);
         //void GetIsPos(PGConnection& conn, TCassette& CD);
@@ -73,6 +73,7 @@ namespace S107
 		extern Tcass Petch;
         extern int CassetteId;
 		extern T_ForBase_RelFurn& Furn;
+		extern LOGGER Logger;
         DWORD Data_WDG_toBase(Value* value);
 
         //BOOL Работа
@@ -153,6 +154,8 @@ namespace S107
 		extern Tcass Petch;
         extern int CassetteId;
 		extern T_ForBase_RelFurn& Furn;
+		extern LOGGER Logger;
+
 
         DWORD Data_WDG_toBase(Value* value);
 

@@ -338,11 +338,11 @@ void GetTagTable(std::deque<Value*>& All, std::string Patch, PGresult* res, int 
             val->Arhive = conn_spis.PGgetvalue(res, l, CollTag::Arhive) == "t";
             val->Comment = conn_spis.PGgetvalue(res, l, CollTag::Comment);
             std::string value = conn_spis.PGgetvalue(res, l, CollTag::Content);
-            val->coeff = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, CollTag::Coeff).c_str()));
-            val->hist = static_cast<float>(atof(conn_spis.PGgetvalue(res, l, CollTag::Hist).c_str()));
+            val->coeff = Stof(conn_spis.PGgetvalue(res, l, CollTag::Coeff).c_str());
+            val->hist = Stof(conn_spis.PGgetvalue(res, l, CollTag::Hist).c_str());
             val->format = conn_spis.PGgetvalue(res, l, CollTag::Format);
             //if(!val->Sec)
-				val->Sec = static_cast<MSSEC>(atoi(conn_spis.PGgetvalue(res, l, CollTag::Idsec).c_str()));
+				val->Sec = static_cast<MSSEC>(Stoi(conn_spis.PGgetvalue(res, l, CollTag::Idsec).c_str()));
             if(!val->Sec) val->Sec = MSSEC::sec01000;
 
             SetValue(type, val, value);

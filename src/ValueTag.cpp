@@ -261,6 +261,11 @@ void Value::SaveSQL()
         bool ifval = OldVal.IsNul();
         if(GetType() == OpcUa::VariantType::FLOAT)
         {
+			if(Patch.find("Hmi210_1.Htr_1.ToHmi.TAct") != std::string::npos)
+			{ 
+				int tt = 0;
+			}
+
             float f1 = GetFloat() * coeff;
             std::string s = OldVal.ToString();
             float f2 = float(ifval ? 0 : (Stof(s) * coeff));

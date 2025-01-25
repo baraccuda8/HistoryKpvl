@@ -7,15 +7,15 @@
 #include "SQL.h"
 #include "ValueTag.h"
 #include "term.h"
-#include "hard.h"
-#include "Graff.h"
-#include "KPVL.h"
+//#include "hard.h"
+//#include "Graff.h"
+//#include "KPVL.h"
 #include "Furn.h"
 #include "Pdf.h"
 
-extern std::shared_ptr<spdlog::logger> PethLogger;
-std::shared_ptr<spdlog::logger> FurnLogger_1;
-std::shared_ptr<spdlog::logger> FurnLogger_2;
+//extern std::shared_ptr<spdlog::logger> PethLogger;
+//std::shared_ptr<spdlog::logger> FurnLogger_1;
+//std::shared_ptr<spdlog::logger> FurnLogger_2;
 
 
 namespace S107
@@ -137,7 +137,7 @@ namespace S107
         }
 
     }
-    int GetId(PGConnection& conn, T_Fcassette& CD)
+    int GetId(PGConnection& conn, T_Fcassette& CD, LOGGER Logger)
     {
         int id = 0;
         try
@@ -164,13 +164,13 @@ namespace S107
                 }
             }
             else
-                LOG_ERR_SQL(PethLogger, res, command);
+                LOG_ERR_SQL(Logger, res, command);
             PQclear(res);
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return id;
     }
-	int GetId(PGConnection& conn, int Year, int Month, int Day, int CassetteNo, int Hour )
+	int GetId(PGConnection& conn, int Year, int Month, int Day, int CassetteNo, int Hour, LOGGER Logger)
     {
         int id = 0;
         try
@@ -197,10 +197,10 @@ namespace S107
                 }
             }
             else
-                LOG_ERR_SQL(PethLogger, res, command);
+                LOG_ERR_SQL(Logger, res, command);
             PQclear(res);
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return id;
     }
 	//int GetId(PGConnection& conn, Tcass& P)
@@ -238,7 +238,7 @@ namespace S107
  //   }
 
 	template <class T>
-    int GetId(PGConnection& conn, T& CD)
+    int GetId(PGConnection& conn, T& CD, LOGGER Logger)
     {
         int id = 0;
         try
@@ -258,14 +258,14 @@ namespace S107
                     id = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else
-                LOG_ERR_SQL(PethLogger, res, command);
+                LOG_ERR_SQL(Logger, res, command);
             PQclear(res);
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return id;
     }
 
-    int GetEvent(PGConnection& conn, T_Fcassette& CD)
+    int GetEvent(PGConnection& conn, T_Fcassette& CD, LOGGER Logger)
     {
         int events = 0;
         try
@@ -279,7 +279,7 @@ namespace S107
             ss << " AND cassetteno = " << CD.CassetteNo->Val.As<int32_t>();
             std::string command = ss.str();
 
-            //LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, command);
+            //LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, command);
             PGresult* res = conn.PGexec(command);
             if(PQresultStatus(res) == PGRES_TUPLES_OK)
             {
@@ -287,29 +287,26 @@ namespace S107
                     events = Stoi(conn.PGgetvalue(res, 0, 0));
             }
             else
-                LOG_ERR_SQL(PethLogger, res, command);
+                LOG_ERR_SQL(Logger, res, command);
             PQclear(res);
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return events;
     }
 
 	template <class T>
-    bool IsCassette(T& CD)
-    {
-        try
-        {
+	bool IsCassette(T& CD)
+	{
 			//int32_t Hour = Stoi(CD.Hour);
-            int32_t Day = Stoi(CD.Day);
-            int32_t Month = Stoi(CD.Month);
-            int32_t Year = Stoi(CD.Year);
-            int32_t CassetteNo = Stoi(CD.CassetteNo);
-            return Day && Month && Year && CassetteNo;
-        }
-        CATCH(PethLogger, "");
-        return false;
-    }
-    bool IsFCassete(T_Fcassette& CD)
+		int32_t Day = Stoi(CD.Day);
+		int32_t Month = Stoi(CD.Month);
+		int32_t Year = Stoi(CD.Year);
+		int32_t CassetteNo = Stoi(CD.CassetteNo);
+		return Day && Month && Year && CassetteNo;
+		return false;
+	}
+
+    bool IsFCassete(T_Fcassette& CD, LOGGER Logger)
     {
         try
         {
@@ -319,13 +316,13 @@ namespace S107
             int32_t CassetteNo = CD.CassetteNo->Val.As<int32_t>();
             return Day && Month && Year && CassetteNo;
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return false;
     }
 #pragma endregion
 
     namespace SQL{
-        bool GetCountSheet(PGConnection& conn, TCassette& CD)
+        bool GetCountSheet(PGConnection& conn, TCassette& CD, LOGGER Logger)
         {
             try
             {
@@ -356,18 +353,18 @@ namespace S107
                             std::stringstream ss;
                             ss << "UPDATE cassette SET sheetincassette = " << countList;
                             ss << " WHERE id = " << CD.Id;
-                            SETUPDATESQL(PethLogger, conn, ss);
+                            SETUPDATESQL(Logger, conn, ss);
                             return false;
                         }
                     }
                     else
                     {
-                        LOG_ERR_SQL(PethLogger, res, command);
+                        LOG_ERR_SQL(Logger, res, command);
                         PQclear(res);
                     }
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return false;
         }
 
@@ -388,7 +385,7 @@ namespace S107
             AppFurn2.Cassette.CassetteNo->GetValue();
         }
 
-        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette)
+        void FURN_SQL(PGConnection& conn, std::deque<TCassette>& allCassette, LOGGER Logger)
         {
             ReadTag();
             try
@@ -429,12 +426,12 @@ namespace S107
                     }
                 }
                 else
-                    LOG_ERR_SQL(PethLogger, res, command);
+                    LOG_ERR_SQL(Logger, res, command);
                 PQclear(res);
                 for(auto& a : allCassette)
-                    GetCountSheet(conn, a);
+                    GetCountSheet(conn, a, Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
         }
 
     };
@@ -445,39 +442,27 @@ namespace S107
 	Tcass& GetIgCassetteFurn(int Peth)
 	{
 		static Tcass T;
-		//try
+		if(Peth == 1)
 		{
-			if(Peth == 1)
-			{
-				return Furn1::Petch;
-			}
-			else if(Peth == 2)
-			{
-				return Furn2::Petch;
-			}
-			else
-				throw std::exception(__FUN("Ошибка номера печи: " + std::to_string(Peth)));
-		}
-		//CATCH(FurnLogger, "");
+			return Furn1::Petch;
+		} else if(Peth == 2)
+		{
+			return Furn2::Petch;
+		} else
+			throw std::exception(__FUN("Ошибка номера печи: " + std::to_string(Peth)));
 		return T;
 	}
 
 	T_ForBase_RelFurn& GetBaseRelFurn(int Peth)
 	{
-		//try
+		if(Peth == 1)
 		{
-			if(Peth == 1)
-			{
-				return Furn1::Furn;
-			}
-			else if(Peth == 2)
-			{
-				return Furn2::Furn;
-			}
-			else
-				throw std::exception(__FUN("Ошибка номера печи: " + std::to_string(Peth)));
-		}
-		//CATCH(FurnLogger, "");
+			return Furn1::Furn;
+		} else if(Peth == 2)
+		{
+			return Furn2::Furn;
+		} else
+			throw std::exception(__FUN("Ошибка номера печи: " + std::to_string(Peth)));
 		return Furn1::Furn;
 	}
 
@@ -496,7 +481,7 @@ namespace S107
 
 
 
-    bool GetFinishCassete(PGConnection& conn, std::shared_ptr<spdlog::logger> Logger, TCassette& it)
+    bool GetFinishCassete(PGConnection& conn, LOGGER Logger, TCassette& it)
     {
         try
         {
@@ -519,7 +504,7 @@ namespace S107
         return false;
     }
 
-	int UpdateCassetteProcRun(PGConnection& conn, int Peth)
+	int UpdateCassetteProcRun(PGConnection& conn, int Peth, LOGGER Logger)
 	{
 		int id = 0;
 		T_ForBase_RelFurn& F = GetBaseRelFurn(Peth);
@@ -550,22 +535,22 @@ namespace S107
 				P.CassetteNo = CassetteNo;
 			}
 
-			LOG_INFO(FurnLogger, "{:90}| ProcRun Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
+			LOG_INFO(Logger, "{:90}| ProcRun Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}",
 					 FUNCTION_LINE_NAME, P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo);
 		}
-		CATCH(FurnLogger, "");
+		CATCH(Logger, "");
 
 		try
 		{
-			if(IsFCassete(CD))
+			if(IsFCassete(CD, Logger))
 			{
-				id = GetId(conn, CD);
+				id = GetId(conn, CD, Logger);
 				if(id)
 				{
 					std::stringstream sd;
 					sd << "UPDATE cassette SET ";
 
-					if(GetEvent(conn, CD) != 3)
+					if(GetEvent(conn, CD, Logger) != 3)
 					{
 						sd << "peth = " << Peth << ", ";
 						sd << "event = 3, ";
@@ -583,9 +568,9 @@ namespace S107
 					sd << "timeprocset = " << TimeProcSet << " ";
 					sd << "WHERE id = " << id;
 
-					LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-					SETUPDATESQL(FurnLogger, conn, sd);
-					LOG_INFO(FurnLogger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
+					LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(Logger, conn, sd);
+					LOG_INFO(Logger, "{:90}| Peth={}, Year={}, Month={}, Day={}, Hour={}, CassetteNo={} Event = 3",
 							 FUNCTION_LINE_NAME, Peth, Year, Month, Day, Hour, CassetteNo);
 				} 
 				else
@@ -634,10 +619,10 @@ namespace S107
 					sd << "-1)";
 					#pragma endregion
 
-					LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-					SETUPDATESQL(FurnLogger, conn, sd);
+					LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(Logger, conn, sd);
 
-					id = GetId(conn, CD);
+					id = GetId(conn, CD, Logger);
 				}
 			}
 			else
@@ -646,12 +631,12 @@ namespace S107
 				throw std::exception(__FUN(GetErrorIdCassete(Peth)));
 			}
 		}
-		CATCH(FurnLogger, "");
+		CATCH(Logger, "");
 		return id;
 	}
 
 	//TCassette itTCassette;
-    int UpdateCassetteProcEnd(PGConnection& conn, int Peth)
+    int UpdateCassetteProcEnd(PGConnection& conn, int Peth, LOGGER Logger)
     {
         int id = 0;
 		Tcass& P = GetIgCassetteFurn(Peth);
@@ -664,28 +649,28 @@ namespace S107
 			sd << "UPDATE cassette SET end_at = now() WHERE id = ";
 			#pragma endregion
 
-			if(IsFCassete(CD)) id = GetId(conn, CD);
+			if(IsFCassete(CD, Logger)) id = GetId(conn, CD, Logger);
             if(id)
             {
-				LOG_INFO(FurnLogger, "{:90}| ProcEnd Peth = {}, End_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
+				LOG_INFO(Logger, "{:90}| ProcEnd Peth = {}, End_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
 						 FUNCTION_LINE_NAME, Peth, 
 						 GetStringDataTime(), CD.Year->GetString(),  CD.Month->GetString(),  CD.Day->GetString(),  CD.Hour->GetString(),  CD.CassetteNo->GetString(),  id);
 
 				sd << id;
-                LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(FurnLogger, conn, sd);
+                LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                SETUPDATESQL(Logger, conn, sd);
             }
 			else
 			{ 
-				if(IsCassette(P)) id = GetId(conn, P);
+				if(IsCassette(P)) id = GetId(conn, P, Logger);
 				if(id)
 				{
-					LOG_INFO(FurnLogger, "{:90}| ProcEnd Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
+					LOG_INFO(Logger, "{:90}| ProcEnd Peth = {}, Run_at = {}, Year = {}, Month = {}, Day = {}, Hour = {}, CassetteNo = {}, Id = {}",
 							 FUNCTION_LINE_NAME, P.Peth, P.Run_at, P.Year, P.Month, P.Day, P.Hour, P.CassetteNo, id);
 
 					sd << id;
-					LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-					SETUPDATESQL(FurnLogger, conn, sd);
+					LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(Logger, conn, sd);
 				}
 				else
 				{
@@ -694,11 +679,11 @@ namespace S107
 
 			}
         }
-        CATCH(FurnLogger, "");
+        CATCH(Logger, "");
         return 0;
     }
 
-    int UpdateCassetteProcError(PGConnection& conn, int Peth)
+    int UpdateCassetteProcError(PGConnection& conn, int Peth, LOGGER Logger)
     {
         int id = 0;
 		Tcass& P = GetIgCassetteFurn(Peth);
@@ -717,22 +702,22 @@ namespace S107
             sd << " id = ";
 			#pragma endregion
 
-			if(IsFCassete(CD)) id = GetId(conn, CD);
+			if(IsFCassete(CD, Logger)) id = GetId(conn, CD, Logger);
 
             if(id)
             {
                 sd << id;
-                LOG_INFO(FurnLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(PethLogger, conn, sd);
+                LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+                SETUPDATESQL(Logger, conn, sd);
             }
 			else
 			{
-				if(IsCassette(P)) id = GetId(conn, P);
+				if(IsCassette(P)) id = GetId(conn, P, Logger);
 				if(id)
 				{
 					sd << id;
-					LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
-					SETUPDATESQL(PethLogger, conn, sd);
+					LOG_INFO(Logger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(Logger, conn, sd);
 				}
 				else
 				{
@@ -740,11 +725,11 @@ namespace S107
 				}
 			}
         }
-        CATCH(FurnLogger, "");
+        CATCH(Logger, "");
         return id;
     }
 
-    int ReturnCassette(PGConnection& conn, int Peth)
+    int ReturnCassette(PGConnection& conn, int Peth, LOGGER Logger)
     {
         int id = 0;
 		Tcass& P = GetIgCassetteFurn(Peth);
@@ -767,21 +752,21 @@ namespace S107
 			sd << " WHERE id = ";
 			#pragma endregion
 
-			if(IsFCassete(CD)) id = GetId(conn, CD);
+			if(IsFCassete(CD, Logger)) id = GetId(conn, CD, Logger);
             if(id)
             {
                 sd << id;
-                LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
-                SETUPDATESQL(PethLogger, conn, sd);
+                LOG_INFO(Logger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
+                SETUPDATESQL(Logger, conn, sd);
             }
 			else
 			{ 
-				if(IsCassette(P)) id = GetId(conn, P);
+				if(IsCassette(P)) id = GetId(conn, P, Logger);
 				if(id)
 				{
 					sd << id;
-					LOG_INFO(PethLogger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
-					SETUPDATESQL(PethLogger, conn, sd);
+					LOG_INFO(Logger, "{:89}| {}", FUNCTION_LINE_NAME, sd.str());
+					SETUPDATESQL(Logger, conn, sd);
 				}
 				else
 				{
@@ -789,47 +774,47 @@ namespace S107
 				}
 			}
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
         return 0;
     }
 
-    void SetTemperCassette(PGConnection& conn, T_Fcassette& CD, std::string teper)
+    void SetTemperCassette(PGConnection& conn, T_Fcassette& CD, std::string teper, LOGGER Logger)
     {
         try
         {
             if(teper != CD.facttemper)
             {
-                if(IsFCassete(CD))
+                if(IsFCassete(CD, Logger))
                 {
-                    int id = GetId(conn, CD);
+                    int id = GetId(conn, CD, Logger);
                     CD.facttemper = teper;
                     std::stringstream sd;
                     sd << "UPDATE cassette SET";
                     sd << " facttemper = " << teper;
                     sd << " WHERE id = " << id;
-                    SETUPDATESQL(PethLogger, conn, sd);
+                    SETUPDATESQL(Logger, conn, sd);
                 }
             }
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
     }
 
-    void SetUpdateCassete(PGConnection& conn, T_ForBase_RelFurn& Furn, std::string update)
+    void SetUpdateCassete(PGConnection& conn, T_ForBase_RelFurn& Furn, std::string update, LOGGER Logger)
     {
         try
         {
             T_Fcassette& CD = Furn.Cassette;
-            if(IsFCassete(CD))
+            if(IsFCassete(CD, Logger))
             {
-                int id = GetId(conn, CD); 
+                int id = GetId(conn, CD, Logger); 
                 std::stringstream sd;
                 sd << "UPDATE cassette SET ";
                 sd << update;
                 sd << " WHERE id = " << id;
-                SETUPDATESQL(PethLogger, conn, sd);
+                SETUPDATESQL(Logger, conn, sd);
             }
         }
-        CATCH(PethLogger, "");
+        CATCH(Logger, "");
     }
 #pragma endregion
 
@@ -838,6 +823,8 @@ namespace S107
         const int nPetch = 1;
 		Tcass Petch(nPetch);
         int CassetteId = 0;
+		LOGGER Logger = NULL;
+
 		T_ForBase_RelFurn& Furn = ForBase_RelFurn_1;
 
 
@@ -853,7 +840,7 @@ namespace S107
                         //Furn.WDG_toBase->Set_Value(false);
                         Furn.WDG_fromBase->Set_Value(true);
                     }
-                    CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_1.Data.WDG_fromBase.Set_Value");
+                    CATCH(Logger, "Ошибка передачи данных ForBase_RelFurn_1.Data.WDG_fromBase.Set_Value");
                     //catch(std::exception& exc)
                     //{
                     //    LOG_ERROR(PethLogger, "{:90}| Ошибка передачи данных ForBase_RelFurn_1.Data.WDG_fromBase.Set_Value", FUNCTION_LINE_NAME, exc.what());
@@ -868,7 +855,7 @@ namespace S107
                     SetWindowText(winmap(value->winId), string_time(&TM).c_str());
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -882,11 +869,11 @@ namespace S107
 				if(value->GetBool())
 				{
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch);
+                    CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch, Logger);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -899,14 +886,14 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcEnd(*value->Conn, nPetch);
+                    CassetteId = UpdateCassetteProcEnd(*value->Conn, nPetch, Logger);
                     Furn.Cassette.facttemper = "0";
 					Petch = Tcass (nPetch);
                 }
 
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -920,12 +907,12 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch, Logger);
 
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -938,12 +925,12 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, nPetch, Logger);
                     value->Set_Value(false);
-                    //LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
+                    //LOG_INFO(FurnLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 1: ReturnCassetteCmd", b);
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -957,7 +944,7 @@ namespace S107
 				MySetWindowText(winmap(value->winId), Petch.Hour);
                 //MySetWindowText(value);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -970,7 +957,7 @@ namespace S107
 					Petch.Day = Furn.Cassette.Day->GetString();
 				MySetWindowText(winmap(value->winId),  Petch.Day);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -983,7 +970,7 @@ namespace S107
 					Petch.Month = Furn.Cassette.Month->GetString();
 				MySetWindowText(winmap(value->winId), Petch.Month);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -996,7 +983,7 @@ namespace S107
 					Petch.Year = Furn.Cassette.Year->GetString();
 				MySetWindowText(winmap(value->winId), Petch.Year);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -1009,7 +996,7 @@ namespace S107
 					Petch.CassetteNo = Furn.Cassette.CassetteNo->GetString();
 				MySetWindowText(winmap(value->winId), Petch.CassetteNo);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -1020,9 +1007,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//value->GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -1032,9 +1019,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD TimeTotal(Value* value)
@@ -1043,9 +1030,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1059,7 +1046,7 @@ namespace S107
                 if(f <= 5.0 && f >= 4.9)
                 {
                     MySetWindowText(winmap(RelF1_Edit_Proc1), Furn.TempAct->GetString().c_str());
-                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString());
+                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString(), Logger);
                 }
                 else if(f >= Furn.TimeProcSet->GetFloat())//GetFloat())
                 {
@@ -1068,7 +1055,7 @@ namespace S107
 
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
 
             return 0;
         }
@@ -1081,6 +1068,8 @@ namespace S107
         const int nPetch = 2;
 		Tcass Petch(nPetch);
         int CassetteId = 0;
+		LOGGER Logger = NULL;
+
 		T_ForBase_RelFurn& Furn = ForBase_RelFurn_2;
 
         DWORD Data_WDG_toBase(Value* value)
@@ -1094,14 +1083,14 @@ namespace S107
                         //Furn.WDG_toBase->Set_Value(false);
                         Furn.WDG_fromBase->Set_Value(true);
                     }
-                    CATCH(PethLogger, "Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value");
+                    CATCH(Logger, "Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value");
                     //catch(std::exception& exc)
                     //{
-                    //    LOG_ERROR(PethLogger, "{:90}| Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value {}", FUNCTION_LINE_NAME, exc.what());
+                    //    LOG_ERROR(FurnLogger, "{:90}| Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value {}", FUNCTION_LINE_NAME, exc.what());
                     //}
                     //catch(...)
                     //{
-                    //    LOG_ERROR(PethLogger, "Unknown Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value ", FUNCTION_LINE_NAME);
+                    //    LOG_ERROR(FurnLogger, "Unknown Ошибка передачи данных ForBase_RelFurn_2.Data.WDG_fromBase.Set_Value ", FUNCTION_LINE_NAME);
                     //};
 
                     struct tm TM;
@@ -1109,7 +1098,7 @@ namespace S107
                     SetWindowText(winmap(value->winId), string_time(&TM).c_str());
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1123,11 +1112,11 @@ namespace S107
 				if(value->GetBool())
 				{
 					out = GetShortTimes();
-					CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch);
+					CassetteId = UpdateCassetteProcRun(*value->Conn, nPetch, Logger);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1140,14 +1129,14 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    UpdateCassetteProcEnd(*value->Conn, nPetch);
+                    UpdateCassetteProcEnd(*value->Conn, nPetch, Logger);
                     CassetteId = 0;
                     Furn.Cassette.facttemper = "0";
 					Petch = Tcass (nPetch);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1160,11 +1149,11 @@ namespace S107
                 if(value->GetBool())
                 {
                     out = GetShortTimes();
-                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch);
+                    CassetteId = UpdateCassetteProcError(*value->Conn, nPetch, Logger);
                 }
                 MySetWindowText(winmap(value->winId), out.c_str());
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1176,12 +1165,12 @@ namespace S107
                 bool b = value->GetBool();
                 if(b)
                 {
-                    CassetteId = ReturnCassette(*value->Conn, nPetch);
+                    CassetteId = ReturnCassette(*value->Conn, nPetch, Logger);
                     value->Set_Value(false);
-                    //LOG_INFO(PethLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
+                    //LOG_INFO(FurnLogger, "{:89}| {} {}", FUNCTION_LINE_NAME, "peth 2: ReturnCassetteCmd", b);
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1195,7 +1184,7 @@ namespace S107
 					Petch.Hour = Furn.Cassette.Hour->GetString();
 				MySetWindowText(winmap(value->winId), Petch.Hour);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD Day(Value* value)
@@ -1207,7 +1196,7 @@ namespace S107
 					Petch.Day = Furn.Cassette.Day->GetString();
 				MySetWindowText(winmap(value->winId),  Petch.Day);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD Month(Value* value)
@@ -1219,7 +1208,7 @@ namespace S107
 					Petch.Month = Furn.Cassette.Month->GetString();
 				MySetWindowText(winmap(value->winId), Petch.Month);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD Year(Value* value)
@@ -1231,7 +1220,7 @@ namespace S107
 					Petch.Year = Furn.Cassette.Year->GetString();
 				MySetWindowText(winmap(value->winId), Petch.Year);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD No(Value* value)
@@ -1243,7 +1232,7 @@ namespace S107
 					Petch.CassetteNo = Furn.Cassette.CassetteNo->GetString();
 				MySetWindowText(winmap(value->winId), Petch.CassetteNo);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1253,9 +1242,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatacc = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD TimeHeatWait(Value* value)
@@ -1264,9 +1253,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "heatwait = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
         DWORD TimeTotal(Value* value)
@@ -1275,9 +1264,9 @@ namespace S107
             {
                 MySetWindowText(value);
                 if(value->GetFloat())//GetFloat())
-                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString());
+                    SetUpdateCassete(*value->Conn, Furn, "total = " + value->GetString(), Logger);
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1291,7 +1280,7 @@ namespace S107
                 if(f <= 5.0 && f >= 4.9)
                 {
                     MySetWindowText(winmap(RelF2_Edit_Proc1), Furn.TempAct->GetString().c_str());
-                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString());
+                    SetTemperCassette(*value->Conn, Furn.Cassette, Furn.TempAct->GetString(), Logger);
                 }
                 else if(f >= Furn.TimeProcSet->GetFloat())//GetFloat())
                 {
@@ -1300,7 +1289,7 @@ namespace S107
 
                 }
             }
-            CATCH(PethLogger, "");
+            CATCH(Logger, "");
             return 0;
         }
 
@@ -1309,22 +1298,22 @@ namespace S107
 }
 
 
-void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where)
-{
-    try
-    {
-        if(S107::IsCassette(cassette))
-        {
-            std::stringstream sd;
-            sd << "UPDATE cassette SET ";
-            sd << update;
-            sd << " WHERE " + where;
-            sd << " id = " << cassette.Id;
-            sd << ";";
-            LOG_INFO(PethLogger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
-            SETUPDATESQL(PethLogger, conn, sd);
-        }
-    }
-    CATCH(PethLogger, "");
-}
+//void SetUpdateCassete(PGConnection& conn, TCassette& cassette, std::string update, std::string where)
+//{
+//    try
+//    {
+//        if(S107::IsCassette(cassette))
+//        {
+//            std::stringstream sd;
+//            sd << "UPDATE cassette SET ";
+//            sd << update;
+//            sd << " WHERE " + where;
+//            sd << " id = " << cassette.Id;
+//            sd << ";";
+//            LOG_INFO(Logger, "{:90}| {}", FUNCTION_LINE_NAME, sd.str());
+//            SETUPDATESQL(Logger, conn, sd);
+//        }
+//    }
+//    CATCH(Logger, "");
+//}
 

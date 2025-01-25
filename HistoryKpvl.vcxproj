@@ -114,7 +114,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseD|x64'">
     <OutDir>$(SolutionDir)Build\</OutDir>
     <IntDir>obj\$(Configuration)$(PlatformArchitecture)$(PlatformToolset)\</IntDir>
-    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)RD</TargetName>
+    <TargetName>$(ProjectName)$(PlatformArchitecture)$(PlatformToolset)_rd</TargetName>
     <LinkIncremental />
     <LinkKeyFile />
     <LinkDelaySign>false</LinkDelaySign>

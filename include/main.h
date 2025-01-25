@@ -32,6 +32,33 @@ inline void outF(std::string name)
     if(f.is_open()) { f << std::endl << std::endl; f.close(); }
 }
 
+typedef std::shared_ptr<spdlog::logger> LOGGER;
+
+inline LOGGER InitLogger2(std::string LoggerOut)
+{
+    try
+    {
+        LOGGER Logger = spdlog::details::registry::instance().get(LoggerOut);
+        if(!Logger.get())
+        {
+            std::string FileName = lpLogDir + "\\" + LoggerOut + ".log";
+            std::ofstream l(FileName, std::ios::binary | std::ios::out | std::ios::app);
+            if(l.is_open())
+            {
+                l << std::endl << std::endl;
+                l.close();
+            }
+            Logger = spdlog::rotating_logger_mt(LoggerOut, FileName, SizeLogger, CountLogger);
+        }
+        Logger->set_level(spdlog::level::level_enum::info);
+        LOG_INFO(Logger, "{:90}| Старт программы", FUNCTION_LINE_NAME);
+        return Logger;
+    }
+    catch(...) {}
+    return 0;
+}
+
+
 #define InitLogger(_l) {\
 try{if(!_l){\
 	_l = spdlog::details::registry::instance().get(#_l);\
@@ -44,30 +71,6 @@ try{if(!_l){\
 	_l->set_level(spdlog::level::level_enum::info);\
 	LOG_INFO(_l, "{:90}| Старт программы", FUNCTION_LINE_NAME);\
 }}catch(...) {}}
-
-//inline std::shared_ptr<spdlog::logger> InitLogger(std::string LoggerOut)\
-//{\
-//    try\
-//    {\
-//        std::shared_ptr<spdlog::logger> Logger = spdlog::details::registry::instance().get(LoggerOut);\
-//        if(!Logger.get())\
-//        {\
-//            std::string FileName = lpLogDir + "\\" + LoggerOut + ".log";\
-//            std::ofstream l(FileName, std::ios::binary | std::ios::out | std::ios::app);\
-//            if(l.is_open())\
-//            {\
-//                l << std::endl << std::endl;\
-//                l.close();\
-//            }\
-//            Logger = spdlog::rotating_logger_mt(LoggerOut, FileName, SizeLogger, CountLogger);\
-//        }\
-//        Logger->set_level(spdlog::level::level_enum::info);\
-//        LOG_INFO(Logger, "{:90}| Старт программы", FUNCTION_LINE_NAME);\
-//        return Logger;\
-//    }\
-//    catch(...) {}\
-//    return 0;\
-//}
 
 #ifdef _DEBUG
 //#define TESTTEMPER

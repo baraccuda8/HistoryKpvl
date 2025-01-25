@@ -338,7 +338,7 @@ namespace PDF
 			//void SqlTempActKPVL2(std::string Stop, T_fTemp& fT);
 			//void SqlTempActKPVL2(std::string Start, std::string Stop, VPFS& pfs2, int Temperature);
 			//void SqlTempActKPVL(T_SqlTemp& tr, TSheet& Sheet);
-
+			//
 			//void DrawTimeText(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
 			//void DrawT(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, float sd, std::wstring sDataBeg);
 			//void DrawBottom(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, Gdiplus::Color& clor, T_SqlTemp& st);
@@ -347,18 +347,18 @@ namespace PDF
 			//void DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG, std::wstring s1, std::wstring s2);
 			//void DrawGridTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, int msec);
 			//void GetMinMax(T_SqlTemp& Act, T_SqlTemp& Ref);
-
+			//
 			////void DrawTime(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect, std::wstring str, Gdiplus::StringFormat& stringFormat);
 			//void PaintGraff(T_SqlTemp& Act, T_SqlTemp& Ref, std::string fImage, int msec, std::wstring s1, std::wstring s2);
-
+			//
 			//bool NewPdf();
 			//void SavePDF(TSheet& Sheet);
 			//HPDF_REAL DrawHeder(TSheet& Sheet, HPDF_REAL left, HPDF_REAL top);
-
+			//
 			//HPDF_REAL DrawFurn(TCassette& Cassette, HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
 			//HPDF_REAL DrawKpvl(TSheet& Sheet, HPDF_REAL left, HPDF_REAL top, HPDF_REAL w);
 			//HPDF_REAL DrawKpvlPDF(TSheet& Sheet, HPDF_REAL left, HPDF_REAL top);
-
+			//
 			//HPDF_REAL DrawFurnPDF(TCassette& Cassette, HPDF_REAL left, HPDF_REAL top);
 			//void UpdateTemperature(TSheet& d);
 			////void UpdateTemperature(T_SqlTemp& tr, TSheet& Sheet);
@@ -464,11 +464,12 @@ namespace PDF
 			{
 				try
 				{
-					Start = GetStartTime(Start, ID);
+					time_t t1 = DataTimeOfString(Start);
+					std::string start = GetStartTime(Start, ID);
 
 					std::stringstream sdt;
 					sdt << "SELECT create_at, content FROM todos WHERE id_name = " << ID;
-					if(Start.length()) sdt << " AND create_at >= '" << Start << "'";
+					if(Start.length()) sdt << " AND create_at >= '" << start << "'";
 					if(Stop.length()) sdt << " AND create_at <= '" << Stop << "'";
 					sdt << " ORDER BY create_at ASC;";
 
@@ -481,8 +482,7 @@ namespace PDF
 						{
 							int i = 0;
 
-							float fTemp = static_cast<float>(atof(conn.PGgetvalue(res, 0, 1).c_str()));
-							time_t t1 = DataTimeOfString(Start);
+							float fTemp = Stof(conn.PGgetvalue(res, 0, 1).c_str());
 							tr[Start] = std::pair(0, fTemp);
 
 
@@ -493,17 +493,17 @@ namespace PDF
 								if(Start <= sData)
 								{
 									std::string sTemp = conn.PGgetvalue(res, l, 1);
-									time_t t2 = DataTimeOfString(sData);
+									int t = int(difftime(DataTimeOfString(sData), t1));
 
-									fTemp = static_cast<float>(atof(sTemp.c_str()));
+									fTemp = Stof(sTemp.c_str());
 									if(fTemp > 0.f && fTemp <= 999.f)
-										tr[sData] = std::pair(int(difftime(t2, t1)), fTemp);
+										tr[sData] = std::pair(t, fTemp);
 								}
 							}
 
 
-							time_t t3 = DataTimeOfString(Stop);
-							tr[Stop] = std::pair(int(difftime(t3, t1)), fTemp);
+							int t = int(difftime(DataTimeOfString(Stop), t1));
+							tr[Stop] = std::pair(t, fTemp);
 						}
 					} else
 						LOG_ERR_SQL(PdfLog, res, command);
@@ -540,10 +540,10 @@ namespace PDF
 							pfs.data = conn.PGgetvalue(res, l, 1);
 							pfs.temper = Stof(conn.PGgetvalue(res, l, 2));
 
-							if(id_name == Hmi210_1.Htr2_1->ID) fT.t1 = pfs.temper; else
-								if(id_name == Hmi210_1.Htr2_2->ID) fT.t2 = pfs.temper; else
-									if(id_name == Hmi210_1.Htr2_3->ID) fT.t3 = pfs.temper; else
-										if(id_name == Hmi210_1.Htr2_4->ID) fT.t4 = pfs.temper;
+							if(id_name == Hmi210_1.Htr2_1->ID) fT.t1 = pfs.temper;
+							if(id_name == Hmi210_1.Htr2_2->ID) fT.t2 = pfs.temper;
+							if(id_name == Hmi210_1.Htr2_3->ID) fT.t3 = pfs.temper;
+							if(id_name == Hmi210_1.Htr2_4->ID) fT.t4 = pfs.temper;
 						}
 					} else
 						LOG_ERR_SQL(PdfLog, res, command);
@@ -579,10 +579,10 @@ namespace PDF
 							pfs.data = conn.PGgetvalue(res, l, 1);
 							pfs.temper = Stof(conn.PGgetvalue(res, l, 2));
 
-							if(id_name == Hmi210_1.Htr1_1->ID) fT.t1 = pfs.temper; else
-								if(id_name == Hmi210_1.Htr1_2->ID) fT.t2 = pfs.temper; else
-									if(id_name == Hmi210_1.Htr1_3->ID) fT.t3 = pfs.temper; else
-										if(id_name == Hmi210_1.Htr1_4->ID) fT.t4 = pfs.temper;
+							if(id_name == Hmi210_1.Htr1_1->ID) fT.t1 = pfs.temper;
+							if(id_name == Hmi210_1.Htr1_2->ID) fT.t2 = pfs.temper;
+							if(id_name == Hmi210_1.Htr1_3->ID) fT.t3 = pfs.temper;
+							if(id_name == Hmi210_1.Htr1_4->ID) fT.t4 = pfs.temper;
 						}
 					} else
 						LOG_ERR_SQL(PdfLog, res, command);
@@ -722,13 +722,13 @@ namespace PDF
 				std::tm TM;
 				if(pF.size())
 				{
-					time_t tS1 = DataTimeOfString(pF.begin()->data, TM);
+					auto data = pF.begin()->data;
+					time_t tS1 = DataTimeOfString(data, TM);
 
 					int oldStep = 0;
 					for(auto& a : pF)
 					{
-						time_t tS = DataTimeOfString(a.data, TM);
-						a.sec = int(difftime(tS, tS1));
+						a.sec = int(difftime(DataTimeOfString(a.data), tS1));
 
 						int st = a.sec / StepSec;
 						if(oldStep == st)
@@ -738,8 +738,10 @@ namespace PDF
 								mF[st].temper += a.temper;
 								mF[st].data = a.data;
 								mF[st].count++;
+								mF[st].sec = a.sec;
 							}
-						} else
+						} 
+						else
 						{
 							if(a.temper > 0)
 							{
@@ -747,6 +749,7 @@ namespace PDF
 								mF[st].temper += a.temper;
 								mF[st].data = a.data;
 								mF[st].count = 1;
+								mF[st].sec = a.sec;
 							}
 						}
 					}
@@ -812,11 +815,10 @@ namespace PDF
 					tr.erase(tr.begin(), tr.end());
 					std::string Pos1 = Sheet.Start_at;
 					std::string Pos2 = Sheet.SecondPos_at;
-					std::string Stop = Sheet.DataTime_End;
-					//std::tm TM;
-
-					if(Stop.length() < 1) return;
-					if(Pos1.length() < 1)return;
+					std::string Pos3 = Sheet.DataTime_End;
+					
+					if(Pos1.length() < 1) return;
+					if(Pos3.length() < 1)return;
 
 
 					std::vector<PFS>pF1;
@@ -825,39 +827,31 @@ namespace PDF
 					std::map<int, PFS>mF1;
 					std::map<int, PFS>mF2;
 
-					//T_fTemp fT1;
-					//T_fTemp fT2;
-					//SqlTempActKPVL1(Stop, fT1);
-					//SqlTempActKPVL2(Stop, fT2);
-
-					//if(Pos2.length())
-					//{
 					SqlTempActKPVL1(Pos1, Pos2, pF1, Stoi(Sheet.Temperature));
-					SqlTempActKPVL2(Pos2, Stop, pF2, Stoi(Sheet.Temperature));
-				//}
-				//else
-				//{
-				//	SqlTempActKPVL3(Pos1, Stop, pF1);
-				//}
+					SqlTempActKPVL2(Pos2, Pos3, pF2, Stoi(Sheet.Temperature));
 
 					GetSrTemper(pF1, mF1);
 					GetSrTemper(pF2, mF2);
 
-					int64_t t0 = int64_t(DataTimeOfString(mF1.begin()->second.data));
+					time_t t1 = DataTimeOfString(Pos1); //mF1.begin()->second.data);
 					for(auto a : mF1)
 					{
-						int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
 						if(a.second.temper > 0 && a.second.temper < 999.0f)
+						{
+							int t = int(difftime(DataTimeOfString(a.second.data), t1));
 							tr[a.second.data] = std::pair(t, a.second.temper);
+						}
 					}
 
+					//time_t t2 = DataTimeOfString(mF2.begin()->second.data);
 					for(auto a : mF2)
 					{
-						int64_t t = int64_t(DataTimeOfString(a.second.data)) - t0;
 						if(a.second.temper > 0 && a.second.temper < 999.0f)
+						{
+							int t = int(difftime(DataTimeOfString(a.second.data), t1));
 							tr[a.second.data] = std::pair(t, a.second.temper);
+						}
 					}
-					//UpdateTemperature(tr, Sheet);
 					if(Stof(Sheet.Temperature) == 0)
 						UpdateTemperature(Sheet);
 				}CATCH(PdfLog, "");
@@ -901,7 +895,7 @@ namespace PDF
 				Gdiplus::Pen Gdi_L2(clor, 1);
 				auto b = st.begin();
 
-				double coeffW = (double)(Rect.Width) / double(maxd);
+				double coeffW = (double)(Rect.Width) / double(maxd - mind);
 				double coeffH = (double)(Rect.Height - Rect.Y) / (double)(f_maxt - f_mint);
 
 				Gdiplus::PointF p1;
@@ -913,7 +907,7 @@ namespace PDF
 				path.StartFigure();
 				for(auto& a : st)
 				{
-					if(a.second.second >= 0.0f && a.second.second < 999.0f)
+					//if(a.second.second >= 0.0f && a.second.second < 999.0f)
 					{
 						p2.X = Rect.X + float((a.second.first - mind) * coeffW);
 						p2.Y = Rect.Y + float((f_maxt - a.second.second) * coeffH);
@@ -1065,9 +1059,14 @@ namespace PDF
 
 			void GetMinMax(T_SqlTemp& Act, T_SqlTemp& Ref)
 			{
-				mind = std::min<int64_t>(Act.begin()->second.first, Ref.begin()->second.first);
-				maxd = std::max<int64_t>(0, Act.rbegin()->second.first - Act.begin()->second.first);
-				maxd = std::max<int64_t>(maxd, Ref.rbegin()->second.first - Ref.begin()->second.first);
+				auto a = Act.begin()->second;
+				auto r = Ref.begin()->second;
+
+				auto ar = Act.rbegin()->second;
+				auto rr = Ref.rbegin()->second;
+				mind = std::min<int64_t>(a.first, r.first);
+				maxd = std::max<int64_t>(ar.first - a.first, rr.first - r.first);
+				//maxd = std::max<int64_t>(maxd, );
 
 				f_maxt = 0.0f;
 				f_mint = 999.0f;
@@ -1385,8 +1384,10 @@ namespace PDF
 				boost::replace_all(outTime, ":", ".");
 
 				FileName = temp.str() + "/" + tfile.str() + " " + outTime + ".pdf";
-				std::string ImgeName = temp.str() + "/" + ifile.str() + ".jpg";
-		
+				std::string ImgeName1 = temp.str() + "/" + ifile.str() + ".jpg";
+				std::string ImgeName2 = temp.str() + "/" + tfile.str() + " " + outTime + ".jpg";
+
+				int t = 0;
 
 				try
 				{
@@ -1394,7 +1395,11 @@ namespace PDF
 					try
 					{
 						if(std::filesystem::exists(furnImage))
-							std::filesystem::copy_file(furnImage, ImgeName, std::filesystem::copy_options::skip_existing | std::filesystem::copy_options::overwrite_existing);
+							std::filesystem::copy_file(furnImage, ImgeName1, /*std::filesystem::copy_options::skip_existing |*/ std::filesystem::copy_options::overwrite_existing);
+
+						if(std::filesystem::exists(tempImage))
+							std::filesystem::copy_file(tempImage, ImgeName2, /*std::filesystem::copy_options::skip_existing |*/ std::filesystem::copy_options::overwrite_existing);
+						
 					}
 					CATCH(PdfLog, " File1: " + FileName + " ");
 
@@ -1580,7 +1585,6 @@ namespace PDF
 
 						int Ref_ID = 0;
 						int Act_ID = 0;
-						float PointRef = 999.0f;
 
 						int P = atoi(Cassette.Peth.c_str());
 						if(P == 1)//Первая отпускная печь
@@ -1665,7 +1669,7 @@ namespace PDF
 
 							#pragma endregion
 
-							//remove(tempImage.c_str());
+							remove(tempImage.c_str());
 
 							#if _DEBUG
 							if(end)
@@ -1677,7 +1681,7 @@ namespace PDF
 							}
 							#endif
 						}
-						//remove(furnImage.c_str());
+						remove(furnImage.c_str());
 					}
 					CATCH(PdfLog, "");
 
@@ -1740,13 +1744,10 @@ namespace PDF
 						{
 							Ref_ID = ForBase_RelFurn_1.TempRef->ID;
 							Act_ID = ForBase_RelFurn_1.TempAct->ID;
-							//PointRef = ForBase_RelFurn_1.PointRef_1->Val.As<float>() + 50.0f;
 						} else if(P == 2)//Вторая отпускная печь
 						{
 							Ref_ID = ForBase_RelFurn_2.TempRef->ID;
 							Act_ID = ForBase_RelFurn_2.TempAct->ID;
-							//PointRef = ForBase_RelFurn_2.PointRef_1->Val.As<float>() + 50.0f;
-							int t = 0;
 						} else return;
 
 						if(Ref_ID) GetTempRef(Cassette.Run_at, Cassette.Finish_at, FurnRef, Ref_ID);
@@ -1822,7 +1823,7 @@ namespace PDF
 
 							#pragma endregion
 
-							//remove(tempImage.c_str());
+							remove(tempImage.c_str());
 
 							#ifdef _DEBUG
 							if(end)
@@ -1834,7 +1835,7 @@ namespace PDF
 							}
 							#endif
 						}
-						//remove(furnImage.c_str());
+						remove(furnImage.c_str());
 					}
 					CATCH(PdfLog, "");
 
@@ -4984,8 +4985,8 @@ namespace PDF
 
 	void DbugPdf(PGConnection& conn)
 	{
-		std::string deb = "SELECT * FROM sheet WHERE pdf = '' AND cassette <> '0' "
-			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette AND pdf IS NOT NULL) IS NOT NULL "
+		std::string deb = "SELECT * FROM sheet WHERE (pdf = '' AND cassette <> '0' "
+			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette AND pdf IS NOT NULL) IS NOT NULL ) OR id = 29271 "
 			"ORDER BY start_at DESC;";
 		std::deque<TSheet>MasSheet;
 		PGresult* res = conn.PGexec(deb);
@@ -5231,7 +5232,7 @@ namespace PDF
 					}
 #else
 					}
-					int f = (NotCorrect ? 10 : 60); //10 секунд или 1 минута
+					int f = (NotCorrect ? 10 : 60 * 1); //10 секунд или 1 минута
 					while(isRun && --f > 0 /*&& OldNotCorrect == NotCorrect*/)
 					{
 						if(!isCorrectCassette && !isCorrectSheet)

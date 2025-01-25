@@ -478,7 +478,7 @@ void PLC_KPVL::InitNodeId()
             a->InitNodeId(this);
         }
     }
-    CATCH(PethLogger, "");
+    CATCH(HardLogger, "");
 
 #ifndef TESTTEMPER
     Par_Gen.UnloadSpeed->coeff = 1000;

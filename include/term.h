@@ -5,9 +5,9 @@
 #include "ValueTag.h"
 
 
-extern std::shared_ptr<spdlog::logger> PethLogger;
-extern std::shared_ptr<spdlog::logger> FurnLogger;
-extern std::shared_ptr<spdlog::logger> TestLogger;
+//extern std::shared_ptr<spdlog::logger> PethLogger;
+//extern std::shared_ptr<spdlog::logger> FurnLogger;
+//extern std::shared_ptr<spdlog::logger> TestLogger;
 
 
 class PLC_S107: public Client
@@ -76,7 +76,7 @@ typedef struct T_Fcassette{
 
     std::string facttemper = "0";
 
-    bool TestNull(){
+    bool TestNull(LOGGER Logger){
 
         bool b = false;
         try
@@ -86,11 +86,11 @@ typedef struct T_Fcassette{
                 Day->GetInt() != 0 ||
                 Month->GetInt() != 0 ||
                 Year->GetInt() != 0;
-        }CATCH(PethLogger, "");
+        }CATCH(Logger, "");
         return b;
     }
 
-    void SetNull()
+    void SetNull(LOGGER Logger)
     {
         //Отбравляем в печь
         try
@@ -100,7 +100,7 @@ typedef struct T_Fcassette{
             Day->Set_Value(int32_t(0));
             Hour->Set_Value(uint16_t(0));
             CassetteNo->Set_Value(int32_t(0));
-        }CATCH(PethLogger, "");
+        }CATCH(Logger, "");
     }
 }T_Fcassette;
 
