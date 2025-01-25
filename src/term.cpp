@@ -434,11 +434,14 @@ void PLC_S107::Run(int count)
         isInitPLC_S107 = true;
         SekRun = time(NULL);
         SetWindowText(winmap(hEditMode2), "Чтение данных");
-        
-        while(isRun /*&& KeepAlive.Running*/)
+		bool Running = KeepAlive.Running;
+        while(isRun)
         {
-			if(!KeepAlive.Running)
-				LOG_WARN(Logger, "{:90}| KeepAlive.Running = 0", FUNCTION_LINE_NAME, countconnect1, countconnect2);
+			if(KeepAlive.Running != Running)
+			{
+				Running = KeepAlive.Running;
+				LOG_WARN(Logger, "{:90}| KeepAlive.Running = {}", FUNCTION_LINE_NAME, Running);
+			}
 
 
             AppFurn1.WDG_fromBase->Set_Value(true);
@@ -461,27 +464,13 @@ void PLC_S107::Run(int count)
     CATCH_RUN(Logger);
 
     LOG_INFO(Logger, "{:90}| Выход из опроса 1 countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-    if(isRun)
+
+    //if(isRun)
     {
         LOG_INFO(Logger, "{:90}| Ждем 5 секунд... для {}", FUNCTION_LINE_NAME, Uri);
         int f = 5;
         while(--f && isRun) std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-
-    try
-    {
-        //LOG_INFO(Logger, "{:90}| delete Sub countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        //SetWindowText(winmap(hEditMode2), "delete Sub");
-        //for(auto s : cssS107)s.second.Delete();
-
-#if NEWS
-        LOG_INFO(Logger, "{:90}| reset countconnect = {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
-        SetWindowText(winmap(hEditMode1), "reset");
-        client.reset();
-#endif
-    }
-    CATCH_RUN(Logger);
-
     LOG_INFO(Logger, "{:90}| ... Вышли {}.{}", FUNCTION_LINE_NAME, countconnect1, countconnect2);
 };
 

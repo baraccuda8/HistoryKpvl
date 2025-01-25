@@ -57,7 +57,7 @@ DWORD WINAPI Event_Run(LPVOID pv)
 		}
 		else
 		{
-			if(++CounWait > 180) //Три минуты
+			if(++CounWait > 60 * 5) //Пять минут
 				isRun = false;
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));

@@ -438,41 +438,53 @@ namespace PDF
 				}CATCH(PdfLog, "");
 			}
 
-			std::string GetStartTime(std::string Start, int ID)
+			float GetStartTime(std::string start, int ID)
 			{
-					std::tm TM_Temp = {0};
-					//std::string sBegTime2 = Start;
-					std::stringstream sde;
-					sde << "SELECT create_at FROM todos WHERE id_name = " << ID;
-					sde << " AND create_at <= '";
-					sde << Start;
-					sde << "' ORDER BY create_at DESC LIMIT 1;";
-					std::string command = sde.str();
-					if(DEB)LOG_INFO(PdfLog, "{:90}| {}", FUNCTION_LINE_NAME, command);
-					PGresult* res = conn.PGexec(command);
-					if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				float fTemp = 0;
+				std::tm TM_Temp = {0};
+				//std::string sBegTime2 = Start;
+				std::stringstream sde;
+				sde << "SELECT content FROM todos WHERE id_name = " << ID;
+				sde << " AND create_at < '" << start << "'";
+				sde << " ORDER BY create_at DESC LIMIT 1;";
+
+				std::string command = sde.str();
+				PGresult* res = conn.PGexec(command);
+				if(PQresultStatus(res) == PGRES_TUPLES_OK)
+				{
+					if(PQntuples(res))
 					{
-						if(PQntuples(res))
-							Start = conn.PGgetvalue(res, 0, 0);
-					} else
-						LOG_ERR_SQL(PdfLog, res, command);
-					PQclear(res);
-					return Start;
+						fTemp = Stof(conn.PGgetvalue(res, 0, 0));
+					}
+				} 
+				else LOG_ERR_SQL(PdfLog, res, command);
+				PQclear(res);
+				return fTemp;
 			}
 
 			void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID)
 			{
 				try
 				{
+					if(!Start.length()) throw std::exception(__FUN("Ошибка даты Start = 0"));
+					if(!Stop.length())  throw std::exception(__FUN("Ошибка даты Stop = 0"));
+
+					//std::string start = Start;
+					float fTemp = GetStartTime(Start, ID);
 					time_t t1 = DataTimeOfString(Start);
-					std::string start = GetStartTime(Start, ID);
+
+					tr[Start] = std::pair(0, fTemp);
+
+					#pragma region MyRegion
 
 					std::stringstream sdt;
 					sdt << "SELECT create_at, content FROM todos WHERE id_name = " << ID;
-					if(Start.length()) sdt << " AND create_at >= '" << start << "'";
-					if(Stop.length()) sdt << " AND create_at <= '" << Stop << "'";
+					sdt << " AND create_at >= '" << Start << "'";
+					sdt << " AND create_at <= '" << Stop << "'";
 					sdt << " ORDER BY create_at ASC;";
+					#pragma endregion
 
+					#pragma region SQL
 					std::string command = sdt.str();
 					PGresult* res = conn.PGexec(command);
 					if(PQresultStatus(res) == PGRES_TUPLES_OK)
@@ -480,35 +492,21 @@ namespace PDF
 						int line = PQntuples(res);
 						if(line)
 						{
-							int i = 0;
-
-							float fTemp = Stof(conn.PGgetvalue(res, 0, 1).c_str());
-							tr[Start] = std::pair(0, fTemp);
-
-
 							for(int l = 0; l < line; l++)
 							{
 								std::string sData = conn.PGgetvalue(res, l, 0);
-
-								if(Start <= sData)
-								{
-									std::string sTemp = conn.PGgetvalue(res, l, 1);
-									int t = int(difftime(DataTimeOfString(sData), t1));
-
-									fTemp = Stof(sTemp.c_str());
-									if(fTemp > 0.f && fTemp <= 999.f)
-										tr[sData] = std::pair(t, fTemp);
-								}
+								fTemp = Stof(conn.PGgetvalue(res, l, 1));
+								if(fTemp > 0.f && fTemp <= 999.f)
+									tr[sData] = std::pair(int(difftime(DataTimeOfString(sData), t1)), fTemp);
 							}
-
-
-							int t = int(difftime(DataTimeOfString(Stop), t1));
-							tr[Stop] = std::pair(t, fTemp);
 						}
-					} else
-						LOG_ERR_SQL(PdfLog, res, command);
-
+					} 
+					else LOG_ERR_SQL(PdfLog, res, command);
 					PQclear(res);
+					#pragma endregion
+
+					tr[Stop] = std::pair(int(difftime(DataTimeOfString(Stop), t1)), fTemp);
+
 				}CATCH(PdfLog, "");
 			}
 
@@ -1766,7 +1764,6 @@ namespace PDF
 
 						#pragma endregion
 
-											//for(auto& Sheet : AllPfdSheet)
 						{
 							if(!isRun)
 								throw std::exception("Завершение работы");
@@ -4986,7 +4983,10 @@ namespace PDF
 	void DbugPdf(PGConnection& conn)
 	{
 		std::string deb = "SELECT * FROM sheet WHERE (pdf = '' AND cassette <> '0' "
-			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette AND pdf IS NOT NULL) IS NOT NULL ) OR id = 29271 "
+			"AND (SELECT correct FROM cassette WHERE cassette.id = sheet.cassette AND pdf IS NOT NULL) IS NOT NULL ) " 
+			#ifdef _ReleaseD
+			"OR id = 29271 "
+			#endif
 			"ORDER BY start_at DESC;";
 		std::deque<TSheet>MasSheet;
 		PGresult* res = conn.PGexec(deb);
