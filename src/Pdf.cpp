@@ -116,6 +116,19 @@ namespace PDF
 
 	bool Correct = FALSE;
 
+	//Перечисление дирректорий. Возвращает только файлы формата
+	std::vector<boost::filesystem::path> getDir (const std::string lpDir)
+	{
+		std::vector<boost::filesystem::path> paths = getDirContents (lpDir);
+		paths.erase(std::remove_if(paths.begin(), paths.end(),
+					[&, lpDir](boost::filesystem::path path)
+		{
+			return !boost::regex_match(path.generic_string(), boost::regex(lpDir + "/*.*"));
+		}), paths.end());
+
+		return paths;
+	}
+
 
 	void TodosColumn(PGresult* res)
 	{
@@ -316,13 +329,6 @@ namespace PDF
 			int64_t mind = 0LL;
 			int64_t maxd = 0LL;
 
-			//PdfClass(TSheet& Sheet, bool end);
-			//PdfClass(TCassette& TC, bool end);
-			~PdfClass()
-			{
-				//conn.PGDisConnection();
-			};
-
 			Gdiplus::StringFormat stringFormat;
 
 			Gdiplus::Pen pen = Gdiplus::Pen(Gdiplus::Color(255, 0, 0, 0));
@@ -331,6 +337,13 @@ namespace PDF
 			Gdiplus::Pen Gdi_D1 = Gdiplus::Pen(Gdiplus::Color(192, 192, 192), 2); //Черный
 			Gdiplus::Pen Gdi_R1 = Gdiplus::Pen(Gdiplus::Color(192, 0, 0), 0.5); //Черный
 
+			~PdfClass()
+			{
+				//conn.PGDisConnection();
+			};
+
+			//PdfClass(TSheet& Sheet, bool end);
+			//PdfClass(TCassette& TC, bool end);
 			//void GetSrTemper(std::vector<PFS>& pF, std::map<int, PFS>& mF);
 			//void GetTempRef(std::string Start, std::string Stop, T_SqlTemp& tr, int ID, float PointRef);
 			//void SqlTempActKPVL1(std::string Stop, T_fTemp& fT);
@@ -915,39 +928,6 @@ namespace PDF
 				}
 				temp.DrawPath(&Gdi_L2, &path);
 				path.Reset();
-			}
-
-			void DrawInfo(Gdiplus::Graphics& temp, Gdiplus::RectF& Rect)
-			{
-				//try
-				//{
-				//	Gdiplus::Pen Gdi_L1(Gdiplus::Color(255, 0, 0), 2); //Красный
-				//	Gdiplus::Pen Gdi_L2(Gdiplus::Color(0, 0, 255), 2); //Синий
-				//
-				//	Gdiplus::PointF pt1 ={Rect.X + 0, Rect.Y + 5};
-				//	Gdiplus::PointF pt2 ={Rect.X + 20, Rect.Y + 5};
-				//
-				//	temp.DrawLine(&Gdi_L1, pt1, pt2);
-				//
-				//	pt1 ={Rect.X + 100, Rect.Y + 5};
-				//	pt2 ={Rect.X + 120, Rect.Y + 5};
-				//
-				//	temp.DrawLine(&Gdi_L2, pt1, pt2);
-				//
-				//	stringFormat.SetAlignment(Gdiplus::StringAlignmentNear);
-				//
-				//	Gdiplus::RectF Rect2 = Rect;
-				//	Rect2.X += 25;
-				//	Rect2.Y -= 5;
-				//	Rect2.Height = 20;
-				//	temp.DrawString(L"Задание", -1, &font2, Rect2, &stringFormat, &Gdi_brush);
-				//
-				//	Rect2 = Rect;
-				//	Rect2.X += 125;
-				//	Rect2.Y -= 5;
-				//	Rect2.Height = 20;
-				//	temp.DrawString(L"Факт", -1, &font2, Rect2, &stringFormat, &Gdi_brush);
-				//}CATCH(PdfLogger, "");
 			}
 
 			void DrawGridOssi(Gdiplus::Graphics& temp, Gdiplus::RectF& RectG, std::wstring s1, std::wstring s2)
@@ -1842,7 +1822,7 @@ namespace PDF
 				}
 				CATCH(CorrectLog, "");
 			};
-	};
+		};
 	};
 
 	//Автоматическое создание по кассете
@@ -1969,45 +1949,6 @@ namespace PDF
 			
 			int lin = 1;
 
-			//void GetStartTime(PGConnection& conn, int peth)
-			//{
-			//	//std::string start = "";
-			//	try
-			//	{
-			//		//std::string command = "SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND correct IS NULL AND pdf IS NULL AND delete_at IS NULL AND CAST(event AS integer) = 5 ";
-			//
-			//		std::stringstream ss1;
-			//		ss1 << "(SELECT run_at FROM cassette WHERE run_at IS NOT NULL AND (correct IS NOT NULL AND pdf IS NOT NULL) AND delete_at IS NULL AND CAST(event AS integer) = 5 "; //delete_at IS NULL AND 
-			//		ss1 << "AND peth = " << peth;
-			//		ss1 << " ORDER BY run_at ASC LIMIT 1) ";
-			//	
-			//		std::stringstream ssd;
-			//		ssd << "SELECT run_at, ";
-			//		ssd << "run_at - TIME '02:00:00'";	//Минус 2 часа
-			//		ssd << "  FROM cassette WHERE (correct IS NULL OR pdf IS NULL) AND delete_at IS NULL AND run_at >= "; //delete_at IS NULL AND 
-			//		ssd << ss1.str();
-			//		ssd << "AND peth = " << peth;
-			//		ssd << " ORDER BY run_at ASC LIMIT 1;";
-			//
-			//		std::string command = ssd.str();
-			//		PGresult* res = conn.PGexec(command);
-			//		if(PQresultStatus(res) == PGRES_TUPLES_OK)
-			//		{
-			//			if(conn.PQntuples(res))
-			//			{
-			//				DateCorrect = conn.PGgetvalue(res, 0, 0);
-			//				DateStart = conn.PGgetvalue(res, 0, 1);
-			//				DateStop = "";
-			//			}
-			//		}
-			//		else
-			//		{
-			//			LOG_ERR_SQL(CassetteLogger, res, command);
-			//		}
-			//		PQclear(res);
-			//	}CATCH(CassetteLogger, "");
-			//}
-			
 			void GetStopTime(PGConnection& conn, std::string Start, int ID)
 			{
 				if(!DateStart.length()) return;
@@ -2062,11 +2003,11 @@ namespace PDF
 				return f;
 			}
 
-			void GetVal(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
+			void GetActTime(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
 			{
 				try
 				{
-	#pragma region Готовим запрос в базу
+				#pragma region Готовим запрос в базу
 
 					std::stringstream sss;
 					sss << "SELECT DISTINCT ON (id_name) id_name, content";
@@ -2081,9 +2022,9 @@ namespace PDF
 					sss << " AND cast (content as numeric) <> 0";
 					sss << " ORDER BY id_name, create_at DESC"; // LIMIT 3
 
-	#pragma endregion
+				#pragma endregion
 
-	#pragma region Запрос в базу
+				#pragma region Запрос в базу
 
 					std::string command = sss.str();
 					PGresult* res = conn.PGexec(command);
@@ -2111,13 +2052,16 @@ namespace PDF
 					}
 					PQclear(res);
 
-	#pragma endregion
+				#pragma endregion
 				}
 				CATCH(CassetteLogger, "");
+			}
 
+			void GetPointTime(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
+			{
 				try
 				{
-	#pragma region Гогтвим запрос в базу
+				#pragma region Гогтвим запрос в базу
 
 					std::stringstream sss;
 					sss << "SELECT DISTINCT ON (id_name) id_name, content";
@@ -2131,9 +2075,9 @@ namespace PDF
 					sss << " AND create_at < '" << it.End_at << "'";
 					sss << " ORDER BY id_name, create_at DESC"; // LIMIT 4
 
-	#pragma endregion
+				#pragma endregion
 
-	#pragma region Запрос в базу
+				#pragma region Запрос в базу
 
 					std::string command = sss.str();
 					PGresult* res = conn.PGexec(command);
@@ -2162,10 +2106,13 @@ namespace PDF
 					}
 					PQclear(res);
 
-	#pragma endregion
+				#pragma endregion
 				}
 				CATCH(CassetteLogger, "");
+			}
 
+			void GetFactTemper(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
+			{
 				try
 				{
 					time_t temp  = (time_t)difftime(DataTimeOfString(it.End_at), 5 * 60); //Вычисть 5 минут до конца отпуска
@@ -2174,6 +2121,13 @@ namespace PDF
 
 				}
 				CATCH(CassetteLogger, "");
+			}
+
+			void GetValues(PGConnection& conn, TCassette& it, T_ForBase_RelFurn* Furn)
+			{
+				GetActTime(conn, it, Furn);
+				GetPointTime(conn, it, Furn);
+				GetFactTemper(conn, it, Furn);
 			}
 		
 			void EndCassette(PGConnection& conn, TCassette& it, std::fstream& s1)
@@ -2186,7 +2140,7 @@ namespace PDF
 
 					if(/*S107::IsCassette(it) &&*/ it.Run_at.length())
 					{
-						GetVal(conn, it, Furn);
+						GetValues(conn, it, Furn);
 
 						//std::tm TM_Run;
 						//std::tm TM_End;
@@ -3970,7 +3924,7 @@ namespace PDF
 					ssd << ", cassetteno = " << td.cassetteno;
 					ssd << ", sheetincassette = " << td.sheetincassette;
 					ssd << ", cassette = " << td.cassette;
-					ssd << ", pos = " << td.Pos;
+					ssd << ", pos = " << 7;
 					ssd << ", delete_at = DEFAULT, correct = now()";
 					ssd << " WHERE id = " << td.id;
 					#pragma region MyRegion
@@ -4093,7 +4047,7 @@ namespace PDF
 					ssd << td.cassette << ", ";
 
 					ssd << "now(), ";
-					ssd << td.Pos << ", ";
+					ssd << 7 << ", ";
 					ssd << td.news << ");";
 					SETUPDATESQL(SQLLogger, conn, ssd);
 
@@ -4768,19 +4722,6 @@ namespace PDF
 		}
 
 	};
-
-		//Перечисление дирректорий. Возвращает только файлы формата
-	std::vector<boost::filesystem::path> getDir (const std::string lpDir)
-	{
-		std::vector<boost::filesystem::path> paths = getDirContents (lpDir);
-		paths.erase(std::remove_if(paths.begin(), paths.end(),
-					[&, lpDir](boost::filesystem::path path)
-		{
-			return !boost::regex_match(path.generic_string(), boost::regex(lpDir + "/*.*"));
-		}), paths.end());
-
-		return paths;
-	}
 
 	bool isCorrectSheet = false;
 	bool isCorrectCassette = false;
