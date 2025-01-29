@@ -116,9 +116,6 @@ namespace PDF
 		DWORD WINAPI RunAllPdf(LPVOID);
 	};
 
-	//Поток автоматической корректировки
-	DWORD WINAPI RunCassettelPdf(LPVOID);
-
 	DWORD CorrectSheet(LPVOID);
 	DWORD CorrectCassetteFinal(LPVOID);
 
